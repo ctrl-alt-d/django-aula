@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block head %}{{head}}{% endblock %}
+
+{% block content %}
+{% if msgs.errors %}
+   <div class="error">
+    <ul>
+    {% for error in msgs.errors %}
+        <li><strong>{{ error|escape }}</strong></li>
+    {% endfor %}
+    </ul>
+   </div>
+{% endif %}
+{% if msgs.warnings %}
+   <div class="warning">
+    <ul>
+    {% for warning in msgs.warnings %}
+        <li><strong>{{ warning|escape }}</strong></li>
+    {% endfor %}
+    </ul>
+   </div>
+{% endif %}
+{% if msgs.infos %}
+   <div class="info">
+    <ul>
+    {% for info in msgs.infos %}
+        <li><strong>{{ info|escape }}</strong></li>
+    {% endfor %}
+    </ul>
+   </div>
+{% endif %}
+{% if msgs.url_next %}
+   <div class="urlnext">
+   		<a href="{{msgs.url_next}}">Continua</a>
+   </div>
+{% endif %}
+{% endblock %}

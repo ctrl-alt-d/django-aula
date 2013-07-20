@@ -1,0 +1,22 @@
+{% extends "blank.html" %}
+ 
+{% block content  %}
+	{% for report in reports %}
+		<table class="simple">
+			<tr><td></td>
+			{% for dia in report.dies %}
+			   <td>{{dia}}</td>
+			{% endfor %}
+			</tr>
+			
+			{% for assignatura in report.assignatures %}
+			<tr>
+			  <td>{{assignatura}}</td>
+				{% for dia in report.dies %}
+				   <td></td>
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</table>			
+	{% endfor %}	
+{% endblock %}

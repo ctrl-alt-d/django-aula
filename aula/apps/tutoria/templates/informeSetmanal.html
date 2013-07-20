@@ -1,0 +1,133 @@
+{% extends "blank.html" %}
+
+{% block extrahead  %}
+<script type="text/javascript">
+// Create the tooltips only on document load
+$(document).ready(function() 
+{
+   {% for x in dades.f %}
+   $('#f{{x.pk}}').qtip(
+   {
+      content: 'falta: {{x.impartir.horari.assignatura|escapejs}}, Prof.: {{x.professor|escapejs}}'
+   });
+   {% endfor %}   
+
+   {% for x in dades.r %}
+   $('#r{{x.pk}}').qtip(
+   {
+      content: 'retard: {{x.impartir.horari.assignatura|escapejs}}, Prof.: {{x.professor|escapejs}}'
+   });
+   {% endfor %}  
+      
+   {% for x in dades.j %}
+   $('#j{{x.pk}}').qtip(
+   {
+      content: 'falta justificada: {{x.impartir.horari.assignatura|escapejs}}, Prof.: {{x.professor|escapejs}}'
+   });
+   {% endfor %}  
+      
+   {% for x in dades.I %}
+   $('#I{{x.pk}}').qtip(
+   {
+      content: 'Incidència: (Prof.:{{x.professional|escapejs}}, Assig: {% if x.es_incidencia_d_aula %}{{x.control_assistencia.impartir.horari.assignatura|escapejs}} {% else %} Fora d\'aula {% endif %}) - {{x.descripcio_incidencia|escapejs}}'
+   });
+   {% endfor %}  
+      
+   {% for x in dades.i %}
+   $('#i{{x.pk}}').qtip(
+   {
+      content: 'Incidència informativa: (Prof.:{{x.professional|escapejs}}, Assig: {% if x.es_incidencia_d_aula %}{{x.control_assistencia.impartir.horari.assignatura|escapejs}} {% else %} Fora d'aula {% endif %}) - {{x.descripcio_incidencia|escapejs}}'
+   });
+   {% endfor %}  
+      
+   {% for x in dades.E %}
+   $('#E{{x.pk}}').qtip(
+   {
+      content: 'Expulsió: (Prof.: {{x.professor|escapejs}}, {{x.coltrol_assistencia.impartir.horari.assignatura|escapejs}}) - {{x.motiu_expulsio|escapejs}}'
+   });
+   {% endfor %}  
+      
+   {% for x in dades.e %}
+   $('#e{{x.pk}}').qtip(
+   {
+      content: 'expulsió per acumulació d\u0027incidències: (Prof: {{x.professor|escapejs}}) - {{x.motiu_expulsio|escapejs}}'
+   });
+   {% endfor %}  
+      
+});
+</script>	
+{% endblock %}
+
+{% block content  %}
+<div style="max-width:820px;">
+<table class="simple">
+ <tr >
+  <td > {{dades.grup}}
+  </td>
+  {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
+  <td style="text-align:center;"  colspan="{{ hores.compte }}" >
+  		{{ dia }} 
+  </td>
+  {% endfor %}
+ </tr>
+ 
+ <tr>
+  <td>Alumnes
+  </td>
+  {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
+  	{% for hora in hores %}
+  		<td style="font-size:80%; text-align:center;"> {{hora}} </td>
+  	{% endfor %}
+  </td>
+  {% endfor %}
+ </tr>
+ 
+  {% for alumne,filera in dades.quadre.itemsEnOrdre %}
+  <tr>
+  <td>
+  	<div style="width:150px; height:12px; overflow:hidden">{{alumne}}</div>
+  </td>
+  {% for cella in filera %}
+  
+  <td style="text-align:center;background-color:{{cella.color}};" >
+  		{% for x in cella.f %}
+  		   <span id="f{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">f</span>
+  		{% endfor %}
+  		{% for x in cella.r %}
+  		   <span id="r{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">r</span>
+  		{% endfor %}
+  		{% for x in cella.j %}
+  		   <span id="j{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">j</span>
+  		{% endfor %}
+  		{% for x in cella.I %}
+  		   <span id="I{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">I</span>
+  		{% endfor %}
+  		{% for x in cella.i %}
+  		   <span id="i{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">i</span>
+  		{% endfor %}
+  		{% for x in cella.E %}
+  		   <span id="E{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">E</span>
+  		{% endfor %}
+  		{% for x in cella.e %}
+  		   <span id="e{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">e</span>
+  		{% endfor %}
+  </td>
+  {% endfor %}
+ </tr>
+ {% endfor %}
+ </table>
+ 
+ <span style="width:400;font-size:80%;font-family: monospace;">
+ f = Falta, 
+ r = Retard, 
+ j = Falta Justificada, 
+ I = Incidència, 
+ i = Incidència Informativa, 
+ E = Expulsió, 
+ e = Expulsió per Acumulació,
+ gris fosc = L'alumne no està a cap llista,
+ gris clar = El professor encara no ha llista
+  </span>
+
+ </div>
+{% endblock %}

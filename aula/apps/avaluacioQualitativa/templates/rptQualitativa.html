@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+	<style>
+	@page {
+	  margin: 1cm;
+	  margin-bottom: 2.5cm;
+	  @frame footer {
+	    -pdf-frame-content: footerContent;
+	    bottom: 2cm;
+	    margin-left: 1cm;
+	    margin-right: 1cm;
+	    height: 1cm;
+	  }
+	}
+	
+	body {
+		font-family: Helvetica;
+		font-size: 12px;
+	}		
+	
+	table.titol th {
+		text-align:center;
+	  	border-bottom-style:solid;	  	
+	  	border-bottom-color:black;	  	
+		border-left-color:black;	  	
+		border-left-style:solid;	  	
+		border-right-color:black;	  	
+		border-right-style:solid;	  	
+		border-top-color:black;	  	
+		border-top-style:solid;	  	
+		padding-bottom: 0px;
+		padding-left: 3px;
+		padding-right: 3px;
+		padding-top: 3px;		
+		font-family: Helvetica;
+		font-size: 14px;
+		font-weight: bold;
+		
+		
+	}
+
+	table.titol td {
+		padding: 1px;
+		border-style: none;
+		background-color: white;
+		-moz-border-radius: 0px 0px 0px 0px;
+		padding-bottom:0px;
+		padding-left:3px;
+		padding-right:3px;
+		padding-top:10px;
+	}	
+	
+	table.pijama {
+		border-width: 1px;
+		border-spacing: 3px;
+		border-collapse: separate;
+		background-color: white;
+		
+	}
+	table.pijama th {
+		border-width: 1px;
+	  	border-bottom-style:solid;	  	
+	  	border-bottom-color:black;	  	
+		padding-bottom: 0px;
+		padding-left: 3px;
+		padding-right: 3px;
+		padding-top: 2px;
+	  	text-align:left;
+	}
+	table.pijama td {
+		padding: 1px;
+		border-style: none;
+		border-color: gray;
+		background-color: white;
+		-moz-border-radius: 0px 0px 0px 0px;
+		padding-bottom: 0px;
+		padding-left: 3px;
+		padding-right: 3px;
+		padding-top: 2px;
+	}	
+	
+	</style>
+</head>
+
+<body>
+
+	
+{{ head }}
+	
+{% for report in reports %}	
+	<table width="100%"><tr><td width="50%"><img src="gencat.jpg"></td>
+	<td align="right"><img src="logoCentre.jpg"></td></tr></table>
+
+	{% for taula in report %}
+	<br/>
+	{{ taula.titol.contingut }}
+	<table class="{{taula.classe}}" >
+		<tr>
+		{% for capcelera in taula.capceleres %}
+		<th width="{{capcelera.amplade}}px">
+			{{capcelera.contingut}}
+		</th>
+	  	{% endfor %}
+	  	</tr>
+	  	
+	  	{% for filera in taula.fileres %}
+	  		<tr>
+	  		 {% for camp in filera %}
+	  		 <td>
+				{{camp.contingut}}
+	  		 </td>
+	  		 {% endfor %}
+	  		</tr>
+	  	{%endfor%}
+	
+	</table> 		
+	{%endfor%}
+
+	<pdf:nextpage>	
+	
+{%endfor%}
+
+
+</body>
+</html>

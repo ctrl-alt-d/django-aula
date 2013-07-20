@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+
+{% block extrahead %}
+<script type="text/javascript">
+	$(function() {
+		$( "#tabs" ).tabs();
+	});
+</script>
+{% endblock %}
+
+{% block head %}
+  {{ head }}
+{% endblock %}
+ 
+{% block content  %}
+	{% block prereport  %}{% endblock %}
+	
+	<div id="tabs" style="margin:20px 0px 0px 0px">
+	
+	<ul>
+	{% for taula in report %}
+	<li><a href="#tabs-{{taula.codi}}">{{taula.tabTitle}}</a></li>
+	{% endfor %}
+	</ul>
+	
+	{% for taula in report %}
+	<div id="tabs-{{taula.codi}}">
+	
+	
+	{% if taula.titol.enllac %}<a href="{{ taula.titol.enllac }}">{%endif%}
+	{{ taula.titol.contingut }}
+	{% if taula.titol.enllac %}</a>{%endif%}
+	
+	<table class="box-table-a" >
+	
+		<tr>
+		{% for capcelera in taula.capceleres %}
+		<th width="{{capcelera.amplade}}px">
+  		   {% if capcelera.enllac %}<a href="{{capcelera.enllac}}">{%endif%}
+			{{capcelera.contingut}}
+  		   {% if capcelera.enllac %}</a>{%endif%}
+		</th>
+	  	{% endfor %}
+	  	</tr>
+	  	
+	  	{% for filera in taula.fileres %}
+	  		<tr>
+	  		 {% for camp in filera %}
+	  		 <td  {%if camp.negreta %} style="font-weight:bold" {% endif %}  >
+	  		   {% if camp.codi %}<a name="{{camp.codi}}"> </a>{% endif %}
+	  		   {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
+				{{camp.contingut}}
+	  		   {% if camp.enllac %}</a>{%endif%}
+	  		   {% if camp.multipleContingut %}
+	  		      {% for dada,enllac in camp.multipleContingut %}
+		  		    {% if enllac %}<a href="{{enllac}}">{%endif%}
+					 {{dada}}<br/>
+		  		    {% if enllac %}</a>{%endif%}
+		  		  {% endfor %}
+	  		   {% endif %}
+	  		 </td>
+	  		 {% endfor %}
+	  		</tr>
+	  	{%endfor%}
+
+	</table> 				
+    </div>
+	{%endfor%}
+	</div>
+		
+	{% block postreport  %}{% endblock %}
+{% endblock %}
+
+
+

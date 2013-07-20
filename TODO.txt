@@ -1,0 +1,51 @@
+
+
+find . -print | grep ".py"$ | xargs -i sed -i.bak s/x/y/g {} > {}
+find . -print | grep ".html"$ | xargs -i sed -i.bak s/x/y/g {} > {}
+find . -print | grep ".bak"$ | xargs -i rm {}
+
+Todo:
+enllac_saga
+/admin/incidencies/frassesincidenciaaula
+presencia reports  ( sql a query api)
+incidencies views  ( sql a query api)
+'widget' calendari
+avisos al menú
+
+#---------------------------------
+apt-get install libxml2-dev libxslt-dev
+
+
+
+from django.contrib.auth.models import User, Group
+g1 = Group.objects.create(name= 'direcció' )
+g2 = Group.objects.create(name= 'professors' )
+g3 = Group.objects.create(name= 'professional' )
+a = User.objects.get( username = 'dani' )
+a.groups = [ g1, g2, g3 ]
+a.save()
+g = Group.objects.create(name= 'consergeria' )
+g = Group.objects.create(name= 'alumne' )
+g = Group.objects.create(name= 'psicopedagog' )
+quit()
+
+#-- importar fixtures --
+for i in alumnes extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris    
+do    
+    python manage.py loaddata aula/apps/$i/fixtures/dades.json
+done
+
+#-- canviar dates del curs totes de cop:
+from datetime import date
+d1 = date( day=18, month=7, year=2013)
+d2 = date( day=18, month=8, year=2013)
+from aula.apps.alumnes.models import Curs
+for c in Curs.objects.all():
+     c.data_inici_curs = d1
+     c.data_fi_curs = d2
+     c.save()
+
+
+
+
+ 

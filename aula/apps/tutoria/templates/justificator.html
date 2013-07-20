@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block extrahead  %}
+<script type="text/javascript" src="/site-css/js/jquery.flip.min.js"></script>
+
+<style type="text/css">
+
+.caixa {
+    height: 10px;
+    width: 10px;
+}
+
+.justificatorSwaped {
+    height: 10px;
+    width: 10px;
+    color: black;
+	background-color: #FFFFCC;    
+}
+
+.justificator {
+    height: 10px;
+    width: 10px;
+    color: black;
+	background-color: #CCFFFF
+;    
+}
+
+</style>
+
+<script type="text/javascript">
+// Create the tooltips only on document load
+$(document).ready(function() 
+{
+
+   {% for ca in dades.c %}
+   $('#ca{{ca.pk}}').qtip(
+   {
+      content: '{{ca.estat|escapejs}}, Prof.: {{ca.professor|escapejs}}'
+   });
+   $('#ca{{ca.pk}}').hover(function() {
+	 $(this).css('cursor','pointer');
+	 }, function() {
+	 $(this).css('cursor','auto');
+   });   
+   
+   $('#ca{{ca.pk}}').click( function() {
+     //alert('CA: {{ca.estat|escapejs}}, Prof.: {{ca.professor|escapejs}}');
+     var args = { 
+        type:"GET", 
+        url:"/tutoria/justificaNext/{{ca.pk}}", 
+        success:function(data) {
+        	if ( data.ok ) {
+        	   if (data.swaped ) 
+        	      color = "#FFFFCC";
+        	   else 
+        	      color = "#CCFFFF";
+        	   $('#ca{{ca.pk}}').flip({
+					direction: 'tb',
+					content: '<div class="caixa" >'+data.codi+'</div>',
+					color: color
+			   });
+			   $('#ca{{ca.pk}}').qtip("destroy");
+			   $('#ca{{ca.pk}}').qtip({
+			      content: data.missatge
+			   });	
+			   		   
+    		} else {
+				$.each( data.errors,  function(index, value) { 
+					$('#comentaris').prepend(
+					    $('<li>').append(
+					       value   
+					    ).slideDown('slow')
+					);
+				});        		   
+    		}
+  		},
+        error:function (xhr, ajaxOptions, thrownError){
+        	$('#comentaris').prepend(
+			    $('<li>').append(
+			       thrownError   
+			    ).slideDown('slow')
+			);
+        }   
+     };
+     $.ajax(args);
+ 
+   });
+     
+   {% endfor %}   
+   
+
+
+});
+</script>	
+{% endblock %}
+
+{% block content  %}
+<div style="max-width:820px;">
+<table class="simple">
+ <tr >
+  <td > {{dades.grup}}
+  </td>
+  {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
+  <td style="text-align:center;"  colspan="{{ hores.compte }}" >
+  		{{ dia }} 
+  </td>
+  {% endfor %}
+ </tr>
+ 
+ <tr>
+  <td>Alumnes
+  </td>
+  {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
+  	{% for hora in hores %}
+  		<td style="font-size:80%; text-align:center;"> {{hora}} </td>
+  	{% endfor %}
+  </td>
+  {% endfor %}
+ </tr>
+ 
+  {% for alumne,filera in dades.quadre.itemsEnOrdre %}
+  <tr>
+  <td>
+  	<div style="width:150px; height:12px; overflow:hidden">{{alumne}}</div>
+  </td>
+  {% for cella in filera %}
+  <td>
+  		{% for ca in cella.c %}
+  		<div id="ca{{ca.pk}}" style="float:left">
+  		   <div class="justificator{% if ca.swaped %}Swaped{%endif%}">
+  		      {{ ca.estat.codi_estat }}
+  		   </div> 
+  		</div>
+  		{% endfor %}
+  </td>
+  {% endfor %}
+ </tr>
+ {% endfor %}
+ </table>
+
+<div style="clear: both;"></div>
+<div class="menucontextual" style="">
+	<ul>
+	{% for  professor, moment, altre_data in altres_moments %}
+	<li>
+		<a href="/tutoria/justificador/{{altre_data.year}}/{{altre_data.month}}/{{altre_data.day}}/">{{moment}}</a>
+	</li>
+	{% endfor %}
+	</ul>	
+</div>
+ 
+<div>
+  <ul id="comentaris">
+  </ul>
+</div>
+
+ </div>
+{% endblock %}

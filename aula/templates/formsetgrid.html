@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+
+{% block head %}
+  {{ head }}
+{% endblock %}
+
+{% block content  %}
+{% block preform  %}	
+	{% if missatge %}
+		<div class="info">
+		{{missatge}}
+		</div>
+	{% endif %}
+	{% if errors %}
+		<div class="error">
+		<ul>
+		{% for e in errors %}<li>{{e}}</li>{% endfor %}
+		</ul>
+		</div>
+	{% endif %}
+{% endblock %}
+<form method="post" action="">{% csrf_token %}
+<table class="form">
+    {{ formset.management_form }}
+
+    {% for form in formset %}
+     	{% if forloop.first %} 	
+    	<tr>
+          {% for field in form.visible_fields %}
+			    <td class="label_grid_tag">{{ field.label_tag }}:</td>
+          {% endfor %}
+		{% endif %}
+        </tr>
+    {% endfor %}
+    
+    {% for form in formset %}
+    	<tr>
+	    {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+        {% endfor %}    	
+        {% for field in form.visible_fields %}	
+			    <td class="tria_tag" {% if field.errors %} class="conte_errors"  {% endif %}  >		        
+			        {{ field }}
+			        {% if field.help_text %}
+			        <br/><span class="help_text">( {{ field.help_text }} )</span>
+			        {% endif %}
+			    	{{ field.errors }}
+			    </td>
+			
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    {% if formset %}
+    <tr><td>
+	<input type="submit" value="Enviar dades">
+	</td></tr>
+	{% endif %}
+</table>
+</form>
+{% block postform  %}{% endblock %}
+{% endblock %}

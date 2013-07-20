@@ -1,0 +1,12 @@
+*.log
+*.pot
+*.pyc
+customising/business_rules/*
+customising/docs/*
+env
+aula/db.sqlite
+.project
+.pydevproject
+.settings
+static/*
+

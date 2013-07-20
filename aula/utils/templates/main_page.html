@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Benvingut a django-aula{% endblock %}
+{% block head %}Benvingut a django-aula{% endblock %}
+{% block content %}
+	{% if user.username %}
+		<p>Benvingut {{ user.username }}!</p>
+	{% else %}
+		<p>Hola, anòmim!
+		Has de fer <a href="/login/">login</a>
+		per entrar al programa.</p>
+	{% endif %}
+{% endblock %}
+
+
+

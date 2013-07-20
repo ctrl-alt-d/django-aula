@@ -1,0 +1,61 @@
+{% extends "form.html" %}
+
+{% block preform  %}
+	<div style="border: 1px solid;border-color:black; margin:10px 5px 10px 5px;padding:10px 5px 10px 5px">
+		<ul style="list-style-type:square;">
+			<li>
+			  <a href="/presencia/passaLlista/{{id_impartir}}" > Passar llista </a>
+			</li>
+		</ul>
+	</div>	
+
+	<div style="border: 1px solid;border-color:black; margin:10px 5px 10px 5px;padding:10px 5px 10px 5px">
+		<div style="float:left; padding:0px 10px 0px 0px; width:40%">
+		<h1>Incidències d'aquesta hora	:</h1>
+		<ul>
+		{% for frase, incidencies in incidenciesXfrase.items %}
+			<li  style="margin-top:10px">
+				<span>{{frase}}</span>
+				<ul>
+					{% for incidencia in incidencies %}
+					<li>
+						<a href="/incidencies/eliminaIncidenciaAula/{{ incidencia.pk }}" style="color:red">[ x ]</a>
+						<span style="color:{% if incidencia.es_informativa %}blue{%else%}red{%endif%}">
+							{{ incidencia.alumne }}
+						</span>					
+					</li>	
+					{% endfor %}		
+				</ul>
+			</li>			
+		{% endfor %}
+		</ul>
+		</div>
+
+		<div style="float:left; padding:0px 10px 0px 70px; width:40%">
+		<h1>Expulsions d'aquesta hora	:</h1>
+		<ul>
+		{% for expulsio in expulsions %}
+			<li  style="margin-top:10px">
+					<a href="/incidencies/editaExpulsio/{{ expulsio.pk }}" style="color:red">
+						{{expulsio.alumne}}
+					</a>
+			</li>
+		{% endfor %}
+		</ul>
+		<p>Si no apareix aquí l'expulsió que busques comprova dins "Relació d'incidències i expulsions" al menú professor. 
+		Recorda que les expulsions les entra el professor de guardia. Si no han entrat la teva expulsió pots entrar-la tu 
+		des del menú Professor - Expulsions: Inicia tràmit d'expulsió.</p>	
+		</div>
+	
+	<div style="clear:both"></div>
+	</div>
+	
+
+	<div style="border: 1px solid;border-color:black; margin:10px 5px 10px 5px;padding:10px 5px 10px 5px">
+	<h1>Afegir noves Incidències:</h1>
+{% endblock %}
+
+{% block postform  %}
+	</div>
+{% endblock %}
+

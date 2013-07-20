@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block head %}
+  {{ head }}
+{% endblock %}
+
+ 
+{% block content  %}
+
+   	Càrrega Inicial
+	<ol> 
+	 <li>Obtenir una llicència d'ús: ctrl.alt.d@gmail.com</li>
+	 <li><a href="/admin/horaris/diadelasetmana/">Comprova dies de la Setmana (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/horaris/franjahoraria/">Comprova i adapta franges horàries (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/presencia/estatcontrolassistencia/">Comprova estats control assistència (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/assignatures/tipusdassignatura/">Comprova tipus d'assignatura (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/horaris/festiu/">Comprova i adapta calendari de festius (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/incidencies/frassesincidenciaaula/">Comprova i adapta frases d'incidències a l'aula (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/extKronowin/parametrekronowin/">Comprova i adapta paràmetres Krownowin (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/alumnes/nivell/">Crea Nivells i Cursos (No creis grups) (es pot fer des de fixtures)</a></li>
+	 <li><a href="/admin/alumnes/curs/">Comprova la data d'inici i fi de cada curs (Potser 2nBTX han d'acabar abans ...)</a></li>
+	 <li><a href="/admin/alumnes/grup/">Crea a mà els grups que no apareguin a Saga (per exemple les AO, UEC i A.Acollida)</a></li>
+	 <li><a href="/alumnes/sincronitzaSaga/">Importa alumnes SAGA (això crearà grups automàtics)</a></li>
+	 <li><a href="/alumnes/assignaGrups/">Reassigna i Reanomena els grups automàtics de Saga al curs corresponent</a></li>
+	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa professors i franges (Fitxer Soluc.txt generat des d'Access) -> Et surtirà error perquè no sap associar grups, és correcte, fes els tres punts següents.</a></li>
+	 <li><a href="/extKronowin/assignaGrups">Cassa grups Kronowin</a></li>
+	 <li><a href="/extKronowin/assignaFranges">Cassa franges Kronowin</a></li>
+	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa horaris (Fitxer Soluc.txt generat des d'Access) -> Aquí ja no ha de donar errors</a></li>
+	 <li><a href="/admin/auth/user/">Assigna el grup 'Direcció' a qui correspongui.</a></li>
+	 <li><a href="/admin/assignatures/assignatura/">Assigna tipus d'assignatura (opcional i recomenat, es pot fer de cop, mira el cuadre de sota)</a></li>
+	 <li><a href="/alumnes/assignaTutors/">Informar dels tutors dels grups (opcional i recomenat)</a></li>
+	 <li><a href="/admin/horaris/festiu/">Posa les festes (i informa com a festa dels grups que comencen el curs unes hores més tart)</a></li>
+	 <li><a href="/presencia/regeneraImpartir">Reprograma classes segons horari actual (el procés triga, tindràs un missatge quan acabi)</a></li>
+	 <li><a href="/admin/auth/user/">Posa dins el grup 'direcció' els usuaris que han de tenir accés a les tasques de direcció (marca'ls com 'es staff')</a></li>
+	</ol>
+	
+	<div style="border: 1px solid; padding: 10px">
+	<pre>
+
+EXEMPLES DE CANVIAR DE COP ELS TIPUS D'ASSIGNATURA:
+
+(Processos des de la shell: python manage.py shell)
+
+* Passar a UF totes les assignatures de Cicles Formatius
+
+from alumnes.models import Nivell
+from assignatures.models import TipusDAssignatura
+from assignatures.models import Assignatura
+uf = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Unitat' )
+for n  in Nivell.objects.filter( nom_nivell__contains = 'CF'  ):
+   print 'Canviant nivell' + unicode(n)
+   for a in Assignatura.objects.filter( curs__in = n.curs_set.all()):
+      print 'canviant assignatura' + unicode(a)
+      a.tipus_assignatura = uf	
+      a.save()
+
+
+* Passar a opcional totes les assignatures Opcionals (comencen per OP o OE)
+
+from alumnes.models import Nivell
+from assignatures.models import TipusDAssignatura
+from assignatures.models import Assignatura
+from django.db.models import Q
+op = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Opcional' )
+for n  in Nivell.objects.exclude( nom_nivell__contains = 'CF'  ):
+   es_opcional_op = Q(codi_assignatura__startswith = 'OP')
+   es_opcional_oe = Q(codi_assignatura__startswith = 'OE')
+   es_opcional_ao = Q(codi_assignatura__startswith = 'AO')
+   es_del_curs = Q(curs__in = n.curs_set.all())
+   for a in Assignatura.objects.filter( es_del_curs & (es_opcional_op | es_opcional_oe| es_opcional_ao) ):
+      a.tipus_assignatura = op	
+      a.save()
+
+* Correus de tots els professors de cicles:
+
+for p in P.objects.filter( horari__grup__curs__nivell__nom_nivell__contains = 'CF').distinct():
+    print p.email,','
+
+* Aula oberta a les assignatures d'aula oberta
+
+from assignatures.models import TipusDAssignatura, Assignatura
+
+for instance in Assignatura.objects.all():
+   if  instance.curs is not None and instance.curs.nom_curs == 'ACO/UEC':
+      ao = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Aula Oberta' )
+      instance.tipus_assignatura = ao
+      print 'canviat: ' , unicode( instance ), ' to ', unicode(ao)	
+	</pre>
+	</div>
+	
+	
+	
+{% endblock %}	

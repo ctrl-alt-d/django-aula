@@ -1,0 +1,25 @@
+<table>
+
+   {% if capcelera %}
+   <tr>
+   {% for c in capcelera %}
+   <th>
+      {{c}}
+   </th>
+   {% endfor %}
+   </tr>
+   {% endif %} 
+
+
+   {% for r in dades %}
+   <tr>
+   {% for d in r %}
+   <th>
+      {{d}}
+   </th>
+   {% endfor %}
+   </tr>
+   {% endfor %} 
+   
+
+</table>

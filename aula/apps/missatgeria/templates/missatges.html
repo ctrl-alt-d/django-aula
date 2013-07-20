@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content  %}
+    <h1>Missatges:</h1>
+    <div  class="elmur">
+	<ul>
+	{% for msg in msgs.object_list  %}
+		<li class="{{msg.importancia}}  {{msg.llegitAraMateix}}" style="margin-top:10px">
+		  <div style="padding:10px 10px 10px 10px;">
+			<span > ({{msg.missatge.data}})
+				<b>
+				{% if msg.missatge.remitent.last_name %}
+					{{msg.missatge.remitent.first_name}} {{msg.missatge.remitent.last_name}} 
+				{% else %}
+					{{msg.missatge.remitent.username}}
+				{% endif %}
+				{% if msg.missatge.remitent.email %}
+					({{msg.missatge.remitent.email}})
+				{% endif %}
+			</b>,</span>
+			<span>{{msg.missatge.text_missatge}}</span>
+			{% if msg.missatge.enllac %}
+			    <a class="enllacmsg-{{msg.followed}}" href="/missatgeria/llegeix/{{msg.pk}}">
+			      {% if msg.followed %}
+			    	-->
+			      {% else %}
+			        -- (no seguit) -->
+			      {% endif %}
+			    </a>{% endif %}
+			{% if msg.missatge.errors %}
+			   <div class="error">
+			    <ul>
+			    {% for txt in msg.missatge.errors %}
+			        <li><strong>{{ txt|escape }}</strong></li>
+			    {% endfor %}
+			    </ul>
+			   </div>
+			{% endif %}
+
+			{% if msg.missatge.warnings %}
+			   <div class="warning">
+			    <ul>
+			    {% for txt in msg.missatge.warnings %}
+			        <li><strong>{{ txt|escape }}</strong></li>
+			    {% endfor %}
+			    </ul>
+			   </div>
+			{% endif %}
+
+			{% if msg.missatge.infos %}
+			   <div class="info">
+			    <ul>
+			    {% for txt in msg.missatge.infos %}
+			        <li><strong>{{ txt|escape }}</strong></li>
+			    {% endfor %}
+			    </ul>
+			   </div>
+			{% endif %}
+			
+			<div>
+		</li>
+	{% endfor %}
+	</ul>
+	</div>
+
+
+	<div style="clear: both;"></div>
+	<div class="menucontextual" style="">
+		<ul>		
+        {% if msgs.has_previous %}
+        <li>
+            <a href="/missatgeria/elMeuMur"><< Inici</a>          
+		</li>
+        {% endif %}
+        {% if msgs.has_previous %}
+        <li>
+            <a href="/missatgeria/elMeuMur/{{ msgs.previous_page_number }}">< Anterior</a>          
+		</li>
+        {% endif %}
+		<li>
+            <a href="/missatgeria/elMeuMur/{{ msgs.number }}/">
+            	Pàgina {{ msgs.number }} de {{ msgs.paginator.num_pages }}.
+            </a>
+		</li>
+        {% if msgs.has_next %}
+		<li>
+            <a href="/missatgeria/elMeuMur/{{ msgs.next_page_number }}/"> Següent ></a>
+        </li>
+        {% endif %}
+        {% if msgs.has_next %}
+		<li>
+            <a href="/missatgeria/elMeuMur/{{ msgs.paginator.num_pages }}/"> Fi >></a>
+        </li>
+        {% endif %}
+    </ul
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+
+{% block head %}
+  {{ head }}
+{% endblock %}
+
+{% block content  %}
+  {% block preform  %}
+	  {% if missatge %}
+		  <div class="info">
+		    {{missatge}}
+		  </div>
+	  {% endif %}
+  {% endblock %}
+
+  <form method="post" action="">{% csrf_token %}
+    {{ formset.management_form }}
+    {% for form in formset %}    
+      <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+        {%if form.formSetDelimited %} 
+           <!-- TODO: Cal pensar com fer això amb bootstrap, i si cal -->
+           <!--tr style='background-color:black; height='10'><td colspan='2' style='background-color:black; height='10'></td></tr-->
+        {% endif %}
+      
+        {% for label, value in form.infoForm %}
+	        <div class="span6 label_tag">
+	        	{{ label }}:
+	        </div>
+	        <div class="span6" {% if field.errors %} class="conte_errors" {% endif %}>      
+	          {{ value }}
+      		</div>
+	      {% endfor %}
+
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+          
+        {% for field in form.visible_fields %}
+	        <div class="span6 label_tag">
+            {% if form.non_field_errors %}
+              {% for error in form.non_field_errors %}
+            	  <p class="text-error">{{error}}</p>
+              {% endfor %}
+            {% endif %}	
+	          <p class="text-right hidden-phone">{{ field.label_tag }}</p>
+            <p class="visible-phone">{{ field.label_tag }}</p>
+	        </div>
+	        <div class="span6 tria_tag" {% if field.errors %} class="conte_errors" {% endif %}>
+          {{ field }}
+          {% if field.help_text %}
+            <br/><span class="help_text">( {{ field.help_text }} )</span>
+	        	{{ field.errors }}
+          {% endif %}
+	        </div>
+
+        {% endfor %}
+        {%if formSetDelimited %}
+          <!-- TODO: Cal pensar com fer això amb bootstrap, i si cal -->
+          <!--tr style='background-color:white; height='10'><td colspan='2' style='background-color:white; height='10'></td></tr-->
+        {% endif %}       
+      </div>
+    {% endfor %}
+    {% if formset %}
+      <button type="submit" class="btn btn-primary">Enviar dades</button>
+  	{% endif %}
+  </form>
+  {% block postform  %} {% endblock %}
+{% endblock %}

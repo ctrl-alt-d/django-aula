@@ -1,0 +1,118 @@
+{% extends "formset.html" %}
+
+
+{% block extrahead %}
+
+
+
+<script type="text/javascript">
+	function totnet() {
+			   	lis=$(this).children().first().children();
+
+				/* present */
+				l=lis.first().children().first().children().first();
+				l.attr('checked', false);
+
+				/* falta */
+				l=lis.next().first().children().first().children().first();
+			   	l.attr('checked', false);
+			   	
+				/* justificada */
+				l=lis.next().next().children().first().children().first();
+			   	l.attr('checked', false);
+
+				/* retràs */
+				l=lis.next().next().next().children().first().children().first();
+			   	l.attr('checked', false);
+			   	
+			   	return false;
+	}
+</script>
+<script type="text/javascript">
+
+$(document).ready(
+	function($){	
+		$('.tria_tag').each(
+			function(index) {
+				
+			   	lis=$(this).children().first().children();
+
+				/* present */
+				l=lis.first().children().first();
+				l.css("color", "green");
+
+				/* falta */
+				l=lis.next().children().first();
+			   	l.css("color", "red") ;
+			   	
+				/* justificada */
+				l=lis.next().next().children().first();
+			   	l.css("color", "Brown") ;
+
+				/* retràs */
+				l=lis.next().next().next().children().first();
+			   	l.css("color", "orange") ;
+			   	
+			});
+	});	
+	
+$(document).ready(
+	function($){
+			/* Posar tot a ... */
+			$("#totpresent").click(function(){
+			
+				{% for f in formset %}
+				   {% if not f.instance.estat %}
+					  $('#id_form-{{forloop.counter}}-estat_0').attr('checked', true);
+				   {% endif %}
+				{% endfor %}
+				return false;
+             });
+
+			$("#totfalta").click(function(){
+				{% for f in formset %}
+				   {% if not f.instance.estat %}
+					  $('#id_form-{{forloop.counter0}}-estat_1').attr('checked', true);
+				   {% endif %}
+				{% endfor %}
+				return false;
+             });
+
+	});
+	
+</script>
+
+
+{% endblock %}
+
+
+{% block preform  %}
+	{% if formset %}
+		<div style="float:left;">
+			<ul style="list-style-type:square">
+			<li>
+			  <a href="." id="totpresent" style="color:green"  >Marca tot a Present els buits</a>
+			</li>
+			<li>
+			  <a href="." id="totfalta" style="color:red"  >Marca tot a Falta els buits</a>
+			</li>			
+			</ul>
+		</div>
+
+	{% else %}
+
+		<div style="float:left; margin-left: 100px">
+		No hi ha alumnes.
+		</div>
+
+	{% endif %}
+	
+	<div style="clear:both"/>
+{% endblock %}
+
+
+{% block postform  %}
+
+{% endblock %}
+
+

@@ -1,0 +1,178 @@
+{% extends "formset.html" %}
+
+
+{% block extrahead %}
+
+<script type="text/javascript">
+	function totnet() {
+	
+				$( ".presenciaEstat" ).attr('checked', false);
+				{% for f in formset %}
+			   	    $('td.label_tag label[for="id_{{f.prefix}}-estat_0"]').parent().css( "background-color", "#EEE" );
+			   	{% endfor %}
+			   	return false;
+	}
+</script>
+<script type="text/javascript">
+
+$(document).ready(
+	function($){	
+		$('.tria_tag').each(
+			function(index) {
+				
+			   	lis=$(this).children().first().children();
+
+				/* present */
+				l=lis.first().children().first();
+				l.css("color", "green");
+
+				/* falta */
+				l=lis.next().children().first();
+			   	l.css("color", "red") ;
+			   	
+				/* justificada */
+				l=lis.next().next().children().first();
+			   	l.css("color", "Brown") ;
+
+				/* retràs */
+				l=lis.next().next().next().children().first();
+			   	l.css("color", "orange") ;
+			   	
+			});
+	});	
+	
+$(document).ready(
+	function($){
+			/* Posar tot a ... */
+			$("#totpresent").click(function(){
+				totnet();
+				{% for f in formset %}
+					$('#id_{{f.prefix}}-estat_0').attr('checked', true);
+				{% endfor %}
+				return false;
+             });
+
+			$("#totfalta").click(function(){
+				totnet();
+				{% for f in formset %}
+					$('#id_{{f.prefix}}-estat_1').attr('checked', true);
+				{% endfor %}
+				return false;
+             });
+             
+			$("#horaAnterior").click(function(){
+				totnet();
+				{% for f in formset %}
+				   {% if f.hora_anterior == 0  %}
+					  $('#id_{{f.prefix}}-estat_0').attr('checked', true);
+				   {% endif %}
+				   {% if f.hora_anterior == 1  %}
+					  $('#id_{{f.prefix}}-estat_1').attr('checked', true);
+				   {% endif %}
+				{% endfor %}
+				return false;
+             });
+
+			$("#feelLucky").click(function(){
+				totnet();
+				{% for f in formset %}
+				   {% if f.prediccio == 0 %}
+					  $('#id_{{f.prefix}}-estat_0').attr('checked', true);
+				   {% endif %}
+				   {% if f.prediccio == 1 %}
+					  $('#id_{{f.prefix}}-estat_1').attr('checked', true);
+				   {% endif %}
+				   $('td.label_tag label[for="id_{{f.prefix}}-estat_0"]').parent().css( "background-color", "{{f.bcolor}}" );
+				{% endfor %}
+				return false;
+             });
+
+	});
+	
+</script>
+
+
+{% endblock %}
+
+
+{% block preform  %}
+	{% if formset %}
+		<div style="float:left;">
+			<ul style="list-style-type:square">
+			{% if feelLuckyEnabled %}
+	 		<li>
+			  <a href="."  id="feelLucky" style="color:#FF00FF" >Segur que tinc sort</a>
+			</li>  
+			{% endif %}
+			<li>
+			  <a href="." id="totpresent" style="color:green"  >Marca tot a Present</a>
+			</li>
+			<li>
+			  <a href="." id="totfalta" style="color:red"  >Marca tot a Falta</a>
+			</li>
+	 		<li>
+			  <a href="."  id="horaAnterior" >Copia de l'hora anterior</a>
+			</li>
+			<li>
+			  <a href="."  >Torna a carregar</a>
+			</li>
+			</ul>
+		</div>
+	
+		<div style="float:left; margin-left: 100px;">
+		<ul style="list-style-type:square;">
+			<li>
+			  <a href="/presencia/treuAlumnesLlista/{{id_impartir}}" > Treure alumnes de la llista</a>
+			</li>
+			<li>
+			<a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" > Afegir alumnes a la llista</a>
+			</li>
+		</ul>
+		</div>
+
+		<div style="float:left; margin-left: 100px;">
+		<ul style="list-style-type:square;">
+			<li>
+			  <a href="/incidencies/posaIncidenciaAula/{{id_impartir}}" > Incidències</a>
+			</li>
+			<li>
+			  <a href="/baixes/feina/{{id_impartir}}" > 
+			    Feina a Realitzar 
+			    {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
+			  </a>
+			</li>
+			<li>
+			  <a href="{{ horariUrl }}" > Horari</a>
+			</li>
+			 
+		</ul>
+		</div>
+
+	{% else %}
+
+		<div style="float:left; margin-left: 100px">
+		<ul style="list-style-type:square;padding:10px;">
+			<li style="padding:10px;">
+			<a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" > Afegir alumnes a la llista</a>
+			</li>
+			
+			{% if pot_marcar_sense_alumnes %}
+			<li style="padding:10px;">
+			<a href="/presencia/marcarComHoraSenseAlumnes/{{id_impartir}}" > En aquesta hora no tinc alumnes! </a>
+			</li>
+			{% endif %}
+					
+		</ul>
+		</div>
+
+	{% endif %}
+	
+	<div style="clear:both"/>
+{% endblock %}
+
+
+{% block postform  %}
+
+{% endblock %}
+
+

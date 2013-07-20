@@ -1,0 +1,34 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+<link href="/site-css/mega-menu/css/dcmegamenu.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/site-css/js/jquery.min.1.4.2.js"></script>
+<script type='text/javascript' src='/site-css/mega-menu/js/jquery.hoverIntent.minified.js'></script>
+<script type='text/javascript' src='/site-css/mega-menu/js/jquery.dcmegamenu.1.3.2.js'></script>
+<script type="text/javascript">
+$(document).ready(function($){	
+	$('#menu').dcMegaMenu({
+		rowItems: '3',
+		speed: 'fast',
+		effect: 'fade'
+	});
+});
+</script>
+<link href="/site-css/mega-menu/css/skins/white.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+
+{% block title %}django-aula{% endblock %}
+
+{% block branding %}<h1 id="site-name">django-aula Mode Administració</h1>{% endblock %}
+
+{% block nav-global %}<a href="/">django-aula mode Administració</a>{% endblock %}
+
+
+{% block pretitle %}<div id="nav">
+	{% include "menu.html" %}
+</div>{% endblock %}
+
+{% block footer %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+
+{% block head %}
+  {{ head }}
+{% endblock %}
+
+ 
+{% block content  %}
+	{% block preform %}{% endblock %}
+	
+	{% if form.non_field_errors %}
+	  <div class="error">
+	  <ul>
+      {% for error in form.non_field_errors %}
+      	<li>{{error}}</li>
+      {% endfor %}
+      <ul>
+      </div>
+    {% endif %}
+	
+	<form action="." method="post" target="{%if target %}{{target}}{%else%}_self{%endif%}">{% csrf_token %}
+	  <table class="form">
+
+		{% for label, value in infoForm %}
+		<tr>
+		    <td class="label_tag">
+		    	{{ label }}:
+		    </td>
+		    <td>       
+		        {{ value }}
+		    </td>
+		</tr>
+		{% endfor %}
+
+		{% for field in form %}
+		<tr>
+		    <td class="label_tag">{{ field.label_tag }}:</td>
+		    <td  {% if field.errors %} class="conte_errors"  {% endif %}  >		        
+		        {{ field }}
+		        {% if field.help_text %}
+		        <br/><span class="help_text">( {{ field.help_text }} )</span>
+		        {% endif %}
+		    	{{ field.errors }}
+		    </td>
+		</tr>
+		{% endfor %}
+
+
+	  </table>
+		 <input type="submit" value="Enviar dades"  >
+	</form>
+	{% block postform  %}{% endblock %}
+{% endblock %}
+
+
+

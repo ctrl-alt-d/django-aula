@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+
+    # estructura:
+    # franges_tot: [ , , , , , ]
+    # impartir_tot =
+    #   [
+    #    impartirFranja =  
+    #  		( dia , 
+    #			[ impartir_franja = 
+    #				[ imparticions = [ imparticio, ... ] , ... ] 
+    #			]
+    #		)  , ...
+    #   ]
+    #
+ 
+{% block extrahead %}
+  <style type="text/css">
+    .row-padded {
+      padding: 1px;
+      border-bottom: 1px solid black;
+    }
+    .span2 {
+      text-align: center;
+    } 
+  </style>
+{% endblock %}
+ 
+{% block content  %}
+	<p class="well well-small">
+  	<i class="icon-user"></i> {{ professor }}
+  </p>
+	
+	<div class="row">
+	  <div class="span2"></div>
+		{% for dia_setmana, dia_complet, esDataActual in calendari %}
+			<div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">
+			   <span class="badge {% if not esDataActual %}badge-info{% else %}badge-success{% endif %}">
+			    <strong>{{ dia_setmana }} {{ dia_complet }}</strong>
+			   </span>
+			</div>
+		{% endfor %}
+	</div>
+	
+  {% for impartir_franja in impartir_tot %}
+	  <div class="row text_center">
+			{% for imparticions, esDataActual in impartir_franja %}
+				<div class="span2 {% if forloop.counter != 1 and not esDataActual %}hidden-phone{% endif %}">
+					{% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}
+						<div class="imparticio" style="border: 1px solid white;">
+							{%if esGuardia%}
+								<div style="text-align: right;">
+								 -Guardia- <a style="color:#444444;" href="/presencia/esborraGuardia/{{pk}}">[ x ]</a>
+								</div>
+							{%endif%}
+							<div style="background-color:{{color}}">
+							  {% if forloop.parentloop.counter == 1 %}
+								<span class="badge badge-info">
+							  {% endif %}
+							  {{ assignatura }} {{ aula }}
+							  {%if grup%}
+							    <br/>
+							    {{ grup }}
+							    <br />
+                              </div>
+                              <div style="background-color:{{color2}}">
+							<a href="/presencia/passaLlista/{{pk}}" style="color:#F0F0F0">{{ resum }}</a>
+							  {%endif%}
+							  {% if forloop.parentloop.counter == 1 %}
+							  	</span>
+							  {% endif %}
+							</div>
+							{%if esGuardia%}
+								</div>
+							{%endif%}
+						</div>
+					{% endfor %}
+				</div>				
+			{% endfor %}
+    </div>
+  {% endfor %}		
+
+	<div class="row">
+	  <div class="span2"></div>
+	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
+		  <div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">			   
+		     <a href="/presencia/afegeixGuardia/{{dia_complet}}">+guardia</a>
+		  </div>
+	  {% endfor %}
+	</div>
+
+  <div class="pagination">
+    <ul>
+	  {% for  moment, altre_data, mostrarPhone in altres_moments %}
+        <li {%if not mostrarPhone %}class="hidden-phone"{%endif%}>
+          <a href="/presencia/mostraImpartir/{{altre_data.year}}/{{altre_data.month}}/{{altre_data.day}}/">{{moment}}</a>
+        </li>
+      {% endfor %}
+	</ul>	
+	</div>
+{% endblock %}
+
+
+
+
+
