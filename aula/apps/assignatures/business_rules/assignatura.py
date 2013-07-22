@@ -24,14 +24,19 @@ def assignatura_clean( instance ):
             instance.codi_assignatura.startswith( 'OE' ) or \
             instance.codi_assignatura.startswith( 'AO' ):
         
-            op = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Opcional' )    
-            instance.tipus_assignatura = op
+            try:
+                op = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Opcional' )    
+                instance.tipus_assignatura = op
+            except TipusDAssignatura.DoesNotExists:
+                pass
         
         #si el grup és aula d'acolloda poso nivell tot el centre, ...            
         if  instance.curs is not None and instance.curs.nom_curs == 'ACO/UEC':        
-            ao = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Aula Oberta' )    
-            instance.tipus_assignatura = ao
-    
+            try:
+                ao = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Aula Oberta' )    
+                instance.tipus_assignatura = ao
+            except TipusDAssignatura.DoesNotExists:
+                pass    
     #rules
     
 def assignatura_pre_save(sender, instance, **kwargs): 

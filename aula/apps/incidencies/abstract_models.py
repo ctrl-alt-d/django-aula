@@ -111,7 +111,6 @@ class AbstractExpulsio(models.Model):
     
 
 class AbstractIncidencia(models.Model):
-    id_incidencia = models.AutoField(primary_key=True)
     professional = models.ForeignKey('usuaris.Professional',  db_index=True, help_text=u"Professor que tramita la incidència")
     alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne al qual li posem la incidència" )
     control_assistencia = models.ForeignKey('presencia.ControlAssistencia', null=True,  blank=True)

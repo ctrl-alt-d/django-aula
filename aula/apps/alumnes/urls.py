@@ -1,8 +1,6 @@
 from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('aula.apps.alumnes.views',
-   url(r'^sincronitzaSaga/$', 'sincronitzaSaga',  
-       name="administracio__sincronitza__saga" ),   
                        
    url(r'^triaAlumne/$', 'triaAlumne' ,
        name="obsolet__tria_alumne"),
@@ -15,9 +13,6 @@ urlpatterns = patterns('aula.apps.alumnes.views',
                        
    url(r'^triaAlumneAlumneAjax/(?P<id_grup>\d+)/$', 'triaAlumneAlumneAjax',
        name="triaAlumneAlumneAjax"),
-                       
-   url(r'^assignaGrups/$', 'assignaGrups',
-       name="administracio__configuracio__assigna_grups"),
                        
    url(r'^assignaTutors/$', 'assignaTutors',
        name="professorat__tutors__tutors_grups"),

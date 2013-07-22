@@ -14,14 +14,24 @@
 	 <li><a href="/admin/horaris/franjahoraria/">Comprova i adapta franges horàries (cal haver importat des de fixtures)</a></li>
 	 <li><a href="/admin/presencia/estatcontrolassistencia/">Comprova estats control assistència (cal haver importat des de fixtures)</a></li>
 	 <li><a href="/admin/assignatures/tipusdassignatura/">Comprova tipus d'assignatura (cal haver importat des de fixtures)</a></li>
-	 <li><a href="/admin/horaris/festiu/">Comprova i adapta calendari de festius (cal haver importat des de fixtures)</a></li>
-	 <li><a href="/admin/incidencies/frassesincidenciaaula/">Comprova i adapta frases d'incidències a l'aula (cal haver importat des de fixtures)</a></li>
-	 <li><a href="/admin/extKronowin/parametrekronowin/">Comprova i adapta paràmetres Krownowin (cal haver importat des de fixtures)</a></li>
-	 <li><a href="/admin/alumnes/nivell/">Crea Nivells i Cursos (No creis grups) (es pot fer des de fixtures)</a></li>
-	 <li><a href="/admin/alumnes/curs/">Comprova la data d'inici i fi de cada curs (Potser 2nBTX han d'acabar abans ...)</a></li>
-	 <li><a href="/admin/alumnes/grup/">Crea a mà els grups que no apareguin a Saga (per exemple les AO, UEC i A.Acollida)</a></li>
-	 <li><a href="/alumnes/sincronitzaSaga/">Importa alumnes SAGA (això crearà grups automàtics)</a></li>
-	 <li><a href="/alumnes/assignaGrups/">Reassigna i Reanomena els grups automàtics de Saga al curs corresponent</a></li>
+	 <li><a href="/admin/horaris/festiu/">Comprova i adapta calendari de festius (pots importar exemple des de fixtures)</a></li>
+	 <li><a href="/admin/incidencies/frassesincidenciaaula/">Comprova i adapta frases d'incidències a l'aula (pots importar exemple des de fixtures)</a></li>
+	 <li><a href="/admin/extKronowin/parametrekronowin/">Comprova i adapta paràmetres Krownowin (pots importar exemple des de fixtures)</a></li>
+	 <li>Crea nivells, cursos i grups des de kronowin
+	 	<ol>
+		 <li><a href="{% url 'administracio__configuracio__crea_grups_des_de_kronowin' %}">Crea nivells, cursos i grups des de Kroniwin</a></li>
+		</ol>
+	 </li> 	 
+	 <li> ó crea'ls a mà:
+	 	<ol>
+		 <li><a href="/admin/alumnes/nivell/">Crea Nivells i Cursos (es pot fer des de fixtures ó per codi)</a></li>
+		 <li><a href="/admin/alumnes/grup/">Crea a mà els grups (o per codi)</a></li>
+		</ol>
+	 </li>	 
+	 <li><a href="/admin/alumnes/curs/">Recorda comprovar la data d'inici i fi de cada curs (Potser 2nBTX han d'acabar abans ...)</a></li>
+	 <li><a href="/alumnes/sincronitzaSaga/">Importa alumnes SAGA --> Et donarà error si hi ha grups al Saga que no sap mapejar-los al programa</a></li>
+	 <li><a href="{% url 'administracio__configuracio__assigna_grups_saga' %}">Assigna els grups del Saga al programa</a></li>
+	 <li><a href="{% url 'administracio__sincronitza__saga' %}">Importa alumnes SAGA (Ara no haurien de sortir errors)</a></li>
 	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa professors i franges (Fitxer Soluc.txt generat des d'Access) -> Et surtirà error perquè no sap associar grups, és correcte, fes els tres punts següents.</a></li>
 	 <li><a href="/extKronowin/assignaGrups">Cassa grups Kronowin</a></li>
 	 <li><a href="/extKronowin/assignaFranges">Cassa franges Kronowin</a></li>
@@ -35,6 +45,7 @@
 	</ol>
 	
 	<div style="border: 1px solid; padding: 10px">
+	
 	<pre>
 
 EXEMPLES DE CANVIAR DE COP ELS TIPUS D'ASSIGNATURA:

@@ -7,13 +7,6 @@ from django.forms import ModelForm
 from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne
 from aula.apps.usuaris.models import Professor
 
- 
-
-
-#https://docs.djangoproject.com/en/1.2/topics/http/file-uploads/
-class sincronitzaSagaForm(forms.Form):
-    fitxerSaga = forms.FileField(required=True)
-
     
 class triaAlumneForm(forms.Form):    
     #TODO: ha de suportar prefixos per si cal triar més d'un alumne    

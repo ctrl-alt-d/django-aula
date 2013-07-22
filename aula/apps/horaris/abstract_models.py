@@ -73,7 +73,6 @@ class AbstractHorari(models.Model):
 #------------------------------------------------------------------------------------------------
 
 class AbstractFestiu(models.Model):
-    id_festiu = models.AutoField(primary_key=True)
     curs = models.ForeignKey('alumnes.Curs', null=True, blank=True)
     data_inici_festiu = models.DateField()
     franja_horaria_inici = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_inici_festiu', )

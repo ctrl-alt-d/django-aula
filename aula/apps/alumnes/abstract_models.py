@@ -64,9 +64,7 @@ class AbstractCurs(models.Model):
 class AbstractGrup(models.Model):
     curs = models.ForeignKey("alumnes.Curs")
     nom_grup = models.CharField(max_length=45, help_text=u'''Això normalment serà una lletra. Ex 'A' ''')
-    descripcio_grup = models.CharField(max_length=240, blank=True)
-    enllac_saga = models.CharField(max_length=45, blank=True)
-    codi_enllac_horari_src = models.CharField(max_length=45, blank=True)
+    descripcio_grup = models.CharField(max_length=240, blank=True, editable = False)
     class Meta:
         abstract = True        
         ordering = ['curs','curs__nivell__nom_nivell', 'curs__nom_curs', 'nom_grup']

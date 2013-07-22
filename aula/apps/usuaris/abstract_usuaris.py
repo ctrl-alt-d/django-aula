@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 #-------------------------------------------------------------
 
 class AbstractDepartament(models.Model):
-    id_departament = models.AutoField(primary_key=True)
     codi = models.CharField(max_length=4 )
     nom = models.CharField(max_length=300 )
 

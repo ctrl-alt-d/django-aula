@@ -137,6 +137,7 @@ INSTALLED_APPS = [
     'aula.apps.incidencies',
     'aula.apps.tutoria',
     'aula.apps.extKronowin',
+    'aula.apps.extSaga',
     'aula.apps.avaluacioQualitativa',
     'aula.apps.todo',
     'aula.apps.usuaris',

@@ -8,6 +8,9 @@ from aula.apps.horaris.models import Horari, DiaDeLaSetmana
 from aula.apps.extKronowin.models import Franja2Aula,Grup2Aula, ParametreKronowin
 from aula.apps.assignatures.models import Assignatura
 
+import csv
+from aula.apps.alumnes.models import Nivell, Grup, Curs
+
 def sincronitza(file, usuari):
 
 	_, _ = 					Group.objects.get_or_create( name = u'direcció'  )
@@ -15,13 +18,12 @@ def sincronitza(file, usuari):
 	grupProfessionals, _ = 	Group.objects.get_or_create( name = 'professional' )			
 	grupConsergeria, _ = 	Group.objects.get_or_create( name = 'consergeria' )
 
-	import csv
 	
 	dialect = csv.Sniffer().sniff(file.readline())
 	file.seek(0)
 	file.readline()
 	file.seek(0)
-	fieldnames=( 'assignatura', 'professor', 'grup', 'unk1', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
+	fieldnames=( 'assignatura', 'professor', 'grup', 'Mati_Tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
 	reader = csv.DictReader(file, fieldnames=fieldnames, dialect=dialect )
 	
 	errors=[]
@@ -209,12 +211,55 @@ def sincronitza(file, usuari):
 	return { 'errors': errors.sort(), 'warnings':  warnings, 'infos':  infos }
 
 
+def creaNivellCursGrupDesDeKronowin(file, dia_inici_curs, dia_fi_curs):
 
+	
+	dialect = csv.Sniffer().sniff(file.readline())
+	file.seek(0)
+	file.readline()
+	file.seek(0)
+	fieldnames=( 'assignatura', 'professor', 'grup', 'Mati_Tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
+	reader = csv.DictReader(file, fieldnames=fieldnames, dialect=dialect )
+	
+	errors=[]
+	warnings=[]
+	infos=[]
 
+	#cal comprova número de columnes
+	aFranges=set([])
+	aGrups=set([])
+	aProfessors=set([])
 
+	#
+	#
+	#  PRIMERA PART: comprovar franjes horàries, grups i professors
+	#
+	#
+	
+	if Curs.objects.exists():
+		return { 'errors': [ "Hi ha cursos creats, no es pot realitzar aquesta operació"], 'warnings':  warnings, 'infos':  infos }
 
+	Grup2Aula.objects.all().delete()
+	for row in reader:
 
+		#
+		#comprovar existència franges horàries Kronowin
+		#
+		nivell = unicode(row['nivell'],'iso-8859-1')
+		curs = unicode(row['curs'],'iso-8859-1')
+		lletra = unicode(row['lletra'],'iso-8859-1')
+		grup = unicode(row['grup'],'iso-8859-1')
+		
+		n, _ = Nivell.objects.get_or_create( nom_nivell = nivell )
+		c, _ = Curs.objects.get_or_create( nom_curs = curs,
+										   nom_curs_complert = "{nivell}-{curs}".format(nivell=nivell, curs = curs),
+										   nivell = n , defaults = {'data_inici_curs': dia_inici_curs, 
+																					 'data_fi_curs': dia_fi_curs})			 
+		g, _ = Grup.objects.get_or_create( nom_grup =  lletra , curs = c)
+		
+		Grup2Aula.objects.get_or_create( grup_kronowin = grup, Grup2Aula = g )
 
+	return { 'errors': errors, 'warnings':  warnings, 'infos':  infos }
 
 
 

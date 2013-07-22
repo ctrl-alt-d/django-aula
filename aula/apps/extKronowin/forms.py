@@ -6,6 +6,12 @@ from aula.apps.extKronowin.models import Grup2Aula, Franja2Aula
 #https://docs.djangoproject.com/en/1.2/topics/http/file-uploads/
 class sincronitzaKronowinForm(forms.Form):
     fitxer_kronowin = forms.FileField(required=True)
+
+
+class creaNivellCursGrupDesDeKronowinForm(forms.Form):
+    fitxer_kronowin = forms.FileField(required=True)
+    dia_inici_curs = forms.DateField()
+    dia_fi_curs = forms.DateField()
     
 class Kronowin2DjangoAulaGrupForm(ModelForm):
 

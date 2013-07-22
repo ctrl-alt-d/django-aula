@@ -1,16 +1,16 @@
+Instal·lació:
 
+1) pip install -r requirements
+2) python manage.py runserver
+3) anar a Admin / Carrega inicial
 
-find . -print | grep ".py"$ | xargs -i sed -i.bak s/x/y/g {} > {}
-find . -print | grep ".html"$ | xargs -i sed -i.bak s/x/y/g {} > {}
-find . -print | grep ".bak"$ | xargs -i rm {}
 
 Todo:
-enllac_saga
 /admin/incidencies/frassesincidenciaaula
 presencia reports  ( sql a query api)
 incidencies views  ( sql a query api)
-'widget' calendari
-avisos al menú
+'widget' calendaria
+avisos->senyal al menú si n'hi han de nous
 
 #---------------------------------
 apt-get install libxml2-dev libxslt-dev
@@ -21,7 +21,7 @@ from django.contrib.auth.models import User, Group
 g1 = Group.objects.create(name= 'direcció' )
 g2 = Group.objects.create(name= 'professors' )
 g3 = Group.objects.create(name= 'professional' )
-a = User.objects.get( username = 'dani' )
+a = User.objects.get( username = 'INDH' )
 a.groups = [ g1, g2, g3 ]
 a.save()
 g = Group.objects.create(name= 'consergeria' )
@@ -30,7 +30,7 @@ g = Group.objects.create(name= 'psicopedagog' )
 quit()
 
 #-- importar fixtures --
-for i in alumnes extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris    
+for i in extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris  #alumnes-> (els grups millor des de konowin)    
 do    
     python manage.py loaddata aula/apps/$i/fixtures/dades.json
 done
@@ -46,6 +46,10 @@ for c in Curs.objects.all():
      c.save()
 
 
+#--------------
+find . -print | grep ".py"$ | xargs -i sed -i.bak s/x/y/g {} > {}
+find . -print | grep ".html"$ | xargs -i sed -i.bak s/x/y/g {} > {}
+find . -print | grep ".bak"$ | xargs -i rm {}
 
 
  

@@ -11,7 +11,8 @@ from aula.utils.decorators import group_required
 
 import sincronitzaKronowin as s
 
-from aula.apps.extKronowin.forms import sincronitzaKronowinForm, Kronowin2DjangoAulaFranjaForm, Kronowin2DjangoAulaGrupForm
+from aula.apps.extKronowin.forms import sincronitzaKronowinForm, Kronowin2DjangoAulaFranjaForm, Kronowin2DjangoAulaGrupForm,\
+    creaNivellCursGrupDesDeKronowinForm
 from aula.apps.extKronowin.models import Franja2Aula, Grup2Aula
 from aula.apps.usuaris.models import Accio
 
@@ -133,4 +134,29 @@ def sincronitzaKronowin(request):
         
 
     
-
+#---------------------------------------------------------------------------------
+@login_required
+@group_required(['direcció'])
+def creaNivellCursGrupDesDeKronowin(request):
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4) = credentials   
+    
+    if request.method == 'POST':
+        form = creaNivellCursGrupDesDeKronowinForm(request.POST, request.FILES)
+        if form.is_valid():
+            resultat=s.creaNivellCursGrupDesDeKronowin(request.FILES['fitxer_kronowin'],  
+                                                       form.cleaned_data["dia_inici_curs"], 
+                                                       form.cleaned_data["dia_fi_curs"])
+            
+        return render_to_response(
+                        'resultat.html', 
+                        {'head': u'Resultat sincronització Kronowin' ,
+                         'msgs': resultat },
+                        context_instance=RequestContext(request))    
+    else:
+        form = creaNivellCursGrupDesDeKronowinForm()
+    return render_to_response(
+                        'sincronitzaKronowin.html', 
+                        {'form': form},
+                        context_instance=RequestContext(request))
+        

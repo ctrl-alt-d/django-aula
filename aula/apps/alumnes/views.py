@@ -19,7 +19,7 @@ from aula.utils.decorators import group_required
 from aula.apps.usuaris.models import User2Professor
 
 #forms
-from aula.apps.alumnes.forms import sincronitzaSagaForm, triaMultiplesAlumnesForm
+from aula.apps.alumnes.forms import  triaMultiplesAlumnesForm
 from aula.apps.alumnes.forms import triaAlumneForm
 
 #helpers
@@ -70,83 +70,9 @@ def fusiona(request,pk):
 
 #vistes--------------------------------------------------------------------------------------
 
-@login_required
-@group_required(['direcció'])
-def sincronitzaSaga(request):
-
-    (user, l4) = tools.getImpersonateUser(request)
-    professor = User2Professor( user )     
-    
-    from aula.apps.alumnes.sincronitzaSaga import sincronitza
-
-    if request.method == 'POST':
-        
-        form = sincronitzaSagaForm(request.POST, request.FILES)
-        
-        if form.is_valid():
-            f=request.FILES['fitxerSaga']
-            resultat=sincronitza(f, user)
-            
-            return render_to_response(
-                    'resultat.html', 
-                    {'head': 'Resultat importació SAGA' ,
-                     'msgs': resultat },
-                    context_instance=RequestContext(request))
-        
-    else:
-        form = sincronitzaSagaForm()
-        
-    return render_to_response(
-                    'sincronitzaSaga.html', 
-                    {'form': form },
-                    context_instance=RequestContext(request))           
+  
 
 #vistes--------------------------------------------------------------------------------------
-
-
-@login_required
-@group_required(['direcció'])
-def assignaGrups( request ):
-    #Procés de càrrega
-    #Assignar curs i nom del grup a cada grup
-    
-    from aula.apps.alumnes.forms import grupForm
-    #prefixes:
-    #https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms    
-    formset = []
-    if request.method == "POST":
-        #un formulari per cada alumne de la llista
-        totBe = True
-        for grup in Grup.objects.all():
-            form=grupForm(
-                                    request.POST,
-                                    prefix=str( grup.pk ),
-                                    instance=grup )
-            formset.append( form )
-            if form.is_valid():
-                form.save()
-            else:
-                totBe = False
-                
-        if totBe:
-            return HttpResponseRedirect( '/' )
-
-                
-    else:
-        for grup in Grup.objects.all():
-            form=grupForm(
-                                    prefix=str( grup.pk ),
-                                    instance=grup )            
-            formset.append( form )
-            
-    return render_to_response(
-                  "formsetgrid.html", 
-                  { "formset": formset,
-                    "head": "Manteniment de grups",
-                   },
-                  context_instance=RequestContext(request))
-
-
 
 @login_required
 @group_required(['direcció'])

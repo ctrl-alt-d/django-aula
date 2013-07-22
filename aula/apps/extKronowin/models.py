@@ -16,7 +16,7 @@ class Franja2Aula(models.Model):
 
 class Grup2Aula(models.Model):
     grup_kronowin =  models.CharField(max_length=45, unique=True)
-    Grup2Aula = models.ForeignKey(Grup, null=True)
+    Grup2Aula = models.ForeignKey(Grup, null=True, related_name="grup2aulakonowin_set")
     class Meta:
         ordering = ['Grup2Aula','grup_kronowin']
         verbose_name = u'Mapeig Grup Aula Kronowin'
@@ -26,8 +26,7 @@ class Grup2Aula(models.Model):
         return  unicode( self.grup_kronowin) + ' -> ' + grup
 
 class ParametreKronowin(models.Model):
-    id_parametre = models.AutoField(primary_key=True)
-    nom_parametre =  models.CharField(max_length=45, unique=True, help_text=u'passwd, assignatures amb professor')
+    nom_parametre =  models.CharField(max_length=45, unique=True, help_text=u'Nom paràmetre (ex: passwd, assignatures amb professor, ...)')
     valor_parametre = models.CharField(max_length=240, blank=True)
     class Meta:
         ordering = ['nom_parametre']
