@@ -1,31 +1,32 @@
-Copyright © 2011-TODAY . Daniel Herrera ctrl.alt.d@gmail.com . 
 Llicència: 
-Aquest programari és Open Source. Open Source no significa Programari Lliure.
-Aquest programari és propietat intel·lectual de Daniel Herrera.
-Per obtenir la llicència per fer explotar aquest programa o 
-una adaptació del mateix contacteu amb el propietari intel·lectual del mateix:
 
-         daniel herrera   ctrl.alt.d@gmail.com
+    This file is part of django-aula ('DAU').
 
-Actualment disposen de llicència per fer instal·lar, adaptar i explotar 
-el programa les següents persones:
+    Copyright © 2011-TODAY . Daniel Herrera ctrl.alt.d@gmail.com . 
+    
+    Aquest copyright forma part del programa, no es pot alterar i 
+    ha d'acompanyar el programa de manera visible. 
+    There is NO WARRANTY, to the extent permitted by law. 
+    EL PROGRAMA NO TÉ CAP GARANTIA, 
+    MÉS ENLLÀ DE LES EXIGIDES PER LES LLEIS APLICABLES.
+    
+    El programa es diu django-aula però es pronuncia 'DAU'
 
-* Institut Cendrassos: Llicència per a 1 instal·lació fins a setembre de 2014
-* Jaume Pujol: Llicència per a 1 instal·lació fins a setembre de 2020 
-* Joan Rodríguez: Llicència per a 1 instal·lació fins a setembre de 2020
+    django-aula ('DAU') is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
 
-La llicència d'aquest programa passarà a GPLv3+ quan hi hagi al menys 20 instal·lacions en
-funcionament. En aquell moment s'anularà la llicència actual
-i el propietari del programa el llicenciarà amb GPLv3+.
+    django-aula is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-El motiu d'aquest extrany llicènciament és protegir i garantir la continuitat
-del programa en la seva fase inicial tot evitant forks innecessaris i 
-revertint les millores al propi programari. 
-  
-Aquest copyright forma part del programa, no es pot alterar i 
-ha d'acompanyar el programa de manera visible.
+    EL PROGRAMA NO TÉ CAP GARANTIA, MÉS ENLLÀ DE LES EXIGIDES PER
+    LES LLEIS APLICABLES.
+    
+    El copyright forma part de la llicència i django-aula ('DAU') 
+
+    You should have received a copy of the GNU General Public License
+    along with django-aula.  If not, see <http://www.gnu.org/licenses/>.
  
-There is NO WARRANTY, to the extent permitted by law.
- 
-EL PROGRAMA NO TÉ CAP GARANTIA, 
-MÉS ENLLÀ DE LES EXIGIDES PER LES LLEIS APLICABLES.
