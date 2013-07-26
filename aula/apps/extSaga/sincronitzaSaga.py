@@ -58,9 +58,7 @@ def sincronitza(f, user = None):
             uvalue =  unicode(value,'iso-8859-1')
             if columnName.endswith( u"_NOM"): 
                 a.nom =uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
-                cognoms= uvalue.split(',')[0]
-                lCognoms= (u'xxx ' + cognoms.lstrip().rstrip() ).split(' ')
-                a.cognoms = lCognoms[1] + ' '.join(lCognoms[2:100])
+                a.cognoms = uvalue.split(',')[0]
                 trobatNom = True
             if columnName.endswith( u"_GRUPSCLASSE"):
                 unGrup = Grup2Aula.objects.get(grup_saga = uvalue, Grup2Aula__isnull = False)

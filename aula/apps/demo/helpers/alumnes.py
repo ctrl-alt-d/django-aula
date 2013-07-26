@@ -71,7 +71,7 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
                                 #"15_GRUPSCLASSE",
                                 u"{nivell}{curs}{grup}".format( nivell = nivell, grup = grup, curs = curs)                           
                                )
-                        utfrow = [ unicode(s).encode("utf-8") for s in row ]
+                        utfrow = [ unicode(s).encode("iso-8859-1") for s in row ]
                         spamwriter.writerow( utfrow )
 
                         

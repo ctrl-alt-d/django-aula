@@ -4,6 +4,13 @@ Instal·lació:
 2) python manage.py runserver
 3) anar a Admin / Carrega inicial
 
+#-- importar fixtures --
+for i in extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris  #alumnes-> (els grups millor des de konowin)    
+do    
+    python manage.py loaddata aula/apps/$i/fixtures/dades.json
+done
+
+
 
 Todo:
 /admin/incidencies/frassesincidenciaaula
@@ -29,11 +36,6 @@ g = Group.objects.create(name= 'alumne' )
 g = Group.objects.create(name= 'psicopedagog' )
 quit()
 
-#-- importar fixtures --
-for i in extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris  #alumnes-> (els grups millor des de konowin)    
-do    
-    python manage.py loaddata aula/apps/$i/fixtures/dades.json
-done
 
 #-- canviar dates del curs totes de cop:
 from datetime import date

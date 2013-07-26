@@ -250,7 +250,7 @@ def creaNivellCursGrupDesDeKronowin(file, dia_inici_curs, dia_fi_curs):
 		lletra = unicode(row['lletra'],'iso-8859-1')
 		grup = unicode(row['grup'],'iso-8859-1')
 		
-		n, _ = Nivell.objects.get_or_create( nom_nivell = nivell )
+		n, _ = Nivell.objects.get_or_create( nom_nivell = nivell, descripcio_nivell = nivell )
 		c, _ = Curs.objects.get_or_create( nom_curs = curs,
 										   nom_curs_complert = "{nivell}-{curs}".format(nivell=nivell, curs = curs),
 										   nivell = n , defaults = {'data_inici_curs': dia_inici_curs, 

@@ -29,7 +29,7 @@
 		</ol>
 	 </li>	 
 	 <li><a href="/admin/alumnes/curs/">Recorda comprovar la data d'inici i fi de cada curs (Potser 2nBTX han d'acabar abans ...)</a></li>
-	 <li><a href="/alumnes/sincronitzaSaga/">Importa alumnes SAGA --> Et donarà error si hi ha grups al Saga que no sap mapejar-los al programa</a></li>
+	 <li><a href="{% url 'administracio__sincronitza__saga' %}">Importa alumnes SAGA --> Et donarà error si hi ha grups al Saga que no sap mapejar-los al programa</a></li>
 	 <li><a href="{% url 'administracio__configuracio__assigna_grups_saga' %}">Assigna els grups del Saga al programa</a></li>
 	 <li><a href="{% url 'administracio__sincronitza__saga' %}">Importa alumnes SAGA (Ara no haurien de sortir errors)</a></li>
 	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa professors i franges (Fitxer Soluc.txt generat des d'Access) -> Et surtirà error perquè no sap associar grups, és correcte, fes els tres punts següents.</a></li>
