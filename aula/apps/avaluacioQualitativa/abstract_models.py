@@ -8,8 +8,8 @@ class AbstractItemQualitativa(models.Model):
     class Meta:
         abstract = True                
         ordering = ['text'] 
-        verbose_name = u"Frase de l'avaluació qualitativa"
-        verbose_name_plural = u"Frases de l'avaluació qualitativa"
+        verbose_name = u"Frase aval. qualitativa"
+        verbose_name_plural = u"Frases aval. qualitativa"
     def __unicode__(self):
         return  self.text
 
@@ -35,8 +35,8 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
     class Meta:
         abstract = True        
         ordering = ['qualitativa','assignatura','alumne' ]
-        verbose_name = u"Resposta Avaluació Qualitativa"
-        verbose_name_plural = u"Respostes Avaluacions Qualitatives"
+        verbose_name = u"Resposta aval. Qualitativa"
+        verbose_name_plural = u"Respostes aval. Qualitative"
         unique_together = (("qualitativa","assignatura","alumne","professor","item",))
     
 

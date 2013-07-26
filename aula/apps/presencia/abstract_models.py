@@ -82,8 +82,8 @@ class AbstractEstatControlAssistencia(models.Model):
     
     class Meta:
         abstract = True
-        verbose_name = u'Estat al control d\'assistencia'
-        verbose_name_plural = u'Estats al control d\'assistencia'
+        verbose_name = u"Estat control d'assistencia"
+        verbose_name_plural = u"Estats control d'assistencia"
         
     def __unicode__(self):
         return self.nom_estat    

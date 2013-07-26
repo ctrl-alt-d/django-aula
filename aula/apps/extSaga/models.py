@@ -7,8 +7,8 @@ class Grup2Aula(models.Model):
     Grup2Aula = models.ForeignKey(Grup, null=True, related_name="grup2aulasaga_set")
     class Meta:
         ordering = ['Grup2Aula','grup_saga']
-        verbose_name = u'Mapeig Grup Aula Kronowin'
-        verbose_name_plural = u'Mapejos Grups Aula Kronowin'
+        verbose_name = u'Mapeig Grup Aula Saga'
+        verbose_name_plural = u'Mapejos Grups Aula Saga'
     def __unicode__(self):
         grup = unicode( self.Grup2Aula) if self.Grup2Aula else u'Sense assignar'
         return  unicode( self.grup_saga) + ' -> ' + grup

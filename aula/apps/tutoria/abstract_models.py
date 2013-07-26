@@ -12,8 +12,8 @@ class AbstractSeguimentTutorial(models.Model):
     informacio_de_primaria = models.TextField(blank=True)
     class Meta:
         abstract = True
-        verbose_name = u'Capçalera de seguiment tutorial'
-        verbose_name_plural = u'Capçaleres de seguiment tutorial'
+        verbose_name = u'Capçalera seguiment tutorial'
+        verbose_name_plural = u'Capçaleres seguiment tutorial'
         unique_together = (("nom", "cognoms","data_neixement"))
         
 class AbstractResumAnualAlumne(models.Model):
@@ -32,8 +32,8 @@ class AbstractSeguimentTutorialPreguntes(models.Model):
     possibles_respostes = models.TextField(blank=True)
     class Meta:
         abstract = True
-        verbose_name = u'Pregunta de seguiment tutorial'
-        verbose_name_plural = u'Preguntes de seguiment tutorial'
+        verbose_name = u'Pregunta seguiment tutorial'
+        verbose_name_plural = u'Preguntes seguiment tutorial'
 
 
 class AbstractSeguimentTutorialRespostes(models.Model):
@@ -90,8 +90,8 @@ class AbstractTutorIndividualitzat(models.Model):
     alumne = models.ForeignKey('alumnes.Alumne', )
     class Meta:
         abstract = True
-        verbose_name = u'Entrada taula Tutors Individualitzats'
-        verbose_name_plural = u'Entrades taula Tutors Individualitzats'
+        verbose_name = u'Entrada Tutors Individualitzats'
+        verbose_name_plural = u'Entrades Tutors Individualitzats'
         unique_together = (("professor", "alumne"),)
 #----------------------------------------------------------
 
@@ -103,7 +103,7 @@ class AbstractCartaAbsentisme(models.Model):
     faltes_fins_a_data = models.DateField( editable = False, verbose_name = 'Faltes fins a data' )
     professor = models.ForeignKey( to = 'usuaris.Professor', verbose_name = 'Professor que signa la carta' )
     data_carta = models.DateField( verbose_name = 'Data de la carta' )
-    faltes_incloses = models.TextField( editable = False, blank=True, verbose_name = 'Faltes incloses en aquesta carta' )
+    faltes_incloses = models.TextField( editable = False, blank=True, verbose_name = 'Faltes incloses a la carta' )
     carta_esborrada_moment = models.DateTimeField( editable = False, blank=True, null =True  )
     nfaltes = models.IntegerField( editable = False , verbose_name = u"Absències injustificades")
     impresa = models.BooleanField( editable = False, default = False )

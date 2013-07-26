@@ -8,8 +8,8 @@ class Franja2Aula(models.Model):
     franja_aula = models.ForeignKey(FranjaHoraria, null=True, blank=True )
     class Meta:
         ordering = ['franja_kronowin']  #Ull es un camp numèric dins un camp de text.
-        verbose_name = u'Mapeig Franja Horària DjangoAula Kronowin'
-        verbose_name_plural = u'Mapejos Franjes Horàries DjangoAula Kronowin'
+        verbose_name = u'Mapeig Franja Horària'
+        verbose_name_plural = u'Mapejos Franjes Horàries'
     def __unicode__(self):
         franja = unicode( self.franja_aula) if self.franja_aula else u'Sense assignar'
         return  unicode( self.franja_kronowin) + ' -> ' + franja
