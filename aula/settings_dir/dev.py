@@ -19,6 +19,20 @@ DATABASES = {
     }
 }
 
+# per mysql:  
+#     sudo apt-get install mysql-server python-mysqldb libmysqlclient-dev
+#     pip install MySQL-python
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'dau1',
+#         'USER': 'pepe',
+#         'PASSWORD': 'i',
+#         'HOST': '127.0.0.1',
+#         'PORT': '',
+#     }
+# }
+
 INSTALLED_APPS += [
     'debug_toolbar',
 ]
