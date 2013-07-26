@@ -23,7 +23,7 @@ def sincronitza(file, usuari):
 	file.seek(0)
 	file.readline()
 	file.seek(0)
-	fieldnames=( 'assignatura', 'professor', 'grup', 'Mati_Tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
+	fieldnames=( 'assignatura', 'professor', 'grup', 'mati_tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
 	reader = csv.DictReader(file, fieldnames=fieldnames, dialect=dialect )
 	
 	errors=[]
@@ -218,7 +218,7 @@ def creaNivellCursGrupDesDeKronowin(file, dia_inici_curs, dia_fi_curs):
 	file.seek(0)
 	file.readline()
 	file.seek(0)
-	fieldnames=( 'assignatura', 'professor', 'grup', 'Mati_Tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
+	fieldnames=( 'assignatura', 'professor', 'grup', 'mati_tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
 	reader = csv.DictReader(file, fieldnames=fieldnames, dialect=dialect )
 	
 	errors=[]
