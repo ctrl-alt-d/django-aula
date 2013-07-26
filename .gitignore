@@ -9,4 +9,4 @@ aula/db.sqlite
 .pydevproject
 .settings
 static/*
-
+aula/apps/demo/tmp/*
