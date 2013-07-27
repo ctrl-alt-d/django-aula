@@ -4,12 +4,9 @@ Instal·lació:
 2) python manage.py runserver
 3) anar a Admin / Carrega inicial
 
-#-- importar fixtures --
-for i in extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris  #alumnes-> (els grups millor des de konowin)    
-do    
-    python manage.py loaddata aula/apps/$i/fixtures/dades.json
-done
 
+Importar fixtures:
+./fixtures.sh
 
 
 Todo:
