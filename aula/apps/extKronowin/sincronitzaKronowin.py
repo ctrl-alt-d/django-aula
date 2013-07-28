@@ -255,7 +255,7 @@ def creaNivellCursGrupDesDeKronowin(file, dia_inici_curs, dia_fi_curs):
 										   nom_curs_complert = "{nivell}-{curs}".format(nivell=nivell, curs = curs),
 										   nivell = n , defaults = {'data_inici_curs': dia_inici_curs, 
 																					 'data_fi_curs': dia_fi_curs})			 
-		g, _ = Grup.objects.get_or_create( nom_grup =  lletra , curs = c)
+		g, _ = Grup.objects.get_or_create( nom_grup =  lletra , curs = c, defaults={"descripcio_grup":grup, })
 		
 		Grup2Aula.objects.get_or_create( grup_kronowin = grup, Grup2Aula = g )
 

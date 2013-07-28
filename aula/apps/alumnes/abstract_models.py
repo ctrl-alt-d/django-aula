@@ -21,10 +21,6 @@ class AbstractNivell(models.Model):
         return self.nom_nivell + ' (' + self.descripcio_nivell + ')'
     def save(self, *args, **kwargs):
         super(AbstractNivell, self).save(*args, **kwargs) # Call the "real" save() method.
-        #refer cache de grups:
-        for c in self.curs_set.all():
-            for g in c.grup_set.all():
-                g.save()          
 
 class AbstractCurs(models.Model):
     nivell = models.ForeignKey("alumnes.Nivell")
@@ -42,9 +38,6 @@ class AbstractCurs(models.Model):
 
     def save(self, *args, **kwargs):
         super(AbstractCurs, self).save(*args, **kwargs) # Call the "real" save() method.
-        #refer cache de grups:
-        for g in self.grup_set.all():
-            g.save()          
     
     def __unicode__(self):
         return self.nom_curs_complert
@@ -64,7 +57,7 @@ class AbstractCurs(models.Model):
 class AbstractGrup(models.Model):
     curs = models.ForeignKey("alumnes.Curs")
     nom_grup = models.CharField(max_length=45, help_text=u'''Això normalment serà una lletra. Ex 'A' ''')
-    descripcio_grup = models.CharField(max_length=240, blank=True, editable = False)
+    descripcio_grup = models.CharField(max_length=240, blank=True)
     class Meta:
         abstract = True        
         ordering = ['curs','curs__nivell__nom_nivell', 'curs__nom_curs', 'nom_grup']
@@ -75,7 +68,8 @@ class AbstractGrup(models.Model):
 
     def save(self, *args, **kwargs):
         #descripció és una mena de cache.
-        self.descripcio_grup = self.curs.nom_curs_complert + ' ' + self.nom_grup
+        if not self.descripcio_grup:
+            self.descripcio_grup = self.curs.nom_curs_complert + ' ' + self.nom_grup
         super(AbstractGrup, self).save(*args, **kwargs) # Call the "real" save() method.      
      
 

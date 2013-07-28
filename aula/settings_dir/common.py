@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*- 
 import os
 
+NOM_CENTRE = 'Centre C'
+LOCALITAT = u"Localitat"
+URL_DJANGO_AULA = r'https://www.django_aula.sw'
+
 # Django settings for aula project.
 PROJECT_DIR = os.path.join( os.path.dirname(__file__), '..')
 location = lambda x: os.path.join(PROJECT_DIR, x)

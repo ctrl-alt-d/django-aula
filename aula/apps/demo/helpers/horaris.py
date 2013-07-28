@@ -21,7 +21,11 @@ def generaFitxerKronowin( path, nivellsCursosGrups, nivellsMatins, frangesMatins
 def generaHoraris( nivellsCursosGrups, franges, mati_tarda):
     rows = []
     
-    assignatures = ( 'MA', 'LE', 'FI', 'TEC', 'GYM', 'TUT')
+    assignatures = None
+    if mati_tarda == 'M':
+        assignatures = ( 'MA', 'OP2', 'FI', 'TEC', 'GYM', 'TUT', 'OP1')
+    else:
+        assignatures = ( 'TUT', 'OP', 'UF1', 'UF2', 'UF3', 'UF4', 'UF5', 'UF6')
     
     tots_els_grups = []
     for nivell, GrupsCursos in nivellsCursosGrups:

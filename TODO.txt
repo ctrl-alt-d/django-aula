@@ -6,7 +6,7 @@ Instal·lació:
 
 
 Importar fixtures:
-./fixtures.sh
+./scripts/fixtures.sh
 
 
 Todo:

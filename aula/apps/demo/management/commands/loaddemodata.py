@@ -7,5 +7,5 @@ class Command(BaseCommand):
     help = 'Carrega dades de prova'
 
     def handle(self, *args, **options):
-        fesCarrega()
-        self.stdout.write(u"Dades creades correctament")
+        msg = fesCarrega()
+        self.stdout.write(u"Dades creades correctament: {0}".format( msg ))
