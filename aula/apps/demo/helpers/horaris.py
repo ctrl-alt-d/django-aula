@@ -9,8 +9,8 @@ def generaFitxerKronowin( path, nivellsCursosGrups, nivellsMatins, frangesMatins
     #"TUVP";"DIDV";;;;;;;;4,00;5,00;1,00
     #"TE";"TEJC";"E3D";"M";"ESO";"3";"D";"209";;1,00;1,00;1,00
     
-    horaris_matins = generaHoraris( [ g for g in nivellsCursosGrups if g[0] in nivellsMatins ],  frangesMatins, 'T')
-    horaris_tardes = generaHoraris( [ g for g in nivellsCursosGrups if g[0] not in nivellsMatins ],  frangesTardes, 'M')
+    horaris_matins = generaHoraris( [ g for g in nivellsCursosGrups if g[0] in nivellsMatins ],  frangesMatins, 'M')
+    horaris_tardes = generaHoraris( [ g for g in nivellsCursosGrups if g[0] not in nivellsMatins ],  frangesTardes, 'T')
     
     with open(path, 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
@@ -25,7 +25,7 @@ def generaHoraris( nivellsCursosGrups, franges, mati_tarda):
     if mati_tarda == 'M':
         assignatures = ( 'MA', 'OP2', 'FI', 'TEC', 'GYM', 'TUT', 'OP1')
     else:
-        assignatures = ( 'TUT', 'OP', 'UF1', 'UF2', 'UF3', 'UF4', 'UF5', 'UF6')
+        assignatures = ( 'TUT', 'UF9', 'UF1', 'UF2', 'UF3', 'UF4', 'UF5', 'UF6')
     
     tots_els_grups = []
     for nivell, GrupsCursos in nivellsCursosGrups:

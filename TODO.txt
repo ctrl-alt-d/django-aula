@@ -1,13 +1,9 @@
 Instal·lació:
 
 1) pip install -r requirements.txt
-2) python manage.py runserver
-3) anar a Admin / Carrega inicial
-
-
-Importar fixtures:
-./scripts/fixtures.sh
-
+2) Importar fixtures: ./scripts/fixtures.sh
+3) python manage.py runserver
+4) anar a Admin / Carrega inicial
 
 Todo:
 /admin/incidencies/frassesincidenciaaula
@@ -17,20 +13,21 @@ incidencies views  ( sql a query api)
 avisos->senyal al menú si n'hi han de nous
 
 #---------------------------------
+Requeriments SO:
+
 apt-get install libxml2-dev libxslt-dev
 
+#-----------------------------
+#utils:
 
-
+my_username = 'indh' 
 from django.contrib.auth.models import User, Group
-g1 = Group.objects.create(name= 'direcció' )
-g2 = Group.objects.create(name= 'professors' )
-g3 = Group.objects.create(name= 'professional' )
-a = User.objects.get( username = 'INDH' )
+g1 = Group.objects.get(name= 'direcció' )
+g2 = Group.objects.get(name= 'professors' )
+g3 = Group.objects.get(name= 'professional' )
+a = User.objects.get( username = my_username  )
 a.groups = [ g1, g2, g3 ]
 a.save()
-g = Group.objects.create(name= 'consergeria' )
-g = Group.objects.create(name= 'alumne' )
-g = Group.objects.create(name= 'psicopedagog' )
 quit()
 
 

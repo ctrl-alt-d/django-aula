@@ -14,11 +14,7 @@ class Departament(AbstractDepartament):
 
 class AlumneUserManager(models.Manager):
     def get_query_set(self):
-        grupAlumnes = None
-        try:
-            grupAlumnes = Group.objects.get( name = 'alumne' )
-        except:
-            pass
+        grupAlumnes, _ = Group.objects.get_or_create( name = 'alumne' )
         return super(AlumneUserManager, self).get_query_set().filter( groups = grupAlumnes   )
 
 
@@ -47,13 +43,8 @@ class AlumneUser(User):
 
 class ProfessorManager(models.Manager):
     def get_query_set(self):
-        grupProfessors = None
-        try:
-            grupProfessors = Group.objects.get( name = 'professors' )
-        except:
-            pass
+        grupProfessors, _ = Group.objects.get_or_create( name = 'professors' )
         return super(ProfessorManager, self).get_query_set().filter( groups = grupProfessors   )
-
 
 class Professor(User):
     objects = ProfessorManager()
@@ -83,11 +74,7 @@ def User2Professor( user ):
 
 class ProfessionalManager(models.Manager):
     def get_query_set(self):
-        grupProfessional = None
-        try:
-            grupProfessional = Group.objects.get( name = 'professional' )
-        except:
-            pass
+        grupProfessional, _ = Group.objects.get_or_create( name = 'professional' )
         return super(ProfessionalManager, self).get_query_set().filter( groups = grupProfessional   )
 
 class Professional(User):

@@ -68,12 +68,12 @@ def calcula_menu( user , path ):
     if user is None:
         return
     
-    di = Group.objects.get(name= 'direcció' ) in user.groups.all()
-    pr = Group.objects.get(name= 'professors' ) in user.groups.all()
-    pl = Group.objects.get(name= 'professional' ) in user.groups.all()
-    co = Group.objects.get(name= 'consergeria' ) in user.groups.all()
-    al = Group.objects.get(name= 'alumne' ) in user.groups.all()
-    pg = Group.objects.get(name= 'psicopedagog' ) in user.groups.all()
+    di = Group.objects.get_or_create(name= 'direcció' )[0] in user.groups.all()
+    pr = Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
+    pl = Group.objects.get_or_create(name= 'professional' )[0] in user.groups.all()
+    co = Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
+    al = Group.objects.get_or_create(name= 'alumne' )[0] in user.groups.all()
+    pg = Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
     tu = pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )
     
     tots = di or pr or pl or co or al or pg

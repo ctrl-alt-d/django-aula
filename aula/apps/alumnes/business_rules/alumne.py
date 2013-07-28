@@ -2,7 +2,6 @@ from aula.apps.alumnes.models import Alumne
 
 #-------------------------------------------------------------------------------------
 
-
 def alumne_post_save(sender, instance, created, **kwargs):
     if instance.user_associat is None:
         from aula.apps.usuaris.models import AlumneUser as AU

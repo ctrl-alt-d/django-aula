@@ -254,13 +254,13 @@ def sincronitza(f, user = None):
     
 
 
-def comprovar_grups( file ):
+def comprovar_grups( f ):
 
-    dialect = csv.Sniffer().sniff(file.readline())
-    file.seek(0)
-    file.readline()
-    file.seek(0)
-    reader = csv.DictReader(file, dialect=dialect )
+    dialect = csv.Sniffer().sniff(f.readline())
+    f.seek(0)
+    f.readline()
+    f.seek(0)
+    reader = csv.DictReader(f, dialect=dialect )
     
     errors=[]
     warnings=[]

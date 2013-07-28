@@ -79,6 +79,10 @@ class AbstractActuacio(models.Model):
 class AbstractTutor(models.Model):
     professor = models.ForeignKey('usuaris.Professor', )
     grup = models.ForeignKey('alumnes.Grup', )
+
+    def __unicode__(self):
+        return u'{professor} tutoritza {grup}'.format(professor = self.professor, grup = self.grup )
+            
     class Meta:
         abstract = True
         verbose_name = u'Entrada taula Tutors'

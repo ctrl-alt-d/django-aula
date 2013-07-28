@@ -17,7 +17,7 @@ def random_date(start, end):
     return start + timedelta(seconds=random_second)
 
 def getRandomNomICognoms():
-    return random.choice( nomsICognoms.noms ),  u"{c1} {c2}".format( c1 = random.choice( nomsICognoms.cognoms ) , c2 = random.choice( nomsICognoms.cognoms ) )
+    return random.choice( nomsICognoms.noms ).capitalize(),  u"{c1} {c2}".format( c1 = random.choice( nomsICognoms.cognoms ) , c2 = random.choice( nomsICognoms.cognoms ) ).capitalize()
     
 def generaFitxerSaga( path, nivellsCursosGrups ):
 

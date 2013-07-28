@@ -2,12 +2,13 @@
 import os
 from aula.apps.demo.helpers.alumnes import generaFitxerSaga
 from aula.apps.demo.helpers.horaris import generaFitxerKronowin
-from aula.apps.extKronowin.sincronitzaKronowin import creaNivellCursGrupDesDeKronowin,\
-    sincronitza
+
+from aula.apps.extKronowin import sincronitzaKronowin 
+from aula.apps.extSaga import sincronitzaSaga
 
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from aula.apps.extKronowin.models import Grup2Aula as KGrup2Aula, Franja2Aula
+from aula.apps.extKronowin.models import  Franja2Aula
 from aula.apps.extSaga.models import Grup2Aula as SGrup2Aula
 from aula.apps.alumnes.models import Grup
 
@@ -16,6 +17,7 @@ from aula.apps.tutoria.models import Tutor
 import random
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.presencia.regeneraImpartir import regeneraThread
 
 def fesCarrega( ):
     msg = u""
@@ -59,11 +61,11 @@ def fesCarrega( ):
     handlerKronowin=open( fitxerKronowin, 'r' )
     inici_curs = date.today()
     fi_curs = date.today() + relativedelta( months = 1)
-    creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
+    sincronitzaKronowin.creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
     
     print u"#Creem correspondències amb horaris"
-    frangesAula = FranjaHoraria.objects.filter( hora_inici__in = ['08:15', '09:15', '10:30', '11:30' ,'12:45',
-                                                                  '15:45', '16:45', '18:05', '19:00', '19:55'] ).order_by ( 'hora_inici' )
+    frangesAula = FranjaHoraria.objects.filter( hora_inici__in = ['09:15', '10:30', '11:30' ,'12:45',
+                                                                  '15:45', '16:45', '18:05', '19:00'] ).order_by ( 'hora_inici' )
     frangesKronowin = frangesMatins + frangesTardes
     for frangaAula, franjaKronowin in zip(frangesAula, frangesKronowin  ):
         Franja2Aula.objects.get_or_create( franja_kronowin= franjaKronowin,  franja_aula = frangaAula )
@@ -79,30 +81,42 @@ def fesCarrega( ):
 
     print u"#Importem Kronowin 1 ( Per crear professors )"
     handlerKronowin=open( fitxerKronowin, 'r' )
-    sincronitza( handlerKronowin, userDemo  )
+    sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
     
     print u"#Importem Kronowin 2 ( Per importar horaris )"
     handlerKronowin=open( fitxerKronowin, 'r' )
-    sincronitza( handlerKronowin, userDemo  )
-    
+    sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
+
     print u"#Importem saga"
     handlerSaga=open( fitxerSaga, 'r' )
-    sincronitza( handlerSaga, userDemo  )
+    sincronitzaSaga.sincronitza( handlerSaga, userDemo  )
     
     print u"#Assignem tutors"
-    for g in Grups.objects.all():
-        professors_del_grup = Professor.objects.filter( horari__grup = g )
-        Tutor.objects.create( random.choice( professors_del_grup ) , userDemo )
+    for g in Grup.objects.all():
+        professors_del_grup = Professor.objects.filter( horari__grup = g ).distinct()
+        if professors_del_grup:
+            Tutor.objects.create( professor = random.choice( professors_del_grup ) ,  grup = g )
     
-    msg += "\nTutors: " + u" ,".join( Tutor.objects.all() )
+    msg += "\nTutors: " + u" ,".join( set( [ unicode( t.professor.username ) for t in Tutor.objects.all() ] ) )
                     
     print u"#Assignem equip directiu"
-    direccio = Group.objects.create(name= 'direcció' )
-    sisplau_que_no_sigui_mediocre = random.choice(  Professor.objects.all() )
-    sisplau_que_no_sigui_mediocre.groups += [ direccio, ]
-    sisplau_que_no_sigui_mediocre.save()
+    direccio, _ = Group.objects.get_or_create(name= 'direcció' )
+    sisplau_que_no_siguin_mediocres = [ random.choice(  Professor.objects.all() ) ] + [ p for p in Professor.objects.filter( username__endswith = '1' )]
+    for sisplau_que_no_sigui_mediocre in sisplau_que_no_siguin_mediocres:
+        sisplau_que_no_sigui_mediocre.groups.add( direccio  )
+        sisplau_que_no_sigui_mediocre.is_staff = True
+        sisplau_que_no_sigui_mediocre.is_superuser = True
+        sisplau_que_no_sigui_mediocre.save()    
+    msg += u"\nDirecció: "  + u" ,".join( set( [ unicode( t.username ) for t.username in sisplau_que_no_siguin_mediocres ]  ) )
     
-    msg += "\nDirector (o cap d'estudis): {0}".format(sisplau_que_no_sigui_mediocre)
+    print u"Regenerar impartir"
+    r=regeneraThread(
+                    data_inici= inici_curs, 
+                    franja_inici = FranjaHoraria.objects.all()[:1].get(),
+                    user = userDemo
+                    )
+    r.start()    
+    r.join()
     
     return msg
 
