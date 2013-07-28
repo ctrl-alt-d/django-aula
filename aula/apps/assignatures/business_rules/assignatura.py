@@ -3,11 +3,11 @@
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from aula.apps.alumnes.models import Nivell
 from django.db.models import get_model
-    
-TipusDAssignatura = get_model('assignatures','TipusDAssignatura')
 
 
 def assignatura_clean( instance ):
+    
+    TipusDAssignatura = get_model('assignatures','TipusDAssignatura')
         
     #
     # Pre-save
@@ -44,4 +44,3 @@ def assignatura_pre_save(sender, instance, **kwargs):
     
 def assignatura_post_save(sender, instance, created, **kwargs):    
     pass
-

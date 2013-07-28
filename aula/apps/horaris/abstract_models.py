@@ -66,8 +66,12 @@ class AbstractHorari(models.Model):
         elif codi_ambit == 'C':
             grups_potencials= Grup.objects.filter( curs = self.grup.curs  )
         elif codi_ambit == 'G':
-            grups_potencials=Grup.objects.filter( pk = self.grup.pk  )
+            if self.grup:
+                grups_potencials=Grup.objects.filter( pk = self.grup.pk  )
+            else:
+                grups_potencials=Grup.objects.none()
         return grups_potencials
+
 
 
 #------------------------------------------------------------------------------------------------

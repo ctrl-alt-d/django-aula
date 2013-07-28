@@ -73,7 +73,7 @@ def controlAssistencia_pre_save(sender, instance,  **kwargs):
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
     frase = u'Ha arribat tard a classe.'
-    print 'post save'
+
     if instance.estat and instance.estat.codi_estat == 'R':
         Incidencia = get_models('incidencies','Incidencia')
         ja_hi_es = Incidencia.objects.filter( 

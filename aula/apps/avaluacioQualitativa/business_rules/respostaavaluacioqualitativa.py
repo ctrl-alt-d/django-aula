@@ -4,8 +4,6 @@ import datetime as dt
 from aula.apps.usuaris.models import User2Professor
 from django.db.models import get_model
 
-RespostaAvaluacioQualitativa = get_model('avaluacioQualitativa','RespostaAvaluacioQualitativa')
-
 def respostaAvaluacioQualitativa_clean( instance ):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
     

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from aula.apps.demo.helpers.alumnes import generaFitxerSaga
+from aula.apps.demo.helpers.alumnes import generaFitxerSaga, getRandomNomICognoms
 from aula.apps.demo.helpers.horaris import generaFitxerKronowin
 
 from aula.apps.extKronowin import sincronitzaKronowin 
@@ -18,6 +18,9 @@ import random
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.regeneraImpartir import regeneraThread
+from aula.apps.presencia.models import Impartir
+
+from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
 
 def fesCarrega( ):
     msg = u""
@@ -39,13 +42,13 @@ def fesCarrega( ):
                                  ( 3, ( 'A','B',), ),
                               ),
                             ),
-                            ( 'INF',
+                            ( 'CFI',
                               (
                                   ( 1, ( 'A',), ),
                                   ( 2, ( 'A',), ),
                               ),
                             ),
-                            ( 'ADM',
+                            ( 'CFA',
                               (
                                   ( 1, ( 'A','B'), ),
                                   ( 2, ( 'A',), ),
@@ -59,7 +62,7 @@ def fesCarrega( ):
     
     print u"#CREEM NIVELL-CURS-GRUP"
     handlerKronowin=open( fitxerKronowin, 'r' )
-    inici_curs = date.today()
+    inici_curs = date.today() + relativedelta( months = -1)
     fi_curs = date.today() + relativedelta( months = 1)
     sincronitzaKronowin.creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
     
@@ -81,15 +84,18 @@ def fesCarrega( ):
 
     print u"#Importem Kronowin 1 ( Per crear professors )"
     handlerKronowin=open( fitxerKronowin, 'r' )
-    sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
+    result = sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
+    print u"Resultat importació kroniwin 1: ", result["errors"], result["warnings"],  
     
     print u"#Importem Kronowin 2 ( Per importar horaris )"
     handlerKronowin=open( fitxerKronowin, 'r' )
-    sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
+    result = sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
+    print u"Resultat importació kroniwin 2: ", result["errors"], result["warnings"],  
 
     print u"#Importem saga"
     handlerSaga=open( fitxerSaga, 'r' )
-    sincronitzaSaga.sincronitza( handlerSaga, userDemo  )
+    result = sincronitzaSaga.sincronitza( handlerSaga, userDemo  )
+    print u"Resultat importació saga: ", result["errors"], result["warnings"],  
     
     print u"#Assignem tutors"
     for g in Grup.objects.all():
@@ -111,13 +117,33 @@ def fesCarrega( ):
     
     print u"Regenerar impartir"
     r=regeneraThread(
-                    data_inici= inici_curs, 
+                    data_inici= None,       #data inici de curs 
                     franja_inici = FranjaHoraria.objects.all()[:1].get(),
                     user = userDemo
                     )
     r.start()    
     r.join()
     
+    print u"Posar alumnes a llistes"
+    seguents7dies = Impartir.objects.values( 'dia_impartir').order_by('dia_impartir').distinct()[:5]
+    for dia in seguents7dies:
+        for impartir in Impartir.objects.filter( dia_impartir = dia['dia_impartir'] ):
+            if not impartir.controlassistencia_set.exists():
+                alumnes =  [ alumne for grup in impartir.horari.grupsPotencials() for alumne in grup.alumne_set.all() ] 
+                random.shuffle( alumnes )
+                n_alumnes = random.randint( 3,7 )
+                afegeix=afegeixThread(expandir = True, alumnes=alumnes[:n_alumnes], impartir=impartir, usuari = impartir.horari.professor, matmulla = False)
+                afegeix.start()
+                afegeix.join()
+    
+    print u"canviant dades dels professors"
+    for p in Professor.objects.all():
+        p.first_name, p.last_name = getRandomNomICognoms() 
+        p.set_password( 'dau' )
+        p.save()
+        
+    msg += u"\nTots els passwords de professors: 'dau' "
+        
     return msg
 
 
