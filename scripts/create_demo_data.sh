@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ..
+cd `dirname $0`/..
 rm aula/db.sqlite
 python manage.py syncdb --noinput
 ./scripts/fixtures.sh

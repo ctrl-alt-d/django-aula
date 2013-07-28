@@ -51,24 +51,24 @@ def fesCarrega( ):
                             ),
                          )
 
-    #GENEREM FITXERS DE DADES                          
+    print u"#GENEREM FITXERS DE DADES  "                        
     generaFitxerSaga(fitxerSaga, nivellsCursosGrups  )
     generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes )
     
-    #CREEM NIVELL-CURS-GRUP
+    print u"#CREEM NIVELL-CURS-GRUP"
     handlerKronowin=open( fitxerKronowin, 'r' )
     inici_curs = date.today()
     fi_curs = date.today() + relativedelta( months = 1)
     creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
     
-    #Creem correspondències amb horaris
+    print u"#Creem correspondències amb horaris"
     frangesAula = FranjaHoraria.objects.filter( hora_inici__in = ['08:15', '09:15', '10:30', '11:30' ,'12:45',
                                                                   '15:45', '16:45', '18:05', '19:00', '19:55'] ).order_by ( 'hora_inici' )
     frangesKronowin = frangesMatins + frangesTardes
     for frangaAula, franjaKronowin in zip(frangesAula, frangesKronowin  ):
         Franja2Aula.objects.get_or_create( franja_kronowin= franjaKronowin,  franja_aula = frangaAula )
         
-    #CREEM CORRESPONDÈNCIES  SAGA-KRONOWIN-AULA
+    print u"#CREEM CORRESPONDÈNCIES  SAGA-KRONOWIN-AULA"
     for nivell, GrupsCursos in nivellsCursosGrups:
         for curs, Grups in GrupsCursos:
             for grup in Grups:
@@ -77,26 +77,26 @@ def fesCarrega( ):
                 SGrup2Aula.objects.create( grup_saga = lgrup, Grup2Aula = grupAula  )
                 #KGrup2Aula.objects.create( grup_kronowin = lgrup, Grup2Aula = grupAula  )   #ho fa als crear els grups
 
-    #Importem Kronowin 1 ( Per crear professors )
+    print u"#Importem Kronowin 1 ( Per crear professors )"
     handlerKronowin=open( fitxerKronowin, 'r' )
     sincronitza( handlerKronowin, userDemo  )
     
-    #Importem Kronowin 2 ( Per importar horaris )
+    print u"#Importem Kronowin 2 ( Per importar horaris )"
     handlerKronowin=open( fitxerKronowin, 'r' )
     sincronitza( handlerKronowin, userDemo  )
     
-    #Importem saga
+    print u"#Importem saga"
     handlerSaga=open( fitxerSaga, 'r' )
     sincronitza( handlerSaga, userDemo  )
     
-    #Assignem tutors
+    print u"#Assignem tutors"
     for g in Grups.objects.all():
         professors_del_grup = Professor.objects.filter( horari__grup = g )
         Tutor.objects.create( random.choice( professors_del_grup ) , userDemo )
     
     msg += "\nTutors: " + u" ,".join( Tutor.objects.all() )
                     
-    #Assignem equip directiu
+    print u"#Assignem equip directiu"
     direccio = Group.objects.create(name= 'direcció' )
     sisplau_que_no_sigui_mediocre = random.choice(  Professor.objects.all() )
     sisplau_que_no_sigui_mediocre.groups += [ direccio, ]
