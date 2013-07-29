@@ -47,7 +47,7 @@
 			{% for imparticions, esDataActual in impartir_franja %}
 				<div class="span2 {% if forloop.counter != 1 and not esDataActual %}hidden-phone{% endif %}">
 					{% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}
-						<div class="imparticio" style="border: 1px solid white;">
+						<div class="imparticio" style="border: 1px solid gray;">
 							{%if esGuardia%}
 								<div style="text-align: right;">
 								 -Guardia- <a style="color:#444444;" href="/presencia/esborraGuardia/{{pk}}">[ x ]</a>

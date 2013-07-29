@@ -47,6 +47,9 @@ from aula.apps.BI.utils import dades_dissociades
 from aula.apps.BI.prediccio_assistencia import predictTreeModel
 from aula.apps.presencia.business_rules.impartir import impartir_despres_de_passar_llista
 
+#template filters
+from django.template.defaultfilters import date as _date
+
 
 #vistes -----------------------------------------------------------------------------------
 @login_required
@@ -105,7 +108,6 @@ def regeneraImpartir(request):
 @group_required(['professors'])
 def mostraImpartir( request, year=None, month=None, day=None ):
     
-
     import datetime as t
     
     credentials = getImpersonateUser(request) 
@@ -190,7 +192,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
            [ 'mes vinent >>'      , data + t.timedelta( days = +30 ), False],
         ]
     
-    calendari = [(d.strftime('%a'), d.strftime('%d/%m/%Y'), d==data_actual) for d in dies_calendari]
+    calendari = [ (_date( d, 'D'), d.strftime('%d/%m/%Y'), d==data_actual) for d in dies_calendari]
     
     return render_to_response(
                 'mostraImpartir.html', 
