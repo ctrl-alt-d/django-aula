@@ -83,24 +83,34 @@
 	<div class="row">
 	  <div class="span2"></div>
 	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
-		  <div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">			   
+		  <div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">
 		     <a href="/presencia/afegeixGuardia/{{dia_complet}}">+guardia</a>
 		  </div>
 	  {% endfor %}
 	</div>
 
-  <div class="pagination">
+  <!-- Cal fer dos bucles per a que es mostri bé -->
+  <div class="pagination visible-phone">
     <ul>
-	  {% for  moment, altre_data, mostrarPhone in altres_moments %}
-        <li {%if not mostrarPhone %}class="hidden-phone"{%endif%}>
+	  {% for  moment, altre_data, visiblePhone, visibleTabletiDesktop in altres_moments %}
+      {% if visiblePhone %}
+        <li>
           <a href="/presencia/mostraImpartir/{{altre_data.year}}/{{altre_data.month}}/{{altre_data.day}}/">{{moment}}</a>
         </li>
-      {% endfor %}
-	</ul>	
+      {% endif %}
+    {% endfor %}
+	</ul>
+	</div>
+	<div class="pagination hidden-phone">
+    <ul>
+	  {% for  moment, altre_data, visiblePhone, visibleTabletiDesktop in altres_moments %}
+      {% if visibleTabletiDesktop %}
+        <li>
+          <a href="/presencia/mostraImpartir/{{altre_data.year}}/{{altre_data.month}}/{{altre_data.day}}/">{{moment}}</a>
+        </li>
+      {% endif %}      
+    {% endfor %}
+	</ul>
 	</div>
 {% endblock %}
-
-
-
-
 
