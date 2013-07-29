@@ -63,17 +63,17 @@ class AbstractImpartir(models.Model):
     def color(self):
         if self.dia_passa_llista:
             if self.hi_ha_nulls():
-                return u'#CC9933'
+                return u'warning'
             else:
-                return u'green'
+                return u'success'
         elif self.pot_no_tenir_alumnes:
-            return u'green'
+            return u'success'
         elif self.esAvui():
-            return u'blue' 
+            return u'info' 
         elif self.esFutur():
-            return u'grey' 
+            return u'inverse' 
         else:
-            return u'#C11B17'
+            return u'important'
 
 class AbstractEstatControlAssistencia(models.Model):
     codi_estat = models.CharField( max_length=1, unique=True)

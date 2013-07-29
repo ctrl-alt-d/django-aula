@@ -31,54 +31,52 @@
   	<i class="icon-user"></i> {{ professor }}
   </p>
 	
-	<div class="row">
+	<div class="row" style="padding-bottom: 5px;">
 	  <div class="span2"></div>
-		{% for dia_setmana, dia_complet, esDataActual in calendari %}
-			<div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">
-			   <span class="badge {% if not esDataActual %}badge-info{% else %}badge-success{% endif %}">
-			    <strong>{{ dia_setmana }} {{ dia_complet }}</strong>
-			   </span>
-			</div>
-		{% endfor %}
+	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
+	  <div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">
+		   <span class="badge badge-info">
+		    <strong>{{ dia_setmana }} {{ dia_complet }}</strong>
+		   </span>
+	  </div>
+	  {% endfor %}
 	</div>
 	
-  {% for impartir_franja in impartir_tot %}
-	  <div class="row text_center">
-			{% for imparticions, esDataActual in impartir_franja %}
-				<div class="span2 {% if forloop.counter != 1 and not esDataActual %}hidden-phone{% endif %}">
-					{% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}
-						<div class="imparticio" style="border: 1px solid gray;">
-							{%if esGuardia%}
-								<div style="text-align: right;">
-								 -Guardia- <a style="color:#444444;" href="/presencia/esborraGuardia/{{pk}}">[ x ]</a>
-								</div>
-							{%endif%}
-							<div style="background-color:{{color}}">
-							  {% if forloop.parentloop.counter == 1 %}
-								<span class="badge badge-info">
-							  {% endif %}
-							  {{ assignatura }} {{ aula }}
-							  {%if grup%}
-							    <br/>
-							    {{ grup }}
-							    <br />
-                              </div>
-                              <div style="background-color:{{color2}}">
-							<a href="/presencia/passaLlista/{{pk}}" style="color:#F0F0F0">{{ resum }}</a>
-							  {%endif%}
-							  {% if forloop.parentloop.counter == 1 %}
-							  	</span>
-							  {% endif %}
-							</div>
-							{%if esGuardia%}
-								</div>
-							{%endif%}
-						</div>
-					{% endfor %}
-				</div>				
-			{% endfor %}
+    {% for impartir_franja in impartir_tot %}
+    <div class="row text_center" style="padding-top: 5px;{% if forloop.counter|divisibleby:2 %}background-color: #F0F0F0;{% endif %}">
+        {% for imparticions, esDataActual in impartir_franja %}
+            <div class="span2 {% if forloop.counter != 1 and not esDataActual %}hidden-phone{% endif %}"   >
+                    {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}                    
+                        <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
+                                {%if esGuardia%}
+                                 <div style="border: 1px solid gray;">
+                                    <div style="text-align: right;background-color: white;">
+                                     -Guardia- <a style="color:#444444;" href="/presencia/esborraGuardia/{{pk}}">[ x ]</a>
+                                    </div>
+                                {%endif%}
+                                {%if grup %}
+                                <a href="/presencia/passaLlista/{{pk}}">
+                                	<div style="background-color:{{color}}">
+                                		{{ assignatura }} {{ aula }} {{ grup }}</br>
+                                		<span class="badge badge-{{color2}}">{{ resum }}</span></br>
+									</div>
+								</a>														
+								{%else%}
+                                	<div style="background-color:{{color}}">
+                                		{{ assignatura }} {{ aula }} {{ grup }}</br>
+									</div>
+								{%endif%}
+                                {%if esGuardia%}
+                                </div>
+                                {%endif%}
+                        </div>
+                    {% endfor %}
+            </div>                          
+               
+        {% endfor %}
     </div>
-  {% endfor %}		
+    {% endfor %}
+
 
 	<div class="row">
 	  <div class="span2"></div>
