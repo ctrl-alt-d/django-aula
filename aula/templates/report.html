@@ -1,122 +1,106 @@
 {% extends "base.html" %}
 
-
-
 {% block head %}
   {{ head }}
 {% endblock %}
  
 {% block content  %}
 	{% block prereport  %}{% endblock %}
-	
+
 	{% if menuCTX %}
-	<div style="border: 1px solid;border-color:black; margin:10px 5px 10px 5px;padding:10px 5px 10px 5px">
-	  <div class="report_menu" style="float:left;"> 
-		<ul style="list-style-type:square;">
-            {% for enllac, nom in menuCTX %}
-			<li>
+	  <div class="well">
+    {% for enllac, nom in menuCTX %}
+			<p>
 			  <a href="{{ enllac }}" >{{ nom }}</a>
-			</li>
-			{% endfor %}
+			</p>
+		{% endfor %}
 		</ul>
 	  </div>
-
-	{% if menuCTX2 %}
-	  <div class="report_menu"  style="float:left;">
-		<ul style="list-style-type:square;">
-            {% for enllac, nom in menuCTX2 %}
-			<li>
-			  <a href="{{ enllac }}" >{{ nom }}</a>
-			</li>
+	  {% if menuCTX2 %}
+      {% for enllac, nom in menuCTX2 %}
+			  <p>
+			    <a href="{{ enllac }}" >{{ nom }}</a>
+			  </p>
 			{% endfor %}
-		</ul>
-	  </div>
-
-	{% endif %}	
-
-    <div style="clear: both;"></div>
-	</div>
+	  {% endif %}	
 	{% endif %}	
 	
 	{% for taula in report %}
-	<div style="margin:20px 0px 0px 0px">
 	
-	{% if taula.titol.enllac %}<a href="{{ taula.titol.enllac }}">{%endif%}
-	{{ taula.titol.contingut }}
-	{% if taula.titol.enllac %}</a>{%endif%}
-	{% if taula.titol.codi %}<a name="{{taula.titol.codi}}"> </a>{% endif %}	
-	<table class="box-table-a" >
+	  {% if taula.titol.enllac %}<a href="{{ taula.titol.enllac }}">{%endif%}
+	  {{ taula.titol.contingut }}
+	  {% if taula.titol.enllac %}</a>{%endif%}
+	  {% if taula.titol.codi %}<a name="{{taula.titol.codi}}"> </a>{% endif %}	
+	  <table class="table table-striped" >
 	
-		<tr>
-		{% for capcelera in taula.capceleres %}
-		<th width="{{capcelera.amplade}}px">
-  		   {% if capcelera.enllac %}<a href="{{capcelera.enllac}}">{%endif%}
-			{{capcelera.contingut}}
-  		   {% if capcelera.enllac %}</a>{%endif%}
-		</th>
-	  	{% endfor %}
-	  	</tr>
-	  	
-	  	{% for filera in taula.fileres %}
-	  		<tr>
-	  		 {% for camp in filera %}
-	  		 <td>
-	  		   {% if camp.codi %}<a name="{{camp.codi}}"> </a>{% endif %}
-	  		   {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
-				{{camp.contingut|linebreaksbr}}
-	  		   {% if camp.enllac %}</a>{%endif%}
-	  		   {% if camp.multipleContingut %}
-	  		      {% if camp.esMenu %} <div class="report_menu" > {%endif%}
-	  		      <ul>
-	  		      {% for dada,enllac in camp.multipleContingut %}
-	  		        <li>
-		  		    {% if enllac %}<a href="{{enllac}}">{%endif%}
-					 {{dada}}<br/>
-		  		    {% if enllac %}</a>{%endif%}
-		  		    </li>
-		  		  {% endfor %}
-		  		  </ul>
-	  		      {% if camp.esMenu %} </div > {%endif%}
-	  		   {% endif %}
-	  		 </td>
-	  		 {% endfor %}
-	  		</tr>
-	  	{%endfor%}
+		  <tr>
+		  {% for capcelera in taula.capceleres %}
+		    <th>
+      		   {% if capcelera.enllac %}<a href="{{capcelera.enllac}}">{%endif%}
+			    {{capcelera.contingut}}
+      		   {% if capcelera.enllac %}</a>{%endif%}
+		    </th>
+    	{% endfor %}
+    	</tr>
+    	
+    	{% for filera in taula.fileres %}
+        <tr>
+      	  {% for camp in filera %}
+            <td>
+             {% if camp.codi %}<a name="{{camp.codi}}"> </a>{% endif %}
+             {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
+             {{camp.contingut|linebreaksbr}}
+             {% if camp.enllac %}</a>{%endif%}
+             {% if camp.multipleContingut %}
+                {% if camp.esMenu %} <div class="report_menu" > {%endif%}
+                <ul>
+                {% for dada,enllac in camp.multipleContingut %}
+                  <li>
+                    {% if enllac %}<a href="{{enllac}}">{%endif%}
+                    {{dada}}<br/>
+                    {% if enllac %}</a>{%endif%}
+                  </li>
+                {% endfor %}
+                </ul>
+                {% if camp.esMenu %} </div>{%endif%}
+             {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+    	{%endfor%}
 
-	</table> 				
-	</div>
+	  </table> 				
 	{%endfor%}
 
-	{% if pg_query %}
-        <div style="clear: both;"></div>
-        <div class="menucontextual" style="">
-                <ul>            
-        {% if pg_query.has_previous %}
+	{% if pg_query or True %}
+    <div class="pagination">
+      <ul>            
+      {% if pg_query.has_previous %}
         <li>
-            <a href="{{ url_pg_report }}"><< Inici</a>          
-                </li>
-        {% endif %}
-        {% if pg_query.has_previous %}
-        <li>
-            <a href="{{ url_pg_report }}/{{ pg_query.previous_page_number }}">< Anterior</a>          
-                </li>
-        {% endif %}
-                <li>
-            <a href="{{ url_pg_report }}/{{ pg_query.number }}/">
-                Pàgina {{ pg_query.number }} de {{ pg_query.paginator.num_pages }}.
-            </a>
-                </li>
-        {% if pg_query.has_next %}
-                <li>
-            <a href="{{ url_pg_report }}/{{ pg_query.next_page_number }}/"> Següent ></a>
+          <a href="{{ url_pg_report }}"><< Inici</a>          
         </li>
-        {% endif %}
-        {% if pg_query.has_next %}
-                <li>
-            <a href="{{ url_pg_report }}/{{ pg_query.paginator.num_pages }}/"> Fi >></a>
+      {% endif %}
+      {% if pg_query.has_previous %}
+        <li>
+          <a href="{{ url_pg_report }}/{{ pg_query.previous_page_number }}">< Anterior</a>          
+        </li>
+      {% endif %}
+      <li>
+        <a href="{{ url_pg_report }}/{{ pg_query.number }}/">
+            Pàgina {{ pg_query.number }} de {{ pg_query.paginator.num_pages }}
+        </a>
+      </li>
+      {% if pg_query.has_next %}
+        <li>
+          <a href="{{ url_pg_report }}/{{ pg_query.next_page_number }}/"> Següent ></a>
+        </li>
+      {% endif %}
+      {% if pg_query.has_next %}
+        <li>
+          <a href="{{ url_pg_report }}/{{ pg_query.paginator.num_pages }}/"> Fi >></a>
         </li>	
-        {% endif %}
-	{% endif %}
+      {% endif %}
+    {% endif %}
 	
 	{% block postreport  %}{% endblock %}
 {% endblock %}
