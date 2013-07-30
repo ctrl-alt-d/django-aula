@@ -1,173 +1,197 @@
 {% extends "formset.html" %}
 
-
 {% block extrahead %}
+    <style type="text/css">
+      .row-padded {
+        padding-top: 2px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #e3e3e3;
+      }
+      .btn.btnPresent.active,
+      .btn.btnPresent:active {
+        color: #ffffff;
+        text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+        background-color: #51a351;
+      }
+      .btn.btnFalta.active,
+      .btn.btnFalta:active {
+        color: #ffffff;
+        text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+        background-color: #bd362f;
+      }
+      .btn.btnJustificada.active,
+      .btn.btnJustificada:active {
+        color: #ffffff;
+        text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+        background-color: #2f96b4;
+      }
+      .btn.btnRetard.active,
+      .btn.btnRetard:active {
+        color: #ffffff;
+        text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+        background-color: #f89406;
+      }
+    </style>
+    
+    <script type="text/javascript">
+      // Desactiva tots els botons i esborra els valors dels camps hiddens
+      function totnet() {
+        $(":button").removeClass("active");
+        //$(":hidden").attr("value", "");
+        $(":hidden").each(function() {
+          if($(this).hasClass('presenciaEstat')) {
+            $(this).attr("value", "");
+          }
+        });
+      }
 
-<script type="text/javascript">
-	function totnet() {
-	
-				$( ".presenciaEstat" ).attr('checked', false);
-				{% for f in formset %}
-			   	    $('td.label_tag label[for="id_{{f.prefix}}-estat_0"]').parent().css( "background-color", "#EEE" );
-			   	{% endfor %}
-			   	return false;
-	}
-</script>
-<script type="text/javascript">
+      // Canviar el valor del camp hidden corresponent al boto activat
+      function actualitzarHidden(boto) {
+        id_modif = boto.attr("id_modif");
+        value = boto.attr("value");
+        hidden = $("#"+id_modif);
+        hidden.attr("value", value);
+      }
 
-$(document).ready(
-	function($){	
-		$('.tria_tag').each(
-			function(index) {
-				
-			   	lis=$(this).children().first().children();
-
-				/* present */
-				l=lis.first().children().first();
-				l.css("color", "green");
-
-				/* falta */
-				l=lis.next().children().first();
-			   	l.css("color", "red") ;
-			   	
-				/* justificada */
-				l=lis.next().next().children().first();
-			   	l.css("color", "Brown") ;
-
-				/* retràs */
-				l=lis.next().next().next().children().first();
-			   	l.css("color", "orange") ;
-			   	
-			});
-	});	
-	
-$(document).ready(
-	function($){
-			/* Posar tot a ... */
-			$("#totpresent").click(function(){
-				totnet();
-				{% for f in formset %}
-					$('#id_{{f.prefix}}-estat_0').attr('checked', true);
-				{% endfor %}
-				return false;
-             });
-
-			$("#totfalta").click(function(){
-				totnet();
-				{% for f in formset %}
-					$('#id_{{f.prefix}}-estat_1').attr('checked', true);
-				{% endfor %}
-				return false;
-             });
-             
-			$("#horaAnterior").click(function(){
-				totnet();
-				{% for f in formset %}
-				   {% if f.hora_anterior == 0  %}
-					  $('#id_{{f.prefix}}-estat_0').attr('checked', true);
-				   {% endif %}
-				   {% if f.hora_anterior == 1  %}
-					  $('#id_{{f.prefix}}-estat_1').attr('checked', true);
-				   {% endif %}
-				{% endfor %}
-				return false;
-             });
-
-			$("#feelLucky").click(function(){
-				totnet();
-				{% for f in formset %}
-				   {% if f.prediccio == 0 %}
-					  $('#id_{{f.prefix}}-estat_0').attr('checked', true);
-				   {% endif %}
-				   {% if f.prediccio == 1 %}
-					  $('#id_{{f.prefix}}-estat_1').attr('checked', true);
-				   {% endif %}
-				   $('td.label_tag label[for="id_{{f.prefix}}-estat_0"]').parent().css( "background-color", "{{f.bcolor}}" );
-				{% endfor %}
-				return false;
-             });
-
-	});
-	
-</script>
-
+      $(document).ready(
+      function($){
+          /* Posar tot a ... */
+          $("#totpresent").click(function(){
+            totnet();
+            $(":button").each(function () {
+              if($(this).hasClass('btnPresent')) {
+                $(this).addClass('active');
+                actualitzarHidden($(this));
+              }
+            });
+            return false;
+          });
+          
+          $("#totfalta").click(function(){
+            totnet();
+            $(":button").each(function () {
+              if($(this).hasClass('btnFalta')) {
+                $(this).addClass('active');
+                actualitzarHidden($(this));
+              }
+            });
+            return false;
+          });
+          
+          $("#horaAnterior").click(function(){
+				    totnet();
+				    {% for f in formset %}
+				      {% if f.hora_anterior == 0  %}
+					      $('#id_{{f.prefix}}-estat_0').addClass('active');
+                          actualitzarHidden($('#id_{{f.prefix}}-estat_0'));
+				      {% endif %}
+				      {% if f.hora_anterior == 1  %}
+					      $('#id_{{f.prefix}}-estat_1').addClass('active');
+                          actualitzarHidden($('#id_{{f.prefix}}-estat_1'));
+				      {% endif %}
+				    {% endfor %}
+				    return false;
+          });
+          
+			    $("#feelLucky").click(function(){
+				    totnet();
+				    {% for f in formset %}
+				      {% if f.prediccio == 0 %}
+					      $('#id_{{f.prefix}}-estat_0').addClass('active');
+                          actualitzarHidden($('#id_{{f.prefix}}-estat_0'));
+				      {% endif %}
+				      {% if f.prediccio == 1 %}
+					      $('#id_{{f.prefix}}-estat_1').addClass('active');
+                          actualitzarHidden($('#id_{{f.prefix}}-estat_1'));
+				      {% endif %}
+				    {% endfor %}
+				    return false;
+          });
+          
+          // Desar dades del boto clicat al camp hidden corrresponent
+          $("button").click(function() {
+            if ($(this).attr("id_modif")) {
+              actualitzarHidden($(this));
+            }
+          });
+        });
+    </script>
 
 {% endblock %}
 
 
 {% block preform  %}
-	{% if formset %}
-		<div style="float:left;">
-			<ul style="list-style-type:square">
-			{% if feelLuckyEnabled %}
-	 		<li>
-			  <a href="."  id="feelLucky" style="color:#FF00FF" >Segur que tinc sort</a>
-			</li>  
-			{% endif %}
-			<li>
-			  <a href="." id="totpresent" style="color:green"  >Marca tot a Present</a>
-			</li>
-			<li>
-			  <a href="." id="totfalta" style="color:red"  >Marca tot a Falta</a>
-			</li>
-	 		<li>
-			  <a href="."  id="horaAnterior" >Copia de l'hora anterior</a>
-			</li>
-			<li>
-			  <a href="."  >Torna a carregar</a>
-			</li>
-			</ul>
-		</div>
-	
-		<div style="float:left; margin-left: 100px;">
-		<ul style="list-style-type:square;">
-			<li>
-			  <a href="/presencia/treuAlumnesLlista/{{id_impartir}}" > Treure alumnes de la llista</a>
-			</li>
-			<li>
-			<a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" > Afegir alumnes a la llista</a>
-			</li>
-		</ul>
-		</div>
 
-		<div style="float:left; margin-left: 100px;">
-		<ul style="list-style-type:square;">
-			<li>
-			  <a href="/incidencies/posaIncidenciaAula/{{id_impartir}}" > Incidències</a>
-			</li>
-			<li>
-			  <a href="/baixes/feina/{{id_impartir}}" > 
+
+
+	{% if formset %}
+		<div class="row">
+		  <div class="span8">
+	      <p class="well well-small">
+      	  <i class="icon-user"></i> {{ info.professor }}<br />
+          <i class="icon-calendar"></i> {{ info.dia_setmana }} {{ info.dia_complet }}<br />
+          <i class="icon-time"></i> {{ info.hora }}<br />
+          <i class="icon-briefcase"></i> {{ info.assignatura }}<br />
+          <i class="icon-home"></i> {{ info.nom_aula }}<br />
+          <i class="icon-list"></i> {{ info.grup }}<br />
+      	</p>
+    	</div>
+    	<div class="span4">
+			  <p><a href="/presencia/treuAlumnesLlista/{{id_impartir}}">Treure alumnes de la llista</a></p>
+			  <p><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}">Afegir alumnes a la llista</a></p>
+			  <p><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}">Incidències</a></p>
+			  <p><a href="/baixes/feina/{{id_impartir}}" > 
 			    Feina a Realitzar 
 			    {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
-			  </a>
-			</li>
-			<li>
-			  <a href="{{ horariUrl }}" > Horari</a>
-			</li>
-			 
-		</ul>
-		</div>
+			  </a></p>
+			  <p><a href="{{ horariUrl }}" > Horari</a></p>
+    	</div>
+  	</div>
+  	
+  	
+  	
 
+
+
+
+
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+  	
+	  <div class="row row-padded">
+      <div class="span5 offset6">
+        <!--div data-toggle="buttons-radio"-->
+          <button type="button" id="totpresent" class="btn btn-primary">Tot<br />Present</button>
+          <button type="button" id="totfalta" class="btn btn-primary">Tot<br />Falta</button>
+          {% if feelLuckyEnabled %}
+            <button type="button" id="feelLucky" class="btn btn-primary">Tinc<br />sort!</button>
+          {% endif %}
+          <button type="button" id="horaAnterior" class="btn btn-primary">= hora<br />abans</button>
+        <!--/div-->
+      </div>
+    </div>
 	{% else %}
 
-		<div style="float:left; margin-left: 100px">
-		<ul style="list-style-type:square;padding:10px;">
-			<li style="padding:10px;">
-			<a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" > Afegir alumnes a la llista</a>
-			</li>
+	  <p>
+			<a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}">Afegir alumnes a la llista</a>
+		</p>
 			
-			{% if pot_marcar_sense_alumnes %}
-			<li style="padding:10px;">
-			<a href="/presencia/marcarComHoraSenseAlumnes/{{id_impartir}}" > En aquesta hora no tinc alumnes! </a>
-			</li>
-			{% endif %}
-					
-		</ul>
-		</div>
-
-	{% endif %}
-	
-	<div style="clear:both"/>
+		{% if pot_marcar_sense_alumnes %}
+			<p>
+			  <a href="/presencia/marcarComHoraSenseAlumnes/{{id_impartir}}">En aquesta hora no tinc alumnes! </a>
+			</p>
+		{% endif %}
+   
+  {% endif %}
+  
 {% endblock %}
 
 
