@@ -186,9 +186,9 @@ def mostraImpartir( request, year=None, month=None, day=None ):
            # text a mostrar, data de l'enllaç, mostrar-ho a mòbil, mostrar-ho a tablet&desktop
            [ '<< mes passat'    , data + t.timedelta( days = -30 ), False, True ],
            [ '< setmana passada' , data + t.timedelta( days = -7 ), False, True ],
-           [ '< dia passat' , data + t.timedelta( days = -1 ), True, False ],
+           [ '< dia passat' , data_actual + t.timedelta( days = -1 ), True, False ],
            [ '< avui >'    , t.date.today, True, True ],
-           [ 'dia vinent >' , data + t.timedelta( days = +1 ), True, False ],
+           [ 'dia vinent >' , data_actual + t.timedelta( days = +1 ), True, False ],
            [ 'setmana vinent >'  , data + t.timedelta( days = +7 ), False, True ],
            [ 'mes vinent >>'      , data + t.timedelta( days = +30 ), False, True ],
         ]
