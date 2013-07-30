@@ -25,10 +25,10 @@
         {% endif %}
       
         {% for label, value in form.infoForm %}
-	        <div class="span6 label_tag">
-	        	{{ label }}:
+	        <div class="span4 label_tag">
+	        	{{ label }}
 	        </div>
-	        <div class="span6" {% if field.errors %} class="conte_errors" {% endif %}>      
+	        <div class="span8" {% if field.errors %} class="conte_errors" {% endif %}>      
 	          {{ value }}
       		</div>
 	      {% endfor %}
@@ -38,7 +38,7 @@
         {% endfor %}
           
         {% for field in form.visible_fields %}
-	        <div class="span6 label_tag">
+	        <div class="span4 label_tag">
             {% if form.non_field_errors %}
               {% for error in form.non_field_errors %}
             	  <p class="text-error">{{error}}</p>
@@ -47,7 +47,7 @@
 	          <p class="text-right hidden-phone">{{ field.label_tag }}</p>
             <p class="visible-phone">{{ field.label_tag }}</p>
 	        </div>
-	        <div class="span6 tria_tag" {% if field.errors %} class="conte_errors" {% endif %}>
+	        <div class="span8 tria_tag" {% if field.errors %} class="conte_errors" {% endif %}>
           {{ field }}
           {% if field.help_text %}
             <br/><span class="help_text">( {{ field.help_text }} )</span>
@@ -63,7 +63,9 @@
       </div>
     {% endfor %}
     {% if formset %}
+    <div style="margin-top:10px;">
       <button type="submit" class="btn btn-primary">Enviar dades</button>
+    </div>
   	{% endif %}
   </form>
   {% block postform  %} {% endblock %}
