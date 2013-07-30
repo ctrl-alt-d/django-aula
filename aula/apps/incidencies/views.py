@@ -46,6 +46,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.core.exceptions import ObjectDoesNotExist
 from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_de_posar
 from aula.apps.incidencies.business_rules.expulsio import expulsio_despres_de_posar
+from django.db.models.aggregates import Count
 
 
 
@@ -727,14 +728,6 @@ def alertesAcumulacioExpulsions( request ):
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
 
-    fa_30_dies = date.today() - timedelta( days = 30 )
-    fa_60_dies = date.today() - timedelta( days = 60 )
-    #todo: update dels de fa més de 30 dies:
-    Incidencia.objects.filter( es_vigent = True, 
-                               dia_incidencia__lt = fa_30_dies).update( es_vigent = False )
-    
-    Expulsio.objects.filter( es_vigent = True,
-                             dia_expulsio__lt = fa_60_dies ).update( es_vigent = False )
 
     sql = u'''select 
                    a.id_alumne, 
@@ -795,9 +788,61 @@ def alertesAcumulacioExpulsions( request ):
 
     taula.fileres = []
     
+    alumnesAmbExpulsions = ( 
+                            Alumne
+                           .objects
+                           .filter( expulsio__es_vigent = True )
+                           .exclude( expulsio__estat = 'ES' )
+                           .annotate( nExpulsions=Count( 'expulsio') )
+                           .filter( nExpulsions__gte = 0 )
+                           .order_by( 'id' )
+                           .values( 'id','nExpulsions' )
+                          )
+
+    alumnesAmbIncidenciesAula = ( 
+                            Alumne
+                           .objects
+                           .filter( incidencia__es_vigent = True, incidencia__es_informativa = False, incidencia__control_assistencia__isnull = False )
+                           .annotate( nIncidenciesAula=Count( 'incidencia') )
+                           .filter( nIncidenciesAula__gte = 0 )
+                           .order_by( 'id' )
+                           .values( 'id','nIncidenciesAula' )
+                          )
+
+
+    alumnesAmbIncidenciesForaAula = ( 
+                            Alumne
+                           .objects
+                           .filter( incidencia__es_vigent = True, incidencia__es_informativa = False, incidencia__control_assistencia__isnull = True )
+                           .annotate( nIncidenciesForaAula=Count( 'incidencia') )
+                           .filter( nIncidenciesForaAula__gte = 0 )
+                           .order_by( 'id' )
+                           .values( 'id','nIncidenciesForaAula' )
+                          )
+    
+    alumnesAmbExpulsions_dict = {}
+    alumnesAmbIncidenciesAula_dict = {}
+    alumnesAmbIncidenciesForaAula_dict = {}
+    alumnes_ids = set()
+    for x in alumnesAmbExpulsions:
+        alumnes_ids.add( x['id'] ) 
+        alumnesAmbExpulsions_dict[x['id']] = x['nExpulsions']
+    for x in alumnesAmbIncidenciesAula:
+        alumnes_ids.add( x['id'] ) 
+        alumnesAmbIncidenciesAula_dict[x['id']] = x['nIncidenciesAula']
+    for x in alumnesAmbIncidenciesForaAula:
+        alumnes_ids.add( x['id'] )
+        alumnesAmbIncidenciesForaAula_dict[x['id']] = x['nIncidenciesForaAula'] 
+        
+    alumnes = []
+    for alumne in  Alumne.objects.filter( id__in = alumnes_ids ):
+        alumne.nExpulsions = alumnesAmbExpulsions_dict.get(alumne.id, 0 )
+        alumne.nIncidenciesAula = alumnesAmbIncidenciesAula_dict.get(alumne.id, 0 )
+        alumne.nIncidenciesForaAula = alumnesAmbIncidenciesForaAula_dict.get(alumne.id, 0 )
+        alumnes.append(alumne)
+    
     #for alumne in  Alumne.objects.raw( sql ): TODO
-    for alumne in  Alumne.objects.all()[:100]:
-            
+    for alumne in  sorted( alumnes, key = lambda a: a.nExpulsions * 3 + a.nIncidenciesAula + a.nIncidenciesForaAula ):
                 
         filera = []
         

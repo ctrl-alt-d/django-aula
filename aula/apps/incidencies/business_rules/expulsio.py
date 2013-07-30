@@ -111,9 +111,10 @@ def expulsio_despres_de_posar(instance):
     professor_recull = instance.professor_recull
     professor_expulsa = instance.professor
 
+    Missatge = get_model( 'missatgeria','Missatge')
     # missatge pel professor que recull la incidència:    
     if professor_recull != professor_expulsa:
-        Missatge = get_model( 'missatgeria','Missatge')
+        
         msg = Missatge( remitent = professor_recull.getUser(),
                         text_missatge = u'''ha recollit la següent expulsió: {0}'''.format( unicode( instance ) ) )
         msg.envia_a_usuari(instance.professor_recull.getUser(), 'PI')
