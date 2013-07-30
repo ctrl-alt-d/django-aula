@@ -1,6 +1,6 @@
 Llicència: 
 
-    This file is part of django-aula ('DAU').
+    This file is part of django-aula ('djAu').
 
     Copyright © 2011-TODAY . Daniel Herrera ctrl.alt.d@gmail.com . 
     
@@ -10,14 +10,14 @@ Llicència:
     EL PROGRAMA NO TÉ CAP GARANTIA, 
     MÉS ENLLÀ DE LES EXIGIDES PER LES LLEIS APLICABLES.
     
-    El programa es diu django-aula però es pronuncia 'DAU'
+    El programa es diu django-aula, s'escriu 'djAu' i es pronuncia 'dijau'.
 
-    django-aula ('DAU') is free software: you can redistribute it and/or modify
+    django-aula ('djAu') is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     any later version.
 
-    django-aula is distributed in the hope that it will be useful,
+    django-aula ('djAu') is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -25,8 +25,16 @@ Llicència:
     EL PROGRAMA NO TÉ CAP GARANTIA, MÉS ENLLÀ DE LES EXIGIDES PER
     LES LLEIS APLICABLES.
     
-    El copyright forma part de la llicència i django-aula ('DAU') 
+    El copyright forma part de la llicència i django-aula ('djAu')
 
     You should have received a copy of the GNU General Public License
-    along with django-aula.  If not, see <http://www.gnu.org/licenses/>.
+    along with django-aula ('djAu').  If not, see <http://www.gnu.org/licenses/>.
+    
+    Crèdits:
+    
+       Daniel Herrera ( ctrl.alt.d@gmail.com )
+       'All time, Some code
+       
+       Joan Rodríguez ( jrodr236@gmail.com ) 
+       '2013, Migració a Bootstrap3 i Responsive design.
  

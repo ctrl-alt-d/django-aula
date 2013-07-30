@@ -18,52 +18,63 @@
   <form method="post" action="">{% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}    
-      <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+      
         {%if form.formSetDelimited %} 
            <!-- TODO: Cal pensar com fer això amb bootstrap, i si cal -->
            <!--tr style='background-color:black; height='10'><td colspan='2' style='background-color:black; height='10'></td></tr-->
         {% endif %}
-      
+
         {% for label, value in form.infoForm %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
 	        <div class="col-sm-4 label_tag">
 	        	{{ label }}:
 	        </div>
 	        <div class="col-sm-8" {% if field.errors %} class="text-danger" {% endif %}>      
 	          {{ value }}
       		</div>
-	      {% endfor %}
+      	</div>
+	    {% endfor %}
 
         {% for hidden in form.hidden_fields %}
           {{ hidden }}
         {% endfor %}
+
+		{% if form.non_field_errors %}
+        <div class="row" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+          	  <div class="alert alert-danger">
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+              {% for error in form.non_field_errors %}
+                  {{error}}
+              {% endfor %}
+              </div>
+        </div>
+        {% endif %}
           
         {% for field in form.visible_fields %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
 	        <div class="col-sm-4 label_tag">
-            {% if form.non_field_errors %}
-              {% for error in form.non_field_errors %}
-            	  <div class="alert alert-danger">
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  {{error}}
-                </div>
-              {% endfor %}
-            {% endif %}	
 	          <p class="text-right hidden-sm">{{ field.label_tag }}</p>
-            <p class="visible-sm">{{ field.label_tag }}</p>
+              <p class="visible-sm">{{ field.label_tag }}</p>
+              
 	        </div>
-	        <div class="col-sm-8 tria_tag" {% if field.errors %} class="conte_errors" {% endif %}>
-          {{ field }}
-          {% if field.help_text %}
-            <br/><span class="help_text">( {{ field.help_text }} )</span>
-	        	{{ field.errors }}
-          {% endif %}
+	        <div class="col-sm-8 tria_tag">
+	            {{ field }}
+	            {% if field.help_text %}
+	            <br/><span class="help_text">( {{ field.help_text }} )</span>	        
+	            {% endif %}
+		        {% if field.errors %}		        	
+			        <div class="alert alert-danger">
+			        <button type="button" class="close" data-dismiss="alert">&times;</button>
+		            {{ field.errors }}
+		         	</div>
+		        {% endif %}
 	        </div>
-
+        </div>
         {% endfor %}
         {%if formSetDelimited %}
           <!-- TODO: Cal pensar com fer això amb bootstrap, i si cal -->
           <!--tr style='background-color:white; height='10'><td colspan='2' style='background-color:white; height='10'></td></tr-->
         {% endif %}       
-      </div>
     {% endfor %}
     {% if formset %}
       <button type="submit" class="btn btn-primary">Enviar dades</button>

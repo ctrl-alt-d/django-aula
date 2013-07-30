@@ -263,23 +263,17 @@ def passaLlista( request, pk ):
             control_a.credentials = credentials
             if form.is_valid():
                 form.save()
-                quelcomBe = True or quelcomBe
+                quelcomBe |= True
             else:
                 totBe = False
-                #Si hi ha error deixo el valor que tenia. Això pot ser per 
-                #que la falta ja estava justificada.
+                #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
+                errors_formulari = form._errors
                 form=ControlAssistenciaForm(
                                     prefix=str( control_a.pk ),
-                                    instance=ControlAssistencia.objects.get(pk = control_a.pk) )
-                try:
-                    #provoco els errors per mostrar-los igualment al formulari.
-                    control_a.clean()
-                except ValidationError, e:
-                    form._errors = {}
-                    for _, v in e.message_dict.items():                        
-                        form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )
-                        
-            form.fields['estat'].label = control_a.alumne            
+                                    instance=ControlAssistencia.objects.get( id= control_a.pk)  )
+                form._errors =  errors_formulari
+                
+            form.fields['estat'].label = control_a.alumne   
             formset.append( form )                
         if quelcomBe:
             impartir.dia_passa_llista = datetime.now()
