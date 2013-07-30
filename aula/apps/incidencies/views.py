@@ -842,7 +842,7 @@ def alertesAcumulacioExpulsions( request ):
         alumnes.append(alumne)
     
     #for alumne in  Alumne.objects.raw( sql ): TODO
-    for alumne in  sorted( alumnes, key = lambda a: a.nExpulsions * 3 + a.nIncidenciesAula + a.nIncidenciesForaAula ):
+    for alumne in  sorted( alumnes, key = lambda a: a.nExpulsions * 3 + a.nIncidenciesAula + a.nIncidenciesForaAula, reverse=True ):
                 
         filera = []
         
