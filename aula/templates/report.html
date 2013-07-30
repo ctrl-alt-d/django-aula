@@ -52,17 +52,23 @@
              {{camp.contingut|linebreaksbr}}
              {% if camp.enllac %}</a>{%endif%}
              {% if camp.multipleContingut %}
-                {% if camp.esMenu %} <div class="report_menu" > {%endif%}
-                <ul>
-                {% for dada,enllac in camp.multipleContingut %}
-                  <li>
-                    {% if enllac %}<a href="{{enllac}}">{%endif%}
-                    {{dada}}<br/>
-                    {% if enllac %}</a>{%endif%}
-                  </li>
-                {% endfor %}
-                </ul>
-                {% if camp.esMenu %} </div>{%endif%}
+                {% if camp.esMenu %} <!-- Què significa ?????????????????????????????? div class="report_menu" --> {%endif%}
+                  <div class="btn-group">
+                    <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
+                      Accions
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                    {% for dada,enllac in camp.multipleContingut %}
+                      <li>
+                        {% if enllac %}<a href="{{enllac}}">{%endif%}
+                        {{dada}}<br/>
+                        {% if enllac %}</a>{%endif%}
+                      </li>
+                    {% endfor %}
+                    </ul>
+                  </div>
+                {% if camp.esMenu %} <!-- ??????????? /div-->{%endif%}
              {% endif %}
             </td>
           {% endfor %}
