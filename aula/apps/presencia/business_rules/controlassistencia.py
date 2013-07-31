@@ -2,7 +2,7 @@
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 import datetime as dt
 from aula.apps.usuaris.models import User2Professor, User2Professional
-from django.db.models import get_models
+from django.db.models import get_model
 from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_de_posar
 
 #-------------ControlAssistencia-------------------------------------------------------------      
@@ -75,7 +75,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
     frase = u'Ha arribat tard a classe.'
 
     if instance.estat and instance.estat.codi_estat == 'R':
-        Incidencia = get_models('incidencies','Incidencia')
+        Incidencia = get_model('incidencies','Incidencia')
         ja_hi_es = Incidencia.objects.filter( 
                                                           alumne = instance.alumne,
                                                           control_assistencia = instance,
