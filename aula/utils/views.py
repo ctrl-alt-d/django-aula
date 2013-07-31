@@ -20,6 +20,8 @@ from aula.apps.presencia.models import Impartir
 from django.utils.datetime_safe import datetime
 from django.db.models import Q
 
+from django.conf import settings
+
 def logout_page(request):
     try:
         del request.session['impersonacio']
@@ -34,8 +36,7 @@ def menu(request):
     #How do I make a variable available to all my templates?
     #http://readthedocs.org/docs/django/1.2.4/faq/usage.html#how-do-i-make-a-variable-available-to-all-my-templates
     
-    if request.user.is_anonymous():
-        from django.conf import settings
+    if request.user.is_anonymous():        
         return HttpResponseRedirect( settings.LOGIN_URL )         
     else:
         #si és un alumne l'envio a mirar el seu informe
@@ -116,22 +117,10 @@ def about(request):
     filera.append(camp)
 
     #-tip--------------------------------------------
+
+    licenseFile = open (settings.LICENSE_FILE, "r")
+    tip=licenseFile.read()
     
-    tip = u'''Copyright © 2011-TODAY . Daniel Herrera ctrl.alt.d@gmail.com . 
-Llicència: 
-
-Aquest programa és Open Source. Open Source no significa lliure.
-Aquest programa és propietat intel·lectual del seu autor.
- 
-Llegiu la llicència a:
-https://github.com/ctrl-alt-d/django-aula.
- 
-There is NO WARRANTY, to the extent permitted by law.
- 
-EL PROGRAMA NO TÉ CAP GARANTIA, 
-MÉS ENLLÀ DE LES EXIGIDES PER LES LLEIS APLICABLES.
-
-    '''
     camp = tools.classebuida()
     camp.enllac = ''
     camp.contingut = tip

@@ -15,6 +15,8 @@ ADMINS = (
 
 LOGIN_URL="/usuaris/login"
 
+LICENSE_FILE = location( r'../LICENSE' )
+
 MANAGERS = ADMINS
 
 DATABASES = None  #overrided on prod, dev environment
