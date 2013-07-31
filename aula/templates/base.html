@@ -8,11 +8,18 @@
 <meta http-equiv="Expires" content="0">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="/site-css/css/datepicker.css">
 <link rel="stylesheet" href="/site-css/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="/site-css/glyphicons/css/bootstrap-glyphicons.css">
 <title>django-aula | {% block title %}{% endblock %}</title>
 
 <script src="/site-css/jquery/jquery-2.0.2.min.js"></script>
+<script> 
+$.fn.bootstrapDP = null;                 
+</script>
+<script src="/site-css/js/bootstrap-datepicker.js"></script>
+<script src="/site-css/js/locales/bootstrap-datepicker.ca.js"></script>
 <script src="/site-css/bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript">
   function confirmAction(url, msg) {
@@ -44,7 +51,14 @@
   
   </div> <!--container-->
 
-
+<script>
+$('.datepicker').datepicker({
+    format: 'dd/mm/yyyy',
+    language: 'ca',
+    autoclose: true,
+    weekStart: 1
+});
+</script>
 
 </body>
 </html>
