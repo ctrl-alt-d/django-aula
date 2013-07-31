@@ -228,12 +228,15 @@ def calcula_menu( user , path ):
                 subitem.url = reverse( subitem_url ) 
                 subitem.active = 'active' if actiu else ''
                 menu['subitems'].append(subitem)
-                if actiu and subsubmenu_id == 'blanc' and subsubitems:
+                subitem.subsubitems = []
+                if subsubitems:
                     for subitem_label, subitem_url, subitem__condicio in subsubitems:
                         subsubitem = classebuida()
                         subsubitem.label = subitem_label
                         subsubitem.url = reverse( subitem_url ) 
-                        menu['subsubitems'].append(subsubitem)
+                        subitem.subsubitems.append(subsubitem)
+                    if actiu and subsubmenu_id == 'blanc':
+                        menu['subsubitems'] = subitem.subsubitems
 
     return menu
 
