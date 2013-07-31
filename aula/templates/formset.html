@@ -77,7 +77,11 @@
         {% endif %}       
     {% endfor %}
     {% if formset %}
-      <button type="submit" class="btn btn-primary">Enviar dades</button>
+    <div class="row row-padded" style="margin-top:15px;">
+    	<div class="col-sm-12 tria_tag">
+      		<button type="submit" class="btn btn-primary">Enviar dades</button>
+      </div>
+    </div>
   	{% endif %}
   </form>
   {% block postform  %} {% endblock %}

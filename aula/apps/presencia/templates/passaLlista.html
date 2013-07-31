@@ -111,37 +111,16 @@
 {% block preform  %}
 
 	{% if formset %}
-    <div class="row visible-sm">
-		  <div class="col-sm-12">
-        <div class="btn-group">
-          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-          Opcions<span class="caret"></span>
-          </button>
-            <ul class="dropdown-menu">
-              <li><a href="/presencia/treuAlumnesLlista/{{id_impartir}}" >Treure alumnes</a></li>
-              <li><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" >Afegir alumnes</a></li>
-              <li><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}" >Incidències</a></li>
-              <li>
-                <a href="/baixes/feina/{{id_impartir}}" >Feina a Realitzar
-                  {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
-                </a>
-              </li>
-              
-            </ul>
-        </div>
-        <br /><br />
-      </div>
-	  </div>
 	  
 	  <div class="row">
 		  <div class="col-sm-8">
 	      <p class="well well-small">
-      	  <span class="glyphicon glyphicon-user"></span> {{ info.professor }}<br />
-          <span class="glyphicon glyphicon-calendar"></span> {{ info.dia_setmana }} {{ info.dia_complet }}<br />
-          <span class="glyphicon glyphicon-time"></span> {{ info.hora }}<br />
-          <span class="glyphicon glyphicon-briefcase"></span> {{ info.assignatura }}<br />
-          <span class="glyphicon glyphicon-home"></span> {{ info.nom_aula }}<br />
-          <span class="glyphicon glyphicon-list"></span> {{ info.grup }}<br />
+      	  <span class="glyphicon glyphicon-user"> </span> {{ info.professor }}<br />
+          <span class="glyphicon glyphicon-calendar"> </span> {{ info.dia_setmana }} {{ info.dia_complet }}<br />
+          <span class="glyphicon glyphicon-time"> </span> {{ info.hora }}<br />
+          <span class="glyphicon glyphicon-briefcase"> </span> {{ info.assignatura }}<br />
+          <span class="glyphicon glyphicon-home"> </span> {{ info.nom_aula }}<br />
+          <span class="glyphicon glyphicon-list"> </span> {{ info.grup }}<br />
       	</p>
     	</div>
     	
@@ -174,17 +153,37 @@
   
     <div class="row row-padded visible-sm">
       <div class="col-sm-12 visible-sm">
-        <div class="btn-group">
-          <button type="button" class="btn btn-primary" id="feelLucky2">Tindrè sort!</button>
-          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a id="totfalta2">Tot Falta</a></li>
-            <li><a href="#" id="horaAnterior2">Hora Anterior</a></li>
-            <li><a href="#" id="totpresent2">Tot present</a></li>
-          </ul>
-        </div>
-      </div>  
+      	<div class="btn-toolbar">
+      		
+	        <div class="btn-group">
+	          <button type="button" class="btn btn-primary" id="feelLucky2">Tindrè sort!</button>
+	          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><span class="caret"></span>
+	          </button>
+	          <ul class="dropdown-menu">
+	            <li><a id="totfalta2">Tot Falta</a></li>
+	            <li><a href="#" id="horaAnterior2">Hora Anterior</a></li>
+	            <li><a href="#" id="totpresent2">Tot present</a></li>
+	          </ul>
+	        </div>
+      
+	       <div class="btn-group">
+	          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+	          Opcions<span class="caret"></span>
+	          </button>
+	            <ul class="dropdown-menu">
+	              <li><a href="/presencia/treuAlumnesLlista/{{id_impartir}}" >Treure alumnes</a></li>
+	              <li><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" >Afegir alumnes</a></li>
+	              <li><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}" >Incidències</a></li>
+	              <li>
+	                <a href="/baixes/feina/{{id_impartir}}" >Feina a Realitzar
+	                  {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
+	                </a>
+	              </li>	              
+	            </ul>
+	        </div>
+
+        </div>  
+      </div>
     </div>
 
     
