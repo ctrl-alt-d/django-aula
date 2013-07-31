@@ -12,6 +12,7 @@ incidencies views  ( sql a query api)
 'widget' calendaria
 avisos->senyal al menú si n'hi han de nous
 
+
 #---------------------------------
 Requeriments SO:
 
