@@ -126,13 +126,13 @@ class bootStrapButtonSelect(Widget):
         num_id = 0
         if value is None: value = ''
         output = ['<div class="btn-group" data-toggle="buttons">']
-        options = self.render_buttons(choices, id_, num_id, [value])
+        options = self.render_buttons(choices, name, id_, num_id, [value])
         if options:
             output.append(options)
         output.append(u'</div>')
         return mark_safe(u'\n'.join(output))
 
-    def render_button(self, selected_choices, id_, num_id, option_value, option_label):
+    def render_button(self, selected_choices, name, id_, num_id, option_value, option_label):
         option_value = force_unicode(option_value)
         if option_value in selected_choices:
             label_selected_html = u' active'
@@ -147,16 +147,16 @@ class bootStrapButtonSelect(Widget):
             conditional_escape(force_unicode(option_label)),
             label_selected_html, id_, num_id,
             conditional_escape(force_unicode(option_label)),
-            id_, escape(option_value),
+            name, escape(option_value),
             id_, num_id,
             input_selected_html,
             conditional_escape(force_unicode(option_label)))
 
-    def render_buttons(self, choices, id_, num_id, selected_choices):
+    def render_buttons(self, choices, name, id_, num_id, selected_choices):
         # Normalize to strings.
         selected_choices = set(force_unicode(v) for v in selected_choices)
         output = []
         for option_value, option_label in chain(self.choices, choices):
-          output.append(self.render_button(selected_choices, id_, num_id, option_value, option_label))
+          output.append(self.render_button(selected_choices, name, id_, num_id, option_value, option_label))
           num_id = num_id + 1
         return u'\n'.join(output)
