@@ -15,7 +15,7 @@
 	  {% endif %}
   {% endblock %}
 
-  <form method="post" action="">{% csrf_token %}
+  <form method="get" action="">{% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}    
       <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
@@ -25,10 +25,10 @@
         {% endif %}
       
         {% for label, value in form.infoForm %}
-	        <div class="span6 label_tag">
+	        <div class="col-sm-6 label_tag">
 	        	{{ label }}:
 	        </div>
-	        <div class="span6" {% if field.errors %} class="conte_errors" {% endif %}>      
+	        <div class="col-sm-6" {% if field.errors %} class="text-danger" {% endif %}>      
 	          {{ value }}
       		</div>
 	      {% endfor %}
@@ -38,16 +38,16 @@
         {% endfor %}
           
         {% for field in form.visible_fields %}
-	        <div class="span6 label_tag">
+	        <div class="col-sm-6 label_tag">
             {% if form.non_field_errors %}
               {% for error in form.non_field_errors %}
-            	  <p class="text-error">{{error}}</p>
+            	  <p class="text-danger">{{error}}</p>
               {% endfor %}
             {% endif %}	
-	          <p class="text-right hidden-phone">{{ field.label_tag }}</p>
-            <p class="visible-phone">{{ field.label_tag }}</p>
+	          <p class="text-right hidden-sm">{{ field.label_tag }}</p>
+            <p class="visible-sm">{{ field.label_tag }}</p>
 	        </div>
-	        <div class="span6 tria_tag" {% if field.errors %} class="conte_errors" {% endif %}>
+	        <div class="col-sm-6 tria_tag" {% if field.errors %} class="conte_errors" {% endif %}>
           {{ field }}
           {% if field.help_text %}
             <br/><span class="help_text">( {{ field.help_text }} )</span>

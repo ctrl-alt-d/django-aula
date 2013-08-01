@@ -1,84 +1,79 @@
 {% load customTemplateTags %}
 
-    <div id="header"> 
-	   	
-	<div class="navbar navbar-inverse" style="position: static;"> 
-	  <div class="navbar-inner"> 
-	    <div class="container"> 
-	      <a class="btn btn-navbar collapsed" data-toggle="collapse" data-target=".navbar-inverse-collapse"> 
-	        <span class="icon-bar"></span> 
-	        <span class="icon-bar"></span> 
-	        <span class="icon-bar"></span> 
-	      </a> 
-	      <a class="brand" href="/">django-aula</a> 
-	      
-	      <div style="height: 0px;" class="nav-collapse navbar-inverse-collapse collapse"> 
-	        <ul class="nav"> 
-	        
-	        	{% for item in menu.items %}
-				<li  class="{{item.active}}" > 
-					<a href="{{item.url}}">{{item.label}}</a> 
-				</li> 
-				{% endfor %}
- 
-			</ul> 
-		  </div>
-		  
- 	      <ul class="nav pull-right">
-		  {% if user.is_authenticated %}
-		    <li class="dropdown">    	
-		    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-		    {{user.first_name}}
-		    <b class="caret"></b>
-		    </a>
-		    <ul class="dropdown-menu">
-			  <li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>
-			  <li><a href="/usuaris/canviDePasswd">Canvi de paraula de pas (password)</a></li>
-		      <li class="divider"></li>
-		      {% if sessioImpersonada %}
-	   		  <li><a tabindex="-1" href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
-	   		  <li><a tabindex="-1" href="/usuaris/resetImpersonacio/">Sortir mode impersonalitzat</a></li>
-			  <li class="divider"></li>
-	   		  <li><a tabindex="-1" href="/logout/">Sortir del programa</a></li>
-	   		  {% else %}
-				   {% ifusergroup direcció %}
-		   		   <li><a href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
-			       <li class="divider"></li>
-				   <li><a href="/logout/">Sortir del programa</a></li>
-				   {% else %}
-				   <li><a href="/logout/">Sortir</a></li>
-				   {% endifusergroup %}
-			  {% endif %}    
-		    </ul>
-		    </li>
-	      {% else %}
-			<li><a tabindex="-1" href="#">Login</a></li>	      
-	      {% endif %}
-	      </ul>		  
-		  
-		</div>
-	</div>
-   </div>	
-   
-    <ul class="nav nav-tabs"> 
-        {% for item in menu.subitems %}
-		<li  class="{{item.active}}" >
-			<a href="{{item.url}}">{{item.label}}</a> 
-		</li> 
-		{% endfor %}   		
-    </ul> 
+<div id="header"> 
+   	
+<div class="navbar navbar-inverse"> 
+  <div class="container"> 
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="/">django-aula</a> 
     
-    {% if menu.subsubitems %}
-    <ul class="nav nav-pills">
-        {% for item in menu.subsubitems %}
-		<li> 
-			<a href="{{item.url}}">{{item.label}}</a> 
-		</li> 
-		{% endfor %}
-    </ul>
-    {% endif %}
-    
+    <div class="nav-collapse collapse navbar-responsive-collapse">
+      <ul class="nav navbar-nav"> 
+      
+      {% for item in menu.items %}
+		    <li  class="{{item.active}}" >
+			    <a href="{{item.url}}">{{item.label}}</a> 
+		    </li> 
+		  {% endfor %}
 
-    
-    </div>	
-	
+	    </ul>
+    </div> <!-- /.nav-collapse -->
+  
+    <ul class="nav navbar-nav pull-right">
+    {% if user.is_authenticated %}
+      <li class="dropdown">    	
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          {{user.first_name}}
+          <b class="caret"></b>
+        </a>
+        <ul class="dropdown-menu">
+	        <li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>
+	        <li><a href="/usuaris/canviDePasswd">Canvi de paraula de pas (password)</a></li>
+          <li class="divider"></li>
+          {% if sessioImpersonada %}
+       		  <li><a tabindex="-1" href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
+       		  <li><a tabindex="-1" href="/usuaris/resetImpersonacio/">Sortir mode impersonalitzat</a></li>
+	          <li class="divider"></li>
+ 		        <li><a tabindex="-1" href="/logout/">Sortir del programa</a></li>
+ 		      {% else %}
+		        {% ifusergroup direcció %}
+   		        <li><a href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
+	            <li class="divider"></li>
+		          <li><a href="/logout/">Sortir del programa</a></li>
+		        {% else %}
+		         <li><a href="/logout/">Sortir</a></li>
+		        {% endifusergroup %}
+	        {% endif %}    
+        </ul>
+      </li>
+    {% else %}
+	    <li><a tabindex="-1" href="#">Login</a></li>	      
+    {% endif %}
+    </ul>		  
+
+  </div><!-- /.container -->
+</div><!-- /.navbar -->
+ 
+<ul class="nav nav-tabs"> 
+  {% for item in menu.subitems %}
+	  <li  class="{{item.active}}" >
+		  <a href="{{item.url}}">{{item.label}}</a> 
+	  </li> 
+	{% endfor %}   		
+  </ul> 
+  
+  {% if menu.subsubitems %}
+    <ul class="nav nav-pills">
+      {% for item in menu.subsubitems %}
+	      <li> 
+		      <a href="{{item.url}}">{{item.label}}</a> 
+	      </li> 
+	    {% endfor %}
+    </ul>
+  {% endif %}
+
+</div>	

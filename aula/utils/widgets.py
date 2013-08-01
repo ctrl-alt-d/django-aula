@@ -2,7 +2,7 @@
 #http://copiesofcopies.org/webl/2010/04/26/a-better-datetime-widget-for-django/
 
 #from django.template.loader import render_to_string
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, RadioSelect
 from time import strftime
 from django.utils.safestring import mark_safe
 from django.utils.html import conditional_escape, escape
@@ -106,6 +106,18 @@ class JqSplitDateTimeWidget(MultiWidget):
 # Adaptació amb botons tipus bootstrap de la funcionalitat dels radiobuttons (Radio
 # (c) Joan Rodriguez
 
+class bootStrapButtonSelect2(RadioSelect):
+    def render(self, name, value, attrs=None, choices=()):
+        print self
+        print name
+        print value
+        print attrs
+        print choices
+        output = ['<div class="btn-group" data-toggle="buttons">']
+        output.append(super(bootStrapButtonSelect, self).render(self, name, value))
+        output.append('</div>');
+        return mark_safe(u'\n'.join(output))
+
 class bootStrapButtonSelect(Widget):
     allow_multiple_selected = False
 
@@ -113,28 +125,31 @@ class bootStrapButtonSelect(Widget):
         id_ = attrs['id']
         num_id = 0
         if value is None: value = ''
-        final_attrs = self.build_attrs(attrs, name=name)
-        output = ['<div data-toggle="buttons-radio">']
+        output = ['<div class="btn-group" data-toggle="buttons">']
         options = self.render_buttons(choices, id_, num_id, [value])
         if options:
             output.append(options)
-        output.append(u'<input type="hidden" value=""%s />' % flatatt(final_attrs))
         output.append(u'</div>')
         return mark_safe(u'\n'.join(output))
 
     def render_button(self, selected_choices, id_, num_id, option_value, option_label):
         option_value = force_unicode(option_value)
         if option_value in selected_choices:
-            selected_html = u' active'
+            label_selected_html = u' active'
+            input_selected_html = u' checked'
             if not self.allow_multiple_selected:
                 # Only allow for a single selection.
                 selected_choices.remove(option_value)
         else:
-            selected_html = ''
-        return u'<button type="button" class="btn btn%s%s" id="%s_%s" id_modif="%s" value="%s">%s</button>' % (
+            label_selected_html = ''
+            input_selected_html = ''
+        return u'<label class="btn btn-default btn%s%s" id="label_%s_%s"><input type="radio" class="rad rad%s" name="%s" value="%s" id="rad_%s_%s" %s />%s</label>' % (
             conditional_escape(force_unicode(option_label)),
-            selected_html, id_, num_id, id_,
-            escape(option_value),
+            label_selected_html, id_, num_id,
+            conditional_escape(force_unicode(option_label)),
+            id_, escape(option_value),
+            id_, num_id,
+            input_selected_html,
             conditional_escape(force_unicode(option_label)))
 
     def render_buttons(self, choices, id_, num_id, selected_choices):

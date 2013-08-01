@@ -20,7 +20,7 @@
       padding: 1px;
       border-bottom: 1px solid black;
     }
-    .span2 {
+    .col-sm-2 {
       text-align: center;
     } 
   </style>
@@ -28,16 +28,18 @@
  
 {% block content  %}
 	<p class="well well-small">
-  	<i class="icon-user"></i> {{ professor }}
+  	<span class="glyphicon glyphicon-user"></span> {{ professor }}
   </p>
 	
 	<div class="row" style="padding-bottom: 5px;">
-	  <div class="span2"></div>
+	  <div class="col-sm-2"></div>
 	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
-	  <div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">
-		   <span class="badge badge-info">
-		    <strong>{{ dia_setmana }} {{ dia_complet }}</strong>
-		   </span>
+	  <div class="col-sm-2 {% if not esDataActual %}hidden-sm{% endif %}">
+		  <h4>
+		    <span class="label label-info">
+		      <strong>{{ dia_setmana }} {{ dia_complet }}</strong>
+		    </span>
+	    </h4>
 	  </div>
 	  {% endfor %}
 	</div>
@@ -45,32 +47,32 @@
     {% for impartir_franja in impartir_tot %}
     <div class="row text_center" style="padding-top: 5px;{% if forloop.counter|divisibleby:2 %}background-color: #F0F0F0;{% endif %}">
         {% for imparticions, esDataActual in impartir_franja %}
-            <div class="span2 {% if forloop.counter != 1 and not esDataActual %}hidden-phone{% endif %}"   >
-                    {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}                    
-                        <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
-                                {%if esGuardia%}
-                                 <div style="border: 1px solid gray;">
-                                    <div style="text-align: right;background-color: white;">
-                                     -Guardia- <a style="color:#444444;" href="/presencia/esborraGuardia/{{pk}}">[ x ]</a>
-                                    </div>
-                                {%endif%}
-                                {%if grup %}
-                                <a href="/presencia/passaLlista/{{pk}}">
-                                	<div style="background-color:{{color}}">
-                                		{{ assignatura }} {{ aula }} {{ grup }}</br>
-                                		<span class="badge badge-{{color2}}">{{ resum }}</span></br>
-									</div>
-								</a>														
-								{%else%}
-                                	<div style="background-color:{{color}}">
-                                		{{ assignatura }} {{ aula }} {{ grup }}</br>
-									</div>
-								{%endif%}
-                                {%if esGuardia%}
-                                </div>
-                                {%endif%}
-                        </div>
-                    {% endfor %}
+            <div class="col-sm-2 {% if forloop.counter != 1 and not esDataActual %}hidden-sm{% endif %}"   >
+              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}                    
+                <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
+                  {%if esGuardia%}
+                   <div style="border: 1px solid gray;">
+                      <div style="text-align: right;background-color: white;">
+                       -Guardia- <a style="color:#444444;" href="/presencia/esborraGuardia/{{pk}}">[&times;]</a>
+                      </div>
+                  {%endif%}
+                  {%if grup %}
+                    <a href="/presencia/passaLlista/{{pk}}">
+                    	<div style="background-color:{{color}}">
+                    		{{ assignatura }} {{ aula }} {{ grup }}</br>
+                    		<span class="badge badge-{{color2}}">{{ resum }}</span></br>
+                      </div>
+                    </a>														
+                  {%else%}
+                  	<div style="background-color:{{color}}">
+                  		{{ assignatura }} {{ aula }} {{ grup }}</br>
+                    </div>
+                  {%endif%}
+                  {%if esGuardia%}
+                    </div>
+                  {%endif%}
+                </div>
+              {% endfor %}
             </div>                          
                
         {% endfor %}
@@ -79,17 +81,16 @@
 
 
 	<div class="row">
-	  <div class="span2"></div>
+	  <div class="col-sm-2"></div>
 	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
-		  <div class="span2 {% if not esDataActual %}hidden-phone{% endif %}">
+		  <div class="col-sm-2 {% if not esDataActual %}hidden-sm{% endif %}">
 		     <a href="/presencia/afegeixGuardia/{{dia_complet}}">+guardia</a>
 		  </div>
 	  {% endfor %}
 	</div>
 
   <!-- Cal fer dos bucles per a que es mostri bé -->
-  <div class="pagination visible-phone">
-    <ul>
+  <ul class="pagination visible-sm">
 	  {% for  moment, altre_data, visiblePhone, visibleTabletiDesktop in altres_moments %}
       {% if visiblePhone %}
         <li>
@@ -98,9 +99,7 @@
       {% endif %}
     {% endfor %}
 	</ul>
-	</div>
-	<div class="pagination hidden-phone">
-    <ul>
+	<ul class="pagination hidden-sm">
 	  {% for  moment, altre_data, visiblePhone, visibleTabletiDesktop in altres_moments %}
       {% if visibleTabletiDesktop %}
         <li>
@@ -109,6 +108,5 @@
       {% endif %}      
     {% endfor %}
 	</ul>
-	</div>
 {% endblock %}
 
