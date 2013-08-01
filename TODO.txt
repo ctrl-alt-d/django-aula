@@ -47,5 +47,32 @@ find . -print | grep ".py"$ | xargs -i sed -i.bak s/x/y/g {} > {}
 find . -print | grep ".html"$ | xargs -i sed -i.bak s/x/y/g {} > {}
 find . -print | grep ".bak"$ | xargs -i rm {}
 
+#------------
 
+
+Treure tots els commits del desembre:
+
+
+git filter-branch -f --env-filter \
+'case $GIT_COMMIT in
+5ad5c6bdde289b0b98992f53d62f8b1aa50d5404 ) 
+         echo canviant ;  
+         export GIT_AUTHOR_DATE="Thu Aug  1 00:00:00 2013 -0000";  
+         export GIT_COMMITTER_DATE="Thu Aug  1 00:00:00 2013 -0000"; 
+;; 
+162e33ade507da4ce280cb11073b996312e00a6c ) 
+         echo canviant ;  
+         export GIT_AUTHOR_DATE="Thu Aug  1 00:00:00 2013 -0000";  
+         export GIT_COMMITTER_DATE="Thu Aug  1 00:00:00 2013 -0000"; 
+;; 
+...
+63dc0dca5b2cab28101ed9b598c86143b5efca2d ) 
+         echo canviant ;  
+         export GIT_AUTHOR_DATE="Thu Aug  1 00:00:00 2013 -0000";  
+         export GIT_COMMITTER_DATE="Thu Aug  1 00:00:00 2013 -0000"; 
+;;
+esac
+    '
+    
+    
  
