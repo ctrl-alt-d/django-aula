@@ -1,7 +1,9 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
 from aula.apps.alumnes.models import Alumne
-
+from django.db.models.aggregates import Count
+from django.db.models import Q
+from itertools import chain
 
 def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     report = []
@@ -46,93 +48,39 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
 
     taula.fileres = []
     
+
+    q_nivell = Q( grup__curs__nivell = nivell )
+    q_data_inici = Q(  controlassistencia__impartir__dia_impartir__gte = data_inici  )
+    q_data_fi = Q(  controlassistencia__impartir__dia_impartir__lte = data_fi  )
+    q_filte = q_nivell & q_data_inici & q_data_fi
+    q_alumnes = Alumne.objects.filter( q_filte )
+
+    q_p = q_alumnes.filter( controlassistencia__estat__codi_estat__in = ('P','R' ) ).annotate( x=Count('controlassistencia') ).values_list( 'id', 'x' )
+    q_j = q_alumnes.filter( controlassistencia__estat__codi_estat = 'J' ).annotate( x=Count('controlassistencia') ).values_list( 'id', 'x' )
+    q_f = q_alumnes.filter( controlassistencia__estat__codi_estat = 'F' ).annotate( x=Count('controlassistencia') ).values_list( 'id', 'x' )
+    
+    all_ids = set( [ x[0] for x in chain( q_p , q_j, q_f ) ]   )    
+    dict_p, dict_j, dict_f = dict( q_p ), dict( q_j ), dict( q_f )
+    
+    #ajuntar dades diferents fonts
+    alumnes = []
+    for alumne in q_alumnes.select_related( 'grup', 'grup__curs' ).order_by():
+        alumne.p = dict_p.get( alumne.id, 0)
+        alumne.j = dict_j.get( alumne.id, 0)
+        alumne.f = dict_f.get( alumne.id, 0)
+        alumne.ca = alumne.p + alumne.j + alumne.f or 0
+        alumne.tpc = ( float( alumne.f ) / ( alumne.ca ) ) * 100.0 if alumne.ca > 0 else 0
+        alumnes.append(alumne)
     #----------------------
     #choices = ( ('a', u'Nom alumne',), ('ca', u'Curs i alumne',),('n',u'Per % Assistència',), ('cn',u'Per Curs i % Assistència',),
-
-    order_a = '''   a.cognoms,a.nom '''
-
-    order_ca = '''   1.0 * coalesce ( count( f.id_control_assistencia ), 0 ) /
-                    coalesce ( count( ca.id_control_assistencia ), 0 ) 
-                   desc '''
- 
-    order_ca = ''' c.nom_curs, g.nom_grup, a.cognoms ,a.nom '''
- 
-    order_n = '''   tpc desc '''
-
-    order_cn = '''   c.nom_curs, g.nom_grup, tpc desc '''
-
+    order_a = lambda a: ( a.cognoms,  a.nom)
+    order_ca = lambda a: ( a.grup.curs.nom_curs, a.grup.nom_grup, a.cognoms, a.nom )
+    order_n = lambda a: -1 * a.tpc
+    order_cn = lambda a: ( a.grup.curs.nom_curs, a.grup.nom_grup  , -1 * a.tpc)
     order = order_ca if ordenacio == 'ca' else order_n if ordenacio == 'n' else order_cn if ordenacio == 'cn' else order_a
-
-    sql = u'''select                                    TODO!!! PASSAR A QUERY API!!!!!!
-                   a.id_alumne, 
-                   coalesce ( count( ca.id_control_assistencia ), 0 ) as ca,
-                   coalesce ( count( p.id_control_assistencia ), 0 ) as p,
-                   coalesce ( count( j.id_control_assistencia ), 0 ) as j,
-                   coalesce ( count( f.id_control_assistencia ), 0 ) as f,
-                   1.0 * coalesce ( count( f.id_control_assistencia ), 0 ) /
-                      ( coalesce ( count( ca.id_control_assistencia ), 0 ) ) as tpc                   
-                from 
-                   alumne a 
-
-                   inner join
-                   grup g
-                       on (g.id_grup = a.id_grup )
-
-                   inner join
-                   curs c
-                       on (c.id_curs = g.id_curs)
-                
-                   inner join
-                   nivell n
-                       on (n.id_nivell = c.id_nivell)
-
-                   inner join 
-                   control_assistencia ca 
-                       on (ca.id_estat is not null and 
-                           ca.id_alumne = a.id_alumne )
-
-                   inner join
-                   impartir i
-                       on ( i.id_impartir = ca.id_impartir )
-                   
-                   left outer join 
-                   control_assistencia p
-                       on ( 
-                           p.id_estat in ( select id_estat from estat_control_assistencia where codi_estat in ('P','R' ) ) and
-                           p.id_control_assistencia = ca.id_control_assistencia )
-
-                   left outer join 
-                   control_assistencia j
-                       on ( 
-                           j.id_estat = ( select id_estat from estat_control_assistencia where codi_estat = 'J' ) and
-                           j.id_control_assistencia = ca.id_control_assistencia )
-
-                   left outer join 
-                   control_assistencia f
-                       on ( 
-                           f.id_estat = ( select id_estat from estat_control_assistencia where codi_estat = 'F' ) and
-                           f.id_control_assistencia = ca.id_control_assistencia )
-
-                where 
-                    n.id_nivell = {0} and
-                    i.dia_impartir >= '{1}' and
-                    i.dia_impartir <= '{2}'
-
-                group by 
-                   a.id_alumne
-                     
-                having
-                   1.0 * coalesce ( count( f.id_control_assistencia ), 0 ) /
-                     coalesce ( count( ca.id_control_assistencia ), 0 ) 
-                   > ( 1.0 * {3} / 100)
-                order by
-                  {4}
-                '''.format( nivell.pk, data_inici, data_fi, tpc, order   )
     
     
-    #for alumne in  Alumne.objects.raw( sql ):        TODO
-    for alumne in  Alumne.objects.all()[:100]:   
-            
+    for alumne in  sorted( [ a for a in alumnes if a.tpc > tpc ] , key=order  ):   
                 
         filera = []
         
@@ -154,7 +102,7 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
 
         #-%--------------------------------------------
         camp = tools.classebuida()
-        camp.contingut =u'{0:.2f}%'.format(alumne.tpc * 100) 
+        camp.contingut =u'{0:.2f}%'.format(alumne.tpc ) 
         filera.append(camp)
         
         #-absent--------------------------------------------

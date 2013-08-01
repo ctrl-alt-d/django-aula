@@ -176,7 +176,7 @@ class alertaAssistenciaForm(forms.Form):
                               max_value=100, 
                               min_value=1, initial = 25  ,
                               help_text=u'''Filtra alumnes amb % de absència superior a aquet valor.''' ,
-                              widget = TextInput(attrs={'readonly':"readonly"} )  )
+                              widget = TextInput(attrs={'class':"slider"} )  )
     
     nivell = forms.ModelChoiceField( 
                         queryset= Nivell.objects.all(), 
