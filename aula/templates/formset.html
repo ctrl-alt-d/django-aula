@@ -19,7 +19,8 @@
     {{ formset.management_form }}
     {% for form in formset %}    
       
-        {%if form.formSetDelimited %} 
+        {%if form.formSetDelimited %}
+           <div class="row" style="height:5px; border-bottom:1px solid black;margin-bottom: 5px;"> </div> 
            <!-- TODO: Cal pensar com fer això amb bootstrap, i si cal -->
            <!--tr style='background-color:black; height='10'><td colspan='2' style='background-color:black; height='10'></td></tr-->
         {% endif %}
