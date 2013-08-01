@@ -5,7 +5,7 @@ Instal·lació:
 3) python manage.py runserver
 4) anar a Admin / Carrega inicial
 
-Todo:
+Todo: 
 /admin/incidencies/frassesincidenciaaula
 presencia reports  ( sql a query api)
 incidencies views  ( sql a query api)
