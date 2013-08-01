@@ -89,8 +89,8 @@
 	{%endfor%}
 
 	{% if pg_query %}
-    <div class="pagination">
-      <ul>            
+    <div >
+      <ul class="pagination">            
       {% if pg_query.has_previous %}
         <li>
           <a href="{{ url_pg_report }}"><< Inici</a>          
@@ -116,6 +116,7 @@
           <a href="{{ url_pg_report }}/{{ pg_query.paginator.num_pages }}/"> Fi >></a>
         </li>	
       {% endif %}
+    </div>
     {% endif %}
 	
 	{% block postreport  %}{% endblock %}

@@ -16,58 +16,108 @@
 {% block content  %}
 	{% block prereport  %}{% endblock %}
 	
-	<div id="tabs" style="margin:20px 0px 0px 0px">
-	
-	<ul>
-	{% for taula in report %}
-	<li><a href="#tabs-{{taula.codi}}">{{taula.tabTitle}}</a></li>
-	{% endfor %}
+	<ul class="nav nav-tabs" id="reportTabs">
+	  {% for taula in report %}
+	  <li class="{% if forloop.first %}  active{% endif %}" ><a href="#tabs{{taula.codi}}" data-toggle="tab">{{taula.tabTitle}}</a></li>
+	  {% endfor %}
 	</ul>
-	
-	{% for taula in report %}
-	<div id="tabs-{{taula.codi}}">
-	
-	
-	{% if taula.titol.enllac %}<a href="{{ taula.titol.enllac }}">{%endif%}
-	{{ taula.titol.contingut }}
-	{% if taula.titol.enllac %}</a>{%endif%}
-	
-	<table class="box-table-a" >
-	
-		<tr>
-		{% for capcelera in taula.capceleres %}
-		<th width="{{capcelera.amplade}}px">
-  		   {% if capcelera.enllac %}<a href="{{capcelera.enllac}}">{%endif%}
-			{{capcelera.contingut}}
-  		   {% if capcelera.enllac %}</a>{%endif%}
-		</th>
-	  	{% endfor %}
-	  	</tr>
-	  	
-	  	{% for filera in taula.fileres %}
-	  		<tr>
-	  		 {% for camp in filera %}
-	  		 <td  {%if camp.negreta %} style="font-weight:bold" {% endif %}  >
-	  		   {% if camp.codi %}<a name="{{camp.codi}}"> </a>{% endif %}
-	  		   {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
-				{{camp.contingut}}
-	  		   {% if camp.enllac %}</a>{%endif%}
-	  		   {% if camp.multipleContingut %}
-	  		      {% for dada,enllac in camp.multipleContingut %}
-		  		    {% if enllac %}<a href="{{enllac}}">{%endif%}
-					 {{dada}}<br/>
-		  		    {% if enllac %}</a>{%endif%}
-		  		  {% endfor %}
-	  		   {% endif %}
-	  		 </td>
-	  		 {% endfor %}
-	  		</tr>
-	  	{%endfor%}
 
-	</table> 				
-    </div>
+	<div class="tab-content">
+		
+	{% for taula in report %}
+	  <div class="tab-pane {% if forloop.first %}  active{% endif %}"  id="tabs{{taula.codi}}">
+	  {% if taula.titol.enllac %}<a href="{{ taula.titol.enllac }}">{%endif%}
+	  {{ taula.titol.contingut }}
+	  {% if taula.titol.enllac %}</a>{%endif%}
+	  {% if taula.titol.codi %}<a name="{{taula.titol.codi}}"> </a>{% endif %}	
+	  <table class="table table-striped" >
+	
+		  <tr>
+		  {% for capcelera in taula.capceleres %}
+		    <th>
+      		   {% if capcelera.enllac %}<a href="{{capcelera.enllac}}">{%endif%}
+			    {{capcelera.contingut}}
+      		   {% if capcelera.enllac %}</a>{%endif%}
+		    </th>
+    	{% endfor %}
+    	</tr>
+    	
+    	{% for filera in taula.fileres %}
+        <tr>
+      	  {% for camp in filera %}
+            <td>
+             {% if camp.codi %}<a name="{{camp.codi}}"> </a>{% endif %}
+             {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
+             {{camp.contingut|linebreaksbr}}
+             {% if camp.enllac %}</a>{%endif%}
+             {% if camp.multipleContingut %}
+                {% if camp.esMenu %} 
+                  <div class="btn-group">
+                    <a class="btn dropdown-toggle btn-primary" data-toggle="dropdown" href="#">
+                      Accions
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                    {% for dada,enllac in camp.multipleContingut %}
+                      <li>
+                        {% if enllac %}<a href="{{enllac}}">{%endif%}
+                        {{dada}}<br/>
+                        {% if enllac %}</a>{%endif%}
+                      </li>
+                    {% endfor %}
+                    </ul>
+                  </div>
+                {%else%}
+                    <ul>
+                    {% for dada,enllac in camp.multipleContingut %}
+                      <li>
+                        {% if enllac %}<a href="{{enllac}}">{%endif%}
+                        {{dada}}<br/>
+                        {% if enllac %}</a>{%endif%}
+                      </li>
+                    {% endfor %}
+                    </ul>                
+                {%endif%}
+             {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+    	{%endfor%}
+
+	  </table> 	
+	</div>			
 	{%endfor%}
-	</div>
+
+	{% if pg_query %}
+    <div class="pagination">
+      <ul>            
+      {% if pg_query.has_previous %}
+        <li>
+          <a href="{{ url_pg_report }}"><< Inici</a>          
+        </li>
+      {% endif %}
+      {% if pg_query.has_previous %}
+        <li>
+          <a href="{{ url_pg_report }}/{{ pg_query.previous_page_number }}">< Anterior</a>          
+        </li>
+      {% endif %}
+      <li>
+        <a href="{{ url_pg_report }}/{{ pg_query.number }}/">
+            Pàgina {{ pg_query.number }} de {{ pg_query.paginator.num_pages }}
+        </a>
+      </li>
+      {% if pg_query.has_next %}
+        <li>
+          <a href="{{ url_pg_report }}/{{ pg_query.next_page_number }}/"> Següent ></a>
+        </li>
+      {% endif %}
+      {% if pg_query.has_next %}
+        <li>
+          <a href="{{ url_pg_report }}/{{ pg_query.paginator.num_pages }}/"> Fi >></a>
+        </li>	
+      {% endif %}
+    {% endif %}
+	
 		
 	{% block postreport  %}{% endblock %}
 {% endblock %}

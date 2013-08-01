@@ -103,7 +103,8 @@ def fesCarrega( ):
         if professors_del_grup:
             Tutor.objects.create( professor = random.choice( professors_del_grup ) ,  grup = g )
     
-    msg += "\nTutors: " + u" ,".join( set( [ unicode( t.professor.username ) for t in Tutor.objects.all() ] ) )
+    msg += "\nProfessors: " + u" ,".join( sorted( set( [ unicode( t.professor.username ) for t in Professor.objects.all() ] ) ) )
+    msg += "\nTutors: " + u" ,".join( sorted( set( [ unicode( t.professor.username ) for t in Tutor.objects.all() ] ) ) )
                     
     print u"#Assignem equip directiu"
     direccio, _ = Group.objects.get_or_create(name= 'direcció' )
@@ -113,7 +114,7 @@ def fesCarrega( ):
         sisplau_que_no_sigui_mediocre.is_staff = True
         sisplau_que_no_sigui_mediocre.is_superuser = True
         sisplau_que_no_sigui_mediocre.save()    
-    msg += u"\nDirecció: "  + u" ,".join( set( [ unicode( t.username ) for t.username in sisplau_que_no_siguin_mediocres ]  ) )
+    msg += u"\nDirecció: "  + u" ,".join( sorted( set( [ unicode( t.username ) for t.username in sisplau_que_no_siguin_mediocres ]  ) ) )
     
     print u"Regenerar impartir"
     r=regeneraThread(
@@ -139,10 +140,10 @@ def fesCarrega( ):
     print u"canviant dades dels professors"
     for p in Professor.objects.all():
         p.first_name, p.last_name = getRandomNomICognoms() 
-        p.set_password( 'dau' )
+        p.set_password( 'djAu' )
         p.save()
         
-    msg += u"\nTots els passwords de professors: 'dau' "
+    msg += u"\nTots els passwords de professors: 'djAu' "
         
     return msg
 
