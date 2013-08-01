@@ -19,13 +19,13 @@ $(document).ready(function()
       title: '{{ca.estat|escapejs}}, Prof.: {{ca.professor|escapejs}}'
    });
    
-   $('#ca{{ca.pk}}').hover(function() {
+   $('#ca{{ca.pk}},sca{{ca.pk}}').hover(function() {
 	 $(this).css('cursor','pointer');
 	 }, function() {
 	 $(this).css('cursor','auto');
    });   
    
-   $('#ca{{ca.pk}}').click( function() {
+   $('#ca{{ca.pk}},sca{{ca.pk}}').click( function() {
      //alert('CA: {{ca.estat|escapejs}}, Prof.: {{ca.professor|escapejs}}');
      var args = { 
         type:"GET", 
@@ -33,9 +33,9 @@ $(document).ready(function()
         success:function(data) {
         	if ( data.ok ) {
         	   if (data.swaped ) 
-        	      newcontent = '<span class="label label-warning">'+data.codi+'</span>';
+        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-warning">'+data.codi+'</span>';
         	   else 
-        	      newcontent = '<span class="label label-info">'+data.codi+'</span>';
+        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-info">'+data.codi+'</span>';
         	   $('#ca{{ca.pk}}').flip({
 					direction: 'tb',
 					content: newcontent,
@@ -45,7 +45,7 @@ $(document).ready(function()
 			   $('#ca{{ca.pk}}').tooltip({
 			      title: data.missatge
 			   });	
-			   		   
+			   $('#ca{{ca.pk}}').tooltip("hide");
     		} else {
 				$.each( data.errors,  function(index, value) { 
 					$('#comentaris').prepend(
@@ -110,7 +110,7 @@ $(document).ready(function()
   <td style="padding-left:1px;"> 
   		{% for ca in cella.c %}
   		<div id="ca{{ca.pk}}" style="float:left;margin-left: 1px;">
-  		   <span class="label {% if ca.swaped %}label-warning{%else%}label-info{%endif%}">
+  		   <span id="sca{{ca.pk}}" class="label {% if ca.swaped %}label-warning{%else%}label-info{%endif%}">
   		      {{ ca.estat.codi_estat }}
   		   </span> 
   		</div>
@@ -121,7 +121,7 @@ $(document).ready(function()
  {% endfor %}
  </table>
 
-<div style="clear: both;"></div>
+<div style="clear: both;"> </div>
 <div >
 	<ul class="pagination">
 	{% for  professor, moment, altre_data in altres_moments %}
@@ -142,3 +142,5 @@ $(document).ready(function()
  <script>
  </script>
 {% endblock %}
+
+
