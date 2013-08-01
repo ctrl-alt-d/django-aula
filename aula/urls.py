@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
@@ -10,6 +10,7 @@ site_media = os.path.join(
 )
 
 #urlpatterns
+
 urlpatterns = patterns('',
     (r'^menu/$', 'aula.utils.views.menu'),
     #(r'^$', 'missatgeria.views.elMeuMur'),
@@ -34,9 +35,22 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     # Login i logout automàtics
     (r'^login/$', 'django.contrib.auth.views.login'),
-    (r'^password_change/$', 'django.contrib.auth.views.password_change', {'post_change_redirect': '/'}),
+    url(r'^password_change/$', 'django.contrib.auth.views.password_change', {'post_change_redirect': '/'}, name="password_change"),
     (r'^logout/$', 'aula.utils.views.logout_page'),
     #fitxers estàtics:
     (r'^site-css/(?P<path>.*)$', 'django.views.static.serve',{'document_root': site_media}),
 
 )
+
+try:
+    
+    urlpatterns_custom = patterns('',
+                            (r'^customising/', include('customising.urls')),
+                            )
+    urlpatterns += urlpatterns_custom
+except:    
+    pass
+
+
+
+    

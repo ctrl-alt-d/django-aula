@@ -3,11 +3,14 @@
 *.pyc
 customising/business_rules/*
 customising/docs/*
+customising/models.py
+customising/urls.py
+customising/views.py
 env
 aula/db.sqlite
 .project
 .pydevproject
 .settings
 static/*
-aula/apps/demo/tmp/*
+aula/apps/demo/tmp/export*
 aula/settings_local.py

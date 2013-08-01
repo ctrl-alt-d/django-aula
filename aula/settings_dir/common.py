@@ -128,7 +128,7 @@ TEMPLATE_DIRS = [
     location('templates'),
 ]
 
-INSTALLED_APPS = [
+INSTALLED_APPS_DJANGO = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -136,6 +136,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+]
+    
+INSTALLED_APPS_AULA = [
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'aula.apps.missatgeria',
@@ -155,9 +158,9 @@ INSTALLED_APPS = [
     'aula.apps.baixes',
     'aula.apps.BI',
     'aula.utils',
-
-
 ]
+
+INSTALLED_APPS = ['customising'] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

@@ -1,0 +1,24 @@
+from django.conf.urls.defaults import patterns, url
+
+urlpatterns = patterns('customising.views',
+   
+   url(r'^n0/$', 'blanc',
+       name="usuari__dades__canvi_passwd"),
+   
+   url(r'^n1/$', 'blanc',
+       name="administracio__sincronitza__saga"),
+   
+   url(r'^n2/$', 'blanc',
+       name="administracio__sincronitza__kronowin"),
+   
+   url(r'^n3/$', 'blanc',
+       name="administracio__sincronitza__regenerar_horaris"),
+   
+   url(r'^n4/$', 'blanc',
+       name="administracio__professorat__reset_passwd"),
+   
+   url(r'^n5/$', 'blanc',
+       name="administracio__configuracio__carrega_inicial"),
+   
+)
+

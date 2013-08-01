@@ -31,7 +31,7 @@
               </a>
               <ul class="dropdown-menu">
 	              <li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>
-	              <li><a href="/usuaris/canviDePasswd">Canvi de paraula de pas (password)</a></li>
+	              <li><a href="{% url 'usuari__dades__canvi_passwd' %}">Canvi de paraula de pas (password)</a></li>
                 <li class="divider"></li>
                 {% if sessioImpersonada %}
              		  <li><a tabindex="-1" href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
