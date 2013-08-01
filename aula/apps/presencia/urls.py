@@ -41,7 +41,7 @@ urlpatterns = patterns('aula.apps.presencia.views',
         name="coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria" ),  
                        
     url(r'^passaLlistaGrupData/(?P<grup>\d+)/(?P<dia>\d+)/(?P<mes>\d+)/(?P<year>\d{4})/$', 'passaLlistaGrupData', 
-        name="coordinacio_alumnes__explusions_centre__expulsio" ),
+        name="coordinacio_alumnes__presencia__passa_llista_a_un_grup_resultats" ),
 
     
 )
