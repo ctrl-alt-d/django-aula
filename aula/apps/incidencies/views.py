@@ -1003,7 +1003,7 @@ def expulsionsDelCentre( request, s = 'nom' ):
 
     capcelera = tools.classebuida()
     capcelera.amplade = 10
-    capcelera.contingut = u'Obra Expedient'
+    capcelera.contingut = u'Obre Expedient'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
@@ -1013,7 +1013,7 @@ def expulsionsDelCentre( request, s = 'nom' ):
 
     capcelera = tools.classebuida()
     capcelera.amplade = 70
-    capcelera.contingut = u'data carta'
+    capcelera.contingut = u'Data Carta'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
@@ -1045,7 +1045,7 @@ def expulsionsDelCentre( request, s = 'nom' ):
         camp.contingut = unicode(expulsio.alumne) + ' (' + unicode(expulsio.alumne.grup) + ')'
         filera.append(camp)
         
-        #-obra expedient--------------------------------------------
+        #-obre expedient--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = ''
         camp.contingut = u'Sí' if expulsio.obra_expedient else u'No'
