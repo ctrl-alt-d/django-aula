@@ -24,17 +24,6 @@
            <!--tr style='background-color:black; height='10'><td colspan='2' style='background-color:black; height='10'></td></tr-->
         {% endif %}
 
-        {% for label, value in form.infoForm %}
-        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
-	        <div class="col-sm-4 label_tag">
-	        	{{ label }}:
-	        </div>
-	        <div class="col-sm-8" {% if field.errors %} class="text-danger" {% endif %}>      
-	          {{ value }}
-      		</div>
-      	</div>
-	    {% endfor %}
-
         {% for hidden in form.hidden_fields %}
           {{ hidden }}
         {% endfor %}
@@ -50,6 +39,17 @@
         </div>
         {% endif %}
           
+        {% for label, value in form.infoForm %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+	        <div class="col-sm-4 label_tag">
+	        	{{ label }}:
+	        </div>
+	        <div class="col-sm-8">      
+	          {{ value }}
+      		</div>
+      	</div>
+	    {% endfor %}
+
         {% for field in form.visible_fields %}
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
 	        <div class="col-sm-4 label_tag">
@@ -65,7 +65,11 @@
 		        {% if field.errors %}		        	
 			        <div class="alert alert-danger">
 			        <button type="button" class="close" data-dismiss="alert">&times;</button>
-		            {{ field.errors }}
+				        <ul>
+				          {% for error in field.errors%}
+				          <li>{{ error }}</li>
+			              {% endfor %}
+			            </ul>
 		         	</div>
 		        {% endif %}
 	        </div>
