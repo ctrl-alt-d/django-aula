@@ -41,7 +41,10 @@
 	        <div class="col-sm-4 label_tag">
             {% if form.non_field_errors %}
               {% for error in form.non_field_errors %}
-            	  <p class="text-danger">{{error}}</p>
+            	  <div class="alert alert-danger">
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  {{error}}
+                </div>
               {% endfor %}
             {% endif %}	
 	          <p class="text-right hidden-sm">{{ field.label_tag }}</p>
