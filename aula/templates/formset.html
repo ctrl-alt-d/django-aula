@@ -61,7 +61,7 @@
 	        <div class="col-sm-8 tria_tag">
 	            {{ field }}
 	            {% if field.help_text %}
-	            <br/><span class="help_text">( {{ field.help_text }} )</span>	        
+	            <p><span class="help_text">( {{ field.help_text }} )</p>	        
 	            {% endif %}
 		        {% if field.errors %}		        	
 			        <div class="alert alert-danger">
@@ -76,10 +76,10 @@
 	        </div>
         </div>
         {% endfor %}
+
         {%if formSetDelimited %}
-          <!-- TODO: Cal pensar com fer això amb bootstrap, i si cal -->
-          <!--tr style='background-color:white; height='10'><td colspan='2' style='background-color:white; height='10'></td></tr-->
         {% endif %}       
+
     {% endfor %}
     {% if formset %}
     <div class="row row-padded" >
