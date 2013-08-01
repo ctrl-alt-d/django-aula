@@ -41,7 +41,7 @@ def clean_sortida( instance ):
     #si passem a gestionada pel cap d'estudis
     if instance.estat in ( 'G', ):
 
-        if not User.objects.filter( pk=user.pk, groups__name = 'Direcció').exists():
+        if not User.objects.filter( pk=user.pk, groups__name = 'direcció').exists():
             errors.append( u"Només el Direcció pot Gestionar una Sortida." )
                 
         if not bool(instance.instanceDB) or instance.instanceDB.estat not in [ 'P', 'R' ]:

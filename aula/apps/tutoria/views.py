@@ -221,7 +221,7 @@ def editaActuacio(request, pk):
     te_permis = (l4 or 
                 actuacio.professional.pk == user.pk or  
                 professor in actuacio.alumne.tutorsDeLAlumne() or
-                user.groups.filter(name__in= [u'Direcció', u'psicopedagoc'] ).exists() 
+                user.groups.filter(name__in= [u'direcció', u'psicopedagoc'] ).exists() 
                 )
     if  not te_permis:
         raise Http404() 
@@ -940,7 +940,7 @@ def imprimirCarta(request, pk_carta, flag  ):
     te_permis = (l4 or 
                 professor in carta.alumne.tutorsDeLAlumne()
                 or
-                user.groups.filter(name__in= [u'Direcció', ] ).exists()
+                user.groups.filter(name__in= [u'direcció', ] ).exists()
                 )
     if  not te_permis:
         raise Http404() 
@@ -1053,7 +1053,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
     esTutorat = l4 or \
                 professor in alumne.tutorsDeLAlumne() or \
-                user.groups.filter(name__in= [u'Direcció', u'psicopedagoc'] ).exists()  
+                user.groups.filter(name__in= [u'direcció', u'psicopedagoc'] ).exists()  
     
     if not esTutorat:
         raise Http404 

@@ -470,7 +470,7 @@ def editaExpulsio( request, pk ):
     expulsio = get_object_or_404( Expulsio, pk = pk)
     
     #seg---------
-    pot_entrar = l4 or (expulsio.professor is not None and expulsio.professor.pk == user.pk) or user.groups.filter( name= u'Direcció').exists()
+    pot_entrar = l4 or (expulsio.professor is not None and expulsio.professor.pk == user.pk) or user.groups.filter( name= u'direcció').exists()
     if not pot_entrar:
         raise Http404() 
     
@@ -1256,7 +1256,7 @@ def editaExpulsioCentre( request, pk ):
     expulsio = ExpulsioDelCentre.objects.get( pk = pk)
     
     #seg---------
-    pot_entrar = l4 or user.groups.filter( name= 'Direcció').exists()
+    pot_entrar = l4 or user.groups.filter( name= 'direcció').exists()
     if not pot_entrar:
         raise Http404() 
     
@@ -1358,7 +1358,7 @@ def esborrarExpulsioCentre( request, pk ):
     expulsio = ExpulsioDelCentre.objects.get( pk = pk)
     
     #seg---------
-    pot_entrar = l4 or user.groups.filter( name= 'Direcció').exists()
+    pot_entrar = l4 or user.groups.filter( name= 'direcció').exists()
     if not pot_entrar:
         raise Http404() 
     
