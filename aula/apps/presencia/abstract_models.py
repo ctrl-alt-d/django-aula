@@ -71,9 +71,9 @@ class AbstractImpartir(models.Model):
         elif self.esAvui():
             return u'info' 
         elif self.esFutur():
-            return u'inverse' 
+            return u'default' 
         else:
-            return u'important'
+            return u'danger'
 
 class AbstractEstatControlAssistencia(models.Model):
     codi_estat = models.CharField( max_length=1, unique=True)
