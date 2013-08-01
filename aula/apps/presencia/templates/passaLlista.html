@@ -43,7 +43,7 @@
       $(document).ready(
       function($){
           /* Posar tot a ... */
-          $("#totpresent").click(function(){
+          $("#totpresent, #totpresent2").click(function(){
             totnet();
             $(".btn").each(function () {
               if($(this).hasClass('btnPresent')) {
@@ -58,7 +58,7 @@
             return false;
           });
           
-          $("#totfalta").click(function(){
+          $("#totfalta, #totfalta2").click(function(){
             totnet();
             $(".btn").each(function () {
               if($(this).hasClass('btnFalta')) {
@@ -73,7 +73,7 @@
             return false;
           });
           
-          $("#horaAnterior").click(function(){
+          $("#horaAnterior, #horaAnterior2").click(function(){
 				    totnet();
 				    {% for f in formset %}
 				      {% if f.hora_anterior == 0  %}
@@ -88,7 +88,7 @@
 				    return false;
           });
           
-			    $("#feelLucky").click(function(){
+			    $("#feelLucky, #feelLucky2").click(function(){
 				    totnet();
 				    {% for f in formset %}
 				      {% if f.prediccio == 0 %}
@@ -110,10 +110,29 @@
 
 {% block preform  %}
 
-
-
 	{% if formset %}
-		<div class="row">
+    <div class="row visible-sm">
+		  <div class="col-sm-12">
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          Opcions<span class="caret"></span>
+          </button>
+            <ul class="dropdown-menu">
+              <li><a href="/presencia/treuAlumnesLlista/{{id_impartir}}" >Treure alumnes</a></li>
+              <li><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}" >Afegir alumnes</a></li>
+              <li><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}" >Incidències</a></li>
+              <li>
+                <a href="/baixes/feina/{{id_impartir}}" >Feina a Realitzar
+                  {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
+                </a>
+              </li>
+              
+            </ul>
+        </div>
+      </div>
+	  </div>
+	  
+	  <div class="row">
 		  <div class="col-sm-8">
 	      <p class="well well-small">
       	  <span class="glyphicon glyphicon-user"></span> {{ info.professor }}<br />
@@ -124,7 +143,8 @@
           <span class="glyphicon glyphicon-list"></span> {{ info.grup }}<br />
       	</p>
     	</div>
-    	<div class="col-sm-4">
+    	
+    	<div class="col-sm-4 hidden-sm">
 			  <p><a href="/presencia/treuAlumnesLlista/{{id_impartir}}">Treure alumnes de la llista</a></p>
 			  <p><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}">Afegir alumnes a la llista</a></p>
 			  <p><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}">Incidències</a></p>
@@ -137,26 +157,9 @@
   	</div>
   	
   	
-  	
-
-
-
-
-
-  	
-  	
-  	
-  	
-  	
-  	
-  	
-  	
-  	
-  	
-  	
-	  <div class="row row-padded">
-	    <div class="col-sm-6"></div><!-- no funciona bé el col-offset-6"-->
-      <div class="col-sm-6">
+	  <div class="row row-padded hidden-sm">
+	    <div class="col-sm-4"></div><!-- no funciona bé el col-offset-6"-->
+      <div class="col-sm-8">
         <!--div data-toggle="buttons-radio"-->
           <button type="button" id="totpresent" class="btn btn-primary">Tot<br />Present</button>
           <button type="button" id="totfalta" class="btn btn-primary">Tot<br />Falta</button>
@@ -167,6 +170,23 @@
         <!--/div-->
       </div>
     </div>
+  
+    <div class="row row-padded visible-sm">
+      <div class="col-sm-12 visible-sm">
+        <div class="btn-group">
+          <button type="button" class="btn btn-default" id="feelLucky2">Tindrè sort!</button>
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a id="totfalta2">Tot Falta</a></li>
+            <li><a href="#" id="horaAnterior2">Hora Anterior</a></li>
+            <li><a href="#" id="totpresent2">Tot present</a></li>
+          </ul>
+        </div>
+      </div>  
+    </div>
+
+    
 	{% else %}
 
 	  <p>
