@@ -103,7 +103,7 @@ def fesCarrega( ):
         if professors_del_grup:
             Tutor.objects.create( professor = random.choice( professors_del_grup ) ,  grup = g )
     
-    msg += "\nProfessors: " + u" ,".join( sorted( set( [ unicode( t.professor.username ) for t in Professor.objects.all() ] ) ) )
+    msg += "\nProfessors: " + u" ,".join( sorted( set( [ unicode( t.username ) for t in Professor.objects.all() ] ) ) )
     msg += "\nTutors: " + u" ,".join( sorted( set( [ unicode( t.professor.username ) for t in Tutor.objects.all() ] ) ) )
                     
     print u"#Assignem equip directiu"
