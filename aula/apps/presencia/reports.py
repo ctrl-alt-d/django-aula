@@ -55,11 +55,10 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     q_filte = q_nivell & q_data_inici & q_data_fi
     q_alumnes = Alumne.objects.filter( q_filte )
 
-    q_p = q_alumnes.filter( controlassistencia__estat__codi_estat__in = ('P','R' ) ).annotate( x=Count('controlassistencia') ).values_list( 'id', 'x' )
-    q_j = q_alumnes.filter( controlassistencia__estat__codi_estat = 'J' ).annotate( x=Count('controlassistencia') ).values_list( 'id', 'x' )
-    q_f = q_alumnes.filter( controlassistencia__estat__codi_estat = 'F' ).annotate( x=Count('controlassistencia') ).values_list( 'id', 'x' )
+    q_p = q_alumnes.filter( controlassistencia__estat__codi_estat__in = ('P','R' ) ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).values_list( 'id', 'x' )
+    q_j = q_alumnes.filter( controlassistencia__estat__codi_estat = 'J' ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).order_by().distinct().values_list( 'id', 'x' )
+    q_f = q_alumnes.filter( controlassistencia__estat__codi_estat = 'F' ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).values_list( 'id', 'x' )
     
-    all_ids = set( [ x[0] for x in chain( q_p , q_j, q_f ) ]   )    
     dict_p, dict_j, dict_f = dict( q_p ), dict( q_j ), dict( q_f )
     
     #ajuntar dades diferents fonts
@@ -75,7 +74,7 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     #choices = ( ('a', u'Nom alumne',), ('ca', u'Curs i alumne',),('n',u'Per % Assistència',), ('cn',u'Per Curs i % Assistència',),
     order_a = lambda a: ( a.cognoms,  a.nom)
     order_ca = lambda a: ( a.grup.curs.nom_curs, a.grup.nom_grup, a.cognoms, a.nom )
-    order_n = lambda a: -1 * a.tpc
+    order_n = lambda a: ( -1 * a.tpc, -1 * a.f )
     order_cn = lambda a: ( a.grup.curs.nom_curs, a.grup.nom_grup  , -1 * a.tpc)
     order = order_ca if ordenacio == 'ca' else order_n if ordenacio == 'n' else order_cn if ordenacio == 'cn' else order_a
     
