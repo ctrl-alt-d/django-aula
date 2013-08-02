@@ -855,7 +855,7 @@ def alertaAssistencia(request):
                              'head': 'Informació alumnes' ,
                             },
                             context_instance=RequestContext(request))            
-
+ 
     else:
         form = alertaAssistenciaForm()
         
