@@ -64,7 +64,7 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     
     #ajuntar dades diferents fonts
     alumnes = []
-    for alumne in q_alumnes.select_related( 'grup', 'grup__curs' ).order_by():
+    for alumne in q_alumnes.select_related( 'grup', 'grup__curs' ).order_by().distinct():
         alumne.p = dict_p.get( alumne.id, 0)
         alumne.j = dict_j.get( alumne.id, 0)
         alumne.f = dict_f.get( alumne.id, 0)
