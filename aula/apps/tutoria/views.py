@@ -706,7 +706,7 @@ def justificadorMKTable(request, year, month, day ):
                 haPassatLlista = hiHaControls and len( [ c for c in controls if c.estat is not None and c.impartir.horari.hora == hora] )>0
                 
                 cella.c = [ c for c in controls if c.impartir.horari.hora == hora]
-                for item in cella:
+                for item in cella.c:
                     item.professor2show = item.professor or item.impartir.professor 
                     item.estat2show= item.estat or " "
                 dades.c.extend(cella.c)
