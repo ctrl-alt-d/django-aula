@@ -8,9 +8,16 @@ from django.conf import settings
 from lxml import etree
 
 def predictTreeModel( values ):
-    predict = None
+    
+    #Si no hi ha model fem predicció respecte hora anterior:
     if not hasattr(settings, 'PREDICTION_TREE') or settings.PREDICTION_TREE is None:
-        return 'Present', 0.5
+        if "assistenciaaHoraAnterior" in values and values["assistenciaaHoraAnterior"] == 'Absent':
+            return 'Absent', 0.8
+        else: 
+            return 'Present', 0.5
+
+    #Si hi ha model llavors segons el model.
+    predict = None
     
     tree = settings.PREDICTION_TREE
     root = tree.getroot()
