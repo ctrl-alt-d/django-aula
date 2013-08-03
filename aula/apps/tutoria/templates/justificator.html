@@ -111,7 +111,7 @@ $(document).ready(function()
   		{% for ca in cella.c %}
   		<div id="ca{{ca.pk}}" style="float:left;margin-left: 1px;">
   		   <span id="sca{{ca.pk}}" class="label {% if ca.swaped %}label-warning{%else%}label-info{%endif%}">
-  		      {% if {{ ca.estat.codi_estat }} %}{{ ca.estat.codi_estat }}{% else %}_{%endif%}
+  		      {% if ca.estat.codi_estat %}{{ ca.estat.codi_estat }}{% else %}_{%endif%}
   		   </span> 
   		</div>
   		{% endfor %}
