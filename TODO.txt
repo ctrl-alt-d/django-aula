@@ -18,15 +18,14 @@ apt-get install libxml2-dev libxslt-dev
 
 #---TODO----------------------
 
-* fabicon
 * 'Tindré sort': si no hi ha PMML segons hora anterior.
-* 'Tindré sort': badge amb la problabilitat.
+* Portal famílies: comprovar funciona OK
 * avisos->senyal al menú si n'hi han de nous
 * Demo: Carrusel imatges
 * Nova incidencia -> redirect to / + message
 * Pantalla incidències aula ( incidencies/posaIncidenciaAula/ ), refer-la.
-* Portal famílies: comprovar funciona OK
 * Settings 'Centre' a demo / customising
+* 'Tindré sort': badge amb la problabilitat.
 * /admin/incidencies/frassesincidenciaaula
 
 
