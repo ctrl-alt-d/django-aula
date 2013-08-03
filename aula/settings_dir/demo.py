@@ -15,3 +15,4 @@ URL_DJANGO_AULA = r'http://djau.ctrlalt.d.webfactional.com'
 # from lxml import etree  
 # PREDICTION_TREE=etree.parse( r'path_fins_el_model' )
 PREDICTION_TREE = None
+

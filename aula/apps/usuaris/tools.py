@@ -235,14 +235,11 @@ def enviaBenvingudaAlumne( alumne, force = False ):
         enviatOK = True
         try:
             fromuser = settings.EMAIL_HOST_USER
-            if not settings.DEBUG:
-                send_mail('Accés a infomes seguiment', 
-                          u'\n'.join( missatge ), 
-                          fromuser,
-                          [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
-                          fail_silently=False)
-            else:
-                warnings.extend( missatge  )
+            send_mail('Accés a infomes seguiment', 
+                      u'\n'.join( missatge ), 
+                      fromuser,
+                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
+                      fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
             infos = []

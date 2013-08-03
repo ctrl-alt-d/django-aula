@@ -1,13 +1,86 @@
-{% extends "registration/form.html" %}
+{% extends "base.html" %}
 
+{% block extrahead %}
+<style type="text/css">
+  body {
+    padding-top: 110px;
+    padding-bottom: 40px;
+    background-color: #f5f5f5;
+  }
 
-{% block postform  %}
-<div style="clear: both;"></div> 
-		<div class="menucontextual" style="text-align:right"> 
-		<ul> 			
-			<li>
-<a href='/usuaris/sendPasswdByEmail/'>Obtenir o recuperar accés</a>
-</li></ul>
-</div></div>
+  .form-signin {
+    max-width: 300px;
+    padding: 19px 29px 29px;
+    margin: 0 auto 20px;
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+            border-radius: 5px;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+       -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+            box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  }
+  .form-signin .form-signin-heading,
+  .form-signin .checkbox {
+    margin-bottom: 10px;
+  }
+  .form-signin input[type="text"],
+  .form-signin input[type="password"] {
+    font-size: 16px;
+    height: auto;
+    margin-bottom: 15px;
+    padding: 7px 9px;
+  }
+</style>
 {% endblock %}
 
+{% block head %}
+  {{ head }}
+{% endblock %}
+
+ 
+{% block content  %}
+	{% block preform %}{% endblock %}
+
+  
+    <form class="form-signin" action="." method="post" target="{%if target %}{{target}}{%else%}_self{%endif%}">{% csrf_token %}
+      <h2 class="form-signin-heading">Identificació</h2>
+      <input type="text" name="usuari" class="form-control" placeholder="Nom d'usuari" autofocus>
+      {% if form.usuari.errors %}
+	        <div class="alert alert-danger">
+	        <button type="button" class="close" data-dismiss="alert">&times;</button>
+		        <ul>
+		          {% for error in form.usuari.errors%}
+		          <li>{{ error }}</li>
+	              {% endfor %}
+	            </ul>
+         	</div>
+      {% endif %}
+	  <input type="password" name="paraulaDePas" class="form-control" placeholder="Paraula de pas">
+      {% if form.paraulaDePas.errors %}
+	        <div class="alert alert-danger">
+	        <button type="button" class="close" data-dismiss="alert">&times;</button>
+		        <ul>
+		          {% for error in form.paraulaDePas.errors%}
+		          <li>{{ error }}</li>
+	              {% endfor %}
+	            </ul>
+         	</div>
+      {% endif %}
+
+	  {% if form.non_field_errors %}
+		  <div class="alert alert-danger">
+	      <button type="button" class="close" data-dismiss="alert">&times;</button>
+	      {% for error in form.non_field_errors %}
+	        <p>{{error}}</p>
+	      {% endfor %}
+	    </div>
+	  {% endif %}      
+
+      <button class="btn btn-large btn-primary btn-block" type="submit">Inicia la sessió</button>      
+      <a class="btn btn-primary btn-large" style="margin-top:10px;" href='/usuaris/sendPasswdByEmail/'>Obtenir o recuperar accés</a>
+    </form>
+
+
+{% endblock %}

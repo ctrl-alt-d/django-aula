@@ -99,7 +99,7 @@ def enviaBenvinguda( request , pk ):
     return render_to_response(
                 'resultat.html',
                     {'msgs': cosMissatge ,
-                     'head': 'Canvi configuració accés família de {0}'.format( alumne ) ,
+                     'head': u"Acció Envia Benviguda a {0}".format( alumne ) ,
                     },
                     context_instance=RequestContext(request))        
 

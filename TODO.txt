@@ -18,7 +18,6 @@ apt-get install libxml2-dev libxslt-dev
 
 #---TODO----------------------
 
-* 'Tindré sort': si no hi ha PMML segons hora anterior.
 * Portal famílies: comprovar funciona OK
 * avisos->senyal al menú si n'hi han de nous
 * Demo: Carrusel imatges
