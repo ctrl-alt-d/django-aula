@@ -27,6 +27,7 @@ apt-get install libxml2-dev libxslt-dev
 * Settings 'Centre' a demo / customising
 * 'Tindré sort': badge amb la problabilitat.
 * /admin/incidencies/frassesincidenciaaula
+* favicon xulo.
 
 
 #-----------------------------
