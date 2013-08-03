@@ -1,21 +1,34 @@
 Instal·lació:
 
+0) [Opcional] Crear virtualenv
 1) pip install -r requirements.txt
 2) Importar fixtures: ./scripts/fixtures.sh
 3) python manage.py runserver
 4) anar a Admin / Carrega inicial
- 
-Todo: 
-/admin/incidencies/frassesincidenciaaula
-presencia reports  ( sql a query api)
-incidencies views  ( sql a query api)
-'widget' calendaria
-avisos->senyal al menú si n'hi han de nous
 
+#---Crear virtualenv-------------
+      #https://pypi.python.org/pypi/virtualenv
+      $ [sudo] pip install virtualenv
+      virtualenv env
+      source venv/bin/activate
 #---------------------------------
-Requeriments SO:
 
+Requeriments SO:
 apt-get install libxml2-dev libxslt-dev
+
+#---TODO----------------------
+
+* fabicon
+* 'Tindré sort': si no hi ha PMML segons hora anterior.
+* 'Tindré sort': badge amb la problabilitat.
+* avisos->senyal al menú si n'hi han de nous
+* Demo: Carrusel imatges
+* Nova incidencia -> redirect to / + message
+* Pantalla incidències aula ( incidencies/posaIncidenciaAula/ ), refer-la.
+* Portal famílies: comprovar funciona OK
+* Settings 'Centre' a demo / customising
+* /admin/incidencies/frassesincidenciaaula
+
 
 #-----------------------------
 #utils:
