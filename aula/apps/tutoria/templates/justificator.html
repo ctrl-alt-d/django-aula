@@ -16,7 +16,7 @@ $(document).ready(function()
    {% for ca in dades.c %}
    $('#ca{{ca.pk}}').tooltip(
    {
-      title: '{{ca.estat|escapejs}}, Prof.: {{ca.professor|escapejs}}'
+      title: '{{ca.estat2show|escapejs}}, Prof.: {{ca.professor2show|escapejs}}'
    });
    
    $('#ca{{ca.pk}},sca{{ca.pk}}').hover(function() {
