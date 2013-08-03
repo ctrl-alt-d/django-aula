@@ -93,16 +93,12 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
         from django.core.mail import send_mail
         enviatOK = True
         try:
-            from django.conf import settings
             fromuser = settings.EMAIL_HOST_USER
-            if not settings.DEBUG:
-                send_mail('Accés a infomes seguiment', 
-                          u'\n'.join( missatge ), 
-                          fromuser,
-                          [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
-                          fail_silently=False)
-            else:
-                warnings.extend( missatge  )
+            send_mail('Accés a infomes seguiment', 
+                      u'\n'.join( missatge ), 
+                      fromuser,
+                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
+                      fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
             infos = []
@@ -168,16 +164,12 @@ def enviaOneTimePasswdProfessor( professor, force = False ):
         from django.core.mail import send_mail
         enviatOK = True
         try:
-            from django.conf import settings
             fromuser = settings.EMAIL_HOST_USER
-            if not settings.DEBUG:
-                send_mail(u"Accés a l'aplicatiu de {0}".format( settings.NOM_CENTRE), 
-                          u'\n'.join( missatge ), 
-                          fromuser,
-                          [  correu ] , 
-                          fail_silently=False)
-            else:
-                warnings.extend( missatge  )
+            send_mail(u"Accés a l'aplicatiu de {0}".format( settings.NOM_CENTRE), 
+                      u'\n'.join( missatge ), 
+                      fromuser,
+                      [  correu ] , 
+                      fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
             infos = []

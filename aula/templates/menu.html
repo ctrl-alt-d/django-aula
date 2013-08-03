@@ -26,11 +26,11 @@
         {% if user.is_authenticated %}
             <li class="dropdown">    	
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                {{user.first_name}}
+                {{menu.nomusuari}}
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-	              <li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>
+	              {%if not menu.esalumne %}<li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>{% endif %}
 	              <li><a href="{% url 'usuari__dades__canvi_passwd' %}">Canvi de paraula de pas (password)</a></li>
                 <li class="divider"></li>
                 {% if sessioImpersonada %}

@@ -18,7 +18,7 @@ apt-get install libxml2-dev libxslt-dev
 
 #---TODO----------------------
 
-* Portal famílies: comprovar funciona OK
+* Portal famílies: Nom: familia de l'alumne ..., treure 'el meu nom i correu'
 * avisos->senyal al menú si n'hi han de nous
 * Demo: Carrusel imatges
 * Nova incidencia -> redirect to / + message

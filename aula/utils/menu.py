@@ -2,7 +2,7 @@
 from aula.utils.tools import classebuida
 from django.core.urlresolvers import resolve, reverse
 from django.contrib.auth.models import Group
-from aula.apps.usuaris.models import User2Professor
+from aula.apps.usuaris.models import User2Professor, AlumneUser
 
 
 def calcula_menu( user , path ):
@@ -23,6 +23,15 @@ def calcula_menu( user , path ):
     nom_path = resolve( path ).url_name
 
     menu = { 'items':[], 'subitems':[], 'subsubitems':[], }
+    
+    if user.is_authenticated():
+        menu["esalumne"]=al
+        if al:
+            alumneuser = AlumneUser.objects.get( id = user.id )
+            alumne = alumneuser.getAlumne()
+            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom )
+        else:
+            menu["nomusuari"]= user.first_name or user.username 
     
     try:
         menu_id, submenu_id, subsubmenu_id = nom_path.split( '__' )[:3]
