@@ -707,7 +707,7 @@ def justificadorMKTable(request, year, month, day ):
                 
                 cella.c = [ c for c in controls if c.impartir.horari.hora == hora]
                 for item in cella.c:
-                    item.professor2show = item.professor or item.impartir.professor 
+                    item.professor2show = item.professor or ( item.impartir.horari.professor if item.impartir.horari else ' ' ) 
                     item.estat2show= item.estat or " "
                 dades.c.extend(cella.c)
 
