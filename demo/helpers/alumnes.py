@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 import random
-from aula.apps.demo.helpers import nomsICognoms
+from demo.helpers import nomsICognoms
 from datetime import timedelta, date
 from django.template.defaultfilters import slugify
 import csv

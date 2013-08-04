@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-from aula.apps.demo.helpers.alumnes import generaFitxerSaga, getRandomNomICognoms
-from aula.apps.demo.helpers.horaris import generaFitxerKronowin
+from demo.helpers.alumnes import generaFitxerSaga, getRandomNomICognoms
+from demo.helpers.horaris import generaFitxerKronowin
 
 from aula.apps.extKronowin import sincronitzaKronowin 
 from aula.apps.extSaga import sincronitzaSaga

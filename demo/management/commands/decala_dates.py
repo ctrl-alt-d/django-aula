@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
-from aula.apps.demo.helpers.carrega import fesCarrega
+from demo.helpers.carrega import fesCarrega
 from datetime import date
 from aula.apps.alumnes.models import Curs
 from dateutil.relativedelta import relativedelta

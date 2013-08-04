@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
-from aula.apps.demo.helpers.carrega import fesCarrega
+from demo.helpers.carrega import fesCarrega
 
 class Command(BaseCommand):
     args = 'None'
