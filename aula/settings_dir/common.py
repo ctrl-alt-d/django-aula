@@ -10,7 +10,7 @@ PROJECT_DIR = os.path.join( os.path.dirname(__file__), '..')
 location = lambda x: os.path.join(PROJECT_DIR, x)
 
 ADMINS = (
-    ('Daniel Herrera', 'dherrera@xtec.cat'),
+    ('dani Herrera', 'ctrl.alt.d@gmail.com'),
 )
 
 LOGIN_URL="/usuaris/login"
@@ -18,6 +18,11 @@ LOGIN_URL="/usuaris/login"
 LICENSE_FILE = location( r'../LICENSE' )
 
 MANAGERS = ADMINS
+
+#En cas de tenir un arbre de predicció cal posar-lo aquí:
+# from lxml import etree  
+# PREDICTION_TREE=etree.parse( r'path_fins_el_model' )
+PREDICTION_TREE = None
 
 DATABASES = None  #overrided on prod, dev environment
 

@@ -3,8 +3,6 @@
 
 from common import *
 
-
-
 DEBUG = True
 TEMPLATE_DEBUG = True
 SQL_DEBUG = True
@@ -36,6 +34,7 @@ DATABASES = {
 
 INSTALLED_APPS += [
     'debug_toolbar',
+    'demo',
 ]
 
 MIDDLEWARE_CLASSES += [

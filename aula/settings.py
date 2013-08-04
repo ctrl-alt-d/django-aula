@@ -1,7 +1,7 @@
 try:
     from settings_local import *
 except:
-    from settings_dir.demo import *
+    from settings_dir.dev import *
 
 
     

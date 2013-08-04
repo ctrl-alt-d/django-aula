@@ -3,13 +3,10 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-#site_media
 import os.path
 site_media = os.path.join(
    os.path.dirname(__file__), 'site-css'
 )
-
-#urlpatterns
 
 urlpatterns = patterns('',
     (r'^menu/$', 'aula.utils.views.menu'),
