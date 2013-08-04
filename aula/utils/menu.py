@@ -25,7 +25,6 @@ def calcula_menu( user , path ):
     tots = di or pr or pl or co or al or pg
     
     #Comprovar si té missatges sense llegir
-    nMissatges= None
     nMissatges = user.destinatari_set.filter( moment_lectura__isnull = True ).count()
     
     #Comprovar si té expulsions sense tramitar o cal fer expulsions per acumulació
@@ -155,8 +154,8 @@ def calcula_menu( user , path ):
                       ),
                       ("Tutors", 'professorat__tutors__blanc', di, None,
                          (
-                            ('Tutors Grups', 'professorat__tutors__tutors_grups', di),
-                            ('Tutors individualitzat', 'professorat__tutors__tutors_individualitzats', di),
+                            ('Tutors Grups', 'professorat__tutors__tutors_grups', di, None),
+                            ('Tutors individualitzat', 'professorat__tutors__tutors_individualitzats', di, None),
                          ), 
                       ),
                    )
@@ -204,7 +203,7 @@ def calcula_menu( user , path ):
         item.label = item_label
         item.url = reverse( item_url )
         item.active = 'active' if actiu else ''
-        item.alerta = alerta
+        item.alerta = not alerta is None and alerta
         menu['items'].append( item )
         
         if actiu:
