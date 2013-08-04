@@ -3,9 +3,9 @@
 
 from common import *
 
-INSTALLED_APPS += [
+INSTALLED_APPS  = [
                    'demo',
-                   ]
+                   ] + INSTALLED_APPS
 
 NOM_CENTRE = 'Centre de Demo'
 LOCALITAT = u"L'Escala"
