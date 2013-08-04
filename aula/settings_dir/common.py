@@ -107,6 +107,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'aula.utils.context_processors.dades_basiques',
     )
 
+
+ATOMIC_REQUESTS = True  # per quan es migri a 1.6
 MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -114,6 +116,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     'aula.utils.middleware.NoCacheMiddleware',   
     'aula.utils.middleware.timeOutMiddleware', 
     'aula.utils.middleware.IncludeLoginInErrors',    
