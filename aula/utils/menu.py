@@ -203,7 +203,7 @@ def calcula_menu( user , path ):
         item.label = item_label
         item.url = reverse( item_url )
         item.active = 'active' if actiu else ''
-        item.alerta = not alerta is None and alerta
+        item.alerta = alerta
         menu['items'].append( item )
         
         if actiu:
