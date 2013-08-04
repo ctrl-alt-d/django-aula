@@ -1,0 +1,19 @@
+# This Python file uses the following encoding: utf-8
+# Django settings for aula project.
+
+from settings_dir.dev import *
+
+NOM_CENTRE = 'Centre de Demo'
+LOCALITAT = u"L'Escala"
+URL_DJANGO_AULA = r'http://djau.ctrlaltd.webfactional.com'
+ALLOWED_HOSTS = [ 'djau.ctrlaltd.webfactional.com', ]
+
+#En cas de tenir un arbre de predicció cal posar-lo aquí:
+# from lxml import etree  
+# PREDICTION_TREE=etree.parse( r'path_fins_el_model' )
+PREDICTION_TREE = None
+
+STATIC_URL = '{domain}/site-css/'.format( domain=URL_DJANGO_AULA )
+STATIC_ROOT = '/home/ctrlaltd/webapps/djaustatic/'
+
+DEBUG = False

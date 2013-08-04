@@ -18,12 +18,12 @@ apt-get install libxml2-dev libxslt-dev
 
 #---TODO----------------------
 
-* Portal famílies: Nom: familia de l'alumne ..., treure 'el meu nom i correu'
 * avisos->senyal al menú si n'hi han de nous
 * Demo: Carrusel imatges
 * Nova incidencia -> redirect to / + message
 * Pantalla incidències aula ( incidencies/posaIncidenciaAula/ ), refer-la.
-* Settings 'Centre' a demo / customising
+* site-css a {{static}}
+*? Settings 'Centre' a demo / customising
 * 'Tindré sort': badge amb la problabilitat.
 * /admin/incidencies/frassesincidenciaaula
 * favicon xulo.
