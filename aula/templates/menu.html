@@ -17,7 +17,7 @@
         <ul class="nav navbar-nav">         
         {% for item in menu.items %}
 	      <li  class="{{item.active}}" >
-		      <a href="{{item.url}}">{{item.label}}</a> 
+		      <a href="{{item.url}}">{{item.label}} {% if item.alerta %}!{%endif%} </a> 
 	      </li> 
 		{% endfor %}
 		</ul>
@@ -66,16 +66,16 @@
     {% for item in menu.subitems %}
         {% if item.subsubitems %}
         <li class="dropdown {{item.active}}" >
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{item.label}}<b class="caret"></b></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{item.label}} {% if item.medalla %}<span class="label label-{{item.medalla.tipus}}">{{ item.medalla.valor }}</span>{% endif %} <b class="caret"></b></a>
           <ul class="dropdown-menu">
           {% for subsubitem in item.subsubitems %}
-            <li><a href="{{subsubitem.url}}" >{{subsubitem.label}}</a></li>
+            <li><a href="{{subsubitem.url}}" >{{subsubitem.label}} {% if subsubitem.medalla %}<span class="label label-{{item.medalla.tipus}}">{{ subsubitem.medalla.valor }}</span>{% endif %}</a></li>
           {% endfor %}
           </ul>          	
         </li>
 		{% else %}
 		<li  class="{{item.active}}" >
-		  <a href="{{item.url}}">{{item.label}}</a> 
+		  <a href="{{item.url}}">{{item.label}} {% if item.medalla %}<span class="label label-{{item.medalla.tipus}}">{{ item.medalla.valor }}</span>{% endif %}</a> 
 		</li> 
 		{% endif %}
 	{% endfor %}   		

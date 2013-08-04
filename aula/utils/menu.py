@@ -3,35 +3,70 @@ from aula.utils.tools import classebuida
 from django.core.urlresolvers import resolve, reverse
 from django.contrib.auth.models import Group
 from aula.apps.usuaris.models import User2Professor, AlumneUser
+from django.db.models.aggregates import Count
+from django.utils.datetime_safe import date
+from aula.apps.usuaris.models import User2Professional
+from aula.apps.alumnes.models import Alumne
 
 
 def calcula_menu( user , path ):
     
-    if user is None:
+    if not user.is_authenticated():
         return
-    
-    di = Group.objects.get_or_create(name= 'direcció' )[0] in user.groups.all()
-    pr = Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
-    pl = Group.objects.get_or_create(name= 'professional' )[0] in user.groups.all()
-    co = Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
+
+    #mire a quins grups està aquest usuari:
     al = Group.objects.get_or_create(name= 'alumne' )[0] in user.groups.all()
-    pg = Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
-    tu = pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )
-    
+    di = not al and Group.objects.get_or_create(name= 'direcció' )[0] in user.groups.all()
+    pr = not al and Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
+    pl = not al and Group.objects.get_or_create(name= 'professional' )[0] in user.groups.all()
+    co = not al and Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
+    pg = not al and Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
+    tu = not al and pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )    
     tots = di or pr or pl or co or al or pg
+    
+    #Comprovar si té missatges sense llegir
+    nMissatges= None
+    nMissatges = user.destinatari_set.filter( moment_lectura__isnull = True ).count()
+    
+    #Comprovar si té expulsions sense tramitar o cal fer expulsions per acumulació
+    teExpulsionsSenseTramitar= False
+    if pr:
+        professor = User2Professor( user )
+        teExpulsionsSenseTramitar = professor.expulsio_set.exclude( tramitacio_finalitzada = True ).exists() 
+        
+        #Acumulació Incidències
+        if not teExpulsionsSenseTramitar:
+            professional = User2Professional( user )
+            teExpulsionsSenseTramitar = ( Alumne
+                                          .objects
+                                          .order_by()
+                                          .filter( incidencia__professional = professional, 
+                                                   incidencia__es_informativa = False, 
+                                                   incidencia__es_vigent = True )
+                                          .annotate( n = Count( 'incidencia' ) )
+                                          .filter( n__gte = 3 )
+                                          .exists()
+                                        )
+    
+    #Comprovar si hi ha una qualitativa oberta
+    hiHaUnaQualitativaOberta = False
+    if pr:
+        from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
+        hiHaUnaQualitativaOberta = AvaluacioQualitativa.objects.filter(  data_obrir_avaluacio__lte =  date.today(),
+                                                                         data_tancar_avaluacio__gte = date.today() ).exists()
+    
 
     nom_path = resolve( path ).url_name
 
     menu = { 'items':[], 'subitems':[], 'subsubitems':[], }
     
-    if user.is_authenticated():
-        menu["esalumne"]=al
-        if al:
-            alumneuser = AlumneUser.objects.get( id = user.id )
-            alumne = alumneuser.getAlumne()
-            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom )
-        else:
-            menu["nomusuari"]= user.first_name or user.username 
+    menu["esalumne"]=al
+    if al:
+        alumneuser = AlumneUser.objects.get( id = user.id )
+        alumne = alumneuser.getAlumne()
+        menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom )
+    else:
+        menu["nomusuari"]= user.first_name or user.username 
     
     try:
         menu_id, submenu_id, subsubmenu_id = nom_path.split( '__' )[:3]
@@ -40,83 +75,85 @@ def calcula_menu( user , path ):
     
     arbre = (
                #--Aula--------------------------------------------------------------------------
-               ('aula', 'Aula', 'blanc__blanc__blanc', pr, 
+               #  id,    nom     vista                 seg      label
+               ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
                   (
-                      ("Presencia", 'aula__horari__horari', pr, None ),
-                      ("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None ),
-                      ("Incidències", 'aula__incidencies__blanc', pr,
+                      ("Presencia", 'aula__horari__horari', pr, None, None ),
+                      ("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None, None ),
+                      ("Incidències", 'aula__incidencies__blanc', pr, ( u'!', 'info' ) if teExpulsionsSenseTramitar else None,
                           ( 
-                            ("Incidències Recollides", 'aula__incidencies__les_meves_incidencies', pr, ),
-                            ("Nova Incidència", 'aula__incidencies__posa_incidencia', pr, ),
-                            ("Recull Expulsió", 'aula__incidencies__posa_expulsio', pr, ),
+                            ("Incidències", 'aula__incidencies__les_meves_incidencies', pr, ( u'!', 'info' ) if teExpulsionsSenseTramitar else None),
+                            ("Nova Incidència", 'aula__incidencies__posa_incidencia', pr, None ),
+                            ("Recull Expulsió", 'aula__incidencies__posa_expulsio', pr, None),
                           ),                        
                       ),                                      
-                      ("Matèries", 'aula__materies__blanc', pr, 
+                      ("Matèries", 'aula__materies__blanc', pr, None, 
                           ( 
-                            ("Llistat entre dates", 'aula__materies__assistencia_llistat_entre_dates', pr, ),
-                            ("Calculadora UF", 'aula__materies__calculadora_uf', pr, )
+                            ("Llistat entre dates", 'aula__materies__assistencia_llistat_entre_dates', pr, None),
+                            ("Calculadora UF", 'aula__materies__calculadora_uf', pr, None )
                           )
-                      ),                                      
+                      ),         
+                      ("Qualitativa", 'aula__qualitativa__les_meves_avaulacions_qualitatives', pr, hiHaUnaQualitativaOberta, None ),
                    )
                ),
 
                #--Tutoria--------------------------------------------------------------------------
-               ('tutoria', 'Tutoria', 'tutoria__actuacions__list', tu ,
+               ('tutoria', 'Tutoria', 'tutoria__actuacions__list', tu, None,
                   (
-                      ("Actuacions", 'tutoria__actuacions__list', tu, None ),
-                      ("Justificar", 'tutoria__justificar__pre_justificar', tu, None ),                                      
-                      ("Cartes", 'tutoria__cartes_assistencia__gestio_cartes', tu, None ),                                      
-                      ("Alumnes", 'tutoria__alumnes__list', tu, None ),
-                      ("Assistència", 'tutoria__assistencia__list_entre_dates', tu, None ),                                      
-                      ("Informe", 'tutoria__alumne__informe_setmanal', tu, None ),                                      
-                      ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None ),
-                      ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None ),                                      
+                      ("Actuacions", 'tutoria__actuacions__list', tu, None, None ),
+                      ("Justificar", 'tutoria__justificar__pre_justificar', tu, None, None ),                                      
+                      ("Cartes", 'tutoria__cartes_assistencia__gestio_cartes', tu, None, None ),                                      
+                      ("Alumnes", 'tutoria__alumnes__list', tu, None, None ),
+                      ("Assistència", 'tutoria__assistencia__list_entre_dates', tu, None, None ),                                      
+                      ("Informe", 'tutoria__alumne__informe_setmanal', tu, None, None ),                                      
+                      ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None, None ),
+                      ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),                                      
                    )
                ),
              
                #--psicopedagog--------------------------------------------------------------------------
-               ('psico', 'Psicopedagog', 'psico__informes_alumne__list', pg or di,
+               ('psico', 'Psicopedagog', 'psico__informes_alumne__list', pg or di, None,
                   (
-                      ("Alumne", 'psico__informes_alumne__list', pg or di , None ),
-                      ("Actuacions", 'psico__actuacions__list', pg or di , None ),
+                      ("Alumne", 'psico__informes_alumne__list', pg or di, None, None ),
+                      ("Actuacions", 'psico__actuacions__list', pg or di, None, None ),
                    )
                ),
              
                #--Coord.Pedag--------------------------------------------------------------------------
-               ('coordinacio_pedagogica', 'Coord.Pedag', 'coordinacio_pedagogica__qualitativa__blanc', di,
+               ('coordinacio_pedagogica', 'Coord.Pedag', 'coordinacio_pedagogica__qualitativa__blanc', di, None,
                   (
-                      ("Qualitativa", 'coordinacio_pedagogica__qualitativa__blanc', di , 
+                      ("Qualitativa", 'coordinacio_pedagogica__qualitativa__blanc', di, None, 
                           (
-                              ("Avaluacions", 'coordinacio_pedagogica__qualitativa__avaluacions', di ,  ),
-                              ("Items", 'coordinacio_pedagogica__qualitativa__items', di ,  ),
-                              ("Resultats", 'coordinacio_pedagogica__qualitativa__resultats_qualitatives', di ,  ),
+                              ("Avaluacions", 'coordinacio_pedagogica__qualitativa__avaluacions', di , None  ),
+                              ("Items", 'coordinacio_pedagogica__qualitativa__items', di , None  ),
+                              ("Resultats", 'coordinacio_pedagogica__qualitativa__resultats_qualitatives', di , None  ),
                           ),
                       ),
                    ),
                ),
   
                #--Coord.Alumnes--------------------------------------------------------------------------
-               ('coordinacio_alumnes', 'Coord.Alumnes', 'coordinacio_alumnes__ranking__list', di,
+               ('coordinacio_alumnes', 'Coord.Alumnes', 'coordinacio_alumnes__ranking__list', di, None,
                   (
-                      ("Alertes Incidències", 'coordinacio_alumnes__ranking__list', di , None ),
-                      ("Alertes Assistència", 'coordinacio_alumnes__assistencia_alertes__llistat', di , None ),
-                      ("Cartes", 'coordinacio_alumnes__assistencia__cartes', di , None ),
-                      ("Expulsions del Centre", 'coordinacio_alumnes__explusions_centre__expulsions', di , None ),
-                      ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di , None ),
-                      ("Impressió Massiva Faltes i Incidències", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di , None ),
+                      ("Alertes Incidències", 'coordinacio_alumnes__ranking__list', di, None, None ),
+                      ("Alertes Assistència", 'coordinacio_alumnes__assistencia_alertes__llistat', di, None, None ),
+                      ("Cartes", 'coordinacio_alumnes__assistencia__cartes', di, None, None ),
+                      ("Expulsions del Centre", 'coordinacio_alumnes__explusions_centre__expulsions', di, None, None ),
+                      ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di, None, None ),
+                      ("Impressió Massiva Faltes i Incidències", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
                    )
                ),
 
                #--Coord.Profess.--------------------------------------------------------------------------
-               ('professorat', 'Coord.Prof', 'professorat__baixes__blanc', di,
+               ('professorat', 'Coord.Prof', 'professorat__baixes__blanc', di, None,
                   (
-                      ("Feina Absència", 'professorat__baixes__blanc', di ,
+                      ("Feina Absència", 'professorat__baixes__blanc', di, None,
                          (
-                            ('Posar feina', 'professorat__baixes__complement_formulari_tria', di),
-                            ('Imprimir feina', 'professorat__baixes__complement_formulari_impressio_tria' ,di),
+                            ('Posar feina', 'professorat__baixes__complement_formulari_tria', di, None),
+                            ('Imprimir feina', 'professorat__baixes__complement_formulari_impressio_tria' ,di, None),
                          ), 
                       ),
-                      ("Tutors", 'professorat__tutors__blanc', di ,
+                      ("Tutors", 'professorat__tutors__blanc', di, None,
                          (
                             ('Tutors Grups', 'professorat__tutors__tutors_grups', di),
                             ('Tutors individualitzat', 'professorat__tutors__tutors_individualitzats', di),
@@ -126,39 +163,39 @@ def calcula_menu( user , path ):
                ),
 
                #--Administració--------------------------------------------------------------------------
-               ('administracio', 'Admin', 'administracio__sincronitza__blanc', di,
+               ('administracio', 'Admin', 'administracio__sincronitza__blanc', di, None,
                   (
-                      ("Sincronitza", 'administracio__sincronitza__blanc', di , 
+                      ("Sincronitza", 'administracio__sincronitza__blanc', di, None, 
                         (
-                          ("Alumnes", 'administracio__sincronitza__saga', di ,  ),
-                          ("Horaris", 'administracio__sincronitza__kronowin', di ,  ),
-                          ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di ,  ),
+                          ("Alumnes", 'administracio__sincronitza__saga', di , None  ),
+                          ("Horaris", 'administracio__sincronitza__kronowin', di , None  ),
+                          ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
                         ),
                       ),
-                      ("Reset Passwd", 'administracio__professorat__reset_passwd', di , None ),
-                      ("Càrrega Inicial", 'administracio__configuracio__carrega_inicial', di , None ),
+                      ("Reset Passwd", 'administracio__professorat__reset_passwd', di, None, None ),
+                      ("Càrrega Inicial", 'administracio__configuracio__carrega_inicial', di, None, None ),
                    )
                ),
              
                #--Consergeria--------------------------------------------------------------------------
-               ('consergeria', 'Psicopedagog', 'consergeria__missatges__envia_tutors', co,
+               ('consergeria', 'Psicopedagog', 'consergeria__missatges__envia_tutors', co, None,
                   (
-                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co , None ),
+                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
                    )
                ),
 
                #--Varis--------------------------------------------------------------------------
-               ('varis', 'Ajuda', 'varis__elmur__veure', tots,
+               ('varis', 'Ajuda', 'varis__elmur__veure', tots, nMissatges > 0,
                   (
-                      ("Notificacions", 'varis__elmur__veure', tots , None ),
-                      ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', tots , None ),
-                      ("About", 'varis__about__about', tots , None ),                      
+                      ("Notificacions", 'varis__elmur__veure', tots , ( nMissatges, 'info' if nMissatges < 10 else 'danger' ) if nMissatges >0 else None, None ),
+                      ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', tots, None, None ),
+                      ("About", 'varis__about__about', tots, None, None ),                      
                    )
                ),
 
              )
     
-    for item_id, item_label, item_url, item_condicio, subitems in arbre:
+    for item_id, item_label, item_url, item_condicio, alerta , subitems in arbre:
 
         if not item_condicio:
             continue
@@ -167,10 +204,11 @@ def calcula_menu( user , path ):
         item.label = item_label
         item.url = reverse( item_url )
         item.active = 'active' if actiu else ''
+        item.alerta = alerta
         menu['items'].append( item )
         
         if actiu:
-            for subitem_label, subitem_url, subitem__condicio, subsubitems in subitems:
+            for subitem_label, subitem_url, subitem__condicio, medalla, subsubitems in subitems:
                 if not subitem__condicio:
                     continue
                 actiu = ( submenu_id == subitem_url.split('__')[1] )
@@ -178,13 +216,23 @@ def calcula_menu( user , path ):
                 subitem.label = subitem_label
                 subitem.url = reverse( subitem_url ) 
                 subitem.active = 'active' if actiu else ''
+                if medalla:
+                    omedalla = classebuida()
+                    omedalla.valor = medalla[0]
+                    omedalla.tipus = medalla[1]
+                    subitem.medalla = omedalla
                 menu['subitems'].append(subitem)
                 subitem.subsubitems = []
                 if subsubitems:
-                    for subitem_label, subitem_url, subitem__condicio in subsubitems:
+                    for subitem_label, subitem_url, subitem_condicio, subitem_medalla in subsubitems:
                         subsubitem = classebuida()
                         subsubitem.label = subitem_label
                         subsubitem.url = reverse( subitem_url ) 
+                        if subitem_medalla:
+                            omedalla = classebuida()
+                            omedalla.valor = subitem_medalla[0]
+                            omedalla.tipus = subitem_medalla[1]
+                            subsubitem.medalla = omedalla
                         subitem.subsubitems.append(subsubitem)
                     if actiu and subsubmenu_id == 'blanc':
                         menu['subsubitems'] = subitem.subsubitems
