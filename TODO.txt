@@ -18,7 +18,6 @@ apt-get install libxml2-dev libxslt-dev
 
 #---TODO----------------------
 
-* avisos->senyal al menú si n'hi han de nous
 * Demo: Carrusel imatges
 * Nova incidencia -> redirect to / + message
 * El mur: css
@@ -27,6 +26,7 @@ apt-get install libxml2-dev libxslt-dev
 * 'Tindré sort': badge amb la problabilitat.
 * /admin/incidencies/frassesincidenciaaula
 * favicon xulo.
+* Càrrega inicial: redirects a la pròpia pantalla + missatges
 
 
 #-----------------------------
