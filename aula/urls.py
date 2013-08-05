@@ -4,9 +4,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 import os.path
-site_media = os.path.join(
-   os.path.dirname(__file__), 'site-css'
-)
+site_media_site_css = os.path.join(os.path.dirname(__file__), 'site-css' )
+site_media_web_demo = os.path.join(os.path.dirname(__file__), '../demo/static-web/demo' )
 
 urlpatterns = patterns('',
     (r'^menu/$', 'aula.utils.views.menu'),
@@ -35,7 +34,7 @@ urlpatterns = patterns('',
     url(r'^password_change/$', 'django.contrib.auth.views.password_change', {'post_change_redirect': '/'}, name="password_change"),
     (r'^logout/$', 'aula.utils.views.logout_page'),
     #fitxers estàtics:
-    (r'^site-css/(?P<path>.*)$', 'django.views.static.serve',{'document_root': site_media}),
+    (r'^site-css/(?P<path>.*)$', 'django.views.static.serve',{'document_root': site_media_site_css}),
 
 )
 
