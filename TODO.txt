@@ -18,9 +18,8 @@ apt-get install libxml2-dev libxslt-dev
 
 #---TODO----------------------
 
-* Demo: Carrusel imatges
-* Nova incidencia -> redirect to / + message
 * El mur: css
+* Nova incidencia -> redirect to / + message
 * Pantalla incidències aula ( incidencies/posaIncidenciaAula/ ), refer-la.
 *? Settings 'Centre' a demo / customising
 * 'Tindré sort': badge amb la problabilitat.
