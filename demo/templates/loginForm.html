@@ -60,9 +60,9 @@
 			    <span class="caret"></span>
 			  </button>
 			  <ul class="dropdown-menu">
-			    <li><a href="{{STATIC_URL}}/demo/#estalvitemps">Com estalviar temps</a></li>
-			    <li><a href="{{STATIC_URL}}/demo/#millorgestio">Com millorar la gestió</a></li>
-			    <li><a href="{{STATIC_URL}}/demo/#millorrendiment">Com millorar el rendiment acadèmic</a></li>
+			    <li><a href="{{STATIC_URL}}demo/#estalvitemps">Com estalviar temps</a></li>
+			    <li><a href="{{STATIC_URL}}demo/#millorgestio">Com millorar la gestió</a></li>
+			    <li><a href="{{STATIC_URL}}demo/#millorrendiment">Com millorar el rendiment acadèmic</a></li>
 			    <li class="divider"></li>
 			    <li><a href="https://github.com/ctrl-alt-d/django-aula">Posar en marxa -djAu-</a></li>
 			  </ul>
@@ -144,7 +144,7 @@ Totes les dades de la base de dades de demo han estat generades de manera aleat�
 
 	<script>
 		$("#coneix").click(function(){
-			window.location.href = "/static-web/";
+			window.location.href = "{{STATIC_URL}}/demo#coneix";
 		});	
 	</script>
 {% endblock %}
