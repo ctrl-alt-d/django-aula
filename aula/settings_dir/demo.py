@@ -17,6 +17,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 STATICFILES_DIRS = [
     location( '../demo/static-web/'),
-]
+] + STATICFILES_DIRS
 
 COMPRESS_ENABLED = False
