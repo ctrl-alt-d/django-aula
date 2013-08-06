@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="shortcut icon" href="{{STATIC_URL}}favicon.ico" >
+<meta http-equiv="Cache-Control" content="no-cache, mustrevalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="{{STATIC_URL}}css/datepicker.css">
+<link rel="stylesheet" href="{{STATIC_URL}}bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="{{STATIC_URL}}glyphicons/css/bootstrap-glyphicons.css">
+<title>django-aula | {% block title %}{% endblock %}</title>
+
+<script src="{{STATIC_URL}}jquery/jquery-2.0.2.min.js"></script>
+<script> 
+$.fn.bootstrapDP = null;                 
+</script>
+<script src="{{STATIC_URL}}js/bootstrap-datepicker.js"></script>
+<script src="{{STATIC_URL}}js/locales/bootstrap-datepicker.ca.js"></script>
+<script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  function confirmAction(url, msg) {
+    if (confirm(msg)) {
+      document.location = url;
+    }
+  }
+</script>
+
+{% block extrahead %} {% endblock %}
+
+<style type="text/css">
+  body { padding-top: 70px; }
+</style>
+
+</head>
+
+<body {%if l4%}style="background-color:#FF0000;"{%endif%}>
+
+  <div class="container"> 
+  
+	{% include "menu.html" %}
+
+
+    {% block content %}
+
+
+    {% endblock %}
+
+  {% if user.is_authenticated %}  
+  <div class="row">
+  	<a class="btn btn-warning btn-large" style="margin-top:10px; width: 100%;" data-toggle="modal" href="/logout">Aquesta és la web demo de -djAu-</a>
+  </div>
+  {% endif %}
+  
+  </div> <!--container-->
+
+<script>
+$('.datepicker').datepicker({
+    format: 'dd/mm/yyyy',
+    language: 'ca',
+    autoclose: true,
+    weekStart: 1
+});
+</script>
+
+</body>
+</html>
+

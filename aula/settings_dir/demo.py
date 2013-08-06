@@ -4,8 +4,14 @@
 from dev import *
 location = lambda x: os.path.join(PROJECT_DIR, x)
 
+TEMPLATE_DIRS = [
+    location('../demo/templates'),
+] + TEMPLATE_DIRS
+
+
 INSTALLED_APPS  = [
                    'demo',
+                   'django.contrib.staticfiles',
                    ] + INSTALLED_APPS
 
 NOM_CENTRE = 'Centre de Demo'
