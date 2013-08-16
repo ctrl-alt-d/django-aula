@@ -145,6 +145,7 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'django_extensions',
 ]
     
 INSTALLED_APPS_AULA = [
