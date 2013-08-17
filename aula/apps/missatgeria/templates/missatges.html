@@ -3,10 +3,9 @@
 {% block content  %}
     <h1>Missatges:</h1>
     <div  class="elmur">
-	<ul>
 	{% for msg in msgs.object_list  %}
-		<li class="{{msg.importancia}}  {{msg.llegitAraMateix}}" style="margin-top:10px">
-		  <div style="padding:10px 10px 10px 10px;">
+		<div class="row {{msg.llegitAraMateix}}">
+		  <div class="col-lg-12 alert alert-{{msg.inportanciaCSS}}" >
 			<span > ({{msg.missatge.data}})
 				<b>
 				{% if msg.missatge.remitent.last_name %}
@@ -28,7 +27,7 @@
 			      {% endif %}
 			    </a>{% endif %}
 			{% if msg.missatge.errors %}
-			   <div class="error">
+			   <div class="alert alert-danger">
 			    <ul>
 			    {% for txt in msg.missatge.errors %}
 			        <li><strong>{{ txt|escape }}</strong></li>
@@ -38,7 +37,7 @@
 			{% endif %}
 
 			{% if msg.missatge.warnings %}
-			   <div class="warning">
+			   <div class="alert alert-warning">
 			    <ul>
 			    {% for txt in msg.missatge.warnings %}
 			        <li><strong>{{ txt|escape }}</strong></li>
@@ -48,7 +47,7 @@
 			{% endif %}
 
 			{% if msg.missatge.infos %}
-			   <div class="info">
+			   <div class="alert alert-info">
 			    <ul>
 			    {% for txt in msg.missatge.infos %}
 			        <li><strong>{{ txt|escape }}</strong></li>
@@ -57,10 +56,9 @@
 			   </div>
 			{% endif %}
 			
-			<div>
-		</li>
+		  </div>
+	    </div>
 	{% endfor %}
-	</ul>
 	</div>
 
 

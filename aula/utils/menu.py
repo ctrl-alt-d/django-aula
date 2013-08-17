@@ -7,7 +7,7 @@ from django.db.models.aggregates import Count
 from django.utils.datetime_safe import date
 from aula.apps.usuaris.models import User2Professional
 from aula.apps.alumnes.models import Alumne
-
+from datetime import timedelta, datetime
 
 def calcula_menu( user , path ):
     
@@ -26,6 +26,8 @@ def calcula_menu( user , path ):
     
     #Comprovar si té missatges sense llegir
     nMissatges = user.destinatari_set.filter( moment_lectura__isnull = True ).count()
+    fa2segons = datetime.now() - timedelta( seconds = 2 )
+    nMissatgesDelta = user.destinatari_set.filter( moment_lectura__gte = fa2segons ).count()
     
     #Comprovar si té expulsions sense tramitar o cal fer expulsions per acumulació
     teExpulsionsSenseTramitar= False
@@ -186,7 +188,7 @@ def calcula_menu( user , path ):
                #--Varis--------------------------------------------------------------------------
                ('varis', 'Ajuda', 'varis__elmur__veure', tots, nMissatges > 0,
                   (
-                      ("Notificacions", 'varis__elmur__veure', tots , ( nMissatges, 'info' if nMissatges < 10 else 'danger' ) if nMissatges >0 else None, None ),
+                      ("Notificacions", 'varis__elmur__veure', tots , ( nMissatgesDelta, 'info' if nMissatgesDelta < 10 else 'danger' ) if nMissatgesDelta >0 else None, None ),
                       ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', tots, None, None ),
                       ("About", 'varis__about__about', tots, None, None ),                      
                    )

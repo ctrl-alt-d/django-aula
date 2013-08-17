@@ -131,4 +131,11 @@ class AbstractDestinatari(models.Model):
             araMateix = True
         return araMateix
     
+    def inportanciaCSS(self):
+        if self.importancia == self.importancia_VI:
+            return 'danger'
+        elif self.importancia == self.importancia_IN:
+            return 'info'
+        elif self.importancia == self.importancia_IN:
+            return 'success'
 
