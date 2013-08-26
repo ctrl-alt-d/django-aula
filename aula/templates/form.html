@@ -42,8 +42,8 @@
  		{% for field in form.visible_fields %}
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
 	        <div class="col-sm-4 label_tag">
-	          <p class="text-right hidden-sm">{{ field.label_tag }}</p>
-              <p class="visible-sm">{{ field.label_tag }}</p>
+	          <p class="text-right hidden-sm hidden-xs">{{ field.label_tag }}</p>
+              <p class="visible-sm visible-xs">{{ field.label_tag }}</p>
               
 	        </div>
 	        <div class="col-sm-8 tria_tag">
