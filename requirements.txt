@@ -6,3 +6,4 @@ django_extensions
 lxml
 django-appypod
 python-dateutil>=2.1
+six

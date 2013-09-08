@@ -27,17 +27,17 @@
           {{ hidden }}
         {% endfor %}
 
-        {% for label, value in form.infoForm %}
+        {% for label, value in infoForm %}
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
 	        <div class="col-sm-4 label_tag">
-	        	{{ label }}:
+	          <p class="text-right hidden-sm hidden-xs"><label>{{ label }}</label></p>
+              <p class="visible-sm visible-xs"><label>{{ label }}</label></p>
 	        </div>
 	        <div class="col-sm-8">      
 	          {{ value }}
       		</div>
       	</div>
 	    {% endfor %}		
-
 
  		{% for field in form.visible_fields %}
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
