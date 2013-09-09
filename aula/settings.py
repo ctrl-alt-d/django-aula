@@ -1,6 +1,6 @@
 try:
     from settings_local import *
-except:
+except ImportError:
     from settings_dir.demo import *
 
 
