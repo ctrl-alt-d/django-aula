@@ -112,7 +112,7 @@
 	{% if formset %}
 	  
 	  <div class="row">
-		  <div class="col-sm-8">
+		  <div class="col-sm-8 col-xs-12">
 	      <p class="well well-small">
       	  <span class="glyphicon glyphicon-user"> </span> {{ info.professor }}<br />
           <span class="glyphicon glyphicon-calendar"> </span> {{ info.dia_setmana }} {{ info.dia_complet }}<br />
@@ -123,7 +123,7 @@
       	</p>
     	</div>
     	
-    	<div class="col-sm-4 hidden-sm">
+    	<div class="col-sm-4 hidden-xs">
 			  <p><a href="/presencia/treuAlumnesLlista/{{id_impartir}}">Treure alumnes de la llista</a></p>
 			  <p><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}">Afegir alumnes a la llista</a></p>
 			  <p><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}">Incidències</a></p>
@@ -136,7 +136,7 @@
   	</div>
   	
   	
-	  <div class="row row-padded hidden-sm">
+	  <div class="row row-padded hidden-xs">
 	    <div class="col-sm-4"></div><!-- no funciona bé el col-offset-6"-->
       <div class="col-sm-8">
         <!--div data-toggle="buttons-radio"-->
@@ -150,8 +150,8 @@
       </div>
     </div>
   
-    <div class="row row-padded visible-sm">
-      <div class="col-sm-12 visible-sm">
+    <div class="row row-padded visible-xs">
+      <div class="col-sm-12 visible-xs">
       	<div class="btn-toolbar">
       		
 	        <div class="btn-group">

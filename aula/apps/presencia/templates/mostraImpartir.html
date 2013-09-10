@@ -20,6 +20,9 @@
       padding: 1px;
       border-bottom: 1px solid black;
     }
+    .col-xs-12 {
+      text-align: center;
+    }
     .col-sm-2 {
       text-align: center;
     } 
@@ -32,9 +35,9 @@
   </p>
 	
 	<div class="row" style="padding-bottom: 5px;">
-	  <div class="col-sm-2"></div>
+	  <div class="col-sm-2 col-xs-12"></div>
 	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
-	  <div class="col-sm-2 {% if not esDataActual %}hidden-sm{% endif %}">
+	  <div class="col-sm-2 col-xs-12 {% if not esDataActual %}hidden-xs{% endif %}">
 		  <h4>
 		    <span class="label label-info">
 		      <strong>{{ dia_setmana }} {{ dia_complet }}</strong>
@@ -47,7 +50,7 @@
     {% for impartir_franja in impartir_tot %}
     <div class="row text_center" style="padding-top: 5px;{% if forloop.counter|divisibleby:2 %}background-color: #F0F0F0;{% endif %}">
         {% for imparticions, esDataActual in impartir_franja %}
-            <div class="col-sm-2 {% if forloop.counter != 1 and not esDataActual %}hidden-sm{% endif %}"   >
+            <div class="col-sm-2 col-xs-12 {% if forloop.counter != 1 and not esDataActual %}hidden-xs{% endif %}"   >
               {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}                    
                 <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
                   {%if esGuardia%}
@@ -81,16 +84,16 @@
 
 
 	<div class="row">
-	  <div class="col-sm-2"></div>
+	  <div class="col-sm-2 col-xs-12"></div>
 	  {% for dia_setmana, dia_complet, esDataActual in calendari %}
-		  <div class="col-sm-2 {% if not esDataActual %}hidden-sm{% endif %}">
+		  <div class="col-sm-2 {% if not esDataActual %}hidden-xs{% endif %}">
 		     <a href="/presencia/afegeixGuardia/{{dia_complet}}">+guardia</a>
 		  </div>
 	  {% endfor %}
 	</div>
 
   <!-- Cal fer dos bucles per a que es mostri bé -->
-  <ul class="pagination visible-sm">
+  <ul class="pagination visible-xs">
 	  {% for  moment, altre_data, visiblePhone, visibleTabletiDesktop in altres_moments %}
       {% if visiblePhone %}
         <li>
@@ -99,7 +102,7 @@
       {% endif %}
     {% endfor %}
 	</ul>
-	<ul class="pagination hidden-sm">
+	<ul class="pagination hidden-xs">
 	  {% for  moment, altre_data, visiblePhone, visibleTabletiDesktop in altres_moments %}
       {% if visibleTabletiDesktop %}
         <li>
