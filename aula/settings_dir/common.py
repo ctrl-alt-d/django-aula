@@ -174,11 +174,8 @@ INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
+SEND_BROKEN_LINK_EMAILS = False
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
