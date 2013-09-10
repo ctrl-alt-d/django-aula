@@ -1,63 +1,61 @@
 {% load customTemplateTags %}
 
 <div id="header"> 
-   	
-  <div class="navbar navbar-fixed-top navbar-inverse"> 
-    <div class="container"> 
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
-        <span class="icon-bar"> </span>
-        <span class="icon-bar"> </span>
-        <span class="icon-bar"> </span>
+
+  <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header ">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+        <span class="sr-only">Alternar navegació</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
       </button>
-      
-      <a class="navbar-brand" href="/">django-aula</a> 
-      <div class="nav-collapse collapse navbar-responsive-collapse">
-      
-      	
-        <ul class="nav navbar-nav">         
+      <a class="navbar-brand" href="#">django-aula</a>
+    </div>
+
+    <div class="collapse navbar-collapse navbar-ex1-collapse">
+      <ul class="nav navbar-nav">         
         {% for item in menu.items %}
-	      <li  class="{{item.active}}" >
-		      <a href="{{item.url}}">{{item.label}} {% if item.alerta %}!{%endif%} </a> 
-	      </li> 
-		{% endfor %}
-		</ul>
-	      
-		<ul class="nav navbar-nav pull-right">
+          <li  class="{{item.active}}" >
+	         <a href="{{item.url}}">{{item.label}} {% if item.alerta %}!{%endif%} </a> 
+         </li> 
+	      {% endfor %}
+	    </ul>
+	    
+	    <ul class="nav navbar-nav pull-right">
         {% if user.is_authenticated %}
-            <li class="dropdown">    	
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                {{menu.nomusuari}}
-                <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu">
-	              {%if not menu.esalumne %}<li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>{% endif %}
-	              <li><a href="{% url 'usuari__dades__canvi_passwd' %}">Canvi de paraula de pas (password)</a></li>
+          <li class="dropdown">    	
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              {{menu.nomusuari}}
+              <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              {%if not menu.esalumne %}<li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>{% endif %}
+              <li><a href="{% url 'usuari__dades__canvi_passwd' %}">Canvi de paraula de pas (password)</a></li>
+              <li class="divider"></li>
+              {% if sessioImpersonada %}
+           		  <li><a tabindex="-1" href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
+           		  <li><a tabindex="-1" href="/usuaris/resetImpersonacio/">Sortir mode impersonalitzat</a></li>
                 <li class="divider"></li>
-                {% if sessioImpersonada %}
-             		  <li><a tabindex="-1" href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
-             		  <li><a tabindex="-1" href="/usuaris/resetImpersonacio/">Sortir mode impersonalitzat</a></li>
-	                <li class="divider"></li>
-       		        <li><a tabindex="-1" href="/logout/">Sortir del programa</a></li>
-       		      {% else %}
-		              {% ifusergroup direcció %}
-         		        <li><a href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
-	                  <li class="divider"></li>
-		                <li><a href="/logout/">Sortir del programa</a></li>
-		              {% else %}
-		               <li><a href="/logout/">Sortir</a></li>
-		              {% endifusergroup %}
-	              {% endif %}    
-              </ul>
-            </li>
-          {% else %}
-	        <li><a tabindex="-1" href="/">Login</a></li>	      
-          {% endif %}
-        </ul>	
-	      
-	      
-      </div> <!-- /.nav-collapse -->	  
-    </div><!-- /.container -->
-  </div><!-- /.navbar -->
+     		        <li><a tabindex="-1" href="/logout/">Sortir del programa</a></li>
+     		      {% else %}
+	              {% ifusergroup direcció %}
+       		        <li><a href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
+                  <li class="divider"></li>
+	                <li><a href="/logout/">Sortir del programa</a></li>
+	              {% else %}
+	               <li><a href="/logout/">Sortir</a></li>
+	              {% endifusergroup %}
+              {% endif %}    
+            </ul>
+          </li>
+        {% else %}
+          <li><a tabindex="-1" href="/">Login</a></li>	      
+        {% endif %}
+      </ul>
+	  </div> <!-- /.nav-collapse -->
+  </nav>
  
   {% if menu.subitems %}
   <ul class="nav nav-tabs">
