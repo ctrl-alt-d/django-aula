@@ -23,7 +23,7 @@ def getClientAdress( request ):
     try:
         validate_ipv4_address( ip )
     except ValidationError:
-        ip = None
+        ip = '255.255.255.255'
     
     return ip
     
