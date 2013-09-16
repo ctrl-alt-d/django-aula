@@ -56,7 +56,7 @@ class AbstractLoginUsuari(models.Model):
     exitos = models.BooleanField()
     usuari = models.ForeignKey( User, db_index = True, related_name = 'LoginUsuari' )
     moment = models.DateTimeField( auto_now_add = True,  db_index = True )
-    ip = models.CharField( max_length = 12, blank = True )
+    ip = models.CharField( max_length = 15, blank = True )
     class Meta:
         abstract = True
         ordering = ['usuari', '-moment']
