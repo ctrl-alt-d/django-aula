@@ -7,6 +7,8 @@ from django.template import Context
 
 import cStringIO as StringIO
 import cgi
+from django.core.validators import validate_ipv4_address
+from django.core.exceptions import ValidationError
 try:
     import ho.pisa as pisa
 except:
@@ -16,7 +18,14 @@ except:
 
 def getClientAdress( request ):
     
-    return request.get_host()
+    ip = request.get_host()
+    
+    try:
+        validate_ipv4_address( ip )
+    except ValidationError:
+        ip = None
+    
+    return ip
     
 #         #TODO:  HttpRequest.get_host()  at https://docs.djangoproject.com/en/dev/ref/request-response/
 #     try:
