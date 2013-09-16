@@ -115,6 +115,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 ATOMIC_REQUESTS = True  # per quan es migri a 1.6
 MIDDLEWARE_CLASSES = [
+    'aula.utils.middleware.MultipleProxyMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

@@ -16,23 +16,26 @@ except:
 
 def getClientAdress( request ):
     
-        #TODO:  HttpRequest.get_host()  at https://docs.djangoproject.com/en/dev/ref/request-response/
-    try:
-        FORWARDED_FOR_FIELDS = [
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_X_FORWARDED_HOST',
-            'HTTP_X_FORWARDED_SERVER',
-        ]
-        for field in FORWARDED_FOR_FIELDS:
-            if field in request.META:
-                if ',' in request.META[field]:
-                    parts = request.META[field].split(',')
-                    request.META[field] = parts[-1].strip()
-        client_address = request.META['HTTP_X_FORWARDED_FOR']
-    except:
-        client_address = request.META['REMOTE_ADDR']
-        
-    return client_address
+    return request.get_host()
+    
+#         #TODO:  HttpRequest.get_host()  at https://docs.djangoproject.com/en/dev/ref/request-response/
+#     try:
+#         FORWARDED_FOR_FIELDS = [
+#             'REMOTE_ADDR',
+#             'HTTP_X_FORWARDED_FOR',
+#             'HTTP_X_FORWARDED_HOST',
+#             'HTTP_X_FORWARDED_SERVER',
+#         ]
+#         for field in FORWARDED_FOR_FIELDS:
+#             if field in request.META:
+#                 if ',' in request.META[field]:
+#                     parts = request.META[field].split(',')
+#                     request.META[field] = parts[-1].strip()
+#         client_address = request.META['HTTP_X_FORWARDED_FOR']
+#     except:
+#         client_address = request.META['REMOTE_ADDR']
+#         
+#     return client_address
 
 def lowpriority():
     """ Set the priority of the process to below-normal."""
