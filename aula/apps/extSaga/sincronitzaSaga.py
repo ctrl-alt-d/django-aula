@@ -273,7 +273,7 @@ def comprovar_grups( f ):
         return False, { 'errors': errors, 'warnings': warnings, 'infos': infos }
     
     for row in reader:
-        grup_classe = row[grup_field]
+        grup_classe =  unicode(row[grup_field],'iso-8859-1')
         _, new = Grup2Aula.objects.get_or_create( grup_saga = grup_classe )
         if new:
             errors.append( "El grup '{grup_classe}' del Saga no té correspondència al programa. Revisa les correspondències Saga-Aula".format( grup_classe=grup_classe ) )
