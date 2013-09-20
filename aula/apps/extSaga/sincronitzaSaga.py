@@ -61,11 +61,11 @@ def sincronitza(f, user = None):
                 a.cognoms = uvalue.split(',')[0]
                 trobatNom = True
             if columnName.endswith( u"_GRUPSCLASSE"):
-                unGrup = Grup2Aula.objects.get(grup_saga = uvalue, Grup2Aula__isnull = False)
                 try:
+                    unGrup = Grup2Aula.objects.get(grup_saga = uvalue, Grup2Aula__isnull = False)
                     a.grup = unGrup.Grup2Aula
                 except:
-                    return { 'errors': [ unGrup.grup_saga ], 'warnings': [], 'infos': [] }
+                    return { 'errors': [ uvalue, ], 'warnings': [], 'infos': [] }
                 trobatGrupClasse = True
             if columnName.endswith( u"_CORREU ELECTRÒNIC")  or columnName.find( u"_ADREÇA ELECTR. RESP.")>=0 : 
                 a.correu_tutors += unicode(value,'iso-8859-1') + u', '
