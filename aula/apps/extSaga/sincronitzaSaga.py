@@ -65,7 +65,7 @@ def sincronitza(f, user = None):
                     unGrup = Grup2Aula.objects.get(grup_saga = uvalue, Grup2Aula__isnull = False)
                     a.grup = unGrup.Grup2Aula
                 except:
-                    return { 'errors': [ uvalue, ], 'warnings': [], 'infos': [] }
+                    return { 'errors': [ u"error carregant {0}".format( uvalue ), ], 'warnings': [], 'infos': [] }
                 trobatGrupClasse = True
             if columnName.endswith( u"_CORREU ELECTRÒNIC")  or columnName.find( u"_ADREÇA ELECTR. RESP.")>=0 : 
                 a.correu_tutors += unicode(value,'iso-8859-1') + u', '

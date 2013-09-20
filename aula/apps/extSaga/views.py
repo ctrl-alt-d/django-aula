@@ -61,10 +61,11 @@ def assignaGrups( request ):
         #un formulari per cada grup
         totBe = True
         formset= factoria( request.POST )
-        if formset.is_valid():
-            formset.save()
-        else:
-            totBe = False
+        for f in formset:
+            if f.is_valid():
+                f.save()
+            else:
+                totBe = False
                 
         if totBe:
             return HttpResponseRedirect( '/' )
