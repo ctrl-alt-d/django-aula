@@ -99,4 +99,13 @@ class TutorCheckNode(template.Node):
             return self.nodelist_false.render(context)
 
 
+@register.filter(name='valid_alert')
+def valid_alert(value):
+    valid = ( 'alert', 'warning', 'error', 'info', 'success')
+    try:
+        tag = next( x for x in  value.lower().split() if x in valid  )
+    except StopIteration:
+        tag = 'warning'
+    return tag.replace( 'error', 'danger')
+
 
