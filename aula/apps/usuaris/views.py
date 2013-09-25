@@ -9,6 +9,8 @@ from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuar
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
+from aula.apps.extKronowin.models import ParametreKronowin
+
 #workflow
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
@@ -75,7 +77,7 @@ def resetPasswd(request):
         
         if form.is_valid():            
             usuari = form.cleaned_data['professor']
-            passwd='canviemAviat'
+            passwd, _ =ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
             usuari.set_password( passwd )
             usuari.is_active = True
             usuari.save()
