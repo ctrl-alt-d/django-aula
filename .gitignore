@@ -14,3 +14,4 @@ aula/db.sqlite
 static/*
 aula/apps/demo/tmp/export*
 aula/settings_local.py
+2tot.sh
