@@ -161,9 +161,7 @@ def calcula_menu( user , path ):
                          ), 
                       ),
                       ("Professors", 'professorat__professors__list', di, None, None ),
-        
-                      ),
-                   )
+                   ),
                ),
 
                #--Administració--------------------------------------------------------------------------
