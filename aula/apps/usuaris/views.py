@@ -79,7 +79,9 @@ def resetPasswd(request):
         
         if form.is_valid():            
             usuari = form.cleaned_data['professor']
-            passwd, _ =ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
+
+            defaultPasswd, _ = ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
+            passwd = defaultPasswd.valor_parametre
             usuari.set_password( passwd )
             usuari.is_active = True
             usuari.save()
