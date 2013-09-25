@@ -160,12 +160,9 @@ def calcula_menu( user , path ):
                             ('Tutors individualitzat', 'professorat__tutors__tutors_individualitzats', di, None),
                          ), 
                       ),
-                      ("Professors", 'professorat__professors__list', di, None, None, ),
+                      ("Professors", 'professorat__professors__list', di, None, None ),
+        
                       ),
-                   
-                   
-                   professorat__professors__list
-                   
                    )
                ),
 
