@@ -56,10 +56,12 @@ def calcula_menu( user , path ):
         hiHaUnaQualitativaOberta = AvaluacioQualitativa.objects.filter(  data_obrir_avaluacio__lte =  date.today(),
                                                                          data_tancar_avaluacio__gte = date.today() ).exists()
     
-
-    nom_path = resolve( path ).url_name
-
     menu = { 'items':[], 'subitems':[], 'subsubitems':[], }
+
+    try:
+        nom_path = resolve( path ).url_name
+    except:
+        return menu
     
     menu["esalumne"]=al
     if al:
