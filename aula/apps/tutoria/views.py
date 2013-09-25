@@ -50,6 +50,7 @@ from aula.apps.tutoria.rpt_gestioCartes import gestioCartesRpt
 from aula.apps.tutoria import report_carta_absentisme
 from aula.apps.tutoria.report_carta_absentisme import report_cartaAbsentisme
 from aula.apps.tutoria.rpt_totesLesCartes import totesLesCartesRpt
+from django.core.urlresolvers import reverse
 
 @login_required
 @group_required(['professors','professional'])
@@ -73,7 +74,7 @@ def lesMevesActuacions(request):
             capcelera = tools.classebuida()
             capcelera.amplade = 200
             capcelera.contingut = u'{0} ({1})'.format(unicode( alumne ) , unicode( alumne.grup ) )
-            capcelera.enllac = "/tutoria/infoAlumne/{0}".format( alumne.pk )
+            capcelera.enllac = reverse('tutoria__alumne__detall', args=[ alumne.pk , ])
             taula.capceleres.append(capcelera)
 
             capcelera = tools.classebuida()
