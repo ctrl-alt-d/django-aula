@@ -31,6 +31,8 @@ from django.contrib.auth.models import User
 from aula.apps.usuaris.tools import enviaOneTimePasswd
 from aula.utils.tools import getClientAdress
 
+from django.contrib import messages
+
 @login_required
 def canviDadesUsuari( request):
     credentials = tools.getImpersonateUser(request) 
@@ -81,6 +83,7 @@ def resetPasswd(request):
             usuari.set_password( passwd )
             usuari.is_active = True
             usuari.save()
+            messages.add_message(request, messages.INFO, u"Canviat el Pass de {usuari}, nou passwd és {passwd}".format( usuari = usuari, passwd = passwd) )
             return HttpResponseRedirect( url_next )
             
     else:
