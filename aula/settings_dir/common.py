@@ -171,6 +171,8 @@ INSTALLED_APPS_AULA = [
     'aula.utils',
 ]
 
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
 INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

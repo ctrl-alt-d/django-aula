@@ -83,7 +83,7 @@ def resetPasswd(request):
             usuari.set_password( passwd )
             usuari.is_active = True
             usuari.save()
-            messages.add_message(request, messages.INFO, u"Canviat el Pass de {usuari}, nou passwd és {passwd}".format( usuari = usuari, passwd = passwd) )
+            messages.add_message(request, messages.INFO, u"Canviat el Pass de {usuari}({username}), nou passwd és [{passwd}]".format( usuari = usuari, passwd = passwd, username = usuari.username) )
             return HttpResponseRedirect( url_next )
             
     else:
