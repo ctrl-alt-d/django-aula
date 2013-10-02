@@ -121,7 +121,7 @@ def sincronitza(f, user = None):
         if alumneDadesAnteriors is None:
             a.estat_sincronitzacio = 'S-I'
             a.data_alta = date.today()
-            a.motiu_bloqueig = 'No sol·licitat'
+            a.motiu_bloqueig = u'No sol·licitat'
             a.tutors_volen_rebre_correu = False            
 
             info_nAlumnesInsertats+=1
@@ -139,7 +139,7 @@ def sincronitza(f, user = None):
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
                 a.data_alta = date.today()
-                a.motiu_bloqueig = 'No sol·licitat'
+                a.motiu_bloqueig = u'No sol·licitat'
                 a.tutors_volen_rebre_correu = False                    
             else:
                 a.correu_relacio_familia_pare         = alumneDadesAnteriors.correu_relacio_familia_pare
@@ -244,7 +244,7 @@ def sincronitza(f, user = None):
 
     msg = Missatge( 
                 remitent= user, 
-                text_missatge = "Importació Saga finalitzada.")    
+                text_missatge = u"Importació Saga finalitzada.")    
     msg.afegeix_errors( errors.sort() )
     msg.afegeix_warnings(warnings)
     msg.afegeix_infos(infos)    
@@ -272,14 +272,14 @@ def comprovar_grups( f ):
     grup_field = next( x for x in reader.fieldnames if x.endswith("_GRUPSCLASSE") )
 
     if grup_field is None:
-        errors.append("No trobat el grup classe al fitxer d'importació")
+        errors.append(u"No trobat el grup classe al fitxer d'importació")
         return False, { 'errors': errors, 'warnings': warnings, 'infos': infos }
     
     for row in reader:
         grup_classe =  unicode(row[grup_field],'iso-8859-1')
         _, new = Grup2Aula.objects.get_or_create( grup_saga = grup_classe )
         if new:
-            errors.append( "El grup '{grup_classe}' del Saga no té correspondència al programa. Revisa les correspondències Saga-Aula".format( grup_classe=grup_classe ) )
+            errors.append( u"El grup '{grup_classe}' del Saga no té correspondència al programa. Revisa les correspondències Saga-Aula".format( grup_classe=grup_classe ) )
 
     return { 'errors': errors, 'warnings': warnings, 'infos': infos }
             
