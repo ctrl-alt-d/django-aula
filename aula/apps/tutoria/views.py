@@ -74,7 +74,7 @@ def lesMevesActuacions(request):
             capcelera = tools.classebuida()
             capcelera.amplade = 200
             capcelera.contingut = u'{0} ({1})'.format(unicode( alumne ) , unicode( alumne.grup ) )
-            capcelera.enllac = reverse('tutoria__alumne__detall', args=[ alumne.pk , ])
+            capcelera.enllac = reverse('tutoria__alumne__detall', args=[ alumne.pk , 'all' ])
             taula.capceleres.append(capcelera)
 
             capcelera = tools.classebuida()
