@@ -54,7 +54,7 @@ $(document).ready(function()
    });
    {% endfor %}  
       
-   {% for x in dades.impartir %}
+   {% for x in dades.c %}
    $('#c{{x.pk}}').tooltip(
    {
       title: 'Prof.: {{x.professor|escapejs}}'
