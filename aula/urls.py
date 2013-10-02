@@ -30,7 +30,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     (r'^admin/', include(admin.site.urls)),
     # Login i logout automàtics
-    (r'^login/$', 'django.contrib.auth.views.login'),
+    #(r'^login/$', 'django.contrib.auth.views.login'),
     url(r'^password_change/$', 'django.contrib.auth.views.password_change', {'post_change_redirect': '/'}, name="password_change"),
     (r'^logout/$', 'aula.utils.views.logout_page'),
     #fitxers estàtics:

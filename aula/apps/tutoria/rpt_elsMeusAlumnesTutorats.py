@@ -98,14 +98,14 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
             controls = alumne.controlassistencia_set.filter( q_hores )
 
                 #-faltes--------------------------------------------
-            f = controls.filter( alumne = alumne, estat__codi_estat = 'F' ).distinct().count()
-            r = controls.filter( alumne = alumne, estat__codi_estat = 'R' ).distinct().count()
-            p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count()
-            j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count()
+            f = controls.filter( alumne = alumne, estat__codi_estat = 'F' ).distinct().count() 
+            r = controls.filter( alumne = alumne, estat__codi_estat = 'R' ).distinct().count() 
+            p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count() 
+            j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count() 
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     
                 #-%--------------------------------------------
-            tpc = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if j > 0 else 0
+            tpc = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
             
             camp = tools.classebuida()
             camp.enllac = None
@@ -113,7 +113,7 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
                            (u'j: {0}'.format( j ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if j else None  ),  
                            (u'r: {0}'.format( r ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if r else None  ),  
                            (u'p: {0}'.format( p ) , None ),  
-                           (u'{0:.2f}%noJust'.format( tpc ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if f or j or r else None  ),
+                           (u'{0:.2f}% no J.'.format( tpc ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if f or j or r else None  ),
                          ] 
             camp.multipleContingut = accio_list
             filera.append(camp)

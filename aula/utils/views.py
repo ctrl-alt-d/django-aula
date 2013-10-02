@@ -21,6 +21,7 @@ from django.utils.datetime_safe import datetime
 from django.db.models import Q
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 
 def logout_page(request):
     try:
@@ -46,7 +47,7 @@ def menu(request):
         #comprova que no té passwd per defecte:
         defaultPasswd, _ = ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
         if check_password( defaultPasswd.valor_parametre, request.user.password ):
-            return HttpResponseRedirect( '/password_change/')
+            return HttpResponseRedirect( reverse( 'usuari__dades__canvi_passwd' ) )
         
         #si no té les dades informades:
         if not request.user.first_name or not request.user.last_name:

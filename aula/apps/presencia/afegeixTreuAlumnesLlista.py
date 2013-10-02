@@ -75,7 +75,7 @@ class afegeixThread(Thread):
                             
                             ca.save()
                             alumne_afegit = True
-                if alumne_afegit:
+                if i.pot_no_tenir_alumnes:
                     i.pot_no_tenir_alumnes = False
                     i.save()
                 self.flagPrimerDiaFet = ( i.dia_impartir >= self.impartir.dia_impartir )
