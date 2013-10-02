@@ -55,10 +55,12 @@ $(document).ready(function()
    {% endfor %}  
       
    {% for x in dades.c %}
+      {% if cella.c.professor %}
    $('#c{{x.pk}}').tooltip(
    {
       title: 'Prof.: {{x.professor|escapejs}}'
    });
+      {% endif %}
    {% endfor %}  
 });
 </script>	
@@ -116,8 +118,10 @@ $(document).ready(function()
   		{% for x in cella.e %}
   		   <span id="e{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-danger">e</span>
   		{% endfor %}
-  		{% for x in cella.c %}
-  		   <span id="c{{x.pk}}" style="font-size: 8px; padding:0,1,0,0; font-family: monospace;">&#402;</span>
+  		{% for x in cella.c  %}
+  		   {% if cella.c.professor %}
+  		   <span id="c{{x.pk}}" style="font-size: 8px; padding:0,1,0,0; font-family: monospace;"  class="label label-default">i</span>
+  		   {% endif %}
   		{% endfor %}
   </td>
   {% endfor %}
