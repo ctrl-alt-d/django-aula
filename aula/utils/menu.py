@@ -96,7 +96,7 @@ def calcula_menu( user , path ):
                             ("Calculadora UF", 'aula__materies__calculadora_uf', pr, None )
                           )
                       ),         
-                      ("Qualitativa", 'aula__qualitativa__les_meves_avaulacions_qualitatives', pr, hiHaUnaQualitativaOberta, None ),
+                      ("Qualitativa", 'aula__qualitativa__les_meves_avaulacions_qualitatives', pr, ( u'!', 'info' ) if hiHaUnaQualitativaOberta else None, None ),
                    )
                ),
 
