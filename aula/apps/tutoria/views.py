@@ -392,7 +392,7 @@ def justificaFaltes(request, pk, year, month, day):
 
 @login_required
 @group_required(['professors'])
-def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = False, inclouIncidencies = True):
+def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True, inclouIncidencies = True):
     credentials = tools.getImpersonateUser(request) 
     (user, l4) = credentials
     professor = User2Professor(user)
@@ -435,6 +435,7 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = False
     dades.E = []
     dades.e = [] 
     dades.c = []    #controls
+
     
     dades.dia_hores = tools.diccionari()
     dades.marc_horari = {}

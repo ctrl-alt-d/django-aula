@@ -54,6 +54,12 @@ $(document).ready(function()
    });
    {% endfor %}  
       
+   {% for x in dades.impartir %}
+   $('#c{{x.pk}}').tooltip(
+   {
+      title: 'Prof.: {{x.professor|escapejs}}'
+   });
+   {% endfor %}  
 });
 </script>	
 {% endblock %}
@@ -84,7 +90,7 @@ $(document).ready(function()
   {% for alumne,filera in dades.quadre.itemsEnOrdre %}
   <tr>
   <td>
-  	<div style="width:150px; height:12px; overflow:hidden">{{alumne}}</div>
+  	<div style="width:150px; overflow:hidden">{{alumne}}</div>
   </td>
   {% for cella in filera %}
   
@@ -109,6 +115,9 @@ $(document).ready(function()
   		{% endfor %}
   		{% for x in cella.e %}
   		   <span id="e{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;">e</span>
+  		{% endfor %}
+  		{% for x in cella.c %}
+  		   <span id="c{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;"> </span>
   		{% endfor %}
   </td>
   {% endfor %}
