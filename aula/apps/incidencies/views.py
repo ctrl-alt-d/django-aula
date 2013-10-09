@@ -47,6 +47,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_de_posar
 from aula.apps.incidencies.business_rules.expulsio import expulsio_despres_de_posar
 from django.db.models.aggregates import Count
+from django.utils.text import slugify
 
 
 
@@ -1237,10 +1238,10 @@ def cartaExpulsioCentre( request, pk ):
         expulsio.impres = True
         expulsio.save()
         response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="cartaExpulsioCentre-{0}.odt"'.format( 
-                                                     expulsio.alumne ).encode('ascii','replace').replace('?','_').replace(' ','_')
+        response['Content-Disposition'] = u'attachment; filename="cartaExpulsioCentre-{0}.odt"'.format( slugify( expulsio.alumne ) )
+                                                     
     else:
-        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
     
     return response
 
