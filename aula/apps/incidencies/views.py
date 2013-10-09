@@ -1238,7 +1238,7 @@ def cartaExpulsioCentre( request, pk ):
         expulsio.impres = True
         expulsio.save()
         response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="cartaExpulsioCentre-{0}.odt"'.format( slugify( expulsio.alumne ) )
+        response['Content-Disposition'] = u'attachment; filename="cartaExpulsioCentre-{0}.odt"'.format( slugify( unicode(expulsio.alumne ) ) )
                                                      
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
