@@ -1237,7 +1237,7 @@ def cartaExpulsioCentre( request, pk ):
         expulsio.impres = True
         expulsio.save()
         response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename=cartaExpulsioCentre-{0}.odt'.format( 
+        response['Content-Disposition'] = u'attachment; filename="cartaExpulsioCentre-{0}.odt"'.format( 
                                                      expulsio.alumne ).encode('ascii','replace').replace('?','_').replace(' ','_')
     else:
         response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % cgi.escape(excepcio))
