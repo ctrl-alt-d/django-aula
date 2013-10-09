@@ -134,7 +134,7 @@ def gestioCartesRpt(professor, l4):
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     
                 #-%--------------------------------------------
-            tpc = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if j > 0 else 0
+            tpc = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
             
             camp = tools.classebuida()
             camp.enllac = None
