@@ -1166,7 +1166,7 @@ def cartaExpulsioCentre( request, pk ):
     
     #capcelera
     report = tools.classebuida()
-    report.nom = unicode(expulsio.alumne)
+    report.nom_alumne = unicode(expulsio.alumne)
     report.dies_expulsio = u" del {0} al {1}".format( 
                                         expulsio.data_inici.strftime( '%d/%m/%Y' ), 
                                         expulsio.data_fi.strftime( '%d/%m/%Y' ), 
