@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils.widgets import DateTextImput
-
+from itertools import groupby
 #formularis
 from aula.apps.incidencies.forms import posaIncidenciaAulaForm, posaExpulsioForm, posaExpulsioFormW2,\
     incidenciesRelacionadesForm
