@@ -505,8 +505,9 @@ def editaExpulsio( request, pk ):
                         'provoca_expulsio_centre', 
                         'es_vigent'  ] )
 
-    editaExpulsioFormF = modelform_factory( Expulsio, fields = fields )
-    editaExpulsioFormF.base_fields['moment_comunicacio_a_tutors'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
+
+    editaExpulsioFormF = modelform_factory( Expulsio, fields = fields,)
+    editaExpulsioFormF.base_fields['moment_comunicacio_a_tutors'].widget = forms.DateTimeInput(attrs={'class':'datepicker'} )
     try:
         editaExpulsioFormF.base_fields['dia_expulsio'].widget = forms.DateInput(attrs={'class':'datepicker'} )
     except:
@@ -548,6 +549,7 @@ def editaExpulsio( request, pk ):
         can_delete = ckbxForm( data=request.POST, label = 'Esborrar expulsió:', 
                              help_text=u'''Marca aquesta cassella per esborrar aquesta expulsió''' )
 
+    
     formExpulsio.infoForm = infoForm
     formset = [ formExpulsio ]
     formset.extend ( [  can_delete ] if l4 else []  )
@@ -790,50 +792,48 @@ def alertesAcumulacioExpulsions( request ):
     taula.fileres = []
     
     alumnesAmbExpulsions = ( 
-                            Alumne
+                            Expulsio
                            .objects
-                           .filter( expulsio__es_vigent = True )
-                           .exclude( expulsio__estat = 'ES' )
-                           .annotate( nExpulsions=Count( 'expulsio') )
-                           .filter( nExpulsions__gte = 0 )
-                           .order_by( 'id' )
-                           .values( 'id','nExpulsions' )
+                           .filter( es_vigent = True )
+                           .exclude( estat = 'ES' )
+                           .order_by('alumne__id')
+                           .values_list( 'alumne__id', flat = True )
                           )
-
+    
     alumnesAmbIncidenciesAula = ( 
-                            Alumne
+                            Incidencia
                            .objects
-                           .filter( incidencia__es_vigent = True, incidencia__es_informativa = False, incidencia__control_assistencia__isnull = False )
-                           .annotate( nIncidenciesAula=Count( 'incidencia') )
-                           .filter( nIncidenciesAula__gte = 0 )
-                           .order_by( 'id' )
-                           .values( 'id','nIncidenciesAula' )
+                           .filter( es_vigent = True, es_informativa = False, control_assistencia__isnull = False )
+                           .order_by( 'alumne__id' )
+                           .values_list( 'alumne__id', flat = True )
                           )
-
-
+    
+    
     alumnesAmbIncidenciesForaAula = ( 
-                            Alumne
+                            Incidencia
                            .objects
-                           .filter( incidencia__es_vigent = True, incidencia__es_informativa = False, incidencia__control_assistencia__isnull = True )
-                           .annotate( nIncidenciesForaAula=Count( 'incidencia') )
-                           .filter( nIncidenciesForaAula__gte = 0 )
-                           .order_by( 'id' )
-                           .values( 'id','nIncidenciesForaAula' )
+                           .filter( es_vigent = True, es_informativa = False, control_assistencia__isnull = True )
+                           .order_by( 'alumne__id' )
+                           .values_list( 'alumne__id', flat = True )
                           )
     
     alumnesAmbExpulsions_dict = {}
     alumnesAmbIncidenciesAula_dict = {}
     alumnesAmbIncidenciesForaAula_dict = {}
     alumnes_ids = set()
-    for x in alumnesAmbExpulsions:
-        alumnes_ids.add( x['id'] ) 
-        alumnesAmbExpulsions_dict[x['id']] = x['nExpulsions']
-    for x in alumnesAmbIncidenciesAula:
-        alumnes_ids.add( x['id'] ) 
-        alumnesAmbIncidenciesAula_dict[x['id']] = x['nIncidenciesAula']
-    for x in alumnesAmbIncidenciesForaAula:
-        alumnes_ids.add( x['id'] )
-        alumnesAmbIncidenciesForaAula_dict[x['id']] = x['nIncidenciesForaAula'] 
+    for x, g in groupby(alumnesAmbExpulsions, lambda x: x): 
+        alumnes_ids.add( x ) 
+        alumnesAmbExpulsions_dict[x] = len( list(g) )
+        
+        
+    for x, g in groupby(alumnesAmbIncidenciesAula, lambda x: x): 
+        alumnes_ids.add( x ) 
+        alumnesAmbIncidenciesAula_dict[x] = len( list(g) )
+        
+        
+    for x, g in groupby(alumnesAmbIncidenciesForaAula, lambda x: x): 
+        alumnes_ids.add( x )
+        alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
         
     alumnes = []
     for alumne in  Alumne.objects.filter( id__in = alumnes_ids ):
@@ -841,7 +841,7 @@ def alertesAcumulacioExpulsions( request ):
         alumne.nIncidenciesAula = alumnesAmbIncidenciesAula_dict.get(alumne.id, 0 )
         alumne.nIncidenciesForaAula = alumnesAmbIncidenciesForaAula_dict.get(alumne.id, 0 )
         alumnes.append(alumne)
-    
+        
     #for alumne in  Alumne.objects.raw( sql ): TODO
     for alumne in  sorted( alumnes, key = lambda a: a.nExpulsions * 3 + a.nIncidenciesAula + a.nIncidenciesForaAula, reverse=True ):
                 

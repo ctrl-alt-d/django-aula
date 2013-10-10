@@ -10,18 +10,18 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="{{STATIC_URL}}css/datepicker.css">
 <link rel="stylesheet" href="{{STATIC_URL}}bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{STATIC_URL}}glyphicons/css/bootstrap-glyphicons.css">
+<link rel="stylesheet" href="{{STATIC_URL}}eonasdan-dt-picker/css/bootstrap.min.css">
 <title>django-aula | {% block title %}{% endblock %}</title>
 
 <script src="{{STATIC_URL}}jquery/jquery-2.0.2.min.js"></script>
 <script> 
 $.fn.bootstrapDP = null;                 
 </script>
-<script src="{{STATIC_URL}}js/bootstrap-datepicker.js"></script>
-<script src="{{STATIC_URL}}js/locales/bootstrap-datepicker.ca.js"></script>
 <script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
+<script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
+
 <script type="text/javascript">
   function confirmAction(url, msg) {
     if (confirm(msg)) {
@@ -60,13 +60,12 @@ $.fn.bootstrapDP = null;
   
   </div> <!--container-->
 
-<script>
-$('.datepicker').datepicker({
-    format: 'dd/mm/yyyy',
-    language: 'ca',
-    autoclose: true,
-    weekStart: 1
-});
+<script type="text/javascript">
+    $(function () {
+        $('.datepicker').datetimepicker({
+            pickTime: false
+        });
+    });
 </script>
 
 </body>
