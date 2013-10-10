@@ -175,7 +175,9 @@ class DateTimeTextImput(DateTimeInput):
         javascript = """<script type="text/javascript">
                             $(function () {
                                 $('#datetime_""" + attrs['id'] + """').datetimepicker({
-                                    pickSeconds: false                                
+                                    pickSeconds: false   ,
+                                    language: 'ca'      ,
+                                    weekStart: 1                       
                                 });
                             });
                         </script>"""
@@ -199,7 +201,9 @@ class DateTextImput(DateInput):
         javascript = """<script type="text/javascript">
                             $(function () {
                                 $('#datetime_""" + attrs['id'] + """').datetimepicker({
-                                    pickTime: false                                    
+                                    pickTime: false   ,
+                                    language: 'ca'       ,
+                                    weekStart: 1                                  
                                 });
                             });
                         </script>"""
@@ -213,31 +217,4 @@ class DateTextImput(DateInput):
 
 
 
-
-class DateTextImputXXX(TextInput):
-    def render(self, name, value, attrs=None):
-        if value is None:
-            value = ''
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
-        if value != '':
-            # Only add the 'value' attribute if a value is non-empty.
-            final_attrs['value'] = force_text(s, encoding, strings_only, errors)(self._format_value(value))
-        pre_html = """
-                         <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( final_attrs['id'] )
-        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
-                           </span>
-                         </div>
-                      """
-        javascript = """<script type="text/javascript">
-                            $(function () {{
-                                $('#datetime_""" + final_attrs['id'] + """').datetimepicker({{
-                                    pickTime: false                                    
-                                }});
-                            }});
-                        </script>"""
-                        
-        print final_attrs
-        final_attrs.setdefault( 'class', "" ) 
-        final_attrs['class'] += " form-control"        
-        
-        return format_html(pre_html + '<input{0} />' + post_html + javascript, flatatt(final_attrs))   
+ 
