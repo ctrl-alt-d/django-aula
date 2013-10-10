@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from aula.utils.widgets import DateTextImput
 
 #templates
 from django.template import RequestContext
@@ -923,7 +924,7 @@ def novaCarta(request, pk_alumne ):
     else:
         form = frmFact(  instance = carta )
     
-    form.fields['data_carta'].widget = forms.DateTimeInput(attrs={'class':'datepicker'} )
+    form.fields['data_carta'].widget = DateTextImput()
     
     return render_to_response(
                 'form.html', 

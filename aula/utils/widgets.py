@@ -2,12 +2,13 @@
 #http://copiesofcopies.org/webl/2010/04/26/a-better-datetime-widget-for-django/
 
 #from django.template.loader import render_to_string
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, RadioSelect
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, RadioSelect,\
+    DateTimeInput
 from time import strftime
 from django.utils.safestring import mark_safe
-from django.utils.html import conditional_escape, escape
+from django.utils.html import conditional_escape, escape, format_html
 from django.forms.util import flatatt
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_unicode, force_text
 from itertools import chain
 
 #-----------------------------------------------------------------------------------
@@ -160,3 +161,83 @@ class bootStrapButtonSelect(Widget):
           output.append(self.render_button(selected_choices, name, id_, num_id, option_value, option_label))
           num_id = num_id + 1
         return u'\n'.join(output)
+    
+
+
+class DateTimeTextImput(DateTimeInput):
+    def render(self, name, value, attrs={}):
+        pre_html = """
+                         <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( attrs['id'] )
+        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
+                           </span>
+                         </div>
+                      """
+        javascript = """<script type="text/javascript">
+                            $(function () {
+                                $('#datetime_""" + attrs['id'] + """').datetimepicker({
+                                    pickSeconds: false                                
+                                });
+                            });
+                        </script>"""
+        attrs.setdefault( 'class', "" ) 
+        attrs['class'] += " form-control"        
+        attrs['data-format'] ="dd/MM/yyyy HH:mm"   
+        super_html = super( DateTimeTextImput, self ).render( name, value, attrs)
+        
+        return mark_safe(pre_html  + super_html +  post_html + javascript   )                                    
+
+    
+
+class DateTextImput(DateInput):
+    def render(self, name, value, attrs={}):
+        pre_html = """
+                         <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( attrs['id'] )
+        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
+                           </span>
+                         </div>
+                      """
+        javascript = """<script type="text/javascript">
+                            $(function () {
+                                $('#datetime_""" + attrs['id'] + """').datetimepicker({
+                                    pickTime: false                                    
+                                });
+                            });
+                        </script>"""
+        attrs.setdefault( 'class', "" ) 
+        attrs['class'] += " form-control"
+        attrs['data-format'] ="dd/MM/yyyy"          
+        super_html = super( DateTextImput, self ).render( name, value, attrs)
+        
+        return mark_safe(pre_html  + super_html +  post_html + javascript   )
+
+
+
+
+
+class DateTextImputXXX(TextInput):
+    def render(self, name, value, attrs=None):
+        if value is None:
+            value = ''
+        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        if value != '':
+            # Only add the 'value' attribute if a value is non-empty.
+            final_attrs['value'] = force_text(s, encoding, strings_only, errors)(self._format_value(value))
+        pre_html = """
+                         <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( final_attrs['id'] )
+        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
+                           </span>
+                         </div>
+                      """
+        javascript = """<script type="text/javascript">
+                            $(function () {{
+                                $('#datetime_""" + final_attrs['id'] + """').datetimepicker({{
+                                    pickTime: false                                    
+                                }});
+                            }});
+                        </script>"""
+                        
+        print final_attrs
+        final_attrs.setdefault( 'class', "" ) 
+        final_attrs['class'] += " form-control"        
+        
+        return format_html(pre_html + '<input{0} />' + post_html + javascript, flatatt(final_attrs))   

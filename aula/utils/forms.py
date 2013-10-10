@@ -1,3 +1,4 @@
+from aula.utils.widgets import DateTextImput
 
 from django import forms
 from django.forms.widgets import Widget
@@ -14,7 +15,7 @@ class ckbxForm(forms.Form):
         
 class dataForm(forms.Form):
     data = forms.DateField( required = False ,
-                            widget = forms.DateInput(attrs={'class':'datepicker'} ) )
+                            widget = DateTextImput() )
     
     def __init__(self, *args, **kwargs):
         self.label = kwargs.pop('label', None)

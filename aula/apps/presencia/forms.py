@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-
+from aula.utils.widgets import DateTextImput
 from django import forms as forms
 from django.forms import ModelForm, RadioSelect
 from django.forms.widgets import DateInput, TextInput
@@ -43,7 +43,7 @@ class regeneraImpartirForm(forms.Form):
                                        initial=datetime.today(),
                                        required = True, 
                                        help_text=u'Data en que entra en vigor l\'horari actual',  
-                                       widget = DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
     
     franja_inici = forms.ModelChoiceField(queryset= FranjaHoraria.objects.all(), 
                                           required = True)
@@ -125,7 +125,7 @@ class calculadoraUnitatsFormativesForm(forms.Form):
     dataInici = forms.DateField(help_text=u'Data on començar a comptar', 
                                        initial= datetime.today(),
                                        required = True,                                          
-                                       widget = DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
     hores = forms.IntegerField( help_text=u'Hores de la UF')    
 
     def __init__(self, *args, **kwargs):
@@ -143,12 +143,12 @@ class faltesAssistenciaEntreDatesForm(forms.Form):
     dataDesDe = forms.DateField(help_text=u'Data on començar a comptar', 
                                        initial= datetime.today(),
                                        required = True,                                          
-                                       widget = DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
     horaDesDe = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all(), initial = [ FranjaHoraria.objects.all()[0] ] )
     dataFinsA = forms.DateField(help_text=u'Data on començar a comptar', 
                                        initial= datetime.today(),
                                        required = True,                                          
-                                       widget = DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
     horaFinsA = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all(), initial =[  FranjaHoraria.objects.reverse()[0] ])
 
     def __init__(self, *args, **kwargs):
@@ -164,13 +164,13 @@ class alertaAssistenciaForm(forms.Form):
                                        initial=datetime.today(),
                                        required = True, 
                                        help_text=u'Dia inicial pel càlcul',  
-                                       widget = DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
     
     data_fi = forms.DateField(label=u'Data fi', 
                                        initial=datetime.today(),
                                        required = True, 
                                        help_text=u'Dia final pel càlcul',  
-                                       widget = DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
     
     tpc = forms.IntegerField( label = u'filtre %', 
                               max_value=100, 
@@ -198,7 +198,7 @@ class passaLlistaGrupDataForm( forms.Form ):
     dia =  forms.DateField(label=u'Dia', 
                                        initial=datetime.today(),
                                        help_text=u'Dia a passar llista.',  
-                                       widget = forms.DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
 
   
 

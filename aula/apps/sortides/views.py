@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from aula.utils.widgets import DateTextImput
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
@@ -65,8 +66,8 @@ def sortidaEdit( request, pk = None ):
 
         form = formIncidenciaF( instance = instance )
         
-    form.fields['data_inici'].widget = forms.DateInput(attrs={'class':'datepicker'} )
-    form.fields['data_fi'].widget = forms.DateInput(attrs={'class':'datepicker'} )
+    form.fields['data_inici'].widget = DateTextImput()
+    form.fields['data_fi'].widget = DateTextImput()
     form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
 
         

@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from aula.utils.widgets import DateTextImput
 
 #formularis
 from aula.apps.incidencies.forms import posaIncidenciaAulaForm, posaExpulsioForm, posaExpulsioFormW2,\
@@ -19,7 +20,7 @@ from aula.apps.usuaris.models import  Professor, User2Professor, Professional, U
 from aula.apps.incidencies.models import Expulsio
 from aula.utils import tools    
 
-#rules
+from aula.utils.widgets import DateTimeTextImput,DateTextImput
 
 #consultes
 #from django.db.models import Q
@@ -247,7 +248,7 @@ def posaIncidencia( request ):
                                                             'franja_incidencia',
                                                             'descripcio_incidencia',
                                                             'es_informativa'])
-    formIncidenciaF.base_fields['dia_incidencia'].widget = forms.DateInput(attrs={'class':'datepicker'} )               
+    formIncidenciaF.base_fields['dia_incidencia'].widget =  DateTextImput()               
     formIncidenciaF.base_fields['descripcio_incidencia'].widget = forms.TextInput(attrs={'style':'width:400px;'} )   
 
     formset = []
@@ -298,7 +299,7 @@ def posaIncidencia( request ):
 #                                                                'franja_incidencia',
 #                                                                'descripcio_incidencia',
 #                                                                'es_informativa'])
-#        formIncidenciaF.base_fields['dia_incidencia'].widget = forms.DateInput(attrs={'class':'datepicker'} )               
+#        formIncidenciaF.base_fields['dia_incidencia'].widget =  DateTextImput()               
         formIncidencia = formIncidenciaF()
 
         formset.append( formAlumne )
@@ -505,11 +506,13 @@ def editaExpulsio( request, pk ):
                         'provoca_expulsio_centre', 
                         'es_vigent'  ] )
 
-
-    editaExpulsioFormF = modelform_factory( Expulsio, fields = fields,)
-    editaExpulsioFormF.base_fields['moment_comunicacio_a_tutors'].widget = forms.DateTimeInput(attrs={'class':'datepicker'} )
+    
+    widgets = { 'moment_comunicacio_a_tutors': DateTimeTextImput()}
+    editaExpulsioFormF = modelform_factory( Expulsio, fields = fields,widgets=widgets)
+    #editaExpulsioFormF.base_fields['moment_comunicacio_a_tutors'].widget = forms.DateTimeInput(attrs={'class':'datepickerT'} )
+    
     try:
-        editaExpulsioFormF.base_fields['dia_expulsio'].widget = forms.DateInput(attrs={'class':'datepicker'} )
+        editaExpulsioFormF.base_fields['dia_expulsio'].widget = DateTextImput()
     except:
         pass
     
@@ -1291,9 +1294,9 @@ def editaExpulsioCentre( request, pk ):
 
     editaExpulsioFormF = modelform_factory( ExpulsioDelCentre, fields = fields )
     try:
-        editaExpulsioFormF.base_fields['data_inici'].widget = forms.DateInput(attrs={'class':'datepicker'} )
-        editaExpulsioFormF.base_fields['data_fi'].widget = forms.DateInput(attrs={'class':'datepicker'} )
-        editaExpulsioFormF.base_fields['data_carta'].widget = forms.DateInput(attrs={'class':'datepicker'} )
+        editaExpulsioFormF.base_fields['data_inici'].widget =  DateTextImput()
+        editaExpulsioFormF.base_fields['data_fi'].widget =  DateTextImput()
+        editaExpulsioFormF.base_fields['data_carta'].widget =  DateTextImput()
     except:
         pass
     

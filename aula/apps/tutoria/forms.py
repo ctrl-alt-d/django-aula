@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from aula.utils.widgets import DateTextImput
 
 from django import forms as forms
 import datetime
@@ -11,13 +12,13 @@ class elsMeusAlumnesTutoratsEntreDatesForm( forms.Form ):
                                        initial=datetime.date.today,
                                        required = False, 
                                        help_text=u'Rang de dates: primer dia.',  
-                                       widget = forms.DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
 
     dataFinsA =  forms.DateField(label=u'Data fins a', 
                                        initial=datetime.date.today,
                                        required = True, 
                                        help_text=u'Rang de dates: darrer dia.',  
-                                       widget = forms.DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
 
 
 
@@ -37,7 +38,7 @@ class justificaFaltesW1Form(forms.Form):
                                        initial=datetime.date.today,
                                        required = True, 
                                        help_text=u'Data on hi ha les faltes a justificar.',  
-                                       widget = forms.DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
 
     pas = forms.IntegerField(  initial=1, widget = forms.HiddenInput() )
 
@@ -56,7 +57,7 @@ class informeSetmanalForm(forms.Form):
                                        initial=datetime.date.today,
                                        required = True, 
                                        help_text=u'Data on hi ha les faltes a justificar.',  
-                                       widget = forms.DateInput(attrs={'class':'datepicker'} ) )
+                                       widget = DateTextImput() )
 
     def __init__(self, *args, **kwargs):
         self.queryset = kwargs.pop('queryset', None)

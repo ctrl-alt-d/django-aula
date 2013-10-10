@@ -10,9 +10,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
+<link rel="stylesheet" href="{{STATIC_URL}}eonasdan-dt-picker/css/bootstrap-datetimepicker.min.css">
 <link rel="stylesheet" href="{{STATIC_URL}}bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="{{STATIC_URL}}glyphicons/css/bootstrap-glyphicons.css">
-<link rel="stylesheet" href="{{STATIC_URL}}eonasdan-dt-picker/css/bootstrap.min.css">
 
 <title>-djAu- Programari control de presència i incidències per a Instituts, Escoles i Acadèmies.</title>
 <meta name="description" content = "-djAu- Permet passar llista amb pocs clics així com la gestió completa de les incidències. 
@@ -23,7 +23,6 @@
 <script> 
 $.fn.bootstrapDP = null;                 
 </script>
-<script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
 <script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript">
   function confirmAction(url, msg) {
@@ -62,13 +61,8 @@ $.fn.bootstrapDP = null;
   </div> <!--container-->
 
 
-<script type="text/javascript">
-    $(function () {
-        $('.datepicker').datetimepicker({
-            pickTime: false
-        });
-    });
-</script>
+
+<script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
 
 		<div style="visibility:hidden;">
 		<div itemscope itemtype="http://data-vocabulary.org/Product">
@@ -89,6 +83,8 @@ $.fn.bootstrapDP = null;
 		  </span>
 		</div>
 		</div>
+
+
 
 </body>
 </html>

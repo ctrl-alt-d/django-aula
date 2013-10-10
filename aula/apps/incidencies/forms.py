@@ -3,7 +3,7 @@
 from django import forms as forms
 
 from aula.apps.incidencies.models import FrassesIncidenciaAula, Expulsio
-
+from aula.utils.widgets import DateTextImput
 
 class incidenciesRelacionadesForm(forms.Form):
     incidenciesRelacionades = forms.ModelMultipleChoiceField( 
@@ -78,7 +78,7 @@ class posaExpulsioForm(forms.ModelForm):
         model = Expulsio
         fields = ( 'dia_expulsio', 'franja_expulsio'  )
         widgets = {
-                   'dia_expulsio': forms.DateInput(attrs={'class':'datepicker'} )
+                   'dia_expulsio': DateTextImput() 
                    }
 
 #TODO: Canviar per una factoria --------------------------------------------------------<
