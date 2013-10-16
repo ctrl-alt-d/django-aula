@@ -5,6 +5,7 @@ import sys
 from django.conf import settings
 
 def notifica():
+    print u'Notificant ...'
     from aula.apps.alumnes.models import Alumne
     from django.db import transaction
     from django.core.exceptions import ObjectDoesNotExist
@@ -110,6 +111,8 @@ def notifica():
                                     
             except ObjectDoesNotExist:
                 pass
+
+    print u'Fi procés notificacions ...'
 
 #             
 # if __name__ == '__main__':
