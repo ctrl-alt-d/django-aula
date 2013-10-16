@@ -13,6 +13,7 @@ class Command(BaseCommand):
             notifica()
         except Exception, e:
             errors = [unicode(e)]
+            print( errors )
         
             #Deixar missatge a la base de dades (utilitzar self.user )
             from aula.apps.missatgeria.models import Missatge
