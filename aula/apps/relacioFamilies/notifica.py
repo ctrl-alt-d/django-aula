@@ -111,35 +111,35 @@ def notifica():
             except ObjectDoesNotExist:
                 pass
 
-            
-if __name__ == '__main__':
-    # Setup environ
-    sys.path.append( os.path.join(os.path.dirname(__file__), '..' ) )
-    os.environ['DJANGO_SETTINGS_MODULE'] = "settings"
-    try:
-        notifica()
-    except Exception, e:
-        errors = [unicode(e)]
-    
-        #Deixar missatge a la base de dades (utilitzar self.user )
-        from aula.apps.missatgeria.models import Missatge
-        from django.contrib.auth.models import User, Group
-
-        usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
-        if new:
-            usuari_notificacions.is_active = False
-            usuari_notificacions.first_name = u'Usuari Tasques Programades'
-            usuari_notificacions.save()
-        msg = Missatge( 
-                    remitent= usuari_notificacions, 
-                    text_missatge = u"Error enviant notificacions relació famílies.")    
-        msg.afegeix_errors( errors.sort() )
-        importancia = 'VI' 
-        
-        grupDireccio =  Group.objects.get( name = 'direcció' )
-        msg.envia_a_grup( grupDireccio , importancia=importancia)
-        
-        
-    
-    
+#             
+# if __name__ == '__main__':
+#     # Setup environ
+#     sys.path.append( os.path.join(os.path.dirname(__file__), '..' ) )
+#     os.environ['DJANGO_SETTINGS_MODULE'] = "settings"
+#     try:
+#         notifica()
+#     except Exception, e:
+#         errors = [unicode(e)]
+#     
+#         #Deixar missatge a la base de dades (utilitzar self.user )
+#         from aula.apps.missatgeria.models import Missatge
+#         from django.contrib.auth.models import User, Group
+# 
+#         usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
+#         if new:
+#             usuari_notificacions.is_active = False
+#             usuari_notificacions.first_name = u'Usuari Tasques Programades'
+#             usuari_notificacions.save()
+#         msg = Missatge( 
+#                     remitent= usuari_notificacions, 
+#                     text_missatge = u"Error enviant notificacions relació famílies.")    
+#         msg.afegeix_errors( errors.sort() )
+#         importancia = 'VI' 
+#         
+#         grupDireccio =  Group.objects.get( name = 'direcció' )
+#         msg.envia_a_grup( grupDireccio , importancia=importancia)
+#         
+#         
+#     
+#     
 
