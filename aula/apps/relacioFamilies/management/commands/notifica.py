@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
-from aula.apps.relacioFamilies import notifica
+from aula.apps.relacioFamilies.notifica import notifica
 
 class Command(BaseCommand):
     help = 'Notifica a les families'   
