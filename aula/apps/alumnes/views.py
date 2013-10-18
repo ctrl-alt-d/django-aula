@@ -160,7 +160,7 @@ def llistaTutorsIndividualitzats( request ):
 
 
 @login_required
-@group_required(['direcció','psicopedagoc'])
+@group_required(['direcció','psicopedagog'])
 def informePsicopedagoc( request  ):
 
     credentials = tools.getImpersonateUser(request) 

@@ -223,7 +223,7 @@ def editaActuacio(request, pk):
     te_permis = (l4 or 
                 actuacio.professional.pk == user.pk or  
                 professor in actuacio.alumne.tutorsDeLAlumne() or
-                user.groups.filter(name__in= [u'direcció', u'psicopedagoc'] ).exists() 
+                user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
                 )
     if  not te_permis:
         raise Http404() 
@@ -1059,7 +1059,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
     esTutorat = l4 or \
                 professor in alumne.tutorsDeLAlumne() or \
-                user.groups.filter(name__in= [u'direcció', u'psicopedagoc'] ).exists()  
+                user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists()  
     
     if not esTutorat:
         raise Http404 
