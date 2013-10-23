@@ -30,7 +30,8 @@ class Command(BaseCommand):
             msg.afegeix_errors( errors.sort() )
             importancia = 'VI' 
             
-            grupDireccio =  Group.objects.get( name = 'direcció' )
-            msg.envia_a_grup( grupDireccio , importancia=importancia)
+            administradors, _ = Group.objects.get_or_create( name = 'administradors' )
+            
+            msg.envia_a_grup( administradors , importancia=importancia)
             
             
