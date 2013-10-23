@@ -59,10 +59,9 @@
       </div> <!-- /.nav-collapse -->	  
   </header><!-- /.navbar -->
  
-  <div class="visible-sm" style="height:100px;"> </div>
  
   {% if menu.subitems %}
-  <ul class="nav nav-tabs">
+  <ul class="nav nav-tabs" id="submenu">
     {% for item in menu.subitems %}
         {% if item.subsubitems %}
         <li class="dropdown {{item.active}}" >

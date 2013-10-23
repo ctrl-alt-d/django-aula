@@ -4,9 +4,6 @@ urlpatterns = patterns('aula.apps.relacioFamilies.views',
     url(r'^elMeuInforme/$', 'elMeuInforme', 
         name='relacio_families__informe__el_meu_informe'),
                        
-    url(r'^elMeuInforme/(?P<pk>\d+)/$', 'elMeuInforme',
-        name="relacio_families__informe__el_meu_informe"),
-    
     url(r'^dadesRelacioFamilies/$', 'dadesRelacioFamilies',
         name="tutoria__relacio_families__dades_relacio_families"),
     
@@ -18,6 +15,9 @@ urlpatterns = patterns('aula.apps.relacioFamilies.views',
       
     url(r'^enviaBenvinguda/(?P<pk>\d+)/$', 'enviaBenvinguda',
         name="tutoria__relacio_families__envia_benvinguda"),
+    
+    url(r'^elMeuInforme/(?P<pk>\d+)/$', 'elMeuInforme',
+        name="relacio_families__informe__el_meu_informe"),
     
     url(r'^canviParametres/$', 'canviParametres',
         name="relacio_families__configuracio__canvi_parametres"),         

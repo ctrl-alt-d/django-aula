@@ -7,6 +7,7 @@
 		$( "#tabs" ).tabs();
 	});
 </script>
+   {% block extraheadreporttab  %}{% endblock %}
 {% endblock %}
 
 {% block head %}
@@ -30,7 +31,7 @@
 	  {{ taula.titol.contingut }}
 	  {% if taula.titol.enllac %}</a>{%endif%}
 	  {% if taula.titol.codi %}<a name="{{taula.titol.codi}}"> </a>{% endif %}	
-	  <table class="table table-striped" >
+	  <table class="table table-striped" style="margin-top: 20px;" >
 	
 		  <tr>
 		  {% for capcelera in taula.capceleres %}

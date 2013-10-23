@@ -751,7 +751,7 @@ def elMeuInforme( request, pk = None ):
 
     
     return render_to_response(
-                'reportTabs.html',
+                'report_detall_families.html',
                     {'report': report,
                      'head': u'Informació alumne {0}'.format( head ) ,
                     },

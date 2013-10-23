@@ -188,10 +188,18 @@ def calcula_menu( user , path ):
                    )
                ),
 
-               #--Varis--------------------------------------------------------------------------
-               ('varis', 'Ajuda', 'varis__elmur__veure', tots, nMissatges > 0,
+               #--relacio_families--------------------------------------------------------------------------
+               ('relacio_families', u'Famílies', 'relacio_families__informe__el_meu_informe', al, None,
                   (
-                      ("Notificacions", 'varis__elmur__veure', tots , ( nMissatgesDelta, 'info' if nMissatgesDelta < 10 else 'danger' ) if nMissatgesDelta >0 else None, None ),
+                      ("Informe", 'relacio_families__informe__el_meu_informe', al, None, None ),
+                      ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al, None, None ),
+                   )
+               ),
+
+               #--Varis--------------------------------------------------------------------------
+               ('varis', 'Ajuda i Avisos', 'varis__about__about' if al else 'varis__elmur__veure', tots, nMissatges > 0,
+                  (
+                      ("Notificacions", 'varis__elmur__veure', di or pr or pl or co or pg , ( nMissatgesDelta, 'info' if nMissatgesDelta < 10 else 'danger' ) if nMissatgesDelta >0 else None, None ),
                       ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', tots, None, None ),
                       ("About", 'varis__about__about', tots, None, None ),                      
                    )
