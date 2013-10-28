@@ -166,7 +166,7 @@ def novaActuacio(request):
         actuacio.professional = User2Professional( user)
         actuacio.credentials = credentials
         formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)  
-        widgets = { 'moment_comunicacio_a_tutors': DateTimeTextImput()}      
+        widgets = { 'moment_actuacio': DateTimeTextImput()}      
         formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'], widgets = widgets)
         formActuacioF.base_fields['moment_actuacio'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
         formActuacio = formActuacioF(request.POST, instance = actuacio ) 
@@ -196,7 +196,7 @@ def novaActuacio(request):
     else:
 
         formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)       
-        widgets = { 'moment_comunicacio_a_tutors': DateTimeTextImput()} 
+        widgets = { 'moment_actuacio': DateTimeTextImput()} 
         formActuacio = modelform_factory(Actuacio, exclude=['alumne','professional'],widgets = widgets) 
         formActuacio.base_fields['moment_actuacio'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
 
