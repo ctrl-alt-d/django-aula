@@ -93,7 +93,7 @@ def gestioCartesRpt(professor, l4):
 
         capcelera = tools.classebuida()
         capcelera.amplade = 100
-        capcelera.contingut = u'Faltes des de darrera Carta.'
+        capcelera.contingut = u"Faltes acumulades per a nova carta\n(Recordar 3 darrers dies no entra al còmput)."
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
