@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
-from aula.utils.widgets import DateTextImput
 
+from aula.utils.widgets import DateTimeTextImput,DateTextImput
 #templates
 from django.template import RequestContext
 from django.http import HttpResponse
@@ -165,8 +165,9 @@ def novaActuacio(request):
         actuacio = Actuacio()
         actuacio.professional = User2Professional( user)
         actuacio.credentials = credentials
-        formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
-        formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'])
+        formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)  
+        widgets = { 'moment_comunicacio_a_tutors': DateTimeTextImput()}      
+        formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'], widgets = widgets)
         formActuacioF.base_fields['moment_actuacio'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
         formActuacio = formActuacioF(request.POST, instance = actuacio ) 
         if formAlumne.is_valid():
@@ -194,12 +195,15 @@ def novaActuacio(request):
         
     else:
 
-        formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)        
-        formActuacio = modelform_factory(Actuacio, exclude=['alumne','professional']) 
+        formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)       
+        widgets = { 'moment_comunicacio_a_tutors': DateTimeTextImput()} 
+        formActuacio = modelform_factory(Actuacio, exclude=['alumne','professional'],widgets = widgets) 
         formActuacio.base_fields['moment_actuacio'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
 
         formset.append( formAlumne )
         formset.append( formActuacio )
+    
+    
         
     return render_to_response(
                 'formset.html',
