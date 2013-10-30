@@ -63,16 +63,16 @@
 
 
 	<div style="clear: both;"> </div>
-	<div class="menucontextual" style="">
-		<ul>		
+	<div >
+		<ul class="pagination">		
         {% if msgs.has_previous %}
         <li>
-            <a href="/missatgeria/elMeuMur"><< Inici</a>          
+            <a href="/missatgeria/elMeuMur"><< Primers</a>          
 		</li>
         {% endif %}
         {% if msgs.has_previous %}
         <li>
-            <a href="/missatgeria/elMeuMur/{{ msgs.previous_page_number }}">< Anterior</a>          
+            <a href="/missatgeria/elMeuMur/{{ msgs.previous_page_number }}">< Més Antic</a>          
 		</li>
         {% endif %}
 		<li>
@@ -82,15 +82,15 @@
 		</li>
         {% if msgs.has_next %}
 		<li>
-            <a href="/missatgeria/elMeuMur/{{ msgs.next_page_number }}/"> Següent ></a>
+            <a href="/missatgeria/elMeuMur/{{ msgs.next_page_number }}/"> Més Nou ></a>
         </li>
         {% endif %}
         {% if msgs.has_next %}
 		<li>
-            <a href="/missatgeria/elMeuMur/{{ msgs.paginator.num_pages }}/"> Fi >></a>
+            <a href="/missatgeria/elMeuMur/{{ msgs.paginator.num_pages }}/"> Darrers >></a>
         </li>
         {% endif %}
-    </ul
+        </ul>
     </div>
 
 
