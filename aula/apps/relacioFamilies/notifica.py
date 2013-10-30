@@ -112,7 +112,7 @@ def notifica():
             except ObjectDoesNotExist:
                 pass
 
-    print u'Fi procés notificacions ...'
+    print u"Fi procés notificacions ..."
 
 #             
 # if __name__ == '__main__':

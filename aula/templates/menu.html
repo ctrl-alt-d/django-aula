@@ -18,7 +18,7 @@
         <ul class="nav navbar-nav">
         {% for item in menu.items %}
 	      <li  class="{{item.active}}" >
-		      <a href="{{item.url}}">{{item.label}} {% if item.alerta %}!{%endif%} </a> 
+		      <a href="{{item.url}}">{{item.label}} {% if item.alerta %}<span class="badge">!</span>{%endif%} </a> 
 	      </li> 
 		{% endfor %}
 		</ul>
