@@ -7,7 +7,7 @@ urlpatterns = patterns('aula.apps.missatgeria.views',
         name ="varis__elmur__veure" ),
                        
     url(r'^elMeuMur/(?P<pg>\d+)/$', 'elMeuMur', 
-        name ="varis_avisos__veure_by_pg" ),
+        name ="varis__elmur__veure_by_pg" ),
                        
     url(r'^enviaMissatgeTutors/$', 'enviaMissatgeTutors', 
         name ="consergeria__missatges__envia_tutors" ),
