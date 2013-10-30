@@ -1,10 +1,20 @@
 {% extends "base.html" %}
 
+
+{% block extrahead %} 
+
+<style type="text/css">
+.llegit-ara-True alert{
+	border-width: 9px;
+}
+</style>
+{% endblock %}
+
 {% block content  %}
     <h1>Missatges:</h1>
     <div  class="elmur">
 	{% for msg in msgs.object_list  %}
-		<div class="row {{msg.llegitAraMateix}}">
+		<div class="row llegit-ara-{{msg.llegitAraMateix}}">
 		  <div class="col-lg-12 alert alert-{{msg.inportanciaCSS}}" >
 			<span > ({{msg.missatge.data}})
 				<b>
@@ -67,12 +77,12 @@
 		<ul class="pagination">		
         {% if msgs.has_previous %}
         <li>
-            <a href="/missatgeria/elMeuMur"><< Primers</a>          
+            <a href="/missatgeria/elMeuMur">&lt;&lt; Primers</a>          
 		</li>
         {% endif %}
         {% if msgs.has_previous %}
         <li>
-            <a href="/missatgeria/elMeuMur/{{ msgs.previous_page_number }}">< Més Nou</a>          
+            <a href="/missatgeria/elMeuMur/{{ msgs.previous_page_number }}">&lt; Més Nou</a>          
 		</li>
         {% endif %}
 		<li>
@@ -82,12 +92,12 @@
 		</li>
         {% if msgs.has_next %}
 		<li>
-            <a href="/missatgeria/elMeuMur/{{ msgs.next_page_number }}/"> Més Vell ></a>
+            <a href="/missatgeria/elMeuMur/{{ msgs.next_page_number }}/"> Més Vell &gt;</a>
         </li>
         {% endif %}
         {% if msgs.has_next %}
 		<li>
-            <a href="/missatgeria/elMeuMur/{{ msgs.paginator.num_pages }}/"> Darrers >></a>
+            <a href="/missatgeria/elMeuMur/{{ msgs.paginator.num_pages }}/"> Antiquissims &gt;&gt;</a>
         </li>
         {% endif %}
         </ul>
