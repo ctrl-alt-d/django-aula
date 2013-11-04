@@ -10,10 +10,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         try:
+            self.stdout.write(u"Iniciant procés notificacions" )
             notifica()
+            self.stdout.write(u"Fi procés notificacions" )
         except Exception, e:
-            errors = [unicode(e)]
-            print( errors )
+            self.stdout.write(u"Error al procés notificacions: {0}".format( unicode(e) ) )
+            errors = [unicode(e)]            
          
             #Deixar missatge a la base de dades (utilitzar self.user )
             from aula.apps.missatgeria.models import Missatge
