@@ -1852,13 +1852,30 @@ def seguimentTutorialFormulari(request):
                                 tutor = professor,
                                 alumne = alumne )  
                     if form.is_valid():
-                        r, is_new = SeguimentTutorialRespostes.objects.get_or_create(
+#                         r, is_new = SeguimentTutorialRespostes.objects.get_or_create(
+#                                                                                 any_curs_academic = any_curs_academic,
+#                                                                                 pregunta = pregunta.pregunta,
+#                                                                                 seguiment_tutorial = alumne.seguimenttutorial,
+#                                                                            )
+#                         r.resposta = form.cleaned_data[ form.q_valida ]
+#                         r.save()                                    
+                        try:
+                            r = SeguimentTutorialRespostes.objects.get(
                                                                                 any_curs_academic = any_curs_academic,
                                                                                 pregunta = pregunta.pregunta,
                                                                                 seguiment_tutorial = alumne.seguimenttutorial,
                                                                            )
+                        except SeguimentTutorialRespostes.DoesNotExists:
+                            r = SeguimentTutorialRespostes()
+                            r.any_curs_academic = any_curs_academic
+                            r.pregunta = pregunta.pregunta
+                            r.seguiment_tutorial = alumne.seguimenttutorial
+                            r.ordre = 100
+                            
                         r.resposta = form.cleaned_data[ form.q_valida ]
                         r.save()                                    
+                
+                
                 else:                         #---------------------------------------------------------                    
                     try:
                         resposta_anterior = SeguimentTutorialRespostes.objects.get(
