@@ -1865,7 +1865,7 @@ def seguimentTutorialFormulari(request):
                                                                                 pregunta = pregunta.pregunta,
                                                                                 seguiment_tutorial = alumne.seguimenttutorial,
                                                                            )
-                        except SeguimentTutorialRespostes.DoesNotExists:
+                        except r.DoesNotExists:
                             r = SeguimentTutorialRespostes()
                             r.any_curs_academic = any_curs_academic
                             r.pregunta = pregunta.pregunta
