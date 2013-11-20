@@ -182,7 +182,8 @@ class AbstractAlumne(models.Model):
             try:
                 seguiment = SeguimentTutorial.objects.get( 
                     nom = a.nom,
-                    cognoms = a.cognoms
+                    cognoms = a.cognoms,
+                    data_neixement = a.data_neixement,
                 )
             except SeguimentTutorial.DoesNotExist:
                 seguiment = SeguimentTutorial.objects.create( 

@@ -50,7 +50,7 @@ urlpatterns = patterns('aula.apps.tutoria.views',
         name="tutoria__obsolet__treure"),
                        
     url(r'^seguimentTutorialPreguntes/$', 'seguimentTutorialPreguntes',
-        name="coordinacio_alumnes__seguiment_tutorial__preguntes"),
+        name="coordinacio_pedagogica__seguiment_tutorial__preguntes"),
                        
     url(r'^seguimentTutorialFormulari/$', 'seguimentTutorialFormulari',
         name="tutoria__seguiment_tutorial__formulari"),

@@ -132,6 +132,7 @@ def calcula_menu( user , path ):
                               ("Resultats", 'coordinacio_pedagogica__qualitativa__resultats_qualitatives', di , None  ),
                           ),
                       ),
+                      ("Seguiment Tutorial", "coordinacio_pedagogica__seguiment_tutorial__preguntes", di, None, None ),
                    ),
                ),
   

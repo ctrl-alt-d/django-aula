@@ -41,7 +41,7 @@ class AbstractSeguimentTutorialRespostes(models.Model):
     any_curs_academic = models.IntegerField()
     pregunta = models.CharField(max_length=250)
     resposta = models.TextField()
-    ordre = models.IntegerField()
+    ordre = models.IntegerField(default = 100)
     professorQueInforma = models.CharField(max_length=200, null=False, blank=True, default='')
     class Meta:
         abstract = True
