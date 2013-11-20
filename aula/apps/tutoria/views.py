@@ -1852,7 +1852,7 @@ def seguimentTutorialFormulari(request):
                                 tutor = professor,
                                 alumne = alumne )  
                     if form.is_valid():
-                        r, is_new = SeguimentTutorialRespostes.objects.get(
+                        r, is_new = SeguimentTutorialRespostes.objects.get_or_create(
                                                                                 any_curs_academic = any_curs_academic,
                                                                                 pregunta = pregunta.pregunta,
                                                                                 seguiment_tutorial = alumne.seguimenttutorial,
