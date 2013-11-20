@@ -1812,7 +1812,7 @@ def seguimentTutorialFormulari(request):
     
     professor = User2Professor( user )     
     
-    any_curs_academic = date.today().year - 1 if date.today().month <=8 else 0
+    any_curs_academic = date.today().year - ( 1 if date.today().month <=8 else 0 )
     missatge = u"Atenció! Deseu la feina sovint (amb el botó enviar dades del peu de la pàgina). Recordeu que hi ha un temps de desconnexió per innactivitat."
     head = u""
     formset = []
@@ -1852,28 +1852,14 @@ def seguimentTutorialFormulari(request):
                                 tutor = professor,
                                 alumne = alumne )  
                     if form.is_valid():
-#                         r, is_new = SeguimentTutorialRespostes.objects.get_or_create(
-#                                                                                 any_curs_academic = any_curs_academic,
-#                                                                                 pregunta = pregunta.pregunta,
-#                                                                                 seguiment_tutorial = alumne.seguimenttutorial,
-#                                                                            )
-#                         r.resposta = form.cleaned_data[ form.q_valida ]
-#                         r.save()                                    
-                        try:
-                            r = SeguimentTutorialRespostes.objects.get(
+                        r, is_new = SeguimentTutorialRespostes.objects.get_or_create(
                                                                                 any_curs_academic = any_curs_academic,
                                                                                 pregunta = pregunta.pregunta,
                                                                                 seguiment_tutorial = alumne.seguimenttutorial,
                                                                            )
-                        except SeguimentTutorialRespostes.DoesNotExist:
-                            r = SeguimentTutorialRespostes()
-                            r.any_curs_academic = any_curs_academic
-                            r.pregunta = pregunta.pregunta
-                            r.seguiment_tutorial = alumne.seguimenttutorial
-                            r.ordre = 100
-                            
                         r.resposta = form.cleaned_data[ form.q_valida ]
                         r.save()                                    
+                              
                 
                 
                 else:                         #---------------------------------------------------------                    
