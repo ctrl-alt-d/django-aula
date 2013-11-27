@@ -29,7 +29,7 @@ from aula.utils.decorators import group_required
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 
 #excepcions
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
@@ -751,17 +751,17 @@ def esborraGuardia(request, pk):
     credentials = getImpersonateUser(request) 
     (user, l4) = credentials
     
-    impartir = Impartir.objects.get( pk = pk )
+    impartir = get_object_or_404( Impartir, pk = pk )
 
-    #seg-------------------------------
-    pertany_al_professor = user.pk == impartir.professor_guardia.pk 
-    if not ( l4 or pertany_al_professor):
-        raise Http404()     
-    
     url_next = '/presencia/mostraImpartir/%d/%d/%d/'% (                                     
                                     impartir.dia_impartir.year,
                                     impartir.dia_impartir.month,
                                     impartir.dia_impartir.day )
+    
+    #seg-------------------------------
+    pertany_al_professor = ( impartir.professor_guardia is not None) and (  user.pk == impartir.professor_guardia.pk )
+    if not ( l4 or pertany_al_professor):
+        return HttpResponseRedirect( url_next )
     
     if impartir.professor_guardia == User2Professor(user):    
         impartir.professor_guardia = None
