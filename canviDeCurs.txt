@@ -1,0 +1,47 @@
+djAu no és multi curs per decissió de disseny. Però es poden passar dades d'un curs a un altre.
+Això és fa mitjançant les capceleres de tutoria: 'SeguimentTutorial'
+
+
+----- El resum anual -------
+
+Un cop finalitzat el curs cal fer el resum anual:
+
+  from aula.apps.tutoria.others import calculaResumAnualProcess
+  calculaResumAnualProcess()
+
+------ Fer neteja d'un curs per l'altre -----
+
+(Todo) Cal esborrar al menys: 
+
+	Presencia: controls d'assistència, imparticions
+	Alumnes: alumne, grup, curs, nivell
+	Usuaris: (tots excepte equip directiu )
+	Horaris: horaris i festius
+	Kronowin: Franja2Aula, Grup2Aula
+	Saga: Grup2Aula
+	Baixes: Feina
+	Qualitativa: AvaluacioQualitativa, RespostaAvaluacioQualitativa
+	Missatgeria: Destinatari, DetallMissatge, Missatge
+	Incidències: ExpulsioDelCentre, Expulsio, Incidencia
+	Assignatures: Assignatura
+
+
+----- Connectar i desconnectar capceleres de seguiment tutorial -----
+
+Les capceleres de tutoria (SeguimentTutorial) es poden desconectar de l'Alumne:
+
+  SeguimentTutorial.alumne = None
+
+Per tonar-los a connectar:
+
+  --Amb SQL:
+  update tutoria_seguimenttutorial
+  set alumne_id = alumnes_alumne.id
+  from alumnes_alumne
+  where alumnes_alumne.nom = tutoria_seguimenttutorial.nom and 
+      alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
+      alumnes_alumne.data_neixement = tutoria_seguimenttutorial.data_neixement;
+
+  --Amb models django:
+  ( todo )
+
