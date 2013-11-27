@@ -3,7 +3,7 @@ from django.db import models
 from aula.apps.alumnes.models import Grup
 
 class Grup2Aula(models.Model):
-    grup_saga =  models.CharField(max_length=45, unique=True, blank=True)
+    grup_saga =  models.CharField(max_length=60, unique=True, blank=True)
     Grup2Aula = models.ForeignKey(Grup, null=True, related_name="grup2aulasaga_set")
     class Meta:
         ordering = ['Grup2Aula','grup_saga']
