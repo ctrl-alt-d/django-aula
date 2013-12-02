@@ -19,7 +19,8 @@ from aula.apps.usuaris.models import User2Professor, Accio
 #helpers
 from aula.apps.presencia.regeneraImpartir import regeneraThread
 from aula.utils.tools import getImpersonateUser, getSoftColor
- 
+from django.utils.safestring import SafeText
+
 #consultes
 from django.db.models import Q
 
@@ -49,6 +50,8 @@ from aula.apps.presencia.business_rules.impartir import impartir_despres_de_pass
 
 #template filters
 from django.template.defaultfilters import date as _date
+from django.contrib import messages
+from django.core.urlresolvers import reverse
 
 
 #vistes -----------------------------------------------------------------------------------
@@ -251,6 +254,7 @@ def passaLlista( request, pk ):
         #un formulari per cada alumne de la llista
         totBe = True
         quelcomBe = False
+        hiHaRetard = False
         form0 = forms.Form()
         formset.append( form0 )
         for control_a in impartir.controlassistencia_set.order_by( 'alumne__grup', 'alumne' ):
@@ -262,7 +266,8 @@ def passaLlista( request, pk ):
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
             if form.is_valid():
-                form.save()
+                control_aux = form.save()
+                hiHaRetard |= control_aux.estat.codi_estat == "R" 
                 quelcomBe |= True
             else:
                 totBe = False
@@ -283,6 +288,13 @@ def passaLlista( request, pk ):
             try:
                 impartir.save()
                 
+                #si hi ha retards, recordar que un retard provoca una incidència.
+                if hiHaRetard:
+                    url_incidencies = reverse( "aula__horari__posa_incidencia" , kwargs={'pk': pk})
+                    msg =  u"""Has posat 'Retard', recorda que els retars provoquen incidències, 
+                    s'hauran generat automàticament, valora si cal 
+                    <a href="{url_incidencies}">gestionar les faltes</a>.""".format( url_incidencies = url_incidencies) 
+                    messages.warning(request,  SafeText(msg ) )
                 #LOGGING
                 Accio.objects.create( 
                         tipus = 'PL',
