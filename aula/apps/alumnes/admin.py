@@ -40,11 +40,16 @@ class GrupAdmin(admin.ModelAdmin):
     def delete(self):
         return "No es poden esborrar alumnes manualment"
 
+#alumne ----
+
+class AlumneAdmin(admin.ModelAdmin):
+    model = Alumne
+    list_filter = ['grup']
 
 
 admin.site.register(Nivell,NivellAdmin)
 admin.site.register(Curs,CursAdmin)
 admin.site.register(Grup,GrupAdmin)
-admin.site.register(Alumne)
+admin.site.register(Alumne,AlumneAdmin)
 
 
