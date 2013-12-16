@@ -37,6 +37,7 @@
       function totnet() {
         $(".btn").removeClass("active");
         $(".rad").prop("checked", false);
+        $("div[id^='prediccio']").remove();
       }
 
       $(document).ready(
@@ -54,6 +55,7 @@
                 $(this).prop("checked", true);
               }
             });
+            $("prediccio_{{f.prefix}}").remove();
             return false;
           });
           
@@ -87,7 +89,7 @@
 				    return false;
           });
           
-			    $("#feelLucky, #feelLucky2").click(function(){
+		$("#feelLucky, #feelLucky2").click(function(){
 				    totnet();
 				    {% for f in formset %}
 				      {% if f.prediccio == 0 %}
@@ -98,6 +100,8 @@
 					      $('#label_id_{{f.prefix}}-estat_1').addClass('active');
 					      $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
 				      {% endif %}
+                      
+				      $( "label[for|='id_{{f.prefix}}-estat']" ).after( "<div id='prediccio_{{f.prefix}}'><div style='max-width:100px;' class='pull-right hidden-xs label label-{{f.avis}}'>Predicció {{f.avis_pct}}</div></div>" );
 				    {% endfor %}
 				    return false;
           });

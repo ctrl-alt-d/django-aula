@@ -333,12 +333,17 @@ def passaLlista( request, pk ):
             form.prediccio = ( 0 if prediccio == 'Present' else 
                                1 if prediccio == 'Absent' else  None ) 
             
+            form.avis = None
+            form.avis_pct = ( u"{0}%".format( pct * 100  )  ) if pct else 'x'
             if pct < 0.8:
                 form.bcolor = '#CC0000'
+                form.avis = 'danger'
             elif pct < 0.9:
                 form.bcolor = '#CC9900'
+                form.avis = 'warning'
             else:
-                form.bcolor = '#66FFCC'             
+                form.bcolor = '#66FFCC'
+                form.avis = 'info'             
 
             
     return render_to_response(
