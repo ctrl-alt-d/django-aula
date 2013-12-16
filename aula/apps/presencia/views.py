@@ -334,7 +334,7 @@ def passaLlista( request, pk ):
                                1 if prediccio == 'Absent' else  None ) 
             
             form.avis = None
-            form.avis_pct = ( u"{0}%".format( pct * 100  )  ) if pct else 'x'
+            form.avis_pct = ( u"{0:.2f}%".format( pct * 100  )  ) if pct else ''
             if pct < 0.8:
                 form.bcolor = '#CC0000'
                 form.avis = 'danger'
