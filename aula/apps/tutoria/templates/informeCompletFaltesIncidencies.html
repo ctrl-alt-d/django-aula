@@ -9,7 +9,10 @@
 	     {% if f.opcio.value = 'r' %}
 	     	$('#id_{{f.prefix}}-opcio_1').prop("checked", true);
 	     {% endif %}
-
+	     {% if f.opcio.value %}
+	     	$('#id_{{f.prefix}}-opcio_2').parent().parent().remove();
+	     {% endif %}
+		
 	  {% endfor %}
     }
 
