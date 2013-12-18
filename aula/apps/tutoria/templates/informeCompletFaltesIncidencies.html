@@ -1,0 +1,37 @@
+{% extends "formset.html" %}
+
+{% block extrahead %} 
+
+<script>
+
+	function norecordatoris() {	
+	  {% for f in formset %}
+	     {% if f.opcio.value = 'r' %}
+	     	$('#id_{{f.prefix}}-opcio_1').prop("checked", true);
+	     {% endif %}
+
+	  {% endfor %}
+    }
+
+    $(document).ready(
+    function($){    
+      $("#noPrint").click(function(){
+    	norecordatoris();
+      });
+    });
+    
+</script>	
+
+{% endblock %}
+
+{% block preform  %}
+	  {% if missatge %}
+		  <div class="info">
+            {{missatge}}
+          </div>
+	  {% endif %}
+	  
+	  <a class="btn btn-primary" id="noPrint">No imprimir recordatoris!</a>
+	  
+{% endblock %}
+

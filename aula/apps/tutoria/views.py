@@ -1732,7 +1732,7 @@ def informeCompletFaltesIncidencies(request):
                 formset.append( formAlumne )
         
     return render_to_response(
-                  "formset.html", 
+                  "informeCompletFaltesIncidencies.html", 
                   {"formset": formset,
                    "head": head,
                    "formSetDelimited": True,
