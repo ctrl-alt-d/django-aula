@@ -2,8 +2,10 @@
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 import datetime as dt
 from aula.apps.usuaris.models import User2Professor, User2Professional
+from aula.apps.tutoria.models import CartaAbsentisme
 from django.db.models import get_model
 from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_de_posar
+from datetime import timedelta
 
 #-------------ControlAssistencia-------------------------------------------------------------      
 
@@ -45,6 +47,18 @@ def controlAssistencia_clean( instance ):
                                   La falta d'en {0} no es pot modificar. El tutor Sr(a) {1} ha justificat la falta.  
                                                             '''.format(
                                        instance.alumne, instance.instanceDB.professor ) )
+        
+    #No es poden justificar faltes si s'ha enviat una carta.
+    if not justificadaDB and justificadaAra:
+        data_control_mes_3 = instance.impartir.dia_impartir + timedelta( days = 3 )
+        dins_ambit_carta = ( CartaAbsentisme
+                             .objects
+                             .exclude( carta_esborrada_moment__isnull = False )
+                             .filter( alumne = instance.alumne,
+                                      data_carta__gte = data_control_mes_3
+                                     )
+                             .exists()
+                            )
         
     #Només el tutor, el professor de guardia o el professor titular pot modificar un control d'assistència:
     if user:
