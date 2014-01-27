@@ -7,3 +7,6 @@ lxml
 django-appypod
 python-dateutil>=2.1
 six
+django-debug-toolbar
+python-lxml
+python-dateutil

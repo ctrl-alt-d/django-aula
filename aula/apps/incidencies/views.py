@@ -22,6 +22,8 @@ from aula.utils import tools
 
 from aula.utils.widgets import DateTimeTextImput,DateTextImput
 
+import itertools
+
 #consultes
 #from django.db.models import Q
 
@@ -49,6 +51,7 @@ from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_d
 from aula.apps.incidencies.business_rules.expulsio import expulsio_despres_de_posar
 from django.db.models.aggregates import Count
 from django.utils.text import slugify
+from django.contrib import messages
 
 
 
@@ -173,7 +176,6 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
             )  
         
     except ValidationError, e:
-        import itertools
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render_to_response(
@@ -216,7 +218,6 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
                 text = u"""Eliminada incidència de l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
             )          
     except ValidationError, e:
-        import itertools
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render_to_response(
@@ -524,16 +525,24 @@ def editaExpulsio( request, pk ):
                              help_text=u'''Marca aquesta casella per esborrar aquesta expulsió''' )
         
         if formExpulsio.is_valid() and can_delete.is_valid():
+            hiHaErrors = False
             if can_delete.cleaned_data['ckbx'] and l4:
-                expulsio.delete()
-                #LOGGING
-                Accio.objects.create( 
-                        tipus = 'EE',
-                        usuari = user,
-                        l4 = l4,
-                        impersonated_from = request.user if request.user != user else None,
-                        text = u"""Esborrada expulsió d'alumne {0}.""".format( expulsio.alumne )
-                    )  
+                try:
+                    expulsio.delete()
+                    #LOGGING
+                    Accio.objects.create( 
+                            tipus = 'EE',
+                            usuari = user,
+                            l4 = l4,
+                            impersonated_from = request.user if request.user != user else None,
+                            text = u"""Esborrada expulsió d'alumne {0}.""".format( expulsio.alumne )
+                        )  
+                except ValidationError, e:
+                    hiHaErrors = True
+                    for m in itertools.chain( *e.message_dict.values() ):
+                        messages.error( unicode( m ) )
+                    for _, v in e.message_dict.items():
+                        formExpulsio._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )                        
             else:
                 expulsio.save()
                 #LOGGING
@@ -543,9 +552,10 @@ def editaExpulsio( request, pk ):
                         l4 = l4,
                         impersonated_from = request.user if request.user != user else None,
                         text = u"""Editada expulsió d'alumne {0}.""".format( expulsio.alumne )
-                    )                  
-            url = '/incidencies/llistaIncidenciesProfessional/'
-            return HttpResponseRedirect( url )
+                    )          
+            if not hiHaErrors:        
+                url = '/incidencies/llistaIncidenciesProfessional/'
+                return HttpResponseRedirect( url )
         
     else:
         formExpulsio = editaExpulsioFormF( instance = expulsio )
@@ -645,7 +655,6 @@ def posaExpulsioPerAcumulacio( request, pk ):
             expulsio_despres_de_posar( expulsio )
             incidencies.update( es_vigent = False, provoca_expulsio = expulsio, es_informativa = False )
         except ValidationError, e:
-            import itertools
             resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                         'warnings':  [], 'infos':  [], 'url_next': url_next }
             return render_to_response(
@@ -965,7 +974,6 @@ def expulsioDelCentre( request, pk ):
             )   
 
     except ValidationError, e:
-        import itertools
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render_to_response(
