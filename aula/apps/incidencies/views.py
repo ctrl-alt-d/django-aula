@@ -9,7 +9,7 @@ from aula.utils.forms import ckbxForm
 from django.conf import settings
 
 #templates
-from django.template import RequestContext
+from django.template import RequestContext, loader
 
 #models
 from aula.apps.presencia.models import Impartir, ControlAssistencia
@@ -52,6 +52,8 @@ from aula.apps.incidencies.business_rules.expulsio import expulsio_despres_de_po
 from django.db.models.aggregates import Count
 from django.utils.text import slugify
 from django.contrib import messages
+from django.template.context import Context
+from django.http.response import HttpResponse
 
 
 
@@ -1144,16 +1146,24 @@ def expulsionsDelCentreExcel( request ):
     
     capcelera = [ u'Alumne', u'Data inici', u'Data fi', u'Ha estat imprés', u'grup', u'nivell' ]
 
-    response = render_to_response(
-                        "excel_table.html", 
-                        {
+    template = loader.get_template("export.csv")
+    context = Context({
                          'capcelera':capcelera,
                          'dades':dades_expulsions,
-                        },
-                        context_instance=RequestContext(request))
-    filename = "expulsions.xls" 
+    })
+    
+    response = HttpResponse()  
+    filename = "expulsions.csv" 
+
+
     response['Content-Disposition'] = 'attachment; filename='+filename
-    response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
+    response['Content-Type'] = 'text/csv; charset=utf-8'
+    #response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
+    # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
+    # encoding is ANSI and special characters will be mangled
+    response.write("\xEF\xBB\xBF")
+    response.write(template.render(context))
+
 
     return response
 

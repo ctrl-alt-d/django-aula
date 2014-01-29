@@ -1,0 +1,3 @@
+{% if capcelera %}{% for c in capcelera %}"{{c}}";{% endfor %}{% endif %} 
+{% for r in dades %}{% for d in r %}"{{d}}";{% endfor %}
+{% endfor %} 
