@@ -1413,6 +1413,16 @@ def esborrarExpulsioCentre( request, pk ):
 
 
 
+@login_required
+@group_required(['direcció'])
+def controlTramitacioExpulsions( request ):
+    (user, l4) = tools.getImpersonateUser(request)
+    professor = User2Professor( user )     
+    
+    messages.error(request, u"Funcionalitat en implementació")
+    url_next = '/'
+    return HttpResponseRedirect( url_next )
+   
 
 
 #---------------------  --------------------------------------------#

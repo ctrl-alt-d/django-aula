@@ -143,6 +143,7 @@ def calcula_menu( user , path ):
                       ("Alertes Assistència", 'coordinacio_alumnes__assistencia_alertes__llistat', di, None, None ),
                       ("Cartes", 'coordinacio_alumnes__assistencia__cartes', di, None, None ),
                       ("Expulsions del Centre", 'coordinacio_alumnes__explusions_centre__expulsions', di, None, None ),
+                      ("Control Tramitació Expulsions", 'coordinacio_alumnes__explusions__control_tramitacio', di, None, None ),
                       ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di, None, None ),
                       ("Impressió Massiva Faltes i Incidències", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
                    )
