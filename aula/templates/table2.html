@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load django_tables2 %}
+{% load staticfiles %}
+{% load humanize %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="{{STATIC_URL}}BOOTABLE2/css/estil.css" />
+{% endblock %}
+
+{% block content %}
+
+	{% render_table table %}
+
+{% endblock %}

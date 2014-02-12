@@ -10,3 +10,4 @@ six
 django-debug-toolbar
 python-lxml
 python-dateutil
+django-tables2>=0.15

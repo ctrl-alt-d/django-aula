@@ -109,6 +109,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.contrib.messages.context_processors.messages",
     "django.core.context_processors.csrf",
+    'django.core.context_processors.request',
     'aula.utils.context_processors.dades_basiques',
     )
 
@@ -147,6 +148,8 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django_extensions',
+    'django_tables2',
+    'django.contrib.humanize',
 ]
     
 INSTALLED_APPS_AULA = [

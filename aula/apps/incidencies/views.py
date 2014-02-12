@@ -7,6 +7,10 @@ from aula.apps.incidencies.forms import posaIncidenciaAulaForm, posaExpulsioForm
 from django import forms
 from aula.utils.forms import ckbxForm
 from django.conf import settings
+from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar
+from django_tables2   import RequestConfig
+from aula.utils.my_paginator import DiggPaginator
+from django.shortcuts import render
 
 #templates
 from django.template import RequestContext, loader
@@ -1418,11 +1422,20 @@ def esborrarExpulsioCentre( request, pk ):
 def controlTramitacioExpulsions( request ):
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
+
+
+    table = Table2_ExpulsioTramitar(Expulsio.objects.all()) 
     
-    messages.error(request, u"Funcionalitat en implementació")
-    url_next = '/'
-    return HttpResponseRedirect( url_next )
-   
+    messages.info( request, u"En desenvolupament")
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+        
+    return render(
+                  request, 
+                  'table2.html', 
+                  {'table': table,
+                   }
+                 )   
 
 
 #---------------------  --------------------------------------------#
