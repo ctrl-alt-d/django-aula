@@ -60,7 +60,7 @@ class AbstractExpulsio(models.Model):
     tramitacio_finalitzada = models.BooleanField( help_text=u"Marca aquesta cassella quan hagis finalitzat tota la tramitació de l'expulsió. Un cop tramitada no es pot esborrar ni modificar.")
     comentaris_cap_d_estudis = models.TextField(blank=True, help_text=u"Comentaris interns del cap d'estudis.")
     
-    provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True)
+    provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True, on_delete = models.PROTECT )
     
     es_expulsio_per_acumulacio_incidencies = models.BooleanField( default=False )
     es_vigent = models.BooleanField( default=True , db_index=True)
@@ -118,10 +118,10 @@ class AbstractIncidencia(models.Model):
     dia_incidencia = models.DateField( db_index=True, help_text=u"Data en que es va produir la incidència")
     franja_incidencia = models.ForeignKey('horaris.FranjaHoraria',  help_text=u"Moment en que es va produir la incidència" )
     descripcio_incidencia = models.CharField(max_length=250,help_text=u"Frase curta que descriu la incidència. Aquesta informació la veuran els pares.")
-    provoca_expulsio = models.ForeignKey('incidencies.Expulsio', blank=True , null=True)
+    provoca_expulsio = models.ForeignKey('incidencies.Expulsio', blank=True , null=True, on_delete = models.PROTECT )
     es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si aquesta incidència és només per tenir constància d'un fet. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
     es_vigent = models.BooleanField( default = True , db_index=True)
-    provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True)
+    provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True, on_delete = models.PROTECT )
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
     

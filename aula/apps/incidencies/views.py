@@ -11,6 +11,8 @@ from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar
 from django_tables2   import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
+from aula.apps.incidencies.business_rules.expulsiodelcentre import expulsioDelCentre_pre_delete
+from aula.apps.incidencies.helpers import preescriu
 
 #templates
 from django.template import RequestContext, loader
@@ -58,6 +60,9 @@ from django.utils.text import slugify
 from django.contrib import messages
 from django.template.context import Context
 from django.http.response import HttpResponse
+from django.db.models.deletion import ProtectedError
+from django.db.models import get_model
+
 
 
 
@@ -1381,14 +1386,14 @@ def esborrarExpulsioCentre( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
 
-    expulsio = ExpulsioDelCentre.objects.get( pk = pk)
+    sancio = ExpulsioDelCentre.objects.get( pk = pk)
     
     #seg---------
     pot_entrar = l4 or user.groups.filter( name= 'direcció').exists()
     if not pot_entrar:
         raise Http404() 
     
-    if not l4 and expulsio.impres:
+    if not l4 and sancio.impres:
         return render_to_response(
                     'resultat.html', 
                     {'head': u'Error esborrant expulsió del centre' ,
@@ -1399,18 +1404,35 @@ def esborrarExpulsioCentre( request, pk ):
                      },
                     context_instance=RequestContext(request)) 
     
-    expulsio.credentials = credentials
+    sancio.credentials = credentials
     
-    fa_30_dies = date.today() - timedelta( days = 30 )
-    fa_60_dies = date.today() - timedelta( days = 60 )
+    try:
 
-    expulsio.incidencia_set.filter( dia_incidencia__gte = fa_30_dies).update( es_vigent = True  )
-    expulsio.incidencia_set.update(  provoca_expulsio_centre = None )    
+        #esborrar totes les expulsions i incidències relacionades:
+        _ = ( get_model('incidencies','Expulsio')
+              .objects.filter( provoca_expulsio_centre = sancio )
+              .update( provoca_expulsio_centre = None,
+                       es_vigent = True ) 
+              )
+        _ = ( get_model('incidencies','Incidencia')
+              .objects.filter( provoca_expulsio_centre = sancio )
+              .update( provoca_expulsio_centre = None,
+                       es_vigent = True )
+              )
+        
+        #preescriure incidències
+        preescriu()
 
-    expulsio.expulsio_set.filter( dia_expulsio__gte = fa_60_dies).update( es_vigent = True  )
-    expulsio.expulsio_set.update(  provoca_expulsio_centre = None )    
-    
-    expulsio.delete()
+        #esborrar-la        
+        sancio.delete()
+        
+    except ValidationError, e:
+        #Com que no és un formulari de model cal tractar a mà les incidències del save:
+        for _, v in e.message_dict.items():
+            for x in v:
+                messages.error(request,  x  )
+    except ProtectedError, e:
+        messages.error(request,  "Aquesta expulsió de centre té expulsions relacionades."  )
 
     url = '/incidencies/expulsionsDelCentre/'
     return HttpResponseRedirect( url )    

@@ -11,9 +11,7 @@ def expulsioDelCentre_pre_delete(sender, instance, **kwargs):
     # Regles:
     #
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
-    
-    if l4:
-        return
+
         
     errors={}
 
@@ -22,10 +20,13 @@ def expulsioDelCentre_pre_delete(sender, instance, **kwargs):
         instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
 
     if instance.instanceDB is not None and instance.instanceDB.impres:
-        errors.setdefault('impres',[]).append(u'Aquesta expulsió ja ha estat impresa. No es pot modificar.')
+        errors.setdefault('impres',[]).append(u'Aquesta expulsió ja ha estat impresa. No es pot esborrar.')
 
-    if len( errors ) > 0:
+    if not l4 and len( errors ) > 0:
         raise ValidationError(errors)
+    
+    
+        
 
 def expulsioDelCentre_clean(instance):
     #
