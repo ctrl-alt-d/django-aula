@@ -8,6 +8,7 @@ from django.utils.datetime_safe import date
 from aula.apps.usuaris.models import User2Professional
 from aula.apps.alumnes.models import Alumne
 from datetime import timedelta, datetime
+from django.template.defaultfilters import safe
 
 def calcula_menu( user , path ):
     
@@ -139,13 +140,13 @@ def calcula_menu( user , path ):
                #--Coord.Alumnes--------------------------------------------------------------------------
                ('coordinacio_alumnes', 'Coord.Alumnes', 'coordinacio_alumnes__ranking__list', di, None,
                   (
-                      ("Alertes Incidències", 'coordinacio_alumnes__ranking__list', di, None, None ),
-                      ("Alertes Assistència", 'coordinacio_alumnes__assistencia_alertes__llistat', di, None, None ),
+                      ("Alertes Incid.", 'coordinacio_alumnes__ranking__list', di, None, None ),
+                      ("Alertes Assist.", 'coordinacio_alumnes__assistencia_alertes__llistat', di, None, None ),
                       ("Cartes", 'coordinacio_alumnes__assistencia__cartes', di, None, None ),
-                      ("Expulsions del Centre", 'coordinacio_alumnes__explusions_centre__expulsions', di, None, None ),
-                      ("Control Tramitació Expulsions", 'coordinacio_alumnes__explusions__control_tramitacio', di, None, None ),
+                      ("Exp. del Centre", 'coordinacio_alumnes__explusions_centre__expulsions', di, None, None ),
+                      ("Estat Tramitació Exp.", 'coordinacio_alumnes__explusions__control_tramitacio', di, None, None ),
                       ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di, None, None ),
-                      ("Impressió Massiva Faltes i Incidències", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
+                      ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
                    )
                ),
 
@@ -227,7 +228,7 @@ def calcula_menu( user , path ):
                     continue
                 actiu = ( submenu_id == subitem_url.split('__')[1] )
                 subitem = classebuida()
-                subitem.label = subitem_label
+                subitem.label = safe( subitem_label )
                 subitem.url = reverse( subitem_url ) 
                 subitem.active = 'active' if actiu else ''
                 if medalla:
@@ -240,7 +241,7 @@ def calcula_menu( user , path ):
                 if subsubitems:
                     for subitem_label, subitem_url, subitem_condicio, subitem_medalla in subsubitems:
                         subsubitem = classebuida()
-                        subsubitem.label = subitem_label
+                        subsubitem.label = safe( subitem_label )
                         subsubitem.url = reverse( subitem_url ) 
                         if subitem_medalla:
                             omedalla = classebuida()

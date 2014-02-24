@@ -1455,8 +1455,6 @@ def controlTramitacioExpulsions( request ):
     table = Table2_ExpulsioTramitar( list( expulsions) ) 
     table.order_by = 'total_expulsions_vigents' 
     
-    messages.info( request, u"En desenvolupament")
-    
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
     return render(
