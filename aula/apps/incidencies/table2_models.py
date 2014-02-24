@@ -9,10 +9,27 @@ from aula.apps.incidencies.models import Expulsio
 
 class Table2_ExpulsioTramitar(tables.Table):
 
+    antiguitat = tables.TemplateColumn(
+                        template_code = u"""{{ record.getDate|timesince }}""", 
+                        order_by=( '-dia_expulsio', '-franja_expulsio.hora_inici' )
+                        )
+    
+    alumne = tables.TemplateColumn(
+                        template_code = u"""{{ record.alumne }} ( {{ record.alumne.grup  }} )""", 
+                        order_by=( 'alumne.cognoms', 'alumne.nom')
+                        )
+
+    total_expulsions_vigents = tables.TemplateColumn(
+                        template_code = u"""{{ record.totalExpulsionsVigents }}""", 
+                        order_by=( '-totalExpulsionsVigents' )
+                        )
+
+
+    
     class Meta:
         model = Expulsio
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("alumne",  )
+        sequence = ("alumne", )
         fields = sequence
         template = 'bootable2.html' 

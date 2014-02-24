@@ -109,6 +109,8 @@ class AbstractExpulsio(models.Model):
     def getMotiuWithOutCR(self):
         return self.motiu_expulsio.replace('\n',' ') if self.motiu_expulsio else ''
     
+    def totalExpulsionsVigents(self):
+        return self.alumne.expulsio_set.exclude( estat = 'ES ').filter(es_vigent = True ).count()
 
 class AbstractIncidencia(models.Model):
     professional = models.ForeignKey('usuaris.Professional',  db_index=True, help_text=u"Professor que tramita la incidència")

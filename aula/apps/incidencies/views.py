@@ -13,6 +13,7 @@ from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
 from aula.apps.incidencies.business_rules.expulsiodelcentre import expulsioDelCentre_pre_delete
 from aula.apps.incidencies.helpers import preescriu
+from django.db.models import Count
 
 #templates
 from django.template import RequestContext, loader
@@ -1445,8 +1446,14 @@ def controlTramitacioExpulsions( request ):
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
 
+    expulsions = ( Expulsio
+                   .objects
+                   .exclude( estat = 'ES' )
+                   .exclude( moment_comunicacio_a_tutors__isnull = False )
+                  )
 
-    table = Table2_ExpulsioTramitar(Expulsio.objects.all()) 
+    table = Table2_ExpulsioTramitar( list( expulsions) ) 
+    table.order_by = 'total_expulsions_vigents' 
     
     messages.info( request, u"En desenvolupament")
     
