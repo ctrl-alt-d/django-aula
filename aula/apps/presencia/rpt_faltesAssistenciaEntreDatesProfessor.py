@@ -67,7 +67,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
 
     capcelera = tools.classebuida()
     capcelera.amplade = 100
-    capcelera.contingut = u'%absència no justificada (absènc.no.justif./docència)'
+    capcelera.contingut = u'%assist.'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
@@ -85,6 +85,11 @@ def faltesAssistenciaEntreDatesProfessorRpt(
     capcelera.contingut = u'hores retard'
     taula.capceleres.append( capcelera )
 
+    capcelera = tools.classebuida()
+    capcelera.amplade = 100
+    capcelera.contingut = u'%injustif.'
+    taula.capceleres.append( capcelera )
+
     taula.fileres = []
     
     for alumne in  alumnes:
@@ -99,6 +104,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
 
         #-faltes--------------------------------------------
         f = controls.filter( alumne = alumne, estat__codi_estat = 'F' ).distinct().count()
+        j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count()        
         camp = tools.classebuida()
         camp.contingut = unicode(f) 
         filera.append(camp)
@@ -109,8 +115,8 @@ def faltesAssistenciaEntreDatesProfessorRpt(
         camp.contingut = unicode(ca) 
         filera.append(camp)
 
-        #-%--------------------------------------------
-        tpc = (1.0*f) / (1.0*ca) if ca <> 0 else 'N/A'   
+        #-% assistència --------------------------------------------
+        tpc = 1.0 - (1.0*( f + j ) ) / (1.0*ca) if ca <> 0 else 'N/A'   
         camp = tools.classebuida()
         camp.contingut =u'{0:.2f}%'.format(tpc * 100) if isinstance( tpc, float ) else 'N/A'
         filera.append(camp)
@@ -122,7 +128,6 @@ def faltesAssistenciaEntreDatesProfessorRpt(
         filera.append(camp)
 
         #-justif--------------------------------------------
-        j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count()
         camp = tools.classebuida()
         camp.contingut = unicode(j)
         filera.append(camp)
@@ -133,6 +138,12 @@ def faltesAssistenciaEntreDatesProfessorRpt(
         camp.contingut = unicode(j)
         filera.append(camp)
 
+        #-% insjustif --------------------------------------------
+        tpc = (1.0 * f  ) / (1.0*ca) if ca <> 0 else 'N/A'   
+        camp = tools.classebuida()
+        camp.contingut =u'{0:.2f}%'.format(tpc * 100) if isinstance( tpc, float ) else 'N/A'
+        filera.append(camp)
+        
 
 
         taula.fileres.append( filera )

@@ -392,8 +392,8 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                     ).exclude(
                                                         estat = 'ES'
                                                     ).count()
-            camp_nIncidencies.multipleContingut = [ ( u'{0} Inc.'.format( nIncidencies ), None, ), 
-                                                    ( '{0} expuls.'.format( nExpulsions), None,  ) ]
+            camp_nIncidencies.multipleContingut = [ ( u'Incid: {0}'.format( nIncidencies ), None, ), 
+                                                    ( u'Expul: {0}'.format( nExpulsions), None,  ) ]
             filera.append(camp_nIncidencies)
 
             #-Assistencia--------------------------------------------
@@ -419,14 +419,13 @@ def elsMeusAlumnesAndAssignatures( request ):
             nControls = controls.filter(estat__codi_estat__isnull = False ).count( )
             camp = tools.classebuida()
             camp.enllac = None
-            tpc = 100.0 - ( ( 100.0 * float(nFaltesNoJustificades) ) / float(nControls) ) if nControls > 0 else 'N/A'
-            #tpc = 100 - (nFaltes['ausencia'] /  nFaltes['classes']) if nFaltes['classes'] > 0 else 'N/A' 
+            tpc = 100.0 - ( ( 100.0 * float(nFaltesNoJustificades + nFaltesJustificades) ) / float(nControls) ) if nControls > 0 else 'N/A'
             camp.contingut = u"""{0:.2f}%""".format( tpc ) if nControls > 0 else 'N/A'
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            contingut = "{0} Controls,{1} Faltes no Just.,{2} Justificades,{3} Retards".format( nControls, nFaltesNoJustificades , nFaltesJustificades, nRetards)
+            contingut = "Controls: {0},F.no J.: {1},F.Just: {2},Retards: {3}".format( nControls, nFaltesNoJustificades , nFaltesJustificades, nRetards)
             camp.multipleContingut =  [ (c, None,) for c in contingut.split(',') ]
             filera.append(camp)
 
