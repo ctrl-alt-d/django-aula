@@ -15,7 +15,7 @@ class Table2_ExpulsioTramitar(tables.Table):
                         )
     
     alumne = tables.TemplateColumn(
-                        template_code = u"""{{ record.alumne }} ( {{ record.alumne.grup  }} )""", 
+                        template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.alumne.pk}}/all/">{{ record.alumne }}</a> ( {{ record.alumne.grup  }} )""", 
                         order_by=( 'alumne.cognoms', 'alumne.nom')
                         )
 
