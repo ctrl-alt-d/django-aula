@@ -16,13 +16,16 @@ class Table2_ExpulsioTramitar(tables.Table):
     
     alumne = tables.TemplateColumn(
                         template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.alumne.pk}}/all/">{{ record.alumne }}</a> ( {{ record.alumne.grup  }} )""", 
-                        order_by=( 'alumne.cognoms', 'alumne.nom')
+                        order_by=( 'alumne.cognoms', 'alumne.nom'),
+                        verbose_name=u"Alumne Expulsat:"
                         )
 
-    total_expulsions_vigents = tables.TemplateColumn(
-                        template_code = u"""{{ record.totalExpulsionsVigents }}""", 
-                        order_by=( '-totalExpulsionsVigents' )
+    professor = tables.TemplateColumn(
+                        template_code = u"""{{ record.professor }}""", 
+                        order_by=( 'professor.last_name', 'professor.fist_name'),
+                        verbose_name=u"Expulsat per:"
                         )
+
 
 
     
@@ -30,6 +33,8 @@ class Table2_ExpulsioTramitar(tables.Table):
         model = Expulsio
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("alumne", )
+        sequence = ("alumne", "professor" )
         fields = sequence
         template = 'bootable2.html' 
+        
+        

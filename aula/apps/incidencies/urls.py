@@ -54,7 +54,7 @@ urlpatterns = patterns('aula.apps.incidencies.views',
         name="coordinacio_alumnes__explusions_centre__esborrar"),
                        
     url(r'^controlTramitacioExpulsions/$', 'controlTramitacioExpulsions',
-        name="coordinacio_alumnes__explusions__control_tramitacio"),
+        name="professorat__explusions__control_tramitacio"),
                                               
     url(r'^cartaExpulsioCentre/(?P<pk>\d+)/$', 'cartaExpulsioCentre',
         name="coordinacio_alumnes__explusions_centre__carta"),
