@@ -105,7 +105,8 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     
                 #-%--------------------------------------------
-            tpc = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
+            tpc_injust = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
+            tpc_assist = (0.0 + p + r ) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
             
             camp = tools.classebuida()
             camp.enllac = None
@@ -113,7 +114,8 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
                            (u'j: {0}'.format( j ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if j else None  ),  
                            (u'r: {0}'.format( r ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if r else None  ),  
                            (u'p: {0}'.format( p ) , None ),  
-                           (u'{0:.2f}% no J.'.format( tpc ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if f or j or r else None  ),
+                           (u'{0:.2f}%Injust'.format( tpc_injust ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if f or j or r else None  ),
+                           (u'{0:.2f}%Assist'.format( tpc_assist ) , "/tutoria/detallTutoriaAlumne/{0}/assistencia".format( alumne.pk ) if tpc_assist else None  ),
                          ] 
             camp.multipleContingut = accio_list
             filera.append(camp)
@@ -126,7 +128,10 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
             nExpulsionsAcu = alumne.expulsio_set.exclude( estat = 'ES').filter( es_expulsio_per_acumulacio_incidencies = True  ).count()                
             camp = tools.classebuida()
             camp.enllac = "/tutoria/detallTutoriaAlumne/{0}/incidencies".format( alumne.pk ) if (nExpulsions + nExpulsionsAcu + nIncidencies+nIncidenciesInform)>0 else ''
-            camp.contingut = u'''Exp:{0}(+{1}acu), Inc:{2}, IncInform:{3}'''.format( nExpulsions, nExpulsionsAcu, nIncidencies, nIncidenciesInform )
+            camp.multipleContingut = [ (u'''Exp:{0}(+{1}acu)'''.format( nExpulsions, nExpulsionsAcu), None ),
+                                       (u'Inc:{0}'.format(nIncidencies), None ),
+                                       (u'Obs:{0}'.format(nIncidenciesInform), None ),
+                                     ]
             filera.append(camp)
 
             #-Actuacions--------------------------------------------

@@ -45,6 +45,11 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     capcelera.contingut = u'hores absènc. justif.'
     taula.capceleres.append( capcelera )
 
+    capcelera = tools.classebuida()
+    capcelera.amplade = 70
+    capcelera.contingut = u'% assistència'
+    taula.capceleres.append( capcelera )
+
 
     taula.fileres = []
     
@@ -67,8 +72,9 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
         alumne.p = dict_p.get( alumne.id, 0)
         alumne.j = dict_j.get( alumne.id, 0)
         alumne.f = dict_f.get( alumne.id, 0)
-        alumne.ca = alumne.p + alumne.j + alumne.f or 0
-        alumne.tpc = ( float( alumne.f ) / ( alumne.ca ) ) * 100.0 if alumne.ca > 0 else 0
+        alumne.ca = alumne.p + alumne.j + alumne.f or 0.0
+        alumne.tpc = ( float( alumne.f ) / float( alumne.ca ) ) * 100.0 if alumne.ca > 0 else 0
+        alumne.tpc_assist =  ( float( alumne.p )  / float( alumne.ca ) ) * 100.0 if alumne.ca > 0 else 0
         alumnes.append(alumne)
     #----------------------
     #choices = ( ('a', u'Nom alumne',), ('ca', u'Curs i alumne',),('n',u'Per % Assistència',), ('cn',u'Per Curs i % Assistència',),
@@ -112,6 +118,11 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
         #-justif--------------------------------------------
         camp = tools.classebuida()
         camp.contingut = unicode(alumne.j) 
+        filera.append(camp)
+
+        #-assist--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = u'{0:.2f}%'.format(alumne.tpc_assist) 
         filera.append(camp)
 
 
