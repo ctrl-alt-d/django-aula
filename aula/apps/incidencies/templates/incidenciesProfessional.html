@@ -38,7 +38,7 @@
 		{% for incidencia in expulsionsPendentsPerAcumulacio %}
 		<tr>
 			<td>
-				 <a style='color:red' href="#alumne-{{incidencia.alumne}}"> 
+				 <a style='color:red' href="#alumne-{{incidencia.alumne.pk}}"> 
 				  {{ incidencia.alumne }}
 				</a>
 			</td>
@@ -59,7 +59,7 @@
 	{% for alumne, incidencies in alumnes %}
 		<tr   >
 		  <th colspan="2">
-		     <span id="alumne-{{alumne}}"></span>
+		     <span id="alumne-{{alumne.pk}}"></span>
 		     {{alumne}}</th>
 		  <th colspan="3">
 			{% if incidencies.calTramitarExpulsioPerAcumulacio %}
@@ -78,7 +78,7 @@
 				  <td></td>
 				  <td>Expulsio{%if expulsio.es_expulsio_per_acumulacio_incidencies %} per acumulació d'incidències{%endif%}:</td>
 				  <td> 					
-					<a href=/incidencies/editaExpulsio/{{ expulsio.pk }}/>
+					<a href="/incidencies/editaExpulsio/{{ expulsio.pk }}/">
 						{{ expulsio.dia_expulsio }} - {{ expulsio.franja_expulsio }} ({{ expulsio.get_estat_display }}) 
 					</a>
 				  </td>

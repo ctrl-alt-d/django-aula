@@ -287,8 +287,14 @@ def posaIncidencia( request ):
                             text = u"""Posar incidència a {0}. Text incidència: {1}""".format( alumne, incidencia.descripcio_incidencia )
                         )                    
                     
-                    missatge = u"Incidència anotada"
+                    
                     incidencia_despres_de_posar( incidencia )
+                    missatge = u"Incidència anotada"
+                    messages.info(request, missatge)
+                    url = '/incidencies/llistaIncidenciesProfessional/#alumne-{0}'.format(incidencia.alumne.pk) 
+    
+                    return HttpResponseRedirect( url )                      
+
 #                    incidencia = formIncidencia.save(commit = False )
 #                    try:
 #                        incidencia.save()
@@ -352,6 +358,7 @@ def posaExpulsio( request ):
                 expulsio.save()
                                     
                 url = '/incidencies/posaExpulsioW2/{u}'.format(u=expulsio.pk)  
+
                 return HttpResponseRedirect( url )    
          
         else:
@@ -451,6 +458,7 @@ def posaExpulsioW2( request, pk ):
                             
             expulsio_despres_de_posar( expulsio )
             url = '/missatgeria/elMeuMur/'  
+            messages.info(request, u"L'expulsió ha estat anotada")
             return HttpResponseRedirect( url )    
         
     else:
