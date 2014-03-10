@@ -540,6 +540,7 @@ def editaExpulsio( request, pk ):
             hiHaErrors = False
             if can_delete.cleaned_data['ckbx'] and l4:
                 try:
+                    expulsio.incidencia_set.update( provoca_expulsio = None )
                     expulsio.delete()
                     #LOGGING
                     Accio.objects.create( 
