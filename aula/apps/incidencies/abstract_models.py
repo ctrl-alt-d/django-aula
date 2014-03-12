@@ -5,6 +5,9 @@ from datetime import datetime
 
 
 class AbstractFrassesIncidenciaAula(models.Model):
+#tipusIncidencia
+    tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
+
     frase = models.CharField("Frase",max_length=240, unique=True, help_text=u"Escriu una frase que podrà ser triada a l'hora de posar una incidència")
     class Meta:
         abstract = True
@@ -112,16 +115,34 @@ class AbstractExpulsio(models.Model):
     def totalExpulsionsVigents(self):
         return self.alumne.expulsio_set.exclude( estat = 'ES ').filter(es_vigent = True ).count()
 
+#tipusIncidencia
+class TipusIncidencia(models.Model):
+    tipus = models.CharField("Tipus", max_length=50, unique=True, help_text=u"Tipus d'incidència")
+    es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si les incidències d'aquest tipus son només informatives i no implicaràn mesures disciplinàries. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
+    class Meta:
+        verbose_name = u"Tipus d'incidència"
+        verbose_name_plural = u"Tipus d'incidències"
+    def __unicode__(self):
+        return self.tipus
+
 class AbstractIncidencia(models.Model):
     professional = models.ForeignKey('usuaris.Professional',  db_index=True, help_text=u"Professor que tramita la incidència")
     alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne al qual li posem la incidència" )
+    
+#tipusIncidencia
+    tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
+    
     control_assistencia = models.ForeignKey('presencia.ControlAssistencia', null=True,  blank=True)
     #dia i franja són per incidències fora d'aula.
     dia_incidencia = models.DateField( db_index=True, help_text=u"Data en que es va produir la incidència")
     franja_incidencia = models.ForeignKey('horaris.FranjaHoraria',  help_text=u"Moment en que es va produir la incidència" )
     descripcio_incidencia = models.CharField(max_length=250,help_text=u"Frase curta que descriu la incidència. Aquesta informació la veuran els pares.")
     provoca_expulsio = models.ForeignKey('incidencies.Expulsio', blank=True , null=True, on_delete = models.PROTECT )
-    es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si aquesta incidència és només per tenir constància d'un fet. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
+
+#tipusIncidencia
+# Aquest camp es mou a TipusIncidencia
+#    es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si aquesta incidència és només per tenir constància d'un fet. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
+
     es_vigent = models.BooleanField( default = True , db_index=True)
     provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True, on_delete = models.PROTECT )
     relacio_familia_revisada = models.DateTimeField( null=True )    
@@ -150,11 +171,12 @@ class AbstractIncidencia(models.Model):
             pass
         return data
     
+#tipusIncidencia
     def __unicode__(self):
-        informativa = u'''(informativa)''' if self.es_informativa else '' 
+        informativa = u'''(informativa)''' if self.tipus.es_informativa else '' 
         return u'''{0} {1}'''.format(informativa, self.descripcio_incidencia[:50])
     
     def longUnicode(self):
-        informativa = u'''(informativa)''' if self.es_informativa else '' 
+        informativa = u'''(informativa)''' if self.tipus.es_informativa else '' 
         return u'''{0} {1} {2}'''.format(informativa, self.alumne, self.descripcio_incidencia)    
         

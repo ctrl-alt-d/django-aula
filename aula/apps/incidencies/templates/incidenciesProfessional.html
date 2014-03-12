@@ -100,7 +100,8 @@
 			{% for incidencia in incidencies.incidencies %}
 				<tr>
 				  <td></td>
-				  <td>Incidència {%if incidencia.es_informativa %} informativa{%endif%}:</td>
+<!-- #tipusIncidencia -->
+				  <td>Incidència - {{ incidencia.tipus }}</td>
 				  <td>
 					{{ incidencia.dia_incidencia }} - 
 					{{ incidencia.franja_incidencia }}:

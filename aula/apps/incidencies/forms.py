@@ -3,6 +3,8 @@
 from django import forms as forms
 
 from aula.apps.incidencies.models import FrassesIncidenciaAula, Expulsio
+#tipusIncidencia
+from aula.apps.incidencies.abstract_models import TipusIncidencia
 from aula.utils.widgets import DateTextImput
 
 class incidenciesRelacionadesForm(forms.Form):
@@ -39,6 +41,9 @@ class posaIncidenciaAulaForm(forms.Form):
                                               de mantenir pulsada la tecla CTRL al fer
                                               clic amb el ratolí."""  )
 
+#tipusIncidencia
+    tipus = forms.ModelChoiceField( queryset = TipusIncidencia.objects.all())
+
     frases = forms.ModelMultipleChoiceField( label=u'Tria incidència', queryset= FrassesIncidenciaAula.objects.all(), 
                                           required = False,
                                           help_text=u"""Frase de la incidència. 
@@ -53,12 +58,14 @@ class posaIncidenciaAulaForm(forms.Form):
                                         Aquesta informació la veuen els pares i els professors que imparteixen docència a aquest alumne.
                                         Atenció: Pots escriure i triar frase a la vegada: es crearan dues incidències.
                                         """  )
- 
-    es_informativa = forms.BooleanField( required = False,  
-                                         help_text=u"""Indica si aquesta incidència és purament informativa. 
-                                                     Marca aquesta casella amb incidències del tipus: "Avui s'ha esforçat molt",
-                                                     "No ha assistit a l'examen de trimestre", etc.
-                                                     """)
+
+#tipusSancio 
+#    es_informativa = forms.BooleanField( required = False,  
+#                                         help_text=u"""Indica si aquesta incidència és purament informativa. 
+#                                                     Marca aquesta casella amb incidències del tipus: "Avui s'ha esforçat molt",
+#                                                     "No ha assistit a l'examen de trimestre", etc.
+#                                                     """)
+
     def __init__(self, *args, **kwargs):
         self.queryset = kwargs.pop('queryset', None)
         self.etiqueta = kwargs.pop('etiqueta', None)

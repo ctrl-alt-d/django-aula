@@ -20,8 +20,9 @@
 					{% for incidencia in incidencies %}
 					<li>
 						<a href="/incidencies/eliminaIncidenciaAula/{{ incidencia.pk }}" style="color:red">[ x ]</a>
-						<span style="color:{% if incidencia.es_informativa %}blue{%else%}red{%endif%}">
-							{{ incidencia.alumne }}
+<!-- #tipusIncidencia -->
+						<span style="color:{% if incidencia.tipus.es_informativa %}blue{%else%}red{%endif%}">
+							{{incidencia.tipus}} - {{ incidencia.alumne }}
 						</span>					
 					</li>	
 					{% endfor %}		

@@ -89,14 +89,15 @@ def Incidencia_post_save(sender, instance, created, **kwargs):
 def incidencia_despres_de_posar(instance):
     Missatge = get_model( 'missatgeria','Missatge')
     #Lògica de negoci: 
-    if not instance.es_informativa:
+#tipusIncidencia
+    if not instance.tipus.es_informativa:
         #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
         import datetime as t
         fa_30_dies = instance.dia_incidencia - t.timedelta( days = +30)
         Incidencia = get_model( 'incidencies','Incidencia')
         nIncidenciesAlumneProfessor = Incidencia.objects.filter( 
                                             es_vigent = True, 
-                                            es_informativa = False,
+                                            tipus__es_informativa = False,
                                             professional = instance.professional, 
                                             alumne = instance.alumne,
                                             dia_incidencia__gt =  fa_30_dies
@@ -116,7 +117,8 @@ def incidencia_despres_de_posar(instance):
         remitent = instance.professional
         text_missatge = u"""Ha posat una incidència {0}a {1} ({2}) el dia {3}. 
                             El text de la incidència és: {4}""".format(
-                                    'informativa ' if instance.es_informativa else '',
+#tipusIncidencia
+                                    'informativa ' if instance.tipus.es_informativa else '',
                                     instance.alumne,
                                     instance.alumne.grup,
                                     instance.dia_incidencia,
