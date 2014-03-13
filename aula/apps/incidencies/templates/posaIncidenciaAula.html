@@ -2,23 +2,23 @@
 
 {% block preform  %}
 
-	<a class="btn btn-info btn-xs" href="/presencia/passaLlista/{{id_impartir}}" role="button">Tornar a passar llista</a>
+	<a href="/presencia/passaLlista/{{id_impartir}}">Tornar a passar llista</a>
 	<br><br>
 	
 	<div class="row">
 	  	<div class="col-md-6">
-		  	<div class="panel panel-info">
+		  	<div class="panel panel-primary">
 		  		<div class="panel-heading">Incidències d'aquesta hora</div>
 		  		<div class="panel-body">
-					{% for frase, incidencies in incidenciesXfrase.items %}
-						<span>{{frase}}</span>
+<!-- #tipusIncidencia -->
+					{% for agrupacio, incidencies in incidenciesAgrupades.items %}
+						<p><strong>{{agrupacio.0}}</strong> - {{agrupacio.1}}</p>
 						{% for incidencia in incidencies %}
 							<p>
-							<a href="/incidencies/eliminaIncidenciaAula/{{ incidencia.pk }}" style="color:red"><span class="glyphicon glyphicon-remove"></span></a>
-<!-- #tipusIncidencia -->
-							<span style="color:{% if incidencia.tipus.es_informativa %}blue{%else%}red{%endif%}">
-								{{incidencia.tipus}} - {{ incidencia.alumne }}
-							</span>
+								<a href="/incidencies/eliminaIncidenciaAula/{{ incidencia.pk }}" style="color:red"><span class="glyphicon glyphicon-remove"></span></a>
+								<span style="color:{% if incidencia.tipus.es_informativa %}blue{%else%}red{%endif%}">
+									{{ incidencia.alumne }}
+								</span>
 							</p>					
 						{% endfor %}				
 					{% endfor %}
@@ -26,25 +26,20 @@
 			</div>
 	  	</div>
 	  	<div class="col-md-6">
-		  	<div class="panel panel-info">
+		  	<div class="panel panel-primary">
 		  		<div class="panel-heading">Expulsions d'aquesta hora</div>
 		  		<div class="panel-body">
-		  		
-		  		<a href="/incidencies/editaExpulsio/1111" style="color:red">
-							<span class="glyphicon glyphicon-arrow-right"> expulsió de mostra
-						</a>
-		  		
-		  		
-		  		
 		    		{% for expulsio in expulsions %}
-						<a href="/incidencies/editaExpulsio/{{ expulsio.pk }}" style="color:red">
-							<span class="glyphicon glyphicon-arrow-right"> {{expulsio.alumne}}
-						</a>
+						<p>
+							<a href="/incidencies/editaExpulsio/{{ expulsio.pk }}" style="color:red">
+								<span class="glyphicon glyphicon-arrow-right"></span> {{expulsio.alumne}}
+							</a>
+						</p>
 					{% endfor %}
 					</ul>
-					<p><small>Si no apareix aquí l'expulsió que busques comprova dins "Relació d'incidències i expulsions" al menú professor. 
+					<div class="alert alert-warning"><small>Si no apareix aquí l'expulsió que busques comprova dins <em>Aula > Incidències > Incidències</em>. 
 					Recorda que les expulsions les entra el professor de guardia. Si no han entrat la teva expulsió pots entrar-la tu 
-					des del menú Professor - Expulsions: Inicia tràmit d'expulsió.</small></p>	
+					des de <em>Aula > Incidències > Recull Expulsió</em>.</small></div>	
 		  		</div>
 			</div>
 	  	</div>
@@ -53,7 +48,7 @@
 
 
 
-  	<div class="panel panel-info">
+  	<div class="panel panel-primary">
   		<div class="panel-heading">Afegir noves incidències</div>
   		<div class="panel-body">
 {% endblock %}

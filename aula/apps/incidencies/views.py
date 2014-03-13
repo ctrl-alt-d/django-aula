@@ -135,11 +135,14 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
         form=posaIncidenciaAulaForm( queryset=alumnes, etiqueta= u'Posar incidència a'  )
 
     #Recull incidències ( i permet afegir-ne més) 
-    incidenciesXfrase = {}              
+#tipusIncidencia
+    incidenciesAgrupades = {}              
     for control_assistencia in impartir.controlassistencia_set.all():
         for incidencia in control_assistencia.incidencia_set.all():
-            frase = incidencia.descripcio_incidencia
-            incidenciesXfrase.setdefault(frase, []) .append(  incidencia  )
+            agrupacio = (incidencia.tipus.tipus, incidencia.descripcio_incidencia)
+#            incidenciesAgrupades.setdefault(agrupacio, []) .append(  incidencia  )
+            incidenciesAgrupades.setdefault(agrupacio, [])
+            incidenciesAgrupades[agrupacio].append(incidencia)
             
 
     #Expulsion
@@ -151,7 +154,7 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
     return render_to_response(
                   "posaIncidenciaAula.html", 
                   {"form": form,
-                   "incidenciesXfrase": incidenciesXfrase,
+                   "incidenciesAgrupades": incidenciesAgrupades,
                    'expulsions': expulsions,
                    "id_impartir":  pk ,
                    "head": head,
