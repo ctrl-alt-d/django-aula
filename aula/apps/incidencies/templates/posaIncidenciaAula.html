@@ -56,5 +56,25 @@
 {% block postform  %}
   		</div>
 	</div>
+
+	<script type="text/javascript">
+	
+		$(document).ready(function(){
+		  getFrase();
+		});
+
+		function getFrase() {
+			var tipus = $('input[name=tipus]:checked').val()
+			var $frases = $("#id_frases");
+			$frases.empty();
+			{% for f in form.totesLesFrases %}
+				if (tipus=={{ f.tipus.id }}) {
+					$frases.append($("<option></option>").attr("value", "{{f.id}}").text("{{f}}"));
+				}
+			{% endfor %}
+		}
+	</script>
+
+
 {% endblock %}
 
