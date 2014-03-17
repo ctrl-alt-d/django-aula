@@ -13,7 +13,8 @@ def calculaResumAnualProcess():
             
         resum, _ = ResumAnualAlumne.objects.get_or_create( seguiment_tutorial = seguiment, curs_any_inici = curs )
         #incidències
-        txt_incidencies = u'Núm. Incidències: {0}\n'.format( a.incidencia_set.filter(es_informativa = False).count() )
+#tipusIncidencia
+        txt_incidencies = u'Núm. Incidències: {0}\n'.format( a.incidencia_set.filter(tipus__es_informativa = False).count() )
         
         #expulsions
         txt_expulsions = u"Núm. Expulsions: {0}\nNúm. Expulsions per acumulació d'incidències {1}\n".format( 

@@ -99,7 +99,8 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                           alumne = instance.alumne,
                                                           control_assistencia = instance,
                                                           descripcio_incidencia = frase,
-                                                          es_informativa = False ,).exists()
+#tipusIncidencia
+                                                          tipus__es_informativa = False ,).exists()
 
         if not ja_hi_es:
             try:
@@ -108,7 +109,8 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                           alumne = instance.alumne,
                                           control_assistencia = instance,
                                           descripcio_incidencia = frase,
-                                          es_informativa = False ,)
+#tipusIncidencia
+                                          tipus__es_informativa = False ,)
                 incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
             except:
                 pass
@@ -119,7 +121,8 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                           alumne = instance.alumne,
                                                           control_assistencia = instance,
                                                           descripcio_incidencia = frase,
-                                                          es_informativa = False ,).delete()
+#tipusIncidencia
+                                                          tipus__es_informativa = False ,).delete()
         except:
             pass
             

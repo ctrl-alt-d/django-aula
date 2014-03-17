@@ -44,7 +44,7 @@
 			    <td class="tria_tag" {% if field.errors %} class="conte_errors"  {% endif %}  >		        
 			        {{ field }}
 			        {% if field.help_text %}
-			        <br/><span class="help_text">( {{ field.help_text }} )</span>
+			        <br/><span class="help_text"><em>{{ field.help_text }}</em></span>
 			        {% endif %}
 			    	{{ field.errors }}
 			    </td>
