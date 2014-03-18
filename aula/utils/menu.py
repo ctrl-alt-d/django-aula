@@ -166,7 +166,7 @@ def calcula_menu( user , path ):
                          ), 
                       ),
                       ("Professors", 'professorat__professors__list', di, None, None ),
-                      ("Estat Tramitació Exp.", 'professorat__explusions__control_tramitacio', di, None, None ),
+                      ("Estat Tramitació Exp.", 'professorat__expulsions__control_tramitacio', di, None, None ),
                    ),
                ),
 

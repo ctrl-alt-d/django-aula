@@ -9,12 +9,12 @@ update alumnes_alumne
            tutors = 'c' || ( (id * 7777) %  17775 ),
            adreca = 'c' || ( (id * 7777) %  17775 );
            
-update incidencies_expulsio set motiu_expulsio = 'c' || (id * 7777) % 27762 ;         
+update incidencies_expulsio set motiu = 'c' || (id * 7777) % 27762 ;         
 
 truncate table  tutoria_actuacio cascade;
 truncate table tutoria_cartaabsentisme cascade;
 truncate table tutoria_resumanualalumne cascade;
 truncate table tutoria_seguimenttutorialrespostes cascade;
 truncate table tutoria_seguimenttutorial cascade;
-truncate table incidencies_expulsiodelcentre cascade;
+truncate table incidencies_sancio cascade;
 

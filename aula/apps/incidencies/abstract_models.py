@@ -29,7 +29,7 @@ class TipusSancio(models.Model):
 class AbstractSancio(models.Model):
     professor = models.ForeignKey('usuaris.Professor', db_index=True, help_text=u"Professor que tramita la sanció")
     alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne sancionat")
-    tipus = models.ForeignKey('incidencies.TipusSancio', on_delete = models.PROTECT, null=False, blank=False )
+    tipus = models.ForeignKey('incidencies.TipusSancio', on_delete = models.PROTECT )
     data_inici = models.DateField( help_text=u"Primer dia de sanció")
     franja_inici = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_inici_sancio', help_text=u"Primera hora de sanció")
     data_fi = models.DateField(help_text=u"Darrer dia d'expulsió")
@@ -121,7 +121,7 @@ class AbstractExpulsio(models.Model):
         return data
     
     def getMotiuWithOutCR(self):
-        return self.motiu.replace('\n',' ') if self.motiu_expulsio else ''
+        return self.motiu.replace('\n',' ') if self.motiu else ''
     
     def totalExpulsionsVigents(self):
         return self.alumne.expulsio_set.exclude( estat = 'ES ').filter(es_vigent = True ).count()
@@ -139,7 +139,7 @@ class TipusIncidencia(models.Model):
 class AbstractIncidencia(models.Model):
     professional = models.ForeignKey('usuaris.Professional',  db_index=True, help_text=u"Professor que tramita la incidència")
     alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne al qual li posem la incidència" )
-    tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT, null=False, blank=False )
+    tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
     control_assistencia = models.ForeignKey('presencia.ControlAssistencia', null=True,  blank=True)
     #dia i franja són per incidències fora d'aula.
     dia_incidencia = models.DateField( db_index=True, help_text=u"Data en que es va produir la incidència")

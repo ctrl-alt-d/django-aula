@@ -22,7 +22,7 @@ Un cop finalitzat el curs cal fer el resum anual:
 	Baixes: Feina
 	Qualitativa: AvaluacioQualitativa, RespostaAvaluacioQualitativa
 	Missatgeria: Destinatari, DetallMissatge, Missatge
-	Incidències: ExpulsioDelCentre, Expulsio, Incidencia
+	Incidències: Sancio, Expulsio, Incidencia
 	Assignatures: Assignatura
 
 

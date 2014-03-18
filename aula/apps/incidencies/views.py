@@ -1243,7 +1243,7 @@ def cartaSancio( request, pk ):
                                         sancio.data_inici.strftime( '%d/%m/%Y' ), 
                                         sancio.data_fi.strftime( '%d/%m/%Y' ), 
                                         )
-    report.motiu_expulsio = sancio.motiu
+    report.motiu = sancio.motiu
     report.signat_per = sancio.signat
     report.data_signatura = sancio.data_carta.strftime( '%d/%m/%Y' )
     report.expulsions = []
