@@ -11,7 +11,7 @@ from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar
 from django_tables2   import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
-from aula.apps.incidencies.business_rules.expulsiodelcentre import expulsioDelCentre_pre_delete
+from aula.apps.incidencies.business_rules.sancio import sancio_pre_delete
 from aula.apps.incidencies.helpers import preescriu
 from django.db.models import Count
 
@@ -21,7 +21,8 @@ from django.template import RequestContext, loader
 #models
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne
-from aula.apps.incidencies.models import Incidencia, ExpulsioDelCentre
+from aula.apps.incidencies.models import Incidencia, Sancio
+from aula.apps.incidencies.abstract_models import TipusSancio
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
     Accio
 from aula.apps.incidencies.models import Expulsio
@@ -525,7 +526,7 @@ def editaExpulsio( request, pk ):
           ( 'Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),                     
                 ]
     
-    fields = [ 'motiu_expulsio', 
+    fields = [ 'motiu', 
               'tutor_contactat_per_l_expulsio', 
               'moment_comunicacio_a_tutors', 
               'tramitacio_finalitzada' ]
@@ -533,7 +534,7 @@ def editaExpulsio( request, pk ):
         fields.extend( [ 'professor_recull',
                         'dia_expulsio', 
                         'franja_expulsio', 
-                        'provoca_expulsio_centre', 
+                        'provoca_sancio', 
                         'es_vigent'  ] )
 
     
@@ -657,7 +658,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
         separador = u', '
   
     
-    motiu = u'''Expulsió per acumulació d'incidències: {0}'''.format( str_incidencies )
+    motiu_san = u'''Expulsió per acumulació d'incidències: {0}'''.format( str_incidencies )
     
     url_next = '/incidencies/llistaIncidenciesProfessional/'  #todo: a la pantalla d''incidencies
     if enTe3oMes:
@@ -670,7 +671,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
                         alumne = alumne,
                         dia_expulsio = incidencia.dia_incidencia,
                         franja_expulsio = incidencia.franja_incidencia,
-                        motiu_expulsio = motiu,
+                        motiu = motiu_san,
                         es_expulsio_per_acumulacio_incidencies = True                        
                         )
 
@@ -829,7 +830,7 @@ def alertesAcumulacioExpulsions( request ):
 
     capcelera_clic = tools.classebuida()
     capcelera_clic.amplade = 100
-    capcelera_clic.contingut = u'Expulsar del centre.'
+    capcelera_clic.contingut = u'Sancionar.'
 
 
     taula.capceleres = [capcelera_nom, capcelera_nIncidencies, capcelera_clic]
@@ -925,8 +926,8 @@ def alertesAcumulacioExpulsions( request ):
 
 
         camp = tools.classebuida()
-        camp.enllac = r'javascript:confirmAction("/incidencies/expulsioDelCentre/{0}", "Segur que vols expulsar a {1}?")'.format(alumne.pk, alumne ) 
-        camp.contingut = u'expulsar ...'
+        camp.enllac = r'javascript:confirmAction("/incidencies/sancio/{0}", "Segur que vols sancionar a {1}?")'.format(alumne.pk, alumne ) 
+        camp.contingut = u'sancionar ...'
         filera.append(camp)
         
 
@@ -946,7 +947,7 @@ def alertesAcumulacioExpulsions( request ):
 
 @login_required
 @group_required(['direcció'])
-def expulsioDelCentre( request, pk ):
+def sancio( request, pk ):
     
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
@@ -958,6 +959,7 @@ def expulsioDelCentre( request, pk ):
     alumne = Alumne.objects.get( pk = pk )
     alumne.incidencia_set.filter( dia_incidencia__lte = fa_30_dies).update( es_vigent = False )
 
+    tipus = TipusSancio.objects.all()[0]
     primeraFranja = FranjaHoraria.objects.all()[0]
     darreraFranja = FranjaHoraria.objects.reverse()[0]
 
@@ -966,7 +968,7 @@ def expulsioDelCentre( request, pk ):
                             es_vigent = True 
                             ).exclude( estat = 'ES' )
                             
-    str_expulsions = u', '.join( [  e.motiu_expulsio + u' ('+ unicode ( e.dia_expulsio.strftime( '%d/%m/%Y' )) + u')'
+    str_expulsions = u', '.join( [  e.motiu + u' ('+ unicode ( e.dia_expulsio.strftime( '%d/%m/%Y' )) + u')'
                                     for e in expulsions ] )
     str_expulsions = u'''Acumulació d'expulsions: {0}'''.format( str_expulsions ) if str_expulsions else ''
 
@@ -986,10 +988,11 @@ def expulsioDelCentre( request, pk ):
     
     url_next = '/incidencies/alertesAcumulacioExpulsions/'  #si res falla torno a la llista
     try:
-        expulsio_centre = ExpulsioDelCentre(
+        sancio = Sancio(
                          professor = User2Professor(user),
                          alumne = alumne,
-                         motiu_expulsio = u'',
+                         tipus = tipus,
+                         motiu = u'',
                          comentaris_cap_d_estudis= comentaris_cap_d_estudis,
                          data_inici = datetime.today(),
                          franja_inici = primeraFranja,
@@ -998,7 +1001,7 @@ def expulsioDelCentre( request, pk ):
                          data_carta = datetime.today(),
                          signat = u'''Cap d'estudis'''
                     )
-        expulsio_centre.save()
+        sancio.save()
         
         #LOGGING
         Accio.objects.create( 
@@ -1006,7 +1009,7 @@ def expulsioDelCentre( request, pk ):
                 usuari = user,
                 l4 = l4,
                 impersonated_from = request.user if request.user != user else None,
-                text = u"""Creada expulsió del centre de l'alumne {0}.""".format( expulsio_centre.alumne )
+                text = u"""Creada sanció de l'alumne {0}.""".format( sancio.alumne )
             )   
 
     except ValidationError, e:
@@ -1014,18 +1017,18 @@ def expulsioDelCentre( request, pk ):
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render_to_response(
                        'resultat.html', 
-                       {'head': u'Error al crear expulsió per acumulació.' ,
+                       {'head': u'Error al crear sanció per acumulació.' ,
                         'msgs': resultat },
                        context_instance=RequestContext(request))
     else:
-        #assigno les expulsions a aquesta expulsió  
-        expulsions.update( es_vigent = False, provoca_expulsio_centre = expulsio_centre )
+        #assigno les expulsions a aquesta sancio  
+        expulsions.update( es_vigent = False, provoca_sancio = sancio )
 
-        #assigno les incidències a aquesta expulsió
+        #assigno les incidències a aquesta sancio
         if incidencies.count()  > 0:
-            incidencies.update( es_vigent = False, provoca_expulsio_centre = expulsio_centre )
+            incidencies.update( es_vigent = False, provoca_sancio = sancio )
         
-        url_next = '/incidencies/editaExpulsioCentre/{0}'.format(expulsio_centre.pk) 
+        url_next = '/incidencies/editaSancio/{0}'.format(sancio.pk) 
 
     return HttpResponseRedirect( url_next )         
 
@@ -1033,7 +1036,7 @@ def expulsioDelCentre( request, pk ):
 
 @login_required
 @group_required(['direcció'])
-def expulsionsDelCentre( request, s = 'nom' ):
+def sancions( request, s = 'nom' ):
     report = []
         
     ordenacions = {'nom':['alumne__cognoms','data_inici',], 'data':['data_inici','alumne__cognoms',], }
@@ -1041,13 +1044,18 @@ def expulsionsDelCentre( request, s = 'nom' ):
     taula = tools.classebuida()
     
     taula.titol = tools.classebuida()
-    taula.titol.contingut = u'Expulsions del Centre'
+    taula.titol.contingut = u'Sancions'
     taula.capceleres = []
     
     capcelera = tools.classebuida()
     capcelera.amplade = 120
     capcelera.contingut = u'Alumne'
     taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()   
+    capcelera.amplade = 50
+    capcelera.contingut = u'Tipus'
+    taula.capceleres.append( capcelera )  
 
     capcelera = tools.classebuida()
     capcelera.amplade = 10
@@ -1056,7 +1064,7 @@ def expulsionsDelCentre( request, s = 'nom' ):
 
     capcelera = tools.classebuida()
     capcelera.amplade = 70
-    capcelera.contingut = u'Periode expulsió'
+    capcelera.contingut = u'Periode sanció'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
@@ -1081,36 +1089,42 @@ def expulsionsDelCentre( request, s = 'nom' ):
 
     taula.fileres = []
     
-    expulsions = ExpulsioDelCentre.objects.order_by(*ordenacio)
+    sancions = Sancio.objects.order_by(*ordenacio)
     
-    for expulsio in  expulsions:
+    for sancio in  sancions:
                 
         filera = []
         
         #-nom--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = ''
-        camp.contingut = unicode(expulsio.alumne) + ' (' + unicode(expulsio.alumne.grup) + ')'
+        camp.contingut = unicode(sancio.alumne) + ' (' + unicode(sancio.alumne.grup) + ')'
+        filera.append(camp)
+        
+        #-tipus-----------------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = ''
+        camp.contingut = unicode(sancio.tipus)
         filera.append(camp)
         
         #-obre expedient--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = ''
-        camp.contingut = u'Sí' if expulsio.obra_expedient else u'No'
+        camp.contingut = u'Sí' if sancio.obra_expedient else u'No'
         filera.append(camp)
 
         #-periode--------------------------------------------
         camp = tools.classebuida()
         camp.contingut = u'{0} a {1}'.format( 
-                                expulsio.data_inici.strftime( '%d/%m/%Y' ), 
-                                expulsio.data_fi.strftime( '%d/%m/%Y' ) ) 
+                                sancio.data_inici.strftime( '%d/%m/%Y' ), 
+                                sancio.data_fi.strftime( '%d/%m/%Y' ) ) 
         filera.append(camp)
 
         #-data carta--------------------------------------------
         camp = tools.classebuida()
         camp.contingut = u'{0}{1}'.format( 
-                    expulsio.data_carta.strftime( '%d/%m/%Y' ) if expulsio.data_carta else '',
-                    u' (impresa)' if expulsio.impres else '' )
+                    sancio.data_carta.strftime( '%d/%m/%Y' ) if sancio.data_carta else '',
+                    u' (impresa)' if sancio.impres else '' )
 
         filera.append(camp)
         
@@ -1119,7 +1133,7 @@ def expulsionsDelCentre( request, s = 'nom' ):
         camp.multipleContingut = [  ( e.dia_expulsio.strftime( '%d/%m/%Y' ),
                                      '/incidencies/editaExpulsio/{0}'.format(e.pk),
                                      )
-                                  for e in expulsio.expulsio_set.exclude(estat = 'ES' ) ]
+                                  for e in sancio.expulsio_set.exclude(estat = 'ES' ) ]
         filera.append(camp)
         
         #-Incidencies relacionades--------------------------------------------
@@ -1129,20 +1143,20 @@ def expulsionsDelCentre( request, s = 'nom' ):
                                                 i.descripcio_incidencia ),
                                      '',
                                      )
-                                  for i in expulsio.incidencia_set.all() ]
+                                  for i in sancio.incidencia_set.all() ]
         filera.append(camp)
 
         #-Incidencies relacionades--------------------------------------------
         camp = tools.classebuida()
         camp.esMenu = True
         camp.multipleContingut = [( u'Editar',
-                                   u'/incidencies/editaExpulsioCentre/{0}'.format( expulsio.pk )
+                                   u'/incidencies/editaSancio/{0}'.format( sancio.pk )
                                   ),
                                   ( u'Carta',
-                                    '/incidencies/cartaExpulsioCentre/{0}'.format(expulsio.pk),
+                                    '/incidencies/cartaSancio/{0}'.format(sancio.pk),
                                   ),
                                   ( u'Esborrar',
-                                    r'''javascript:confirmAction("/incidencies/esborrarExpulsioCentre/{0}", "Segur que vols esborrar l'expulsió de {1}?")'''.format(expulsio.pk, expulsio.alumne )
+                                    r'''javascript:confirmAction("/incidencies/esborrarSancio/{0}", "Segur que vols esborrar la sanció de {1}?")'''.format(sancio.pk, sancio.alumne )
                                   ),                                  
                                  ]
         filera.append(camp)
@@ -1153,9 +1167,9 @@ def expulsionsDelCentre( request, s = 'nom' ):
     report.append(taula)
 
     return render_to_response(
-                'expulsionsDelCentre.html',
+                'sancions.html',
                     {'report': report,
-                     'head': 'Informació Expulsions del Centre' ,
+                     'head': 'Informació Sancions' ,
                     },
                     context_instance=RequestContext(request))  
 
@@ -1163,31 +1177,32 @@ def expulsionsDelCentre( request, s = 'nom' ):
 
 @login_required
 @group_required(['direcció'])
-def expulsionsDelCentreExcel( request ):
+def sancionsExcel( request ):
     """
     Generates an Excel spreadsheet for review by a staff member.
     """
-    expulsions = ExpulsioDelCentre.objects.order_by('data_inici','alumne__cognoms')
+    sancions = Sancio.objects.order_by('data_inici','alumne__cognoms')
     
-    dades_expulsions = [
+    dades_sancions = [
                         [e.alumne,
+                         e.tipus,
                          e.data_inici.strftime( '%d/%m/%Y' ),
                          e.data_fi.strftime( '%d/%m/%Y' ),
                          u'Sí' if e.impres else 'No',
                          e.alumne.grup.descripcio_grup,
                          e.alumne.grup.curs.nivell ]
-                        for e in expulsions]
+                        for e in sancions]
     
-    capcelera = [ u'Alumne', u'Data inici', u'Data fi', u'Ha estat imprés', u'grup', u'nivell' ]
+    capcelera = [ u'Alumne', u'Tipus', u'Data inici', u'Data fi', u'Ha estat imprés', u'grup', u'nivell' ]
 
     template = loader.get_template("export.csv")
     context = Context({
                          'capcelera':capcelera,
-                         'dades':dades_expulsions,
+                         'dades':dades_sancions,
     })
     
     response = HttpResponse()  
-    filename = "expulsions.csv" 
+    filename = "sancions.csv" 
 
 
     response['Content-Disposition'] = 'attachment; filename='+filename
@@ -1206,34 +1221,35 @@ def expulsionsDelCentreExcel( request ):
 
 @login_required
 @group_required(['direcció'])
-def cartaExpulsioCentre( request, pk ):
+def cartaSancio( request, pk ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
 
-    expulsio = ExpulsioDelCentre.objects.get( pk = pk)
+    sancio = Sancio.objects.get( pk = pk)
+    nom_fitxer = "cartaSancio-" + sancio.tipus.carta_slug
     
     #seg---------
-    pot_entrar = True or l4 or expulsio.professor.pk == user.pk 
+    pot_entrar = True or l4 or sancio.professor.pk == user.pk 
     if not pot_entrar:
         raise Http404() 
     
-    expulsio.credentials = credentials
+    sancio.credentials = credentials
     
     #capcelera
     report = tools.classebuida()
-    report.nom_alumne = unicode(expulsio.alumne)
+    report.nom_alumne = unicode(sancio.alumne)
     report.dies_expulsio = u" del {0} al {1}".format( 
-                                        expulsio.data_inici.strftime( '%d/%m/%Y' ), 
-                                        expulsio.data_fi.strftime( '%d/%m/%Y' ), 
+                                        sancio.data_inici.strftime( '%d/%m/%Y' ), 
+                                        sancio.data_fi.strftime( '%d/%m/%Y' ), 
                                         )
-    report.motiu_expulsio = expulsio.motiu_expulsio
-    report.signat_per = expulsio.signat
-    report.data_signatura = expulsio.data_carta.strftime( '%d/%m/%Y' )
+    report.motiu_expulsio = sancio.motiu
+    report.signat_per = sancio.signat
+    report.data_signatura = sancio.data_carta.strftime( '%d/%m/%Y' )
     report.expulsions = []
     report.incidencies = []
     #detall
-    for e in expulsio.expulsio_set.exclude(estat = 'ES'):
+    for e in sancio.expulsio_set.exclude(estat = 'ES'):
         rpt_e = tools.classebuida()
         rpt_e.dia = e.dia_expulsio.strftime( '%d/%m/%Y' )
         rpt_e.professor = u'Sr/a: {0}'.format( e.professor )
@@ -1241,10 +1257,10 @@ def cartaExpulsioCentre( request, pk ):
                             e.moment_comunicacio_a_tutors.strftime( '%d/%m/%Y' ),
                             e.tutor_contactat_per_l_expulsio
                         ) if e.moment_comunicacio_a_tutors else u''
-        rpt_e.motiu = e.motiu_expulsio
+        rpt_e.motiu = e.motiu
         report.expulsions.append(rpt_e)
 
-    for i in expulsio.incidencia_set.all():
+    for i in sancio.incidencia_set.all():
         rpt_i = tools.classebuida()
         rpt_i.data = i.dia_incidencia.strftime( '%d/%m/%Y' )
         rpt_i.professor = u'Sr/a: {0}'.format( i.professional )
@@ -1275,9 +1291,9 @@ def cartaExpulsioCentre( request, pk ):
         #context = Context( {'reports' : reports, } )
         path = None
         try:
-            path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/cartaExpulsioCentre.odt' )
+            path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/'+nom_fitxer+'.odt')
         except: 
-            path = os.path.join(os.path.dirname(__file__), 'templates/cartaExpulsioCentre.odt')
+            path = os.path.join(os.path.dirname(__file__), 'templates/'+nom_fitxer+'.odt')
 
         renderer = Renderer(path, {'report' :report, }, resultat)  
         renderer.run()
@@ -1290,10 +1306,10 @@ def cartaExpulsioCentre( request, pk ):
         excepcio = unicode( e )
         
     if not excepcio:
-        expulsio.impres = True
-        expulsio.save()
+        sancio.impres = True
+        sancio.save()
         response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="cartaExpulsioCentre-{0}.odt"'.format( slugify( unicode(expulsio.alumne ) ) )
+        response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format( nom_fitxer, slugify( unicode(sancio.alumne ) ) )
                                                      
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
@@ -1304,92 +1320,93 @@ def cartaExpulsioCentre( request, pk ):
 
 @login_required
 @group_required(['direcció'])
-def editaExpulsioCentre( request, pk ):
+def editaSancio( request, pk ):
     
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
 
-    expulsio = ExpulsioDelCentre.objects.get( pk = pk)
+    sancio = Sancio.objects.get( pk = pk)
     
     #seg---------
     pot_entrar = l4 or user.groups.filter( name= 'direcció').exists()
     if not pot_entrar:
         raise Http404() 
     
-    expulsio.credentials = credentials
+    sancio.credentials = credentials
     
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - expulsio.alumne.data_neixement).days / 365 
+        edatAlumne = (date.today() - sancio.alumne.data_neixement).days / 365 
     except:
         pass
     
     infoForm = [
-          ('Alumne',unicode( expulsio.alumne) ),
-          ( 'Telèfon Alumne', expulsio.alumne.telefons),                     
-          ( 'Nom tutors', expulsio.alumne.tutors),                     
+          ('Alumne',unicode( sancio.alumne) ),
+          ( 'Telèfon Alumne', sancio.alumne.telefons),                     
+          ( 'Nom tutors', sancio.alumne.tutors),                     
           ( 'Edat alumne', edatAlumne ),                     
-          ( 'Carta impresa (expulsió bloquejada)', expulsio.impres ),                     
+          ( 'Carta impresa (sanció bloquejada)', sancio.impres ),                     
                 ]
     
-    fields = [ 'data_inici', 
+    fields = ['tipus', 
+              'data_inici', 
               'franja_inici', 
               'data_fi',
               'franja_fi',
               'data_carta',
-              'motiu_expulsio',
+              'motiu',
               'obra_expedient',
               'comentaris_cap_d_estudis' ,
               'signat' ]
     if l4:
         fields.extend( [ 'professor', 'impres'] )
 
-    editaExpulsioFormF = modelform_factory( ExpulsioDelCentre, fields = fields )
+    editaSancioFormF = modelform_factory( Sancio, fields = fields )
     try:
-        editaExpulsioFormF.base_fields['data_inici'].widget =  DateTextImput()
-        editaExpulsioFormF.base_fields['data_fi'].widget =  DateTextImput()
-        editaExpulsioFormF.base_fields['data_carta'].widget =  DateTextImput()
+        editaSancioFormF.base_fields['data_inici'].widget =  DateTextImput()
+        editaSancioFormF.base_fields['data_fi'].widget =  DateTextImput()
+        editaSancioFormF.base_fields['data_carta'].widget =  DateTextImput()
     except:
         pass
     
     if request.method == 'POST':
        
-        formExpulsio = editaExpulsioFormF(data = request.POST, instance = expulsio )
-        can_delete = ckbxForm( data=request.POST, label = 'Esborrar expulsió', 
-                             help_text=u'''Marca aquesta cassella per esborrar aquesta expulsió''' )
+        formSancio = editaSancioFormF(data = request.POST, instance = sancio )
+        can_delete = ckbxForm( data=request.POST, label = 'Esborrar sanció', 
+                             help_text=u'''Marca aquesta cassella per esborrar aquesta sanció''' )
         formSelectIncidencies = incidenciesRelacionadesForm( data=request.POST,
-                                                             querysetIncidencies = expulsio.incidencia_set.all(),
-                                                             querysetExpulsions  = expulsio.expulsio_set.all()    )
-        if formExpulsio.is_valid() and can_delete.is_valid() and formSelectIncidencies.is_valid():
+                                                             querysetIncidencies = sancio.incidencia_set.all(),
+                                                             querysetExpulsions  = sancio.expulsio_set.all()    )
+        if formSancio.is_valid() and can_delete.is_valid() and formSelectIncidencies.is_valid():
             if can_delete.cleaned_data['ckbx'] and l4:
-                expulsio.delete()
+                sancio.delete()
             else:
-                formExpulsio.save()
+                formSancio.save()
 
                 fa_30_dies = date.today() - timedelta( days = 30 )
                 fa_60_dies = date.today() - timedelta( days = 60 )                
                                 
                 incidencies = formSelectIncidencies.cleaned_data['incidenciesRelacionades']
-                incidencies_a_desvincular = expulsio.incidencia_set.exclude( pk__in = [ i.pk for i in incidencies ] )
+                incidencies_a_desvincular = sancio.incidencia_set.exclude( pk__in = [ i.pk for i in incidencies ] )
                 incidencies_a_desvincular.filter( dia_incidencia__gte = fa_30_dies).update( es_vigent = True  )
-                incidencies_a_desvincular.update(  provoca_expulsio_centre = None )  
+                incidencies_a_desvincular.update(  provoca_sancio = None )  
 
                 expulsions = formSelectIncidencies.cleaned_data['expulsionsRelacionades']
-                expulsions_a_desvincular = expulsio.expulsio_set.exclude( pk__in = [ i.pk for i in expulsions ] )
+                expulsions_a_desvincular = sancio.expulsio_set.exclude( pk__in = [ i.pk for i in expulsions ] )
                 expulsions_a_desvincular.filter( dia_expulsio__gte = fa_60_dies).update( es_vigent = True  )
-                expulsions_a_desvincular.update(  provoca_expulsio_centre = None )  
+                expulsions_a_desvincular.update(  provoca_sancio = None )  
                 
-            url = '/incidencies/expulsionsDelCentre/'
+            url = '/incidencies/sancions/'
             return HttpResponseRedirect( url )
         
     else:
-        formExpulsio = editaExpulsioFormF( instance = expulsio )
-        can_delete = ckbxForm( data=request.POST, label = 'Esborrar expulsió:', 
-                             help_text=u'''Marca aquesta cassella per esborrar aquesta expulsió''' )
-        formSelectIncidencies = incidenciesRelacionadesForm( querysetIncidencies = expulsio.incidencia_set.all(),
-                                                             querysetExpulsions  = expulsio.expulsio_set.all() )
+        formSancio = editaSancioFormF( instance = sancio )
+        can_delete = ckbxForm( data=request.POST, label = 'Esborrar sanció:', 
+                             help_text=u'''Marca aquesta cassella per esborrar aquesta sanció''' )
+        formSelectIncidencies = incidenciesRelacionadesForm( querysetIncidencies = sancio.incidencia_set.all(),
+                                                             querysetExpulsions  = sancio.expulsio_set.all() )
 
-    formset = [ formExpulsio, formSelectIncidencies ]
+    formset = [ formSancio, formSelectIncidencies ]
     formset.extend ( [  can_delete ] if l4 else []  )
     
 
@@ -1397,7 +1414,7 @@ def editaExpulsioCentre( request, pk ):
                 'formset.html',
                     {'formset': formset,
                      'infoForm': infoForm,
-                     'head': 'Expulsió' ,
+                     'head': 'Sanció' ,
                     },
                     context_instance=RequestContext(request))    
 
@@ -1407,11 +1424,11 @@ def editaExpulsioCentre( request, pk ):
 
 login_required
 @group_required(['direcció'])
-def esborrarExpulsioCentre( request, pk ):
+def esborrarSancio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
 
-    sancio = ExpulsioDelCentre.objects.get( pk = pk)
+    sancio = Sancio.objects.get( pk = pk)
     
     #seg---------
     pot_entrar = l4 or user.groups.filter( name= 'direcció').exists()
@@ -1421,11 +1438,11 @@ def esborrarExpulsioCentre( request, pk ):
     if not l4 and sancio.impres:
         return render_to_response(
                     'resultat.html', 
-                    {'head': u'Error esborrant expulsió del centre' ,
-                     'msgs': { 'errors': [u'Aquesta expulsió del centre ja ha estat impresa, no es pot esborrar'], 
+                    {'head': u'Error esborrant sanció' ,
+                     'msgs': { 'errors': [u'Aquesta sanció ja ha estat impresa, no es pot esborrar'], 
                                'warnings':  [], 
                                'infos':  [],
-                               'url_next':'/incidencies/expulsionsDelCentre/'} ,
+                               'url_next':'/incidencies/sancions/'} ,
                      },
                     context_instance=RequestContext(request)) 
     
@@ -1435,13 +1452,13 @@ def esborrarExpulsioCentre( request, pk ):
 
         #esborrar totes les expulsions i incidències relacionades:
         _ = ( get_model('incidencies','Expulsio')
-              .objects.filter( provoca_expulsio_centre = sancio )
-              .update( provoca_expulsio_centre = None,
+              .objects.filter( provoca_sancio = sancio )
+              .update( provoca_sancio = None,
                        es_vigent = True ) 
               )
         _ = ( get_model('incidencies','Incidencia')
-              .objects.filter( provoca_expulsio_centre = sancio )
-              .update( provoca_expulsio_centre = None,
+              .objects.filter( provoca_sancio = sancio )
+              .update( provoca_sancio = None,
                        es_vigent = True )
               )
         
@@ -1457,9 +1474,9 @@ def esborrarExpulsioCentre( request, pk ):
             for x in v:
                 messages.error(request,  x  )
     except ProtectedError, e:
-        messages.error(request,  "Aquesta expulsió de centre té expulsions relacionades."  )
+        messages.error(request,  "Aquesta sanció té expulsions relacionades."  )
 
-    url = '/incidencies/expulsionsDelCentre/'
+    url = '/incidencies/sancions/'
     return HttpResponseRedirect( url )    
 
 

@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.alumnes.models import Alumne
 from django.db.models import Q
-from aula.apps.incidencies.models import Incidencia, Expulsio, ExpulsioDelCentre
+from aula.apps.incidencies.models import Incidencia, Expulsio, Sancio
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.tutoria.models import Actuacio, SeguimentTutorial
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa,\
@@ -71,7 +71,7 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
 
         ControlAssistencia.objects.filter( alumne = a ).delete()
 
-        ExpulsioDelCentre.objects.filter( alumne = a ).update( alumne = a_desti )
+        Sancio.objects.filter( alumne = a ).update( alumne = a_desti )
 
         Actuacio.objects.filter( alumne = a ).update( alumne = a_desti )
         

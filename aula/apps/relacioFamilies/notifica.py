@@ -39,7 +39,7 @@ def notifica():
                 fa_n_dies = ara - timedelta(  days = alumne.periodicitat_faltes )
                 noves_incidencies = alumne.incidencia_set.filter( relacio_familia_notificada__isnull = True  )
                 noves_expulsions = alumne.expulsio_set.exclude( estat = 'ES').filter(    relacio_familia_notificada__isnull = True  )
-                noves_expulsions_centre = alumne.expulsiodelcentre_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
+                noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
                 noves_faltes_assistencia = ControlAssistencia.objects.filter( alumne = alumne, 
                                                                               impartir__dia_impartir__gte = fa_2_setmanes,
                                                                               relacio_familia_notificada__isnull = True,
@@ -54,7 +54,7 @@ def notifica():
                                          noves_faltes_assistencia.exists()
                 hiHaNovetats =  hiHaNovetatsPresencia or \
                                 ( alumne.periodicitat_incidencies and
-                                ( noves_incidencies.exists() or noves_expulsions.exists() or noves_expulsions_centre.exists() )
+                                ( noves_incidencies.exists() or noves_expulsions.exists() or noves_sancions.exists() )
                                 )                  
                 #print u'Avaluant a {0}'.format( alumne )
                 enviatOK = False
@@ -93,7 +93,7 @@ def notifica():
                 if enviatOK:
                     noves_incidencies.update( relacio_familia_notificada = ara )
                     noves_expulsions.update( relacio_familia_notificada = ara )
-                    noves_expulsions_centre.update( relacio_familia_notificada = ara )
+                    noves_sancions.update( relacio_familia_notificada = ara )
                     noves_faltes_assistencia.update( relacio_familia_notificada = ara )
                     #if hiHaNovetatsPresencia:
                     alumne.relacio_familia_darrera_notificacio = ara

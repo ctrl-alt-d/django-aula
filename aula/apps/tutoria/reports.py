@@ -176,7 +176,7 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
                         item.hora = expulsio.franja_expulsio.hora_inici.strftime('%H:%M') 
                         item.assignatura = NomAssignatura
                         item.professor = expulsio.professor 
-                        item.motiu = expulsio.motiu_expulsio
+                        item.motiu = expulsio.motiu
                         
                         n_expulsions += 1
                         

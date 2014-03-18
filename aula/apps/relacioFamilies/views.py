@@ -595,7 +595,7 @@ def elMeuInforme( request, pk = None ):
             camp.enllac = None
             camp.contingut = u'Sr(a): {0} - {1}'.format(                                                
                                                expulsio.professor , 
-                                               expulsio.motiu_expulsio if expulsio.motiu_expulsio else u'Pendent redactar motiu.')        
+                                               expulsio.motiu if expulsio.motiu else u'Pendent redactar motiu.')        
             camp.negreta = False if expulsio.relacio_familia_revisada else True                      
             filera.append(camp)
             #--
@@ -605,14 +605,14 @@ def elMeuInforme( request, pk = None ):
         if not semiImpersonat:
             expulsionsNoves.update( relacio_familia_notificada =  ara , relacio_familia_revisada = ara)
 
-    #----Expulsions del centre --------------------------------------------------------------------   
+    #----Sancions -----------------------------------------------------------------------------   
     if detall in ['all', 'incidencies']:
-        expulsionsDelCentre = alumne.expulsiodelcentre_set.filter( impres = True )
-        expulsionsDelCentreNoves = expulsionsDelCentre.filter(  relacio_familia_revisada__isnull = True )
+        sancions = alumne.sancio_set.filter( impres = True )
+        sancionsNoves = sancions.filter(  relacio_familia_revisada__isnull = True )
         
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
-        taula.tabTitle = 'Expulsions del Centre {0}'.format( pintaNoves( expulsionsDelCentreNoves.count() ) )
+        taula.tabTitle = 'Sancions {0}'.format( pintaNoves( sancionsNoves.count() ) )
     
         taula.titol = tools.classebuida()
         taula.titol.contingut = ''
@@ -633,7 +633,7 @@ def elMeuInforme( request, pk = None ):
                 
         taula.fileres = []
             
-        for expulsio in expulsionsDelCentre.order_by( '-data_inici' ):
+        for sancio in sancions.order_by( '-data_inici' ):
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
@@ -644,7 +644,7 @@ def elMeuInforme( request, pk = None ):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format( expulsio.motiu_expulsio )        
+            camp.contingut = u'{0}'.format( expulsio.motiu )        
             camp.negreta = False if expulsio.relacio_familia_revisada else True                
             filera.append(camp)
             #--
@@ -652,7 +652,7 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)
         if not semiImpersonat:
-            expulsionsDelCentreNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
+            sancionsNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
 
     #---dades alumne---------------------------------------------------------------------
     if detall in ['all','dades']:

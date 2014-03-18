@@ -42,8 +42,9 @@ class posaIncidenciaAulaForm(forms.Form):
                                               clic amb el ratolí."""  )
 
 #tipusIncidencia
-    tipus = forms.ModelChoiceField( queryset = TipusIncidencia.objects.all(),
-                                    initial = TipusIncidencia.objects.all()[0],
+    incidencies = TipusIncidencia.objects.all()
+    tipus = forms.ModelChoiceField( queryset = incidencies,
+                                    initial = incidencies[0] if incidencies else None,
                                     widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
                                   )
 

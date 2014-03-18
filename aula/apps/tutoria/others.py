@@ -22,8 +22,8 @@ def calculaResumAnualProcess():
                                                           a.expulsio_set.filter( es_expulsio_per_acumulacio_incidencies = False ).count()
                                                           )
         
-        #expulsions del centre
-        txt_expulsions_del_centre = u"Núm. Expulsions Del Centre: {0}\n".format( a.expulsiodelcentre_set.count() )
+        #sancions
+        txt_expulsions_del_centre = u"Núm. Sancions: {0}\n".format( a.sancio_set.count() )
         
         #presencia        
         absent = EstatControlAssistencia.objects.filter( codi_estat__in = ['F'] )

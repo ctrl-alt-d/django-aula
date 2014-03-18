@@ -17,8 +17,8 @@ urlpatterns = patterns('aula.apps.incidencies.views',
     url(r'^posaExpulsioPerAcumulacio/(?P<pk>\d+)/$', 'posaExpulsioPerAcumulacio',
         name="aula__incidencies__posa_expulsio_per_acumulacio"),
                        
-    url(r'^expulsioDelCentre/(?P<pk>\d+)/$', 'expulsioDelCentre',
-        name="coordinacio_alumnes__explusions_centre__expulsio"),
+    url(r'^sancio/(?P<pk>\d+)/$', 'sancio',
+        name="coordinacio_alumnes__sancions__sancionar"),
                        
     url(r'^editaExpulsio/(?P<pk>\d+)/$', 'editaExpulsio',
         name="aula__incidencies__edita_expulsio"),
@@ -34,30 +34,30 @@ urlpatterns = patterns('aula.apps.incidencies.views',
                        
     url(r'^alertesAcumulacioExpulsions/$', 'alertesAcumulacioExpulsions',
         name="coordinacio_alumnes__ranking__list"),
-                       
-    url(r'^expulsioDelCentre/(?P<pk>\d+)/$', 'expulsioDelCentre',
-        name="coordinacio_alumnes__explusions_centre__expulsar"),
-                       
-    url(r'^expulsionsDelCentre/$', 'expulsionsDelCentre',
-        name="coordinacio_alumnes__explusions_centre__expulsions"),
-                       
-    url(r'^expulsionsDelCentre/(?P<s>\w+)/$', 'expulsionsDelCentre',
-        name="coordinacio_alumnes__explusions_centre__expulsions"),
-                       
-    url(r'^expulsionsDelCentreExcel/$', 'expulsionsDelCentreExcel',
-        name="coordinacio_alumnes__explusions_centre__expulsions_excel"),
-                       
-    url(r'^editaExpulsioCentre/(?P<pk>\d+)/$', 'editaExpulsioCentre',
-        name="coordinacio_alumnes__explusions_centre__edicio"),
-                       
-    url(r'^esborrarExpulsioCentre/(?P<pk>\d+)/$', 'esborrarExpulsioCentre',
-        name="coordinacio_alumnes__explusions_centre__esborrar"),
-                       
-    url(r'^controlTramitacioExpulsions/$', 'controlTramitacioExpulsions',
-        name="professorat__explusions__control_tramitacio"),
+    
+    url(r'^sancio/(?P<pk>\d+)/$', 'sancio',
+        name="coordinacio_alumnes__sancions__sancionar"),
+    
+    url(r'^sancions/$', 'sancions',
+        name="coordinacio_alumnes__sancions__sancions"),
+
+    url(r'^sancions/(?P<s>\w+)/$', 'sancions',
+        name="coordinacio_alumnes__sancions__sancions"),
+
+    url(r'^sancionsExcel/$', 'sancionsExcel',
+        name="coordinacio_alumnes__sancions__sancions_excel"),
+
+    url(r'^editaSancio/(?P<pk>\d+)/$', 'editaSancio',
+        name="coordinacio_alumnes__sancions__edicio"),
+
+    url(r'^esborrarSancio/(?P<pk>\d+)/$', 'esborrarSancio',
+        name="coordinacio_alumnes__sancions__esborrar"),
+
+    url(r'^controlTramitacioExpulsions/$', 'controlTramitacioExpulsions', 
+        name="coordinacio_alumnes__expulsions__control_tramitacio"),
                                               
-    url(r'^cartaExpulsioCentre/(?P<pk>\d+)/$', 'cartaExpulsioCentre',
-        name="coordinacio_alumnes__explusions_centre__carta"),
+    url(r'^cartaSancio/(?P<pk>\d+)/$', 'cartaSancio', 
+        name="coordinacio_alumnes__sancions__carta"),
                        
     url(r'^blanc/$', 'blanc',
         name="aula__incidencies__blanc"),

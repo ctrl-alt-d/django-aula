@@ -1166,7 +1166,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
         report.append(taula)
     
-    #----Expulsions del centre --------------------------------------------------------------------   
+    #----Sancions  --------------------------------------------------------------------   
     if detall in ['all', 'incidencies']:
         taula = tools.classebuida()
     
@@ -1178,7 +1178,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         
         capcelera = tools.classebuida()
         capcelera.amplade = 200
-        capcelera.contingut = u'Expulsions del Centre'
+        capcelera.contingut = u'Sancions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
@@ -1189,17 +1189,17 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
                 
         taula.fileres = []
             
-        for expulsio in alumne.expulsiodelcentre_set.all().order_by( '-data_inici' ):
+        for sancio in alumne.sancio_set.all().order_by( '-data_inici' ):
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format( expulsio.data_inici.strftime( '%d/%m/%Y' ) )          
+            camp.contingut = u'{0}'.format( sancio.data_inici.strftime( '%d/%m/%Y' ) )          
             filera.append(camp)
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format( expulsio.motiu_expulsio )        
+            camp.contingut = u'{0}'.format( sancio.motiu )        
             filera.append(camp)
             #--
             taula.fileres.append( filera )
@@ -1252,7 +1252,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
             camp.enllac = None
             camp.contingut = u'Sr(a): {0} - {1}'.format(                                                
                                                expulsio.professor , 
-                                               expulsio.motiu_expulsio )        
+                                               expulsio.motiu )        
             filera.append(camp)
             #--
             taula.fileres.append( filera )

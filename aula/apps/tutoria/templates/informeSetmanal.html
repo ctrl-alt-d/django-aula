@@ -43,14 +43,14 @@ $(document).ready(function()
    {% for x in dades.E %}
    $('#E{{x.pk}}').tooltip(
    {
-      title: 'Expulsió: (Prof.: {{x.professor|escapejs}}, {{x.coltrol_assistencia.impartir.horari.assignatura|escapejs}}) - {{x.motiu_expulsio|escapejs}}'
+      title: 'Expulsió: (Prof.: {{x.professor|escapejs}}, {{x.coltrol_assistencia.impartir.horari.assignatura|escapejs}}) - {{x.motiu|escapejs}}'
    });
    {% endfor %}  
       
    {% for x in dades.e %}
    $('#e{{x.pk}}').tooltip(
    {
-      title: 'expulsió per acumulació d\u0027incidències: (Prof: {{x.professor|escapejs}}) - {{x.motiu_expulsio|escapejs}}'
+      title: 'expulsió per acumulació d\u0027incidències: (Prof: {{x.professor|escapejs}}) - {{x.motiu|escapejs}}'
    });
    {% endfor %}  
       
