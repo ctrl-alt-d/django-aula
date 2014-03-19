@@ -6,7 +6,7 @@ from django.utils.datetime_safe import datetime
 from django.db.models import get_model
 
 
-def expulsioDelCentre_pre_delete(sender, instance, **kwargs):
+def sancio_pre_delete(sender, instance, **kwargs):
     #
     # Regles:
     #
@@ -20,7 +20,7 @@ def expulsioDelCentre_pre_delete(sender, instance, **kwargs):
         instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
 
     if instance.instanceDB is not None and instance.instanceDB.impres:
-        errors.setdefault('impres',[]).append(u'Aquesta expulsió ja ha estat impresa. No es pot esborrar.')
+        errors.setdefault('impres',[]).append(u'Aquesta sanció ja ha estat impresa. No es pot esborrar.')
 
     if not l4 and len( errors ) > 0:
         raise ValidationError(errors)
@@ -28,7 +28,7 @@ def expulsioDelCentre_pre_delete(sender, instance, **kwargs):
     
         
 
-def expulsioDelCentre_clean(instance):
+def sancio_clean(instance):
     #
     # Regles:
     #
@@ -44,19 +44,19 @@ def expulsioDelCentre_clean(instance):
         instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
 
     if instance.instanceDB is not None and instance.instanceDB.impres:
-        errors.setdefault('impres',[]).append(u'Aquesta expulsió ja ha estat impresa. No es pot modificar.')
+        errors.setdefault('impres',[]).append(u'Aquesta sanció ja ha estat impresa. No es pot modificar.')
 
     if len( errors ) > 0:
         raise ValidationError(errors)
 
-def expulsioDelCentre_pre_save(sender, instance, **kwargs):
+def sancio_pre_save(sender, instance, **kwargs):
     instance.tmp__calNotificar = False
     if  instance.pk is not None:
         db_instance = instance.__class__.objects.get( pk = instance.pk )
         instance.tmp__calNotificar =  not db_instance.impres and instance.impres
 
-def expulsioDelCentre_post_save(sender, instance, created, **kwargs):
-    # missatge pels professors que tenen aquest alumne a l'aula (exepte el professor que expulsa):
+def sancio_post_save(sender, instance, created, **kwargs):
+    # missatge pels professors que tenen aquest alumne a l'aula (exepte el professor que sanciona):
     if instance.tmp__calNotificar:
         txt_msg = u"L'alumne {0} ha estat expulsat del centre ( del {1} al {2} ).".format( instance.alumne, instance.data_inici.strftime( '%d/%m/%Y' ), instance.data_fi.strftime( '%d/%m/%Y' ) )
         Missatge = get_model( 'missatgeria','Missatge')

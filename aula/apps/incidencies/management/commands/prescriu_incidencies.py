@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 from django.core.management.base import BaseCommand, CommandError
-from aula.apps.incidencies.helpers import prescriu
+from aula.apps.incidencies.helpers import preescriu
 
 class Command(BaseCommand):
     help = 'Caduca les incidències i expulsions velles'

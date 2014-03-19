@@ -12,7 +12,7 @@ def expulsio_clean( instance ):
     # Pre-save
     #
     
-    if instance.provoca_expulsio_centre:
+    if instance.provoca_sancio:
         instance.es_vigent = False
 
     #dia i franja són per incidències fora d'aula.

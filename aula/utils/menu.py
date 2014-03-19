@@ -144,7 +144,7 @@ def calcula_menu( user , path ):
                       ("Alertes Incid.", 'coordinacio_alumnes__ranking__list', di, None, None ),
                       ("Alertes Assist.", 'coordinacio_alumnes__assistencia_alertes__llistat', di, None, None ),
                       ("Cartes", 'coordinacio_alumnes__assistencia__cartes', di, None, None ),
-                      ("Exp. del Centre", 'coordinacio_alumnes__explusions_centre__expulsions', di, None, None ),
+                      ("Sancions", 'coordinacio_alumnes__sancions__sancions', di, None, None ),
                       ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di, None, None ),
                       ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
                    )
@@ -166,7 +166,7 @@ def calcula_menu( user , path ):
                          ), 
                       ),
                       ("Professors", 'professorat__professors__list', di, None, None ),
-                      ("Estat Tramitació Exp.", 'professorat__explusions__control_tramitacio', di, None, None ),
+                      ("Estat Tramitació Exp.", 'professorat__expulsions__control_tramitacio', di, None, None ),
                    ),
                ),
 
@@ -270,15 +270,15 @@ professorat__tutors__tutors_individualitzats
 
 coordinacio_alumnes__assistencia_alertes__llistat
 coordinacio_alumnes__assistencia__cartes
-coordinacio_alumnes__explusions_centre__carta
-coordinacio_alumnes__explusions_centre__edicio
-coordinacio_alumnes__explusions_centre__esborrar
-coordinacio_alumnes__explusions_centre__expulsar
-coordinacio_alumnes__explusions_centre__expulsio
-coordinacio_alumnes__explusions_centre__expulsio
-coordinacio_alumnes__explusions_centre__expulsions
-coordinacio_alumnes__explusions_centre__expulsions
-coordinacio_alumnes__explusions_centre__expulsions_excel
+coordinacio_alumnes__sancions__carta
+coordinacio_alumnes__sancions__edicio
+coordinacio_alumnes__sancions__esborrar
+coordinacio_alumnes__sancions__sancionar
+coordinacio_alumnes__sancions__sancio
+coordinacio_alumnes__sancions__sancio
+coordinacio_alumnes__sancions__sancions
+coordinacio_alumnes__sancions__sancions
+coordinacio_alumnes__sancions__sancions_excel
 coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria
 coordinacio_alumnes__ranking__list
 coordinacio_alumnes__seguiment_tutorial__preguntes

@@ -16,26 +16,37 @@ class AbstractFrassesIncidenciaAula(models.Model):
     def __unicode__(self):
         return self.frase
 
-class AbstractExpulsioDelCentre(models.Model):
-    professor = models.ForeignKey('usuaris.Professor', db_index=True, help_text=u"Professor que tramita l'expulsió del centre")
-    alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne expulsat")
-    data_inici = models.DateField( help_text=u"Primer dia d'expulsió")
-    franja_inici = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_inici_expulsio', help_text=u"Primera hora d'expulsió")
+class TipusSancio(models.Model):
+    tipus = models.CharField("Tipus", max_length=50, unique=True, help_text=u"Tipus de sanció")
+    carta_slug = models.SlugField(max_length=10, help_text=u"Sufix del nom del fitxer amb la plantilla de la carta")
+    justificar = models.BooleanField(help_text=u"[Funcionalitat encara no implementada] Justificar assistència durant la sanció")
+    class Meta:
+        verbose_name = u'Tipus de sancions'
+        verbose_name_plural = u'Tipus de sancions'
+    def __unicode__(self):
+        return self.tipus
+
+class AbstractSancio(models.Model):
+    professor = models.ForeignKey('usuaris.Professor', db_index=True, help_text=u"Professor que tramita la sanció")
+    alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne sancionat")
+    tipus = models.ForeignKey('incidencies.TipusSancio', on_delete = models.PROTECT )
+    data_inici = models.DateField( help_text=u"Primer dia de sanció")
+    franja_inici = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_inici_sancio', help_text=u"Primera hora de sanció")
     data_fi = models.DateField(help_text=u"Darrer dia d'expulsió")
-    franja_fi = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_fi_expulsio', help_text=u"Darrera hora d'expulsió")
-    data_carta =  models.DateField(help_text=u"Data en que se signa la carta d'expulsió")
-    motiu_expulsio = models.TextField(null=True, blank=True, help_text=u"Informació adicional a la carta d'expulsió que veuran els pares")
-    obra_expedient = models.BooleanField( default = False, help_text=u"Aquesta expulsió del centre ha provocat que a l'alumne se li obri un expedient" )
+    franja_fi = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_fi_sancio', help_text=u"Darrera hora de sanció")
+    data_carta =  models.DateField(help_text=u"Data en que se signa la carta de sanció")
+    motiu = models.TextField(null=True, blank=True, help_text=u"Informació adicional a la carta de sanció que veuran els pares")
+    obra_expedient = models.BooleanField( default = False, help_text=u"Aquesta sanció ha provocat que a l'alumne se li obri un expedient" )
     comentaris_cap_d_estudis = models.TextField(blank=True, help_text=u"Comentaris interns del cap d'estudis")
     signat = models.CharField(max_length=250)
-    impres = models.BooleanField(help_text=u"Un cop imprès el document d'expulsió ja no es pot modificar l'expulsió", default=False)
+    impres = models.BooleanField(help_text=u"Un cop imprès el document ja no pot modificar-se la sanció", default=False)
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
 
     class Meta:
         abstract = True        
-        verbose_name = u'Expulsió del Centre'
-        verbose_name_plural = u'Expulsions del Centre'
+        verbose_name = u'Sanció'
+        verbose_name_plural = u'Sancions'
         ordering = ['alumne']    
 
 class AbstractExpulsio(models.Model):
@@ -57,14 +68,14 @@ class AbstractExpulsio(models.Model):
     dia_expulsio = models.DateField(blank=True, help_text=u"Dia en que l'alumne ha estat expulsat")
     franja_expulsio = models.ForeignKey('horaris.FranjaHoraria', help_text=u"Franja en que l'alumne ha estat expulsat" )
     
-    motiu_expulsio = models.TextField( help_text=u"Motiu de l'expulsió. Aquesta informació la rebran els pares. No posar dades metges ni de salut.")
+    motiu = models.TextField( help_text=u"Motiu de l'expulsió. Aquesta informació la rebran els pares. No posar dades metges ni de salut.")
     moment_comunicacio_a_tutors = models.DateTimeField(null=True, blank=True, help_text=u"Moment en que aquesta expulsió ha estat comunicada als tutors")
     tutor_contactat_per_l_expulsio = models.CharField(max_length=250, blank=True, help_text=u"Familiars o tutors legals contactats")
     tramitacio_finalitzada = models.BooleanField( help_text=u"Marca aquesta cassella quan hagis finalitzat tota la tramitació de l'expulsió. Un cop tramitada no es pot esborrar ni modificar.")
     comentaris_cap_d_estudis = models.TextField(blank=True, help_text=u"Comentaris interns del cap d'estudis.")
-    
-    provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True, on_delete = models.PROTECT )
-    
+ 
+    provoca_sancio = models.ForeignKey('incidencies.Sancio', blank=True, null=True, on_delete = models.PROTECT )
+
     es_expulsio_per_acumulacio_incidencies = models.BooleanField( default=False )
     es_vigent = models.BooleanField( default=True , db_index=True)
 
@@ -80,7 +91,7 @@ class AbstractExpulsio(models.Model):
         return self.control_assistencia != None
 
     def mini_motiu(self):
-        return self.motiu_expulsio[:100] if self.motiu_expulsio else 'Motiu no informat.'
+        return self.motiu[:100] if self.motiu else 'Motiu no informat.'
     
     def __unicode__(self):
         return u'''El professor {0} ha expulsat l'alumne {1} el dia {2}.'''.format( self.professor, 
@@ -110,7 +121,7 @@ class AbstractExpulsio(models.Model):
         return data
     
     def getMotiuWithOutCR(self):
-        return self.motiu_expulsio.replace('\n',' ') if self.motiu_expulsio else ''
+        return self.motiu.replace('\n',' ') if self.motiu else ''
     
     def totalExpulsionsVigents(self):
         return self.alumne.expulsio_set.exclude( estat = 'ES ').filter(es_vigent = True ).count()
@@ -128,10 +139,7 @@ class TipusIncidencia(models.Model):
 class AbstractIncidencia(models.Model):
     professional = models.ForeignKey('usuaris.Professional',  db_index=True, help_text=u"Professor que tramita la incidència")
     alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne al qual li posem la incidència" )
-    
-#tipusIncidencia
     tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
-    
     control_assistencia = models.ForeignKey('presencia.ControlAssistencia', null=True,  blank=True)
     #dia i franja són per incidències fora d'aula.
     dia_incidencia = models.DateField( db_index=True, help_text=u"Data en que es va produir la incidència")
@@ -144,7 +152,7 @@ class AbstractIncidencia(models.Model):
 #    es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si aquesta incidència és només per tenir constància d'un fet. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
 
     es_vigent = models.BooleanField( default = True , db_index=True)
-    provoca_expulsio_centre = models.ForeignKey('incidencies.ExpulsioDelCentre', blank=True, null=True, on_delete = models.PROTECT )
+    provoca_sancio = models.ForeignKey('incidencies.Sancio', blank=True, null=True, on_delete = models.PROTECT  )
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
     

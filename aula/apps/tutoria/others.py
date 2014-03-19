@@ -22,8 +22,8 @@ def calculaResumAnualProcess():
                                                           a.expulsio_set.filter( es_expulsio_per_acumulacio_incidencies = False ).count()
                                                           )
         
-        #expulsions del centre
-        txt_expulsions_del_centre = u"Núm. Expulsions Del Centre: {0}\n".format( a.expulsiodelcentre_set.count() )
+        #sancions
+        txt_sancions = u"Núm. Sancions: {0}\n".format( a.sancio_set.count() )
         
         #presencia        
         absent = EstatControlAssistencia.objects.filter( codi_estat__in = ['F'] )
@@ -67,7 +67,7 @@ def calculaResumAnualProcess():
                    )
 
         
-        resum.text_resum = txt_presencia + txt_incidencies + txt_expulsions + txt_expulsions_del_centre + txt_actuacions + txt_qualitativa
+        resum.text_resum = txt_presencia + txt_incidencies + txt_expulsions + txt_sancions + txt_actuacions + txt_qualitativa
         resum.save()
 
     

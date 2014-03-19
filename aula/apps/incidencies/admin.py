@@ -1,6 +1,5 @@
 from aula.apps.incidencies.models import FrassesIncidenciaAula
-#tipusIncidencia
-from aula.apps.incidencies.abstract_models import TipusIncidencia 
+from aula.apps.incidencies.abstract_models import TipusIncidencia, TipusSancio
 from django.contrib import admin
 
 #tipusIncidencia
@@ -16,4 +15,4 @@ class TipusIncidenciaAdmin(admin.ModelAdmin):
 
 admin.site.register(TipusIncidencia, TipusIncidenciaAdmin)
 
-
+admin.site.register(TipusSancio)
