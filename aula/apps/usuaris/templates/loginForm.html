@@ -10,7 +10,7 @@
 
   .form-signin {
     max-width: 300px;
-    padding: 19px 29px 29px;
+    padding: 5px 29px 29px;
     margin: 0 auto 20px;
     background-color: #fff;
     border: 1px solid #e5e5e5;
@@ -43,7 +43,8 @@
 {% block content  %}
 	{% block preform %}{% endblock %}
 
-  
+    <p class="text-center"><img src="/site-css/logo.png"></p>
+
     <form class="form-signin" action="." method="post" target="{%if target %}{{target}}{%else%}_self{%endif%}">{% csrf_token %}
       <h2 class="form-signin-heading">Identificació</h2>
       <input type="text" name="usuari" class="form-control" placeholder="Nom d'usuari" autofocus>
