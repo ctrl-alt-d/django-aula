@@ -9,6 +9,6 @@ School Attendance Software
 
 **[Llicència i Crèdits](https://github.com/ctrl-alt-d/django-aula/blob/master/LICENSE)**
 
-by daniel herrera ctrl.alt.d@gmail.com
+
 
 
