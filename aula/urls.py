@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from django.conf.urls import patterns, include, url
+from django.views.generic import TemplateView
 from django.contrib import admin
 admin.autodiscover()
 
@@ -35,6 +36,7 @@ urlpatterns = patterns('',
     (r'^logout/$', 'aula.utils.views.logout_page'),
     #fitxers estàtics:
     (r'^site-css/(?P<path>.*)$', 'django.views.static.serve',{'document_root': site_media_site_css}),
+    (r'^error500$', TemplateView.as_view(template_name='500.html') ),
 
 )
 
