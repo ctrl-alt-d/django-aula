@@ -628,7 +628,7 @@ def elMeuInforme( request, pk = None ):
     
         capcelera = tools.classebuida()
         capcelera.amplade = 400
-        capcelera.contingut = u'Motiu'
+        capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
                 
         taula.fileres = []
@@ -638,14 +638,14 @@ def elMeuInforme( request, pk = None ):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0} a {1}'.format( expulsio.data_inici.strftime( '%d/%m/%Y' ) ,  expulsio.data_fi.strftime( '%d/%m/%Y' ))       
-            camp.negreta = False if expulsio.relacio_familia_revisada else True                
+            camp.contingut = u'{0} a {1}'.format( sancio.data_inici.strftime( '%d/%m/%Y' ) ,  sancio.data_fi.strftime( '%d/%m/%Y' ))       
+            camp.negreta = False if sancio.relacio_familia_revisada else True                
             filera.append(camp)
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format( expulsio.motiu )        
-            camp.negreta = False if expulsio.relacio_familia_revisada else True                
+            camp.contingut = u'{0} {1} {2}'.format( sancio.tipus , ' - ' if sancio.motiu else '', sancio.motiu )        
+            camp.negreta = False if sancio.relacio_familia_revisada else True                
             filera.append(camp)
             #--
             taula.fileres.append( filera )
