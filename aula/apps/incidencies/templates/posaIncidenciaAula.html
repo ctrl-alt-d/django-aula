@@ -1,5 +1,26 @@
 {% extends "form.html" %}
 
+{% block extrahead %}
+
+<style>
+	
+.tria_tag ul
+{
+    list-style-type: none;
+    margin-bottom: 0px;
+    -webkit-padding-start: 0px;
+}
+
+.tria_tag li
+{
+
+    margin-left: 0px;
+}
+
+</style>
+
+{% endblock %}
+
 {% block preform  %}
 
 	<a href="/presencia/passaLlista/{{id_impartir}}">Tornar a passar llista</a>
