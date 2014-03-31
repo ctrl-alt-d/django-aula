@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*- 
 
-CUSTOM_RETART_PROVOCA_INCIDENCIA = True
-CUSTOM_RETART_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
-CUSTOM_RETART_FRASE = u'Ha arribat tard a classe.'
+CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
+CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
+CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
 
 try:
     from settings_local import *

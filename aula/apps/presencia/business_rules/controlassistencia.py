@@ -93,13 +93,13 @@ def controlAssistencia_pre_save(sender, instance,  **kwargs):
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
     
-    #si els retarts provoquen incidència la posem:
-    if settings.CUSTOM_RETART_PROVOCA_INCIDENCIA:
+    #si els retards provoquen incidència la posem:
+    if settings.CUSTOM_RETARD_PROVOCA_INCIDENCIA:
         
-        frase = settings.CUSTOM_RETART_FRASE
+        frase = settings.CUSTOM_RETARD_FRASE
         
         TipusIncidencia = get_model('incidencies','TipusIncidencia')
-        tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETART_TIPUS_INCIDENCIA )
+        tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
     
         Incidencia = get_model('incidencies','Incidencia')
         
@@ -124,7 +124,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                 except:
                     pass
         
-        #treiem incidència retart si arriba a l'hora
+        #treiem incidència retard si arriba a l'hora
         else:
             try:
                 Incidencia.objects.filter( 
