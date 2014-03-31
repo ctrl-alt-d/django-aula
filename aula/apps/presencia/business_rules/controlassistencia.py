@@ -92,40 +92,47 @@ def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
-    frase = settings.CUSTOM_RETART_FRASE
     
-    TipusIncidencia = get_model('incidencies','TipusIncidencia')
-    tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETART_TIPUS_INCIDENCIA )
-
-    Incidencia = get_model('incidencies','Incidencia')
-    if instance.estat and instance.estat.codi_estat == 'R':
+    #si els retarts provoquen incidència la posem:
+    if settings.CUSTOM_RETART_PROVOCA_INCIDENCIA:
         
-        ja_hi_es = Incidencia.objects.filter( 
-                                                          alumne = instance.alumne,
-                                                          control_assistencia = instance,
-                                                          descripcio_incidencia = frase,
-                                                          tipus= tipus ,).exists()
-
-        if not ja_hi_es:
+        frase = settings.CUSTOM_RETART_FRASE
+        
+        TipusIncidencia = get_model('incidencies','TipusIncidencia')
+        tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETART_TIPUS_INCIDENCIA )
+    
+        Incidencia = get_model('incidencies','Incidencia')
+        
+        #posem incidència si arriba tart
+        if instance.estat and instance.estat.codi_estat == 'R':
+            
+            ja_hi_es = Incidencia.objects.filter( 
+                                                              alumne = instance.alumne,
+                                                              control_assistencia = instance,
+                                                              descripcio_incidencia = frase,
+                                                              tipus= tipus ,).exists()
+    
+            if not ja_hi_es:
+                try:
+                    i = Incidencia.objects.create(    
+                                              professional = User2Professional( instance.professor ),
+                                              alumne = instance.alumne,
+                                              control_assistencia = instance,
+                                              descripcio_incidencia = frase,
+                                              tipus = tipus ,)
+                    incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
+                except:
+                    pass
+        
+        #treiem incidència retart si arriba a l'hora
+        else:
             try:
-                i = Incidencia.objects.create(    
-                                          professional = User2Professional( instance.professor ),
-                                          alumne = instance.alumne,
-                                          control_assistencia = instance,
-                                          descripcio_incidencia = frase,
-                                          tipus = tipus ,)
-                incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
+                Incidencia.objects.filter( 
+                                                              alumne = instance.alumne,
+                                                              control_assistencia = instance,
+                                                              descripcio_incidencia = frase,
+                                                              tipus = tipus,).delete()
             except:
                 pass
-            
-    else:
-        try:
-            Incidencia.objects.filter( 
-                                                          alumne = instance.alumne,
-                                                          control_assistencia = instance,
-                                                          descripcio_incidencia = frase,
-                                                          tipus = tipus,).delete()
-        except:
-            pass
             
  
