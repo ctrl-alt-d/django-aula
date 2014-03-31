@@ -21,6 +21,7 @@ class AbstractTipusSancio(models.Model):
     carta_slug = models.SlugField(max_length=10, help_text=u"Sufix del nom del fitxer amb la plantilla de la carta")
     justificar = models.BooleanField(help_text=u"[Funcionalitat encara no implementada] Justificar assistència durant la sanció")
     class Meta:
+        abstract = True
         verbose_name = u'Tipus de sancions'
         verbose_name_plural = u'Tipus de sancions'
     def __unicode__(self):
