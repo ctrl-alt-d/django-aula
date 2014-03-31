@@ -7,7 +7,7 @@ from aula.apps.incidencies.forms import posaIncidenciaAulaForm, posaExpulsioForm
 from django import forms
 from aula.utils.forms import ckbxForm
 from django.conf import settings
-from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar
+from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar, Table2_AlertesAcumulacioExpulsions
 from django_tables2   import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
@@ -22,7 +22,7 @@ from django.template import RequestContext, loader
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne
 from aula.apps.incidencies.models import Incidencia, Sancio
-from aula.apps.incidencies.abstract_models import TipusSancio
+from aula.apps.incidencies.abstract_models import TipusSancio, TipusIncidencia
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
     Accio
 from aula.apps.incidencies.models import Expulsio
@@ -777,172 +777,59 @@ def alertesAcumulacioExpulsions( request ):
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
 
-
-    sql = u'''select 
-                   a.id_alumne, 
-                   count( distinct e.id_expulsio ) as nExpulsions,
-                   count( distinct ia.id_incidencia ) as nIncidenciesAula,  
-                   count( distinct ifa.id_incidencia ) as nIncidenciesForaAula
-                from 
-                   alumne a 
-                         left outer join 
-                   expulsio e on 
-                      e.id_alumne = a.id_alumne and
-                      e.es_vigent = 1 and
-                      e.estat not in ('ES')
-                         left outer join
-                   incidencia ia on 
-                      ia.id_control_assistencia is not null and
-                      ia.es_informativa = 0 and
-                      ia.es_vigent = 1 and
-                      ia.id_alumne = a.id_alumne 
-                         left outer join
-                   incidencia ifa on 
-                      ifa.id_control_assistencia is null and
-                      ifa.es_informativa = 0 and
-                      ifa.es_vigent = 1 and
-                      ifa.id_alumne = a.id_alumne
-                group by 
-                   id_alumne
-                having
-                   count( distinct e.id_expulsio ) > 0 or
-                   count( distinct ifa.id_incidencia ) > 0  or
-                   count( distinct ia.id_incidencia ) > 0  
-                order by
-                   count( distinct e.id_expulsio ) * 3 + count( distinct ifa.id_incidencia ) desc,
-                   count( distinct ia.id_incidencia ) desc   
-                '''
-
-    report = []
-
-    taula = tools.classebuida()
-    
-    taula.titol = tools.classebuida()
-    taula.titol.contingut = ""
-    
-    capcelera_nom = tools.classebuida()
-    capcelera_nom.amplade = 250
-    capcelera_nom.contingut = u'Ranking expulsions i incidències'
-
-    capcelera_nIncidencies = tools.classebuida()
-    capcelera_nIncidencies.amplade = 120
-    capcelera_nIncidencies.contingut = u'Exp-Inc.fa-Inc'
-
-    capcelera_clic = tools.classebuida()
-    capcelera_clic.amplade = 100
-    capcelera_clic.contingut = u'Sancionar.'
-
-
-    taula.capceleres = [capcelera_nom, capcelera_nIncidencies, capcelera_clic]
-
-    taula.fileres = []
-    
+    # Trobo els alumnes que tinguin alguna expulsió o incidència.
     alumnesAmbExpulsions = ( 
-                            Expulsio
+                            Alumne
                            .objects
-                           .filter( es_vigent = True )
-                           .exclude( estat = 'ES' )
-                           .order_by('alumne__id')
-                           .values_list( 'alumne__id', flat = True )
+                           .filter( expulsio__es_vigent = True )
+                           .exclude( expulsio__estat = 'ES' )
                           )
-    
-    alumnesAmbIncidenciesAula = ( 
-                            Incidencia
+
+    alumnesAmbIncidencies = ( 
+                            Alumne
                            .objects
-#tipusIncidencia
-                           .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = False )
-                           .order_by( 'alumne__id' )
-                           .values_list( 'alumne__id', flat = True )
+                           .filter( incidencia__es_vigent = True )
+                           .filter( incidencia__tipus__es_informativa = False )
                           )
-    
-    
-    alumnesAmbIncidenciesForaAula = ( 
-                            Incidencia
-                           .objects
-#tipusIncidencia
-                           .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = True )
-                           .order_by( 'alumne__id' )
-                           .values_list( 'alumne__id', flat = True )
-                          )
-    
-    alumnesAmbExpulsions_dict = {}
-    alumnesAmbIncidenciesAula_dict = {}
-    alumnesAmbIncidenciesForaAula_dict = {}
-    alumnes_ids = set()
-    for x, g in groupby(alumnesAmbExpulsions, lambda x: x): 
-        alumnes_ids.add( x ) 
-        alumnesAmbExpulsions_dict[x] = len( list(g) )
-        
-        
-    for x, g in groupby(alumnesAmbIncidenciesAula, lambda x: x): 
-        alumnes_ids.add( x ) 
-        alumnesAmbIncidenciesAula_dict[x] = len( list(g) )
-        
-        
-    for x, g in groupby(alumnesAmbIncidenciesForaAula, lambda x: x): 
-        alumnes_ids.add( x )
-        alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
-        
-    alumnes = []
-    for alumne in  Alumne.objects.filter( id__in = alumnes_ids ):
-        alumne.nExpulsions = alumnesAmbExpulsions_dict.get(alumne.id, 0 )
-        alumne.nIncidenciesAula = alumnesAmbIncidenciesAula_dict.get(alumne.id, 0 )
-        alumne.nIncidenciesForaAula = alumnesAmbIncidenciesForaAula_dict.get(alumne.id, 0 )
-        alumnes.append(alumne)
-        
-    #for alumne in  Alumne.objects.raw( sql ): TODO
-    for alumne in  sorted( alumnes, key = lambda a: a.nExpulsions * 3 + a.nIncidenciesAula + a.nIncidenciesForaAula, reverse=True ):
-                
-        filera = []
-        
-        #-nom--------------------------------------------
-        camp = tools.classebuida()
-        camp.enllac = '/tutoria/detallTutoriaAlumne/{0}/all'.format(alumne.pk )
-        camp.contingut = unicode(alumne) + ' (' + unicode(alumne.grup) + ')'
-        filera.append(camp)
-        
-        #-incidències--------------------------------------------
-        camp_nIncidencies = tools.classebuida()
-        camp_nIncidencies.enllac = '/tutoria/detallTutoriaAlumne/{0}/incidencies'.format(alumne.pk )
-#        incidenciesAula = alumne.incidencia_set.filter( 
-#                                es_informativa = False,
-#                                es_vigent = True,
-#                                control_assistencia__isnull = False 
-#                                ).count()
-#        incidenciesForaAula = alumne.incidencia_set.filter( 
-#                                es_informativa = False,
-#                                es_vigent = True,
-#                                control_assistencia__isnull = True 
-#                                ).count()
-#        expulsions = alumne.expulsio_set.filter(
-#                                es_vigent = True 
-#                                ).exclude(estat = 'ES').count()
-        
-        camp_nIncidencies.contingut = u'{0} - {1} - {2}'.format(  
-                                                    alumne.nExpulsions, 
-                                                    alumne.nIncidenciesForaAula,
-                                                    alumne.nIncidenciesAula)
-        filera.append(camp_nIncidencies)
+    alumnesPerMostrar = set()
+    alumnesPerMostrar.update(alumnesAmbExpulsions)
+    alumnesPerMostrar.update(alumnesAmbIncidencies)
 
-
-        camp = tools.classebuida()
-        camp.enllac = r'javascript:confirmAction("/incidencies/sancio/{0}", "Segur que vols sancionar a {1}?")'.format(alumne.pk, alumne ) 
-        camp.contingut = u'sancionar ...'
-        filera.append(camp)
+    # Per a cada alumne a mostrar, adjunto la quantitat d'expulsions i sancions que té.
+    llistat = list()
+    for a in alumnesPerMostrar:
+        d = dict()
+        d['alumne'] = a
+        d['expulsions'] = len(a.expulsio_set
+                              .filter( es_vigent = True )
+                              .exclude( estat = 'ES' )
+                              )
+        d['incidenciesAula'] = len(a.incidencia_set
+                                   .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = False )
+                                   )
+        d['incidenciesForaAula'] = len(a.incidencia_set
+                                       .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = True )
+                                       )
         
-
-
-        #--
-        taula.fileres.append( filera )
+        for t in TipusIncidencia.objects.filter(es_informativa = False):
+            d[t.tipus] = len(a.incidencia_set
+                             .filter(tipus = t, es_vigent = True)
+                             )
+        d['incidencies'] = d['incidenciesAula'] + d['incidenciesForaAula']
+        llistat.append(d)
     
-    report.append(taula)
-        
-    return render_to_response(
-                'report.html',
-                    {'report': report,
-                     'head': 'Informació alumnes' ,
-                    },
-                    context_instance=RequestContext(request))            
+    # Envio les dades al table2
+    table = Table2_AlertesAcumulacioExpulsions( llistat ) 
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    
+    return render(
+                  request, 
+                  'table2.html', 
+                  {'table': table,
+                   }
+                 )   
+
 
 
 @login_required
