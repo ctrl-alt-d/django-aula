@@ -41,26 +41,26 @@ class Table2_ExpulsioTramitar(tables.Table):
 
 class Table2_AlertesAcumulacioExpulsions(tables.Table):
     alumne = tables.TemplateColumn(
-                                   template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.alumne.pk}}/all/">{{ record.alumne }}</a> ({{ record.alumne.grup  }})""", 
-                                   order_by=( 'alumne.cognoms', 'alumne.nom'),
+                                   template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.alumne.pk}}/all/">{{ record }}</a> ({{ record.grup  }})""", 
+                                   order_by=( 'cognoms', 'nom'),
                                    verbose_name=u"Alumne:"
                                    )
 
     expulsions = tables.TemplateColumn(
-                                       template_code = u"""{{record.expulsions}}""", 
-                                       order_by="-expulsions",
+                                       template_code = u"""{{record.nExpulsions}}""", 
+                                       order_by="-nExpulsionsSort",
                                        verbose_name=u"Expulsions"
                                        )
 
     incidenciesAula = tables.TemplateColumn(
-                                            template_code = u"""{{record.incidenciesAula}}""", 
-                                            order_by="-incidenciesAula",
+                                            template_code = u"""{{record.nIncidenciesAula}}""", 
+                                            order_by="-nIncidenciesAulaSort",
                                             verbose_name=u"Inc. a l'aula"
                                             )
 
     incidenciesForaAula = tables.TemplateColumn(
-                                                template_code = u"""{{record.incidenciesForaAula}}""",
-                                                order_by='-incidenciesForaAula',
+                                                template_code = u"""{{record.nIncidenciesForaAula}}""",
+                                                order_by='-nIncidenciesForaAulaSort',
                                                 verbose_name=u"Inc. fora de l'aula"
                                                 )
     tipusIncidencies = dict()
@@ -93,6 +93,6 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
         attrs = {"class": "paleblue table table-striped"}
         sequence = ("alumne", "expulsions", "incidenciesAula", "incidenciesForaAula", "sancionar") #, "tipusIncidenciaGreu", "tipusIncidenciaLleu")
         fields = sequence
-        order_by = ("expulsions", "incidencies")
+        order_by = ("expulsions", "incidenciesAula", "incidenciesForaAula" )
         template = 'bootable2.html'
 

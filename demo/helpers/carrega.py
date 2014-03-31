@@ -32,7 +32,7 @@ def fesCarrega( ):
     frangesMatins, frangesTardes = range(1,5), range(6,10) 
     userDemo, new = User.objects.get_or_create( username = 'demo', defaults={'is_staff':True, 'is_superuser':True, } )
     if new:
-        userDemo.set_password( '1234' )
+        userDemo.set_password( 'djAu' )
     
     nivellsCursosGrups = ( 
                             ( 'ESO', 

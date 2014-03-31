@@ -777,51 +777,109 @@ def alertesAcumulacioExpulsions( request ):
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
 
-    # Trobo els alumnes que tinguin alguna expulsió o incidència.
+#     # Trobo els alumnes que tinguin alguna expulsió o incidència.
+#     alumnesAmbExpulsions = ( 
+#                             Alumne
+#                            .objects
+#                            .filter( expulsio__es_vigent = True )
+#                            .exclude( expulsio__estat = 'ES' )
+#                           )
+# 
+#     alumnesAmbIncidencies = ( 
+#                             Alumne
+#                            .objects
+#                            .filter( incidencia__es_vigent = True )
+#                            .filter( incidencia__tipus__es_informativa = False )
+#                           )
+#     alumnesPerMostrar = set()
+#     alumnesPerMostrar.update(alumnesAmbExpulsions)
+#     alumnesPerMostrar.update(alumnesAmbIncidencies)
+# 
+#     # Per a cada alumne a mostrar, adjunto la quantitat d'expulsions i sancions que té.
+#     llistat = list()
+#     for a in alumnesPerMostrar:
+#         d = dict()
+#         d['alumne'] = a
+#         d['expulsions'] = len(a.expulsio_set
+#                               .filter( es_vigent = True )
+#                               .exclude( estat = 'ES' )
+#                               )
+#         d['incidenciesAula'] = len(a.incidencia_set
+#                                    .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = False )
+#                                    )
+#         d['incidenciesForaAula'] = len(a.incidencia_set
+#                                        .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = True )
+#                                        )
+#         
+#         for t in TipusIncidencia.objects.filter(es_informativa = False):
+#             d[t.tipus] = len(a.incidencia_set
+#                              .filter(tipus = t, es_vigent = True)
+#                              )
+#         d['incidencies'] = d['incidenciesAula'] + d['incidenciesForaAula']
+#         llistat.append(d)
+
+    
     alumnesAmbExpulsions = ( 
-                            Alumne
+                            Expulsio
                            .objects
-                           .filter( expulsio__es_vigent = True )
-                           .exclude( expulsio__estat = 'ES' )
+                           .filter( es_vigent = True )
+                           .exclude( estat = 'ES' )
+                           .order_by('alumne__id')
+                           .values_list( 'alumne__id', flat = True )
                           )
-
-    alumnesAmbIncidencies = ( 
-                            Alumne
+    
+    alumnesAmbIncidenciesAula = ( 
+                            Incidencia
                            .objects
-                           .filter( incidencia__es_vigent = True )
-                           .filter( incidencia__tipus__es_informativa = False )
+                           .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = False )
+                           .order_by( 'alumne__id' )
+                           .values_list( 'alumne__id', flat = True )
                           )
-    alumnesPerMostrar = set()
-    alumnesPerMostrar.update(alumnesAmbExpulsions)
-    alumnesPerMostrar.update(alumnesAmbIncidencies)
-
-    # Per a cada alumne a mostrar, adjunto la quantitat d'expulsions i sancions que té.
-    llistat = list()
-    for a in alumnesPerMostrar:
-        d = dict()
-        d['alumne'] = a
-        d['expulsions'] = len(a.expulsio_set
-                              .filter( es_vigent = True )
-                              .exclude( estat = 'ES' )
-                              )
-        d['incidenciesAula'] = len(a.incidencia_set
-                                   .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = False )
-                                   )
-        d['incidenciesForaAula'] = len(a.incidencia_set
-                                       .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = True )
-                                       )
+    
+    
+    alumnesAmbIncidenciesForaAula = ( 
+                            Incidencia
+                           .objects
+                           .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = True )
+                           .order_by( 'alumne__id' )
+                           .values_list( 'alumne__id', flat = True )
+                          )
+    
+    alumnesAmbExpulsions_dict = {}
+    alumnesAmbIncidenciesAula_dict = {}
+    alumnesAmbIncidenciesForaAula_dict = {}
+    alumnes_ids = set()
+    for x, g in groupby(alumnesAmbExpulsions, lambda x: x): 
+        alumnes_ids.add( x ) 
+        alumnesAmbExpulsions_dict[x] = len( list(g) )
         
-        for t in TipusIncidencia.objects.filter(es_informativa = False):
-            d[t.tipus] = len(a.incidencia_set
-                             .filter(tipus = t, es_vigent = True)
-                             )
-        d['incidencies'] = d['incidenciesAula'] + d['incidenciesForaAula']
-        llistat.append(d)
+        
+    for x, g in groupby(alumnesAmbIncidenciesAula, lambda x: x): 
+        alumnes_ids.add( x ) 
+        alumnesAmbIncidenciesAula_dict[x] = len( list(g) )
+        
+        
+    for x, g in groupby(alumnesAmbIncidenciesForaAula, lambda x: x): 
+        alumnes_ids.add( x )
+        alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
+        
+    alumnes = []
+    for alumne in  Alumne.objects.filter( id__in = alumnes_ids ):
+        alumne.nExpulsions = alumnesAmbExpulsions_dict.get(alumne.id, 0 )        
+        alumne.nIncidenciesAula = alumnesAmbIncidenciesAula_dict.get(alumne.id, 0 )
+        alumne.nIncidenciesForaAula = alumnesAmbIncidenciesForaAula_dict.get(alumne.id, 0 )
+        
+        alumne.nExpulsionsSort = alumne.nExpulsions * 10000 +  ( alumne.nIncidenciesAula + alumne.nIncidenciesForaAula )
+        alumne.nIncidenciesAulaSort = alumne.nIncidenciesAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesForaAula 
+        alumne.nIncidenciesForaAulaSort =  alumne.nIncidenciesForaAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesAula 
+        
+        alumnes.append(alumne)
+        
     
     # Envio les dades al table2
-    table = Table2_AlertesAcumulacioExpulsions( llistat ) 
+    table = Table2_AlertesAcumulacioExpulsions( alumnes ) 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 50}).configure(table)
     
     return render(
                   request, 
