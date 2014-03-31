@@ -4,7 +4,7 @@ from django import forms as forms
 
 from aula.apps.incidencies.models import FrassesIncidenciaAula, Expulsio
 #tipusIncidencia
-from aula.apps.incidencies.abstract_models import TipusIncidencia
+from aula.apps.incidencies.models import TipusIncidencia
 from aula.utils.widgets import DateTextImput
 
 class incidenciesRelacionadesForm(forms.Form):

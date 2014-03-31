@@ -1,5 +1,5 @@
 from aula.apps.incidencies.models import FrassesIncidenciaAula
-from aula.apps.incidencies.abstract_models import TipusIncidencia, TipusSancio
+from aula.apps.incidencies.models import TipusIncidencia, TipusSancio
 from django.contrib import admin
 
 #tipusIncidencia

@@ -6,6 +6,7 @@ from aula.apps.tutoria.models import CartaAbsentisme
 from django.db.models import get_model
 from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_de_posar
 from datetime import timedelta
+from django.conf import settings
 
 #-------------ControlAssistencia-------------------------------------------------------------      
 
@@ -91,16 +92,19 @@ def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
-    frase = u'Ha arribat tard a classe.'
+    frase = settings.CUSTOM_RETART_FRASE
+    
+    TipusIncidencia = get_model('incidencies','TipusIncidencia')
+    tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETART_TIPUS_INCIDENCIA )
 
+    Incidencia = get_model('incidencies','Incidencia')
     if instance.estat and instance.estat.codi_estat == 'R':
-        Incidencia = get_model('incidencies','Incidencia')
+        
         ja_hi_es = Incidencia.objects.filter( 
                                                           alumne = instance.alumne,
                                                           control_assistencia = instance,
                                                           descripcio_incidencia = frase,
-#tipusIncidencia
-                                                          tipus__es_informativa = False ,).exists()
+                                                          tipus= tipus ,).exists()
 
         if not ja_hi_es:
             try:
@@ -109,8 +113,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                           alumne = instance.alumne,
                                           control_assistencia = instance,
                                           descripcio_incidencia = frase,
-#tipusIncidencia
-                                          tipus__es_informativa = False ,)
+                                          tipus = tipus ,)
                 incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
             except:
                 pass
@@ -121,8 +124,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                           alumne = instance.alumne,
                                                           control_assistencia = instance,
                                                           descripcio_incidencia = frase,
-#tipusIncidencia
-                                                          tipus__es_informativa = False ,).delete()
+                                                          tipus = tipus,).delete()
         except:
             pass
             

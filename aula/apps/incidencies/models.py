@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.incidencies.abstract_models import AbstractFrassesIncidenciaAula,\
-    AbstractSancio, AbstractExpulsio, AbstractIncidencia
+    AbstractSancio, AbstractExpulsio, AbstractIncidencia, AbstractTipusIncidencia, AbstractTipusSancio
 from aula.apps.incidencies.business_rules.sancio import sancio_pre_delete,\
     sancio_post_save, sancio_pre_save,\
     sancio_clean
@@ -12,6 +12,10 @@ from aula.apps.incidencies.business_rules.expulsio import expulsio_pre_delete,\
 class FrassesIncidenciaAula(AbstractFrassesIncidenciaAula):
     pass
 
+class TipusSancio(AbstractTipusSancio):
+    def clean(self):
+        pass
+
 class Sancio(AbstractSancio):
     def clean(self):
         sancio_clean(self)
@@ -19,6 +23,10 @@ class Sancio(AbstractSancio):
 class Expulsio(AbstractExpulsio):
     def clean(self):
         expulsio_clean(self)
+
+class TipusIncidencia(AbstractTipusIncidencia):
+    def clean(self):
+        pass
 
 class Incidencia(AbstractIncidencia):
     def clean(self):

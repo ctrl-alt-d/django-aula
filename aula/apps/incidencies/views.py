@@ -22,7 +22,7 @@ from django.template import RequestContext, loader
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne
 from aula.apps.incidencies.models import Incidencia, Sancio
-from aula.apps.incidencies.abstract_models import TipusSancio
+from aula.apps.incidencies.models import TipusSancio
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
     Accio
 from aula.apps.incidencies.models import Expulsio

@@ -16,7 +16,7 @@ class AbstractFrassesIncidenciaAula(models.Model):
     def __unicode__(self):
         return self.frase
 
-class TipusSancio(models.Model):
+class AbstractTipusSancio(models.Model):
     tipus = models.CharField("Tipus", max_length=50, unique=True, help_text=u"Tipus de sanció")
     carta_slug = models.SlugField(max_length=10, help_text=u"Sufix del nom del fitxer amb la plantilla de la carta")
     justificar = models.BooleanField(help_text=u"[Funcionalitat encara no implementada] Justificar assistència durant la sanció")
@@ -127,7 +127,7 @@ class AbstractExpulsio(models.Model):
         return self.alumne.expulsio_set.exclude( estat = 'ES ').filter(es_vigent = True ).count()
 
 #tipusIncidencia
-class TipusIncidencia(models.Model):
+class AbstractTipusIncidencia(models.Model):
     tipus = models.CharField("Tipus", max_length=50, unique=True, help_text=u"Tipus d'incidència")
     es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si les incidències d'aquest tipus son només informatives i no implicaràn mesures disciplinàries. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
     class Meta:
