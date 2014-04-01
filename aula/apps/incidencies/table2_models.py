@@ -46,8 +46,6 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
                                    verbose_name=u"Alumne:"
                                    )
 
-#camp_nIncidencies.enllac = '/tutoria/detallTutoriaAlumne/{0}/incidencies'.format(alumne.pk )
-
     expulsions = tables.TemplateColumn(
                                        template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/incidencies">{{record.nExpulsions}}</a>""", 
                                        order_by="-nExpulsionsSort",
