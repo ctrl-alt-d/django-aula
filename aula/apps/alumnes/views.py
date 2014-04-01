@@ -383,7 +383,6 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                         control_assistencia__impartir__horari__grup = grup,
                                                         control_assistencia__impartir__horari__professor = professor, 
                                                         control_assistencia__impartir__horari__assignatura = assignatura,
-#tipusIncidencia
                                                         tipus__es_informativa = False 
                                                        ).count()
             nExpulsions = alumne.expulsio_set.filter( 

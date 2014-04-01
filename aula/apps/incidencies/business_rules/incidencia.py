@@ -89,7 +89,6 @@ def Incidencia_post_save(sender, instance, created, **kwargs):
 def incidencia_despres_de_posar(instance):
     Missatge = get_model( 'missatgeria','Missatge')
     #Lògica de negoci: 
-#tipusIncidencia
     if not instance.tipus.es_informativa:
         #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
         import datetime as t
@@ -117,7 +116,6 @@ def incidencia_despres_de_posar(instance):
         remitent = instance.professional
         text_missatge = u"""Ha posat una incidència {0}a {1} ({2}) el dia {3}. 
                             El text de la incidència és: {4}""".format(
-#tipusIncidencia
                                     'informativa ' if instance.tipus.es_informativa else '',
                                     instance.alumne,
                                     instance.alumne.grup,

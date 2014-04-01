@@ -103,7 +103,6 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
                     item.valor = n_retards
                     report.resum.append( item )
 
-#tipusIncidencia
                     q_informativa = Q( tipus__es_informativa = True )
                     q_desde = Q( dia_incidencia__gte = dataInici )
                     q_finsa = Q( dia_incidencia__lte = dataFi )

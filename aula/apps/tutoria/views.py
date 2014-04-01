@@ -501,7 +501,6 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True,
                     cella.f = [ c for c in controls if c.estat == estatFalta and c.impartir.horari.hora == hora]
                     cella.r = [ c for c in controls if c.estat == estatRetras and c.impartir.horari.hora == hora] 
                     cella.j = [ c for c in controls if c.estat == estatJustificada and c.impartir.horari.hora == hora ]
-#tipusIncidencia
                     cella.I = [ i for i in incidencies if not i.tipus.es_informativa and i.franja_incidencia == hora ]
                     cella.i = [ i for i in incidencies if i.tipus.es_informativa and i.franja_incidencia == hora]
                     cella.E = [e for e in expulsions if not e.es_expulsio_per_acumulacio_incidencies and e.franja_expulsio == hora ] 
@@ -1282,7 +1281,6 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         
         taula.fileres = []
     
-#tipusIncidencia
         for incidencia in alumne.incidencia_set.filter( tipus__es_informativa = False ).order_by( '-dia_incidencia', '-franja_incidencia' ):
             filera = []
             #----------------------------------------------
@@ -1294,7 +1292,6 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-#tipusIncidencia
             camp.contingut = u'Sr(a): {0} - {1} - {2}'.format(incidencia.professional,
                                                         incidencia.tipus,
                                                         incidencia.descripcio_incidencia )        
@@ -1330,7 +1327,6 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         
         taula.fileres = []
 
-#tipusIncidencia    
         for incidencia in alumne.incidencia_set.filter( tipus__es_informativa = True ).order_by( '-dia_incidencia', '-franja_incidencia' ):
             filera = []
             #----------------------------------------------
@@ -1341,7 +1337,6 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-#tipusIncidencia
             camp.contingut = u'Sr(a): {0} - {1} - {2}'.format(incidencia.professional,
                                                         incidencia.tipus,
                                                         incidencia.descripcio_incidencia )       

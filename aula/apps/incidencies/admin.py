@@ -2,9 +2,6 @@ from aula.apps.incidencies.models import FrassesIncidenciaAula
 from aula.apps.incidencies.models import TipusIncidencia, TipusSancio
 from django.contrib import admin
 
-#tipusIncidencia
-
-#admin.site.register(FrassesIncidenciaAula)
 
 class FraseInline(admin.TabularInline):
     model = FrassesIncidenciaAula

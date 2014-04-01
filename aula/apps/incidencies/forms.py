@@ -3,7 +3,6 @@
 from django import forms as forms
 
 from aula.apps.incidencies.models import FrassesIncidenciaAula, Expulsio
-#tipusIncidencia
 from aula.apps.incidencies.models import TipusIncidencia
 from aula.utils.widgets import DateTextImput
 
@@ -41,7 +40,6 @@ class posaIncidenciaAulaForm(forms.Form):
                                               de mantenir pulsada la tecla CTRL al fer
                                               clic amb el ratolí."""  )
 
-#tipusIncidencia
     incidencies = TipusIncidencia.objects.all()
     tipus = forms.ModelChoiceField( queryset = incidencies,
                                     initial = incidencies[0] if incidencies else None,
@@ -63,12 +61,6 @@ class posaIncidenciaAulaForm(forms.Form):
                                         Atenció: Pots escriure i triar frase a la vegada: es crearan dues incidències.
                                         """  )
 
-#tipusSancio 
-#    es_informativa = forms.BooleanField( required = False,  
-#                                         help_text=u"""Indica si aquesta incidència és purament informativa. 
-#                                                     Marca aquesta casella amb incidències del tipus: "Avui s'ha esforçat molt",
-#                                                     "No ha assistit a l'examen de trimestre", etc.
-#                                                     """)
 
     def __init__(self, *args, **kwargs):
         self.queryset = kwargs.pop('queryset', None)

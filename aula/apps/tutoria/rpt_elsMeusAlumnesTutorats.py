@@ -122,7 +122,6 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
 
 
             #-disciplina--------------------------------------------
-#tipusIncidencia
             nIncidencies = alumne.incidencia_set.filter( tipus__es_informativa = False).count()
             nIncidenciesInform = alumne.incidencia_set.filter( tipus__es_informativa = True).count()
             nExpulsions = alumne.expulsio_set.exclude( estat = 'ES', es_expulsio_per_acumulacio_incidencies = True  ).count()                

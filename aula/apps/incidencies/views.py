@@ -90,8 +90,6 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
             alumnes_amb_incidencia = form.cleaned_data['alumnes']
             frases_de_la_bdd = form.cleaned_data['frases']
             frase_manual = form.cleaned_data['frase']
-#tipusIncidencia
-#            es_informativa = form.cleaned_data['es_informativa']
             tipus = form.cleaned_data['tipus']
             totes_les_frases = [ frase.frase for frase in frases_de_la_bdd ] + ( [ frase_manual ] if frase_manual else []    )
             
@@ -105,7 +103,6 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
                                                 control_assistencia = control_assistencia, 
                                                 alumne = alumne_amb_incidencia, 
                                                 descripcio_incidencia = frase,
-#tipusIncidencia
                                                 tipus = tipus )
 #                                                es_informativa = es_informativa )                        
                         s_ha_pogut_crear_la_incidencia = True
@@ -136,7 +133,6 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
         form=posaIncidenciaAulaForm( queryset=alumnes, etiqueta= u'Posar incidència a'  )
 
     #Recull incidències ( i permet afegir-ne més) 
-#tipusIncidencia
     incidenciesAgrupades = {}              
     for control_assistencia in impartir.controlassistencia_set.all():
         for incidencia in control_assistencia.incidencia_set.all():
@@ -265,7 +261,6 @@ def posaIncidencia( request ):
     
     missatge = ""
 
-#tipusIncidencia    
     formIncidenciaF = modelform_factory(Incidencia, fields=['dia_incidencia',
                                                             'franja_incidencia',
                                                             'tipus',
@@ -643,7 +638,6 @@ def posaExpulsioPerAcumulacio( request, pk ):
     alumne = incidencia.alumne
     incidencies = alumne.incidencia_set.filter(  
                                                es_vigent = True,
-#tipusIncidencia
                                                tipus__es_informativa = False,
                                                dia_incidencia__gte = fa_30_dies,
                                                professional = professional
@@ -685,7 +679,6 @@ def posaExpulsioPerAcumulacio( request, pk ):
                 )   
         
             expulsio_despres_de_posar( expulsio )
-#tipusIncidencies
             incidencies.update( es_vigent = False, provoca_expulsio = expulsio )
         except ValidationError, e:
             resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
@@ -732,7 +725,6 @@ def llistaIncidenciesProfessional( request ):
         incidenciesAlumne = incidencia.alumne.incidencia_set.filter(
                                                         professional = professional, 
                                                         es_vigent = True,
-#tipusIncidencia
                                                         tipus__es_informativa = False,
                                                         dia_incidencia__gte = fa_30_dies
                                                                                    )
@@ -923,7 +915,6 @@ def sancio( request, pk ):
 
     #incidències
     incidencies = alumne.incidencia_set.filter( 
-#tipusIncidencia
                         tipus__es_informativa = False,
                         es_vigent = True
                         )

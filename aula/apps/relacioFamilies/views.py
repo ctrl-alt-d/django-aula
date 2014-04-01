@@ -437,7 +437,6 @@ def elMeuInforme( request, pk = None ):
 
         
     #----observacions --------------------------------------------------------------------
-#tipusIncidencia
         observacions = alumne.incidencia_set.filter( tipus__es_informativa = True)
         observacionsNoves = observacions.filter(  relacio_familia_revisada__isnull = True)
         
@@ -489,7 +488,6 @@ def elMeuInforme( request, pk = None ):
             observacionsNoves = observacions.update(  relacio_familia_notificada = ara, relacio_familia_revisada = ara)
                     
     #----incidències --------------------------------------------------------------------
-#tipusIncidencia
         incidencies = alumne.incidencia_set.filter( tipus__es_informativa = False )
         incidenciesNoves = incidencies.filter( relacio_familia_revisada__isnull = True )
     
