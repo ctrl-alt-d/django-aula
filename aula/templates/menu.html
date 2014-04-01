@@ -33,23 +33,19 @@
               <ul class="dropdown-menu">
 	              {%if not menu.esalumne %}<li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>{% endif %}
 	              <li><a href="{% url 'usuari__dades__canvi_passwd' %}">Canvi de paraula de pas (password)</a></li>
-                <li class="divider"></li>
                 {% if sessioImpersonada %}
+                	<li class="divider"></li>
              		  <li><a tabindex="-1" href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
              		  <li><a tabindex="-1" href="/usuaris/resetImpersonacio/">Sortir mode impersonalitzat</a></li>
-	                <li class="divider"></li>
-       		        <li><a tabindex="-1" href="/logout/">Sortir del programa</a></li>
        		      {% else %}
 		              {% ifusergroup direcció %}
-         		        <li><a href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
-	                  <li class="divider"></li>
-		                <li><a href="/logout/">Sortir del programa</a></li>
-		              {% else %}
-		               <li><a href="/logout/">Sortir</a></li>
+						<li class="divider"></li>
+         		        	<li><a href="/usuaris/impersonacio/">Impersonació / Level4</a></li>
 		              {% endifusergroup %}
-	              {% endif %}    
+	              {% endif %}   
               </ul>
             </li>
+            <li><a href="/logout/"><span class="glyphicon glyphicon-log-out"></span></a></li>
           {% else %}
 	        <li><a tabindex="-1" href="/">Login</a></li>	      
           {% endif %}
