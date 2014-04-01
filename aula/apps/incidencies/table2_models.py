@@ -41,7 +41,7 @@ class Table2_ExpulsioTramitar(tables.Table):
 
 class Table2_AlertesAcumulacioExpulsions(tables.Table):
     alumne = tables.TemplateColumn(
-                                   template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.alumne.pk}}/all/">{{ record }}</a> ({{ record.grup  }})""", 
+                                   template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/all/">{{ record }}</a> ({{ record.grup  }})""", 
                                    order_by=( 'cognoms', 'nom'),
                                    verbose_name=u"Alumne:"
                                    )
