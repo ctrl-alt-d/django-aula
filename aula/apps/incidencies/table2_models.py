@@ -46,20 +46,22 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
                                    verbose_name=u"Alumne:"
                                    )
 
+#camp_nIncidencies.enllac = '/tutoria/detallTutoriaAlumne/{0}/incidencies'.format(alumne.pk )
+
     expulsions = tables.TemplateColumn(
-                                       template_code = u"""{{record.nExpulsions}}""", 
+                                       template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/incidencies">{{record.nExpulsions}}</a>""", 
                                        order_by="-nExpulsionsSort",
                                        verbose_name=u"Expulsions"
                                        )
 
     incidenciesAula = tables.TemplateColumn(
-                                            template_code = u"""{{record.nIncidenciesAula}}""", 
+                                            template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/incidencies">{{record.nIncidenciesAula}}</a>""", 
                                             order_by="-nIncidenciesAulaSort",
                                             verbose_name=u"Inc. a l'aula"
                                             )
 
     incidenciesForaAula = tables.TemplateColumn(
-                                                template_code = u"""{{record.nIncidenciesForaAula}}""",
+                                                template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/incidencies">{{record.nIncidenciesForaAula}}</a>""",
                                                 order_by='-nIncidenciesForaAulaSort',
                                                 verbose_name=u"Inc. fora de l'aula"
                                                 )
@@ -76,7 +78,7 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
 #    tipusIncidenciaLleu = tipusIncidencies["Lleu"]
 
     sancionar = tables.TemplateColumn(
-                        template_code = u"""<a href=\'javascript:confirmAction(\"/incidencies/sancio/{{record.alumne.pk}}\", \"Segur que vols sancionar a {{record.alumne}}?\")\'>sancionar...</a>""", 
+                        template_code = u"""<a href=\'javascript:confirmAction(\"/incidencies/sancio/{{record.pk}}\", \"Segur que vols sancionar a {{record}}?\")\'>sancionar...</a>""", 
                         verbose_name = " ",
                         orderable = False,
                         )
