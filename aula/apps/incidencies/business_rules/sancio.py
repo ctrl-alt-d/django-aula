@@ -58,7 +58,7 @@ def sancio_pre_save(sender, instance, **kwargs):
 def sancio_post_save(sender, instance, created, **kwargs):
     # missatge pels professors que tenen aquest alumne a l'aula (exepte el professor que sanciona):
     if instance.tmp__calNotificar:
-        txt_msg = u"L'alumne {0} ha estat expulsat del centre ( del {1} al {2} ).".format( instance.alumne, instance.data_inici.strftime( '%d/%m/%Y' ), instance.data_fi.strftime( '%d/%m/%Y' ) )
+        txt_msg = u"L'alumne {0} ha estat sancionat ( del {1} al {2} ).".format( instance.alumne, instance.data_inici.strftime( '%d/%m/%Y' ), instance.data_fi.strftime( '%d/%m/%Y' ) )
         Missatge = get_model( 'missatgeria','Missatge')
         msg = Missatge( remitent = instance.professor.getUser(), text_missatge =txt_msg )
         Professor = get_model( 'usuaris','Professor' )           
