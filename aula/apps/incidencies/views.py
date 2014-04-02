@@ -768,48 +768,6 @@ def llistaIncidenciesProfessional( request ):
 def alertesAcumulacioExpulsions( request ):
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
-
-#     # Trobo els alumnes que tinguin alguna expulsió o incidència.
-#     alumnesAmbExpulsions = ( 
-#                             Alumne
-#                            .objects
-#                            .filter( expulsio__es_vigent = True )
-#                            .exclude( expulsio__estat = 'ES' )
-#                           )
-# 
-#     alumnesAmbIncidencies = ( 
-#                             Alumne
-#                            .objects
-#                            .filter( incidencia__es_vigent = True )
-#                            .filter( incidencia__tipus__es_informativa = False )
-#                           )
-#     alumnesPerMostrar = set()
-#     alumnesPerMostrar.update(alumnesAmbExpulsions)
-#     alumnesPerMostrar.update(alumnesAmbIncidencies)
-# 
-#     # Per a cada alumne a mostrar, adjunto la quantitat d'expulsions i sancions que té.
-#     llistat = list()
-#     for a in alumnesPerMostrar:
-#         d = dict()
-#         d['alumne'] = a
-#         d['expulsions'] = len(a.expulsio_set
-#                               .filter( es_vigent = True )
-#                               .exclude( estat = 'ES' )
-#                               )
-#         d['incidenciesAula'] = len(a.incidencia_set
-#                                    .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = False )
-#                                    )
-#         d['incidenciesForaAula'] = len(a.incidencia_set
-#                                        .filter( es_vigent = True, tipus__es_informativa = False, control_assistencia__isnull = True )
-#                                        )
-#         
-#         for t in TipusIncidencia.objects.filter(es_informativa = False):
-#             d[t.tipus] = len(a.incidencia_set
-#                              .filter(tipus = t, es_vigent = True)
-#                              )
-#         d['incidencies'] = d['incidenciesAula'] + d['incidenciesForaAula']
-#         llistat.append(d)
-
     
     alumnesAmbExpulsions = ( 
                             Expulsio
@@ -854,6 +812,8 @@ def alertesAcumulacioExpulsions( request ):
     for x, g in groupby(alumnesAmbIncidenciesForaAula, lambda x: x): 
         alumnes_ids.add( x )
         alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
+
+    tipus_incidencia = TipusIncidencia.objects.filter( es_informativa = False )
         
     alumnes = []
     for alumne in  Alumne.objects.filter( id__in = alumnes_ids ):
@@ -863,13 +823,30 @@ def alertesAcumulacioExpulsions( request ):
         
         alumne.nExpulsionsSort = alumne.nExpulsions * 10000 +  ( alumne.nIncidenciesAula + alumne.nIncidenciesForaAula )
         alumne.nIncidenciesAulaSort = alumne.nIncidenciesAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesForaAula 
-        alumne.nIncidenciesForaAulaSort =  alumne.nIncidenciesForaAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesAula 
+        alumne.nIncidenciesForaAulaSort =  alumne.nIncidenciesForaAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesAula
+        
+        if settings.CUSTOM_RANKING_BY_TIPUS:
+            for t in tipus_incidencia:
+                setattr(alumne, str( t.id ), 18 )
         
         alumnes.append(alumne)
         
     
     # Envio les dades al table2
-    table = Table2_AlertesAcumulacioExpulsions( alumnes ) 
+    if settings.CUSTOM_RANKING_BY_TIPUS:
+        import django_tables2 as tables
+        attrs = dict(( str( t.id ), tables.Column( verbose_name=t.tipus ) ) for t in tipus_incidencia )
+        attrs['Meta'] = type('Meta', (), {'attrs':{"class": "paleblue table table-striped", },
+                                          'sequence':["alumne", "expulsions", "incidenciesAula", "incidenciesForaAula",] + 
+                                                     [ str( t.id ) for t in tipus_incidencia ] + 
+                                                     [ "sancionar"]
+                                          } ) 
+        
+        table2 = type('DynamicTable', (Table2_AlertesAcumulacioExpulsions,), attrs) 
+    else:
+        table2 = Table2_AlertesAcumulacioExpulsions
+        
+    table = table2( alumnes )
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 50}).configure(table)
     

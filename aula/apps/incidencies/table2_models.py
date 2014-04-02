@@ -63,17 +63,6 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
                                                 order_by='-nIncidenciesForaAulaSort',
                                                 verbose_name=u"Inc. fora de l'aula"
                                                 )
-    tipusIncidencies = dict()
-    for t in TipusIncidencia.objects.filter(es_informativa = False):
-        tipusIncidencies[t.tipus]=(tables.TemplateColumn(
-                                                         template_code = u"""{{record."""+t.tipus+"""}}""",
-                                                         order_by=t.tipus,
-                                                         verbose_name=u"Inc. "+t.tipus,
-                                                         )
-                                   )
-    # No trobo la forma d'afegir dinàmicament els diferents tipus d'incidències
-#    tipusIncidenciaGreu = tipusIncidencies["Greu"]
-#    tipusIncidenciaLleu = tipusIncidencies["Lleu"]
 
     sancionar = tables.TemplateColumn(
                         template_code = u"""<a href=\'javascript:confirmAction(\"/incidencies/sancio/{{record.pk}}\", \"Segur que vols sancionar a {{record}}?\")\'>sancionar...</a>""", 
