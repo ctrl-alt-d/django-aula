@@ -827,7 +827,7 @@ def alertesAcumulacioExpulsions( request ):
         
         if settings.CUSTOM_RANKING_BY_TIPUS:
             for t in tipus_incidencia:
-                setattr(alumne, str( t.id ), 18 )
+                setattr(alumne, str( t.id ), "*** aquí el valor ***" )
         
         alumnes.append(alumne)
         
@@ -839,7 +839,9 @@ def alertesAcumulacioExpulsions( request ):
         attrs['Meta'] = type('Meta', (), {'attrs':{"class": "paleblue table table-striped", },
                                           'sequence':["alumne", "expulsions", "incidenciesAula", "incidenciesForaAula",] + 
                                                      [ str( t.id ) for t in tipus_incidencia ] + 
-                                                     [ "sancionar"]
+                                                     [ "sancionar"],
+                                          'order_by':("expulsions", "incidenciesAula", "incidenciesForaAula" ),
+                                          'template':'bootable2.html',
                                           } ) 
         
         table2 = type('DynamicTable', (Table2_AlertesAcumulacioExpulsions,), attrs) 
