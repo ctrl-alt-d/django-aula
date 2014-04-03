@@ -80,7 +80,7 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
     
     class Meta:
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("alumne", "expulsions", "incidenciesAula", "incidenciesForaAula", "sancionar") #, "tipusIncidenciaGreu", "tipusIncidenciaLleu")
+        sequence = ("alumne", "expulsions", "incidenciesAula", "incidenciesForaAula", "sancionar")
         fields = sequence
         order_by = ("expulsions", "incidenciesAula", "incidenciesForaAula" )
         template = 'bootable2.html'

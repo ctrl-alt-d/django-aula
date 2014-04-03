@@ -794,10 +794,23 @@ def alertesAcumulacioExpulsions( request ):
                            .order_by( 'alumne__id' )
                            .values_list( 'alumne__id', flat = True )
                           )
+
+    tipus_incidencia = TipusIncidencia.objects.filter( es_informativa = False )
+    alumnesAmbIncidenciesPerTipus = {}
+    if settings.CUSTOM_RANKING_BY_TIPUS:
+        for t in tipus_incidencia:
+                alumnesAmbIncidenciesPerTipus[t.id] = ( 
+                            Incidencia
+                           .objects
+                           .filter( es_vigent = True, tipus__es_informativa = False, tipus__tipus = t )
+                           .order_by( 'alumne__id' )
+                           .values_list( 'alumne__id', flat = True )
+                          )
     
     alumnesAmbExpulsions_dict = {}
     alumnesAmbIncidenciesAula_dict = {}
     alumnesAmbIncidenciesForaAula_dict = {}
+    alumnesAmbIncidenciesPerTipus_dict = {}
     alumnes_ids = set()
     for x, g in groupby(alumnesAmbExpulsions, lambda x: x): 
         alumnes_ids.add( x ) 
@@ -812,8 +825,13 @@ def alertesAcumulacioExpulsions( request ):
     for x, g in groupby(alumnesAmbIncidenciesForaAula, lambda x: x): 
         alumnes_ids.add( x )
         alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
-
-    tipus_incidencia = TipusIncidencia.objects.filter( es_informativa = False )
+        
+    if settings.CUSTOM_RANKING_BY_TIPUS:
+        for t in tipus_incidencia:
+            alumnesAmbIncidenciesPerTipus_dict[t.id] = {}
+            for x, g in groupby(alumnesAmbIncidenciesPerTipus[t.id], lambda x: x):
+                alumnes_ids.add( x )
+                alumnesAmbIncidenciesPerTipus_dict[t.id][x] = len( list(g) )
         
     alumnes = []
     for alumne in  Alumne.objects.filter( id__in = alumnes_ids ):
@@ -826,8 +844,11 @@ def alertesAcumulacioExpulsions( request ):
         alumne.nIncidenciesForaAulaSort =  alumne.nIncidenciesForaAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesAula
         
         if settings.CUSTOM_RANKING_BY_TIPUS:
+            alumne.nIncidenciesPerTipus = {}
+            alumne.nIncidenciesPerTipusSort = {}
             for t in tipus_incidencia:
-                setattr(alumne, str( t.id ), "*** aquí el valor ***" )
+                alumne.nIncidenciesPerTipus[t.id] = alumnesAmbIncidenciesPerTipus_dict[t.id].get(alumne.id, 0 )
+                setattr(alumne, str( t.id ), alumne.nIncidenciesPerTipus[t.id] )
         
         alumnes.append(alumne)
         
@@ -835,7 +856,10 @@ def alertesAcumulacioExpulsions( request ):
     # Envio les dades al table2
     if settings.CUSTOM_RANKING_BY_TIPUS:
         import django_tables2 as tables
-        attrs = dict(( str( t.id ), tables.Column( verbose_name=t.tipus ) ) for t in tipus_incidencia )
+        attrs = dict(( str( t.id ), tables.Column(
+                                                  verbose_name=t.tipus, 
+                                                  order_by=str("-"+str(t.id)) 
+                                                 ) ) for t in tipus_incidencia )
         attrs['Meta'] = type('Meta', (), {'attrs':{"class": "paleblue table table-striped", },
                                           'sequence':["alumne", "expulsions", "incidenciesAula", "incidenciesForaAula",] + 
                                                      [ str( t.id ) for t in tipus_incidencia ] + 
