@@ -1182,10 +1182,16 @@ def cartaSancio( request, pk ):
     #capcelera
     report = tools.classebuida()
     report.nom_alumne = unicode(sancio.alumne)
+    #deprecated: cal evitar dies_expulsio i utilitzar dia_inicial i dia_final
     report.dies_expulsio = u" del {0} al {1}".format( 
                                         sancio.data_inici.strftime( '%d/%m/%Y' ), 
                                         sancio.data_fi.strftime( '%d/%m/%Y' ), 
                                         )
+    report.dia_inicial = sancio.data_inici.strftime( '%d/%m/%Y' )
+    report.dia_final = sancio.data_fi.strftime( '%d/%m/%Y' )
+    report.hora_inicial = sancio.franja_inici.hora_inici.strftime('%H:%M')
+    report.hora_final = sancio.franja_fi.hora_fi.strftime('%H:%M')    
+    report.quantitat_dies = abs((sancio.data_fi - sancio.data_inici).days) + 1
     report.motiu = sancio.motiu
     report.signat_per = sancio.signat
     report.data_signatura = sancio.data_carta.strftime( '%d/%m/%Y' )
