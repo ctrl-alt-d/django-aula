@@ -51,7 +51,7 @@ def totesLesCartesRpt( ):
         camp.enllac = None
         
         from aula.apps.alumnes.named_instances import curs_any_fi
-        te_mes_de_16 = u"- Més de 16 anys (durant el curs)" if (curs_any_fi() - instance.alumne.data_neixement.year) > 16 else ""
+        te_mes_de_16 = u"- Més de 16 anys (durant el curs)" if (curs_any_fi() - carta.alumne.data_neixement.year) > 16 else ""
         camp.contingut = u"{0} {1} {2}".format( carta.alumne, carta.alumne.grup, carta.alumne, te_mes_de_16 )
         filera.append(camp)
 
