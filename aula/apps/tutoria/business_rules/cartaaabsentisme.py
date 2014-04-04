@@ -13,8 +13,9 @@ def cartaabsentisme_clean( instance ):
     calcular tipus:
         tipus1 = primera carta tots
         tipus2 = segona carta tots
-        tipus3A = tercera carta ESO
-        tipus3B = tercera carta post obligatoria
+        tipus3B = tercera carta ESO
+        tipus3A = tercera carta post obligatoria
+        tipus3C = cursa obligatoria i té més de 16 anys
     
     '''
     errors = []
@@ -98,9 +99,11 @@ def cartaabsentisme_clean( instance ):
             if te_mes_de_16:
                 tipus_carta = 'tipus3C'
             else:
-                tipus_carta = 'tipus3A'
+                tipus_carta = 'tipus3B'
         elif carta_numero == 3 and not instance.alumne.cursa_obligatoria(): 
-            tipus_carta = 'tipus3B'
+            tipus_carta = 'tipus3A'
+        elif 1 <= carta_numero <= 3:
+            raise Exception("Error triant la carta a enviar a la familia")        
         else:
             errors.append(u'Aquest alumne ja té tres cartes' )
 
