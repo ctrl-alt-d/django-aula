@@ -99,9 +99,9 @@ def cartaabsentisme_clean( instance ):
             if te_mes_de_16:
                 tipus_carta = 'tipus3C'
             else:
-                tipus_carta = 'tipus3B'
+                tipus_carta = 'tipus3A'
         elif carta_numero == 3 and not instance.alumne.cursa_obligatoria(): 
-            tipus_carta = 'tipus3A'
+            tipus_carta = 'tipus3B'
         elif 1 <= carta_numero <= 3:
             raise Exception("Error triant la carta a enviar a la familia")        
         else:
