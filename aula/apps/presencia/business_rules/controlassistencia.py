@@ -124,7 +124,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
 
         
         #treiem incidència retard si arriba a l'hora
-        elif instance.estat.codi_estat != 'R':
+        elif instance.estat and instance.estat.codi_estat != 'R':
             try:
                 Incidencia.objects.filter( 
                                                               alumne = instance.alumne,
