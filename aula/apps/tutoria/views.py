@@ -352,7 +352,7 @@ def justificaFaltes(request, pk, year, month, day):
             control_a = form.instance
             form.fields['estat'].label = u'{0} {1} {2}'.format( control_a.alumne, control_a.impartir.dia_impartir, control_a.impartir.horari.hora )
             form.instance.credentials = credentials
-            if 'estat' in form._get_changed_data() and form.is_valid():
+            if 'estat' in form.changed_data and form.is_valid():
                 ca=form.save(commit=False)
                 ca.credentials = credentials
                 algunDeBe = True
