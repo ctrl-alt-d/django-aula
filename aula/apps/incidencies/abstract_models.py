@@ -72,7 +72,7 @@ class AbstractExpulsio(models.Model):
     motiu = models.TextField( help_text=u"Motiu de l'expulsió. Aquesta informació la rebran els pares. No posar dades metges ni de salut.")
     moment_comunicacio_a_tutors = models.DateTimeField(null=True, blank=True, help_text=u"Moment en que aquesta expulsió ha estat comunicada als tutors")
     tutor_contactat_per_l_expulsio = models.CharField(max_length=250, blank=True, help_text=u"Familiars o tutors legals contactats")
-    tramitacio_finalitzada = models.BooleanField( help_text=u"Marca aquesta cassella quan hagis finalitzat tota la tramitació de l'expulsió. Un cop tramitada no es pot esborrar ni modificar.")
+    tramitacio_finalitzada = models.BooleanField( help_text=u"Marca aquesta cassella quan hagis finalitzat tota la tramitació de l'expulsió. Un cop tramitada no es pot esborrar ni modificar.", default = False)
     comentaris_cap_d_estudis = models.TextField(blank=True, help_text=u"Comentaris interns del cap d'estudis.")
  
     provoca_sancio = models.ForeignKey('incidencies.Sancio', blank=True, null=True, on_delete = models.PROTECT )
