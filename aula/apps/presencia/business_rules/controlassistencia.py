@@ -103,7 +103,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
         tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
     
         Incidencia = get_model('incidencies','Incidencia')
-        abans_no_era_retard = created or ( instance.instanceDB and instance.instanceDB.estat and instance.instanceDB.estat.codi_estat != 'R' )
+        abans_no_era_retard = created or ( hasattr(instance, 'instanceDB') and  instance.instanceDB and instance.instanceDB.estat and instance.instanceDB.estat.codi_estat != 'R' )
         
         #posem incidència si arriba tard ( només si passem de res a retard )
         if instance.estat and instance.estat.codi_estat == 'R' and abans_no_era_retard:
