@@ -1,1 +1,92 @@
-[{"pk": 2, "model": "incidencies.frassesincidenciaaula", "fields": {"frase": "Menja xiclet a l'aula"}}, {"pk": 1, "model": "incidencies.frassesincidenciaaula", "fields": {"frase": "Molesta els companys"}}]
+[
+    {
+        "fields": {
+            "frase": "Ha millorat el seu rendiment.", 
+            "tipus": 2
+        }, 
+        "model": "incidencies.frassesincidenciaaula", 
+        "pk": 1
+    }, 
+    {
+        "fields": {
+            "frase": "No porta el material.", 
+            "tipus": 2
+        }, 
+        "model": "incidencies.frassesincidenciaaula", 
+        "pk": 2
+    }, 
+    {
+        "fields": {
+            "frase": "No ha fet els deures.", 
+            "tipus": 2
+        }, 
+        "model": "incidencies.frassesincidenciaaula", 
+        "pk": 3
+    }, 
+    {
+        "fields": {
+            "frase": "No realitza les tasques encomanades.", 
+            "tipus": 2
+        }, 
+        "model": "incidencies.frassesincidenciaaula", 
+        "pk": 4
+    }, 
+    {
+        "fields": {
+            "frase": "Parla, molesta i no deixa treballar als companys.", 
+            "tipus": 3
+        }, 
+        "model": "incidencies.frassesincidenciaaula", 
+        "pk": 5
+    }, 
+    {
+        "fields": {
+            "frase": "Interromp reiteradament la explicaci\u00f3 del professor.", 
+            "tipus": 3
+        }, 
+        "model": "incidencies.frassesincidenciaaula", 
+        "pk": 6
+    }, 
+    {
+        "fields": {
+            "carta_slug": "serveis", 
+            "justificar": false, 
+            "tipus": "Serveis a la comunitat"
+        }, 
+        "model": "incidencies.tipussancio", 
+        "pk": 2
+    }, 
+    {
+        "fields": {
+            "carta_slug": "tasques", 
+            "justificar": false, 
+            "tipus": "Tasques educatives"
+        }, 
+        "model": "incidencies.tipussancio", 
+        "pk": 3
+    }, 
+    {
+        "fields": {
+            "es_informativa": true, 
+            "tipus": "Acad\u00e8mica"
+        }, 
+        "model": "incidencies.tipusincidencia", 
+        "pk": 2
+    }, 
+    {
+        "fields": {
+            "es_informativa": false, 
+            "tipus": "Lleu"
+        }, 
+        "model": "incidencies.tipusincidencia", 
+        "pk": 3
+    }, 
+    {
+        "fields": {
+            "es_informativa": false, 
+            "tipus": "Greu"
+        }, 
+        "model": "incidencies.tipusincidencia", 
+        "pk": 4
+    }
+]
