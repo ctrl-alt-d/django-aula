@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns,url
+from django.conf.urls import patterns,url
 
 urlpatterns = patterns('aula.apps.todo.views',
     url(r'^list/$', 'list', name="varis__todo__list" ),

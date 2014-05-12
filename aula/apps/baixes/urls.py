@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns('aula.apps.baixes.views',
     url(r'^feina/(?P<pk_imparticio>\d*)/$', 'feina',
