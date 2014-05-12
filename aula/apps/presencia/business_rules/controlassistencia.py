@@ -96,16 +96,17 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
     #si els retards provoquen incidència la posem:
     if settings.CUSTOM_RETARD_PROVOCA_INCIDENCIA:
         
+        
         frase = settings.CUSTOM_RETARD_FRASE
         
         TipusIncidencia = get_model('incidencies','TipusIncidencia')
         tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
     
         Incidencia = get_model('incidencies','Incidencia')
+        abans_no_era_retard = created or ( instance.instanceDB.estat.codi_estat != 'R' )
         
-        #posem incidència si arriba tart
-        if instance.estat and instance.estat.codi_estat == 'R':
-            
+        #posem incidència si arriba tard ( només si passem de res a retard )
+        if instance.estat and instance.estat.codi_estat == 'R' and abans_no_era_retard:
             ja_hi_es = Incidencia.objects.filter( 
                                                               alumne = instance.alumne,
                                                               control_assistencia = instance,
@@ -113,19 +114,17 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                               tipus= tipus ,).exists()
     
             if not ja_hi_es:
-                try:
-                    i = Incidencia.objects.create(    
-                                              professional = User2Professional( instance.professor ),
-                                              alumne = instance.alumne,
-                                              control_assistencia = instance,
-                                              descripcio_incidencia = frase,
-                                              tipus = tipus ,)
-                    incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
-                except:
-                    pass
+                i = Incidencia.objects.create(    
+                                          professional = User2Professional( instance.professor ),
+                                          alumne = instance.alumne,
+                                          control_assistencia = instance,
+                                          descripcio_incidencia = frase,
+                                          tipus = tipus ,)
+                incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
+
         
         #treiem incidència retard si arriba a l'hora
-        else:
+        elif instance.estat.codi_estat != 'R':
             try:
                 Incidencia.objects.filter( 
                                                               alumne = instance.alumne,
