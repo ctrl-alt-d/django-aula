@@ -1182,6 +1182,7 @@ def cartaSancio( request, pk ):
     #capcelera
     report = tools.classebuida()
     report.nom_alumne = unicode(sancio.alumne)
+    report.grup_alumne = unicode(sancio.alumne.grup.descripcio_grup)
     #deprecated: cal evitar dies_expulsio i utilitzar dia_inicial i dia_final
     report.dies_expulsio = u" del {0} al {1}".format( 
                                         sancio.data_inici.strftime( '%d/%m/%Y' ), 
