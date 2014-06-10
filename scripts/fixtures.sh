@@ -1,6 +1,7 @@
 #!/bin/bash
 cd `dirname $0`/..
-for i in extKronowin incidencies presencia assignatures horaris seguimentTutorial missatgeria usuaris
+FILES=`find -name 'dades.json'`
+for i in $FILES
 do
-    python manage.py loaddata aula/apps/$i/fixtures/dades.json
+        python manage.py loaddata $i
 done
