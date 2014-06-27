@@ -32,6 +32,7 @@ from aula.apps.usuaris.tools import enviaOneTimePasswd
 from aula.utils.tools import getClientAdress
 
 from django.contrib import messages
+from django.conf import settings
 
 @login_required
 def canviDadesUsuari( request):
@@ -222,6 +223,11 @@ def loginUser( request ):
     head=u'Login' 
 
     client_address = getClientAdress( request )
+    
+    try:
+        acces_restringit_a_grups = settings.ACCES_RESTRINGIT_A_GRUPS
+    except AttributeError:
+        acces_restringit_a_grups = None
 
     url_next = '/'  
     if request.method == 'POST':
@@ -232,13 +238,17 @@ def loginUser( request ):
             user = authenticate(username=username, password=paraulaDePas)
             if user is not None:
                 #Usuari i passwd estan bé
-                if user.is_active:
-                    login(request, user)
-                    LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
-                    return HttpResponseRedirect( url_next )
-                else:
+                if acces_restringit_a_grups and not user.groups.filter( name__in = acces_restringit_a_grups ).exists():
                     LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
-                    form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''Aquest compte està desactivat. Punxa a l'enllaç de recuperar contrasenya.'''  )
+                    form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''El sistema està en mode restringit.'''  )
+                else:
+                    if user.is_active:
+                        login(request, user)
+                        LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
+                        return HttpResponseRedirect( url_next )
+                    else:
+                        LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
+                        form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''Aquest compte està desactivat. Punxa a l'enllaç de recuperar contrasenya.'''  )
             else:
                 #Error d'usuari i passwd
                 try:
@@ -278,6 +288,7 @@ def loginUser( request ):
                 'loginForm.html',
                     {'form': form,
                      'head': head ,
+                     'acces_restringit_a_grups': acces_restringit_a_grups,
                     },
                     context_instance=RequestContext(request))      
 

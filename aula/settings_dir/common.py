@@ -4,6 +4,7 @@ import os
 NOM_CENTRE = 'Centre C'
 LOCALITAT = u"Localitat"
 URL_DJANGO_AULA = r'https://www.django_aula.sw'
+ACCES_RESTRINGIT_A_GRUPS = None   # exemple per restringir = ['direcció','administradors','psicopedagog']
 
 # Django settings for aula project.
 PROJECT_DIR = os.path.join( os.path.dirname(__file__), '..')
