@@ -8,6 +8,8 @@ LOCALITAT = u"L'Escala"
 URL_DJANGO_AULA = r'http://djau.ctrlaltd.webfactional.com'
 ALLOWED_HOSTS = [ 'djau.ctrlaltd.webfactional.com', ]
 
+ACCES_RESTRINGIT_A_GRUPS = None # ó be = ['direcció','administradors']  mentre duran les proves
+
 #En cas de tenir un arbre de predicció cal posar-lo aquí:
 # from lxml import etree  
 # PREDICTION_TREE=etree.parse( r'path_fins_el_model' )
@@ -19,3 +21,7 @@ STATIC_ROOT = '/home/ctrlaltd/webapps/djaustatic/'
 EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
 
 DEBUG = False
+
+ADMINS = (
+    ('joan rodriguez', 'ui@mega.cracs.cat'),
+)
