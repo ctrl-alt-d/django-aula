@@ -1,1 +1,26 @@
-[{"pk": 1, "model": "extKronowin.parametrekronowin", "fields": {"nom_parametre": "passwd", "valor_parametre": "1234"}}, {"pk": 2, "model": "extKronowin.parametrekronowin", "fields": {"nom_parametre": "assignatures amb professor", "valor_parametre": "AO,AC,OP,OE"}}]
+[
+    {
+        "fields": {
+            "nom_parametre": "passwd", 
+            "valor_parametre": "1234"
+        }, 
+        "model": "extKronowin.parametrekronowin", 
+        "pk": 1
+    }, 
+    {
+        "fields": {
+            "nom_parametre": "assignatures amb professor", 
+            "valor_parametre": "AO,AC,OP,OE"
+        }, 
+        "model": "extKronowin.parametrekronowin", 
+        "pk": 2
+    }, 
+    {
+        "fields": {
+            "nom_parametre": "fusionar assignatures", 
+            "valor_parametre": "N"
+        }, 
+        "model": "extKronowin.parametrekronowin", 
+        "pk": 3
+    }
+]
