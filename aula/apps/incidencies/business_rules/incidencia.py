@@ -5,7 +5,7 @@ from django.utils.datetime_safe import datetime
 from django.core.exceptions import ValidationError
 from django.forms.forms import NON_FIELD_ERRORS
 from django.db.models import get_model
-
+from django.conf import settings
 
 #-------------INCIDENCIES-------------------------------------------------------------
 def incidencia_clean( instance ):
@@ -40,9 +40,10 @@ def incidencia_clean( instance ):
     if  not instance.franja_incidencia_id:
         errors.setdefault('franja_incidencia',[]).append(u'Falten Dades: Cal franja')
 
-    #Només es poden posar incidències més ennlà de 7 dies
-    if instance.dia_incidencia and instance.dia_incidencia < ( dt.date.today() + dt.timedelta( days = -92 ) ):
-        errors.setdefault('dia_incidencia 1',[]).append(u'''No es poden posar o modificar incidències amb més d' un trimestre)''')
+    #Només es poden posar incidències més enllà dels dies indicats per CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA    
+    periode = settings.CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA
+    if instance.dia_incidencia and instance.dia_incidencia < ( dt.date.today() + dt.timedelta( days = -periode ) ):
+        errors.setdefault('dia_incidencia 1',[]).append(u'''No es poden posar o modificar incidències amb més de {0} dies.'''.format(periode))
 
     #No incidències al futur.
     if instance.dia_incidencia and instance.franja_incidencia_id  and  instance.getDate() > datetime.now():
@@ -90,27 +91,28 @@ def incidencia_despres_de_posar(instance):
     Missatge = get_model( 'missatgeria','Missatge')
     #Lògica de negoci: 
     if not instance.tipus.es_informativa:
-        #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
-        import datetime as t
-        fa_30_dies = instance.dia_incidencia - t.timedelta( days = +30)
-        Incidencia = get_model( 'incidencies','Incidencia')
-        nIncidenciesAlumneProfessor = Incidencia.objects.filter( 
-                                            es_vigent = True, 
-                                            tipus__es_informativa = False,
-                                            professional = instance.professional, 
-                                            alumne = instance.alumne,
-                                            dia_incidencia__gt =  fa_30_dies
-                                        ).count()
-        if nIncidenciesAlumneProfessor > 2:                
-            txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers 30 dies. 
-                    Segons la normativa del Centre has de tramitar 
-                    una expulsió per acumulació d'incidències.""".format( instance.alumne, nIncidenciesAlumneProfessor ) 
-            
-            msg = Missatge( remitent = instance.professional.getUser(), text_missatge = txt )
-            msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str( instance.pk )
-            if nIncidenciesAlumneProfessor > 5:
-                msg.importancia = 'VI'
-            msg.envia_a_usuari(instance.professional)
+        if settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO:
+            #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
+            import datetime as t
+            fa_30_dies = instance.dia_incidencia - t.timedelta( days = +30)
+            Incidencia = get_model( 'incidencies','Incidencia')
+            nIncidenciesAlumneProfessor = Incidencia.objects.filter( 
+                                                es_vigent = True, 
+                                                tipus__es_informativa = False,
+                                                professional = instance.professional, 
+                                                alumne = instance.alumne,
+                                                dia_incidencia__gt =  fa_30_dies
+                                            ).count()
+            if nIncidenciesAlumneProfessor > 2:                
+                txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers 30 dies. 
+                        Segons la normativa del Centre has de tramitar 
+                        una expulsió per acumulació d'incidències.""".format( instance.alumne, nIncidenciesAlumneProfessor ) 
+                
+                msg = Missatge( remitent = instance.professional.getUser(), text_missatge = txt )
+                msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str( instance.pk )
+                if nIncidenciesAlumneProfessor > 5:
+                    msg.importancia = 'VI'
+                msg.envia_a_usuari(instance.professional)
             
         #Cal que els professors i tutors sàpiguen que aquest alumne ha tingut incidència --> Envio missatge 
         remitent = instance.professional

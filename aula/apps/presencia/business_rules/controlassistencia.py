@@ -26,7 +26,7 @@ def controlAssistencia_clean( instance ):
     #
     # Només es poden modificar assistències 
     #
-    nMaxDies = 30*3
+    nMaxDies = settings.CUSTOM_PERIODE_MODIFICACIO_ASSISTENCIA
     if isUpdate and instance.impartir.dia_impartir < ( dt.date.today() - dt.timedelta( days = nMaxDies) ):
         errors.setdefault(NON_FIELD_ERRORS, []).append( u'''Aquest controll d'assistència és massa antic per ser modificat (Té més de {0} dies)'''.format(nMaxDies) )
         
