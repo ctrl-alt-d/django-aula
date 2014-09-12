@@ -15,8 +15,10 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
+        'ATOMIC_REQUESTS': True,
     }
 }
+
 
 # per mysql:  
 #     sudo apt-get install mysql-server python-mysqldb libmysqlclient-dev
