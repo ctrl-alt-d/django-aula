@@ -27,11 +27,13 @@ from aula.utils import tools
 from aula.apps.presencia.models import Impartir
 from django.utils.datetime_safe import  date, datetime
 from django.db.models import Q
+from django.forms.models import modelformset_factory
 from aula.apps.alumnes.reports import reportLlistaTutorsIndividualitzats
 from aula.apps.avaluacioQualitativa.forms import alumnesGrupForm
 from aula.apps.tutoria.models import TutorIndividualitzat
 from aula.apps.alumnes.rpt_duplicats import duplicats_rpt
 from aula.apps.alumnes.tools import fusiona_alumnes_by_pk
+from aula.apps.alumnes.forms import promoForm, newAlumne
 
 
 #duplicats
@@ -460,4 +462,70 @@ def blanc( request ):
                 'blanc.html',
                     {},
                     context_instance=RequestContext(request)) 
-               
+
+
+# ---------------- PROMOCIONS ------------------------#
+
+@login_required
+@group_required(['direcció'])
+def llistaGrupsPromocionar(request):
+    grups = Grup.objects.all().order_by("descripcio_grup")
+    return render_to_response('mostraGrupsPromocionar.html', {"grups" : grups}, context_instance=RequestContext(request))
+
+@login_required
+@group_required(['direcció'])
+def nouAlumnePromocionar(request):
+    #Aqui va el tractament del formulari i tota la polla...
+
+    if request.method == 'POST':
+        # Ve per post, he de guardar l'alumne si les dades estan correctes
+        pass
+    form = newAlumne()
+    return render_to_response('mostraFormulariPromocionar.html', {'form': form}, context_instance=RequestContext(request))
+
+@login_required
+@group_required(['direcció'])
+def mostraGrupPromocionar(request, grup=""):
+
+    from datetime import date
+    PromoFormset = modelformset_factory(Alumne, form=promoForm, extra = 0)
+    if request.method == 'POST':
+        curs_vinent = request.POST.get('curs_desti')
+        print request.POST
+        formset = PromoFormset(request.POST)
+        for form in formset.forms:
+            if form.is_valid():
+
+                decisio = form.cleaned_data['decisio']
+                if (decisio == "2"):
+
+                    id =  form.cleaned_data['id'].id
+                    alumne = Alumne.objects.get(id=id)
+                    alumne.data_baixa = date.today()
+                    alumne.estat_sincronitzacio = 'DEL'
+                    alumne.motiu_bloqueig = 'Baixa'
+                    alumne.save()
+
+
+                if (decisio == "0"):
+
+                    id = form.cleaned_data['id'].id
+                    alumne = Alumne.objects.get(id = id)
+                    alumne.grup_id = curs_vinent
+                    alumne.save()
+
+
+        pass
+
+    grups = Grup.objects.all().order_by("descripcio_grup")
+    grup_actual = Grup.objects.get(id=grup)
+    alumnes = Alumne.objects.filter(grup=grup, data_baixa__isnull = True ).order_by("cognoms")
+    if (len(alumnes) == 0):
+
+        msg = "Aquest grup no te alumnes actualment."
+        return render_to_response('mostraGrupsPromocionar.html', {"grups" : grups, "msg": msg}, context_instance=RequestContext(request))
+
+    formset = PromoFormset(queryset=alumnes)
+
+    return render_to_response('mostraGrupPromocionar.html', {"grup_actual" : grup_actual, "formset" : formset, "grups":grups}, context_instance=RequestContext(request))
+

@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 from django import forms as forms
-from aula.utils.widgets import SelectAjax
+from aula.utils.widgets import SelectAjax, bootStrapButtonSelect
 from django.forms import ModelForm
 
 from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne
@@ -93,7 +93,25 @@ class triaMultiplesAlumnesForm(forms.Form):
         self.fields['alumnes'].label = self.etiqueta 
         self.fields['alumnes'].queryset = self.queryset
 
+# ---------------- PROMOCIONS ------------------------#
 
+__author__ = 'David'
+CHOICES = (
+    ('0','MOU'),
+    ('1','IGUAL'),
+    ('2','MARXA'),
+
+)
+class promoForm(ModelForm):
+    decisio = forms.ChoiceField(widget=bootStrapButtonSelect(attrs={'class': 'buttons-promos disabled', }),choices=CHOICES,)
+    class Meta:
+        model = Alumne
+        fields  = []
+
+class newAlumne(ModelForm):
+    class Meta:
+        model = Alumne
+        fields = ['grup', 'nom', 'cognoms', 'data_neixement', 'correu_tutors', 'correu_relacio_familia_pare', 'correu_relacio_familia_mare', 'tutors_volen_rebre_correu', 'centre_de_procedencia', 'localitat', 'telefons', 'tutors', 'adreca']
 
 
 
