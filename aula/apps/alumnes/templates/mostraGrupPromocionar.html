@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content  %}
+    <h1>Estas veient els alumnes del grup {{ grup_actual.descripcio_grup }}:</h1>
+    <div class="row">
+        <p class="col-lg-5">Selecciona el grup on moure els alumnes:</p>
+    <form action="" method="POST">{% csrf_token %}
+        <div class="col-lg-3">
+            <select name="curs_desti" class="form-control col-lg-3">
+            <option value="{{ grup_actual.id }}" disabled selected>{{ grup_actual.descripcio_grup}}</option>
+                {% for grup in grups %}
+                    {% ifnotequal  grup.descripcio_grup grup_actual.descripcio_grup %}
+                        <option value="{{ grup.id }}">{{ grup.descripcio_grup }}</option>
+                    {% endifnotequal %}
+                {% endfor %}
+            </select>
+        </div>
+    <div class="clearfix"></div>
+    <div class="col-sm-4 col-sm-offset-4 col-lg-offset-5 col-md-offset-5 col-md-4 col-lg-4">
+        <br/>
+            <div class="btn-group">
+                <button type="button" id="totmou" class="btn btn-default btn-info">MOU</button>
+                <button type="button" id="totigual" class="btn btn-default btn-info">IGUAL</button>
+                <button type="button" id="totmarxa" class="btn btn-default btn-info">MARXA</button>
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <br/>
+        <div class="clearfix"></div>
+        {% for form in formset %}
+            {{ formset.management_form }}
+            {{ form.id }}
+        <div class="row row-padded" style="{% if forloop.counter|divisibleby:2 %}background-color: #F0F0F0;{% endif %}">
+
+            <div class="col-lg-4 col-md-4 col-sm-3" style="line-height: 34px; vertical-align: middle;"> {{ form.instance }}</div>
+            <div class=" col-lg-3 col-lg-offset-1 col-md-3 col-sm-4 col-xs-12">
+                {% for field in form.visible_fields %}
+                    {{ field }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    <br/>
+        <button class="btn btn-success">ENDAVANT</button>
+
+    </div>
+    </form>
+
+
+{% endblock %}
+
+    {% block extrahead %}
+    <style type="text/css">
+      .btn.btnMOU.active,
+      .btn.btnMOU:active {
+        background-color: #4cae4c;
+        border-color: #449d44;
+      }
+      .btn.btnMARXA.active,
+      .btn.btnMARXA:active {
+        background-color: #d9534f;
+        border-color: #d43f3a;
+;
+        color: white;
+      }
+    </style>
+<script>
+
+function totnet() {
+    $(".btn").removeClass("active");
+    $(".rad").prop("checked", false);
+}
+$(document).ready(function() {
+    $('#totmou').click(function() {
+        totnet();
+        $('.btnMOU').trigger('click');
+        $(".btnMOU .rad").prop("checked", true);
+    });
+    $('#totigual').click(function() {
+        totnet();
+        $('.btnIGUAL').trigger('click');
+        $(".btnIGUAL .rad").prop("checked", true);
+    });
+    $('#totmarxa').click(function() {
+        totnet();
+        $('.btnMARXA').trigger('click');
+        $(".btnMARXA .rad").prop("checked", true);
+    });
+
+});
+</script>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content  %}
+<h1>Estàs veient el formulari per afegir un nou alumne al sistema.</h1>
+<form class="form" action="" method="POST">{% csrf_token %}
+{% for field in form %}
+    <div class="form-group">
+        {{ field.label }}
+        {{ field }}
+    </div>
+
+{% endfor %}
+<button class="btn btn-success">Crear alumne</button>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content  %}
+    {% if msg %}
+    <h2 class="alert alert-danger">{{ msg }}</h2>
+    {% endif %}
+    <h1>Tria el grup que vols promocionar:</h1>
+    <h3 class="alert alert-danger">Recorda que primer cal passar els alumnes dels cursos superiors.</h3>
+    </select>
+    {% for grup in grups %}
+        <a href="{% url 'administracio__promocions__grups' grup.id %}" class="btn btn-info">{{ grup.descripcio_grup }}</a>
+    {% endfor %}
+
+{% endblock %}
+
+{% block extrahead %}
+<style>
+    .btn-info {
+        width: 100px;
+    }
+</style>
+{% endblock %}
+
