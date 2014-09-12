@@ -14,6 +14,8 @@ from django.contrib.auth.models import Group
 import csv, time
 from aula.apps.extSaga.models import Grup2Aula
 
+from django.conf import settings
+
 def sincronitza(f, user = None):
     
     msgs = comprovar_grups( f )
@@ -132,7 +134,7 @@ def sincronitza(f, user = None):
             a.pk = alumneDadesAnteriors.pk
             a.estat_sincronitzacio = 'S-U'
             info_nAlumnesModificats+=1
-            if a.grup.pk  != alumneDadesAnteriors.grup.pk:
+            if settings.CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA and a.grup.pk  != alumneDadesAnteriors.grup.pk:
                 AlumnesCanviatsDeGrup.append(a)
             a.user_associat = alumneDadesAnteriors.user_associat
             #el recuperem, havia estat baixa:
@@ -181,6 +183,10 @@ def sincronitza(f, user = None):
 
     #Avisar als professors: Canvi de grup
     #enviar un missatge a tots els professors que tenen aquell alumne.
+    #Només s'executarà el següent bloc de codi
+    #  si settings.CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA==True,
+    #  perquè, degut a una instrucció if anterior,
+    #  no hi hauran alumnes a AlumnesCanviatsDeGrup si és False.   
     info_nAlumnesCanviasDeGrup = len(  AlumnesCanviatsDeGrup )    
     professorsNotificar = {}
     for alumneCanviatDeGrup in AlumnesCanviatsDeGrup:
