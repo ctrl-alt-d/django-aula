@@ -134,7 +134,7 @@ def sincronitza(f, user = None):
             a.pk = alumneDadesAnteriors.pk
             a.estat_sincronitzacio = 'S-U'
             info_nAlumnesModificats+=1
-            if settings.CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA and a.grup.pk  != alumneDadesAnteriors.grup.pk:
+            if settings.CUSTOM_MODIFICAR_GRUP_IMPORTACIO_SAGA and a.grup.pk  != alumneDadesAnteriors.grup.pk:
                 AlumnesCanviatsDeGrup.append(a)
             a.user_associat = alumneDadesAnteriors.user_associat
             #el recuperem, havia estat baixa:
