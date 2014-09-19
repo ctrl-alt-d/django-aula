@@ -11,7 +11,6 @@ from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar, Table2_
 from django_tables2   import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
-from aula.apps.incidencies.business_rules.sancio import sancio_pre_delete
 from aula.apps.incidencies.helpers import preescriu
 from django.db.models import Count
 
@@ -931,7 +930,7 @@ def sancio( request, pk ):
     
     url_next = '/incidencies/alertesAcumulacioExpulsions/'  #si res falla torno a la llista
     try:
-        sancio = Sancio(
+        unaSancio = Sancio(
                          professor = User2Professor(user),
                          alumne = alumne,
                          tipus = tipus,
@@ -944,7 +943,7 @@ def sancio( request, pk ):
                          data_carta = datetime.today(),
                          signat = u'''Cap d'estudis'''
                     )
-        sancio.save()
+        unaSancio.save()
         
         #LOGGING
         Accio.objects.create( 
@@ -1417,6 +1416,7 @@ def esborrarSancio( request, pk ):
 
         #esborrar-la        
         sancio.delete()
+
         
     except ValidationError, e:
         #Com que no és un formulari de model cal tractar a mà les incidències del save:

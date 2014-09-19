@@ -49,7 +49,7 @@ pre_delete.connect(sancio_pre_delete, sender = Sancio )
 pre_delete.connect(expulsio_pre_delete, sender= Expulsio)
 pre_save.connect(expulsio_pre_save, sender = Expulsio )
 post_save.connect(expulsio_post_save, sender = Expulsio )
-pre_delete.connect(expulsio_pre_delete, sender = Sancio )
+pre_delete.connect(expulsio_pre_delete, sender = Expulsio )
 
 
 
