@@ -951,7 +951,7 @@ def sancio( request, pk ):
                 usuari = user,
                 l4 = l4,
                 impersonated_from = request.user if request.user != user else None,
-                text = u"""Creada sanció de l'alumne {0}.""".format( sancio.alumne )
+                text = u"""Creada sanció de l'alumne {0}.""".format( unaSancio.alumne )
             )   
 
     except ValidationError, e:
