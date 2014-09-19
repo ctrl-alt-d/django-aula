@@ -930,7 +930,7 @@ def sancio( request, pk ):
     
     url_next = '/incidencies/alertesAcumulacioExpulsions/'  #si res falla torno a la llista
     try:
-        unaSancio = Sancio(
+        sancio = Sancio(
                          professor = User2Professor(user),
                          alumne = alumne,
                          tipus = tipus,
@@ -943,7 +943,7 @@ def sancio( request, pk ):
                          data_carta = datetime.today(),
                          signat = u'''Cap d'estudis'''
                     )
-        unaSancio.save()
+        sancio.save()
         
         #LOGGING
         Accio.objects.create( 
@@ -951,7 +951,7 @@ def sancio( request, pk ):
                 usuari = user,
                 l4 = l4,
                 impersonated_from = request.user if request.user != user else None,
-                text = u"""Creada sanció de l'alumne {0}.""".format( unaSancio.alumne )
+                text = u"""Creada sanció de l'alumne {0}.""".format( sancio.alumne )
             )   
 
     except ValidationError, e:
