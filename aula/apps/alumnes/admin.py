@@ -45,7 +45,8 @@ class GrupAdmin(admin.ModelAdmin):
 class AlumneAdmin(admin.ModelAdmin):
     model = Alumne
     list_filter = ['grup']
-
+    list_display= ['cognoms', 'nom', 'grup']
+    search_fields = ['cognoms', 'nom']
 
 admin.site.register(Nivell,NivellAdmin)
 admin.site.register(Curs,CursAdmin)
