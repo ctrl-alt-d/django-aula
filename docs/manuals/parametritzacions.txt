@@ -1,0 +1,52 @@
+PARAMETRITZACIONS DEL DJANGO-AULA
+=================================
+
+Al fitxer settings.py (o settings_local.py)
+-------------------------------------------
+
+CUSTOM_RETARD_PROVOCA_INCIDENCIA
+    Si True, cada retard d'un alumne provoca una incidència
+    
+CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
+    Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, indica el tipus d'incidència
+    Exemple: CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
+
+CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
+    Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, frase amb la incidència que es genera
+    
+CUSTOM_RANKING_BY_TIPUS
+    A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència
+    
+CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA
+    Període (dies) en el que es permet crear o modificar una incidència
+    
+CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO
+    Si True, l'acumulació d'incidències obliga al professor que li ha posat a expulsar l'alumne.
+    
+CUSTOM_PERIODE_MODIFICACIO_ASSISTENCIA = 90
+    Dies que es permet modificar un control d'assistència.
+
+CUSTOM_DIES_PRESCRIU_INCIDENCIA = 30
+    Dies en els que les incidencies prescriuen.
+    
+CUSTOM_DIES_PRESCRIU_EXPULSIO = 60
+    Dies en els que les expulsions prescriuen.
+
+
+A la base de dades
+------------------
+ParametreKronowin.assignatures amb professor
+    Assignatures optatives amb el mateix nom però que en realitat son diferents: s'afegeix el codi del professor al nom de l'assignatura.
+    Exemple de valor: AO,AC,OP,OE
+    L'exemple anterior posa el nom del professor sempre que l'assignatura començi amb AO, AC, OP o OE.
+
+ParametreKronowin.fussionar assignatures
+    Si el seu valor és 'S', quan una mateixa assignatura s'imparteix pel mateix professor, dia i hora en diversos grups, només deixa una entrada activa per al primer grup.
+    Per a un bon funcionament, després cal que es puguin agafar alumnes de tot el curs en aquesta assignatura.
+
+ParametreKronowin.passwd
+    Contrasenya per defecte dels nous usuaris.
+
+ParametreSaga.grups estatics
+    Quan es realitza una importació de SAGA, els alumnes que pertanyen a aquests grups no es canvien.
+
