@@ -1,0 +1,10 @@
+[
+    {
+        "fields": {
+            "nom_parametre": "grups estatics", 
+            "valor_parametre": "UEC"
+        }, 
+        "model": "extSaga.parametresaga", 
+        "pk": 1
+    }
+]

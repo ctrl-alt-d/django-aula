@@ -5,6 +5,7 @@ from aula.apps.alumnes.models import Alumne, Grup, Nivell
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
+from aula.apps.extSaga.models import ParametreSaga
 
 from django.db.models import Q 
 
@@ -15,6 +16,7 @@ import csv, time
 from aula.apps.extSaga.models import Grup2Aula
 
 from django.conf import settings
+from appy.pod.buffers import ELSE_WITHOUT_IF
 
 def sincronitza(f, user = None):
     
@@ -134,8 +136,20 @@ def sincronitza(f, user = None):
             a.pk = alumneDadesAnteriors.pk
             a.estat_sincronitzacio = 'S-U'
             info_nAlumnesModificats+=1
-            if settings.CUSTOM_MODIFICAR_GRUP_IMPORTACIO_SAGA and a.grup.pk  != alumneDadesAnteriors.grup.pk:
-                AlumnesCanviatsDeGrup.append(a)
+            
+            # En cas que l'alumne pertanyi a un dels grups parametritzat com a estàtic,
+            # no se li canviarà de grup en les importacions de SAGA.
+            grups_estatics, created = ParametreSaga.objects.get_or_create( nom_parametre = 'grups estatics' )
+            es_de_grup_estatic = False
+            for prefixe_grup in grups_estatics.valor_parametre.split(','):
+                es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith( prefixe_grup.replace(' ','') )
+
+            if a.grup.pk != alumneDadesAnteriors.grup.pk:
+                if es_de_grup_estatic: #no canviar-li de grup
+                    a.grup = alumneDadesAnteriors.grup
+                else:
+                    AlumnesCanviatsDeGrup.append(a)
+                
             a.user_associat = alumneDadesAnteriors.user_associat
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
@@ -183,10 +197,6 @@ def sincronitza(f, user = None):
 
     #Avisar als professors: Canvi de grup
     #enviar un missatge a tots els professors que tenen aquell alumne.
-    #Només s'executarà el següent bloc de codi
-    #  si settings.CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA==True,
-    #  perquè, degut a una instrucció if anterior,
-    #  no hi hauran alumnes a AlumnesCanviatsDeGrup si és False.   
     info_nAlumnesCanviasDeGrup = len(  AlumnesCanviatsDeGrup )    
     professorsNotificar = {}
     for alumneCanviatDeGrup in AlumnesCanviatsDeGrup:
