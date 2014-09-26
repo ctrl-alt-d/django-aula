@@ -125,7 +125,7 @@ class AbstractAlumne(models.Model):
     
     user_associat = models.OneToOneField(  AlumneUser , null=True  )
     
-    relacio_familia_darrera_notificacio = models.DateTimeField( null=True )
+    relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
     
     periodicitat_faltes = models.IntegerField( choices = PERIODICITAT_FALTES_CHOICES, blank=False,
                                                default = 3,
