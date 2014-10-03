@@ -138,8 +138,8 @@ def sincronitzaKronowin(request):
 @login_required
 @group_required(['direcció'])
 def creaNivellCursGrupDesDeKronowin(request):
-    credentials = tools.getImpersonateUser(request) 
-    (user, l4) = credentials   
+    #credentials = tools.getImpersonateUser(request) 
+    #(user, l4) = credentials   
     
     if request.method == 'POST':
         form = creaNivellCursGrupDesDeKronowinForm(request.POST, request.FILES)

@@ -4,6 +4,7 @@ from aula.apps.alumnes.models import Alumne
 from django.db.models.aggregates import Count
 from django.db.models import Q
 from itertools import chain
+from aula.apps.presencia.models import ControlAssistencia
 
 def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     report = []
@@ -54,17 +55,42 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     taula.fileres = []
     
 
-    q_nivell = Q( grup__curs__nivell = nivell )
-    q_data_inici = Q(  controlassistencia__impartir__dia_impartir__gte = data_inici  )
-    q_data_fi = Q(  controlassistencia__impartir__dia_impartir__lte = data_fi  )
-    q_filte = q_nivell & q_data_inici & q_data_fi
-    q_alumnes = Alumne.objects.filter( q_filte )
+#     q_nivell = Q( grup__curs__nivell = nivell )
+#     q_data_inici = Q(  controlassistencia__impartir__dia_impartir__gte = data_inici  )
+#     q_data_fi = Q(  controlassistencia__impartir__dia_impartir__lte = data_fi  )
+#     q_filte = q_nivell & q_data_inici & q_data_fi
+#     q_alumnes = Alumne.objects.filter( q_filte )
+# 
+#     q_p = q_alumnes.filter( controlassistencia__estat__codi_estat__in = ('P','R' ) ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).values_list( 'id', 'x' )
+#     q_j = q_alumnes.filter( controlassistencia__estat__codi_estat = 'J' ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).order_by().distinct().values_list( 'id', 'x' )
+#     q_f = q_alumnes.filter( controlassistencia__estat__codi_estat = 'F' ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).values_list( 'id', 'x' )
 
-    q_p = q_alumnes.filter( controlassistencia__estat__codi_estat__in = ('P','R' ) ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).values_list( 'id', 'x' )
-    q_j = q_alumnes.filter( controlassistencia__estat__codi_estat = 'J' ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).order_by().distinct().values_list( 'id', 'x' )
-    q_f = q_alumnes.filter( controlassistencia__estat__codi_estat = 'F' ).order_by().distinct().annotate( x=Count('controlassistencia__estat') ).values_list( 'id', 'x' )
+#     dict_p, dict_j, dict_f = dict( q_p ), dict( q_j ), dict( q_f )
+
+
+    q_alumnes = Alumne.objects.filter( grup__curs__nivell = nivell )    
     
-    dict_p, dict_j, dict_f = dict( q_p ), dict( q_j ), dict( q_f )
+    q_data_inici = Q( impartir__dia_impartir__gte = data_inici  )
+    q_data_fi = Q( impartir__dia_impartir__lte = data_fi  )
+    q_filtre = q_data_inici & q_data_fi
+    q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
+    
+    q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().distinct().values_list( 'alumne__id', flat = True )
+    q_j = q_controls.filter( estat__codi_estat = 'J' ).order_by().distinct().distinct().values_list( 'alumne__id', flat = True )
+    q_f = q_controls.filter( estat__codi_estat = 'F' ).order_by().distinct().distinct().values_list( 'alumne__id', flat = True )
+    
+    from itertools import groupby
+    dict_p = {}
+    for k, g in groupby( q_p, lambda x: x ):
+        dict_p[k] = len( list(g) )
+    
+    dict_j = {}
+    for k, g in groupby( q_j, lambda x: x ):
+        dict_j[k] = len( list(g) )
+
+    dict_f = {}
+    for k, g in groupby( q_f, lambda x: x ):
+        dict_f[k] = len( list(g) )        
     
     #ajuntar dades diferents fonts
     alumnes = []
