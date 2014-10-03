@@ -42,6 +42,13 @@ Per tonar-los a connectar:
       alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
       alumnes_alumne.data_neixement = tutoria_seguimenttutorial.data_neixement;
 
+  delete from tutoria_resumanualalumne where seguiment_tutorial_id in ( select id from tutoria_seguimenttutorial where alumne_id is null);
+
+  delete from tutoria_seguimenttutorialrespostes where seguiment_tutorial_id in ( select id from tutoria_seguimenttutorial where alumne_id is null);  
+
+  delete from tutoria_seguimenttutorial where alumne_id is null;
+
+
   --Amb models django:
   ( todo )
 
