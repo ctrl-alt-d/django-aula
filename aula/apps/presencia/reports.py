@@ -76,20 +76,23 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
     
     q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
-    q_j = q_controls.filter( estat__codi_estat = 'J' ).order_by().distinct().values_list( 'id','alumne__id' ).distinct()
-    q_f = q_controls.filter( estat__codi_estat = 'F' ).order_by().distinct().values_list( 'id','alumne__id' ).distinct()
+    q_j = q_controls.filter( estat__codi_estat = 'J' ).order_by().values_list( 'id','alumne__id' ).distinct()
+    q_f = q_controls.filter( estat__codi_estat = 'F' ).order_by().values_list( 'id','alumne__id' ).distinct()
     
     from itertools import groupby
     dict_p = {}
-    for k, g in groupby( q_p, lambda x: x[1] ):
+    data = sorted(q_p, key=lambda x: x[1])
+    for k, g in groupby( data, lambda x: x[1] ):
         dict_p[k] = len( list(g) )
     
     dict_j = {}
-    for k, g in groupby( q_j, lambda x: x[1] ):
+    data = sorted(q_j, key=lambda x: x[1])
+    for k, g in groupby( data, lambda x: x[1] ):
         dict_j[k] = len( list(g) )
 
     dict_f = {}
-    for k, g in groupby( q_f, lambda x: x[1] ):
+    data = sorted(q_f, key=lambda x: x[1])
+    for k, g in groupby( data, lambda x: x[1] ):
         dict_f[k] = len( list(g) )
     
     #ajuntar dades diferents fonts
