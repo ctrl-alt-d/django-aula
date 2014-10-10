@@ -279,11 +279,20 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     if form.cleaned_data['q1']: respostes.add(form.cleaned_data['q1'])
                     if form.cleaned_data['q2']: respostes.add(form.cleaned_data['q2'])
                     if form.cleaned_data['q3']: respostes.add(form.cleaned_data['q3'])
-                    if form.cleaned_data['q4']: respostes.add(form.cleaned_data['q4'])
+                    #if form.cleaned_data['q4']: respostes.add(form.cleaned_data['q4'])
                     for resposta in respostes:
                         novaResposta = RespostaAvaluacioQualitativa()
                         novaResposta.alumne = alumne
                         novaResposta.item = resposta
+                        novaResposta.professor = professor
+                        novaResposta.qualitativa = qualitativa
+                        novaResposta.assignatura = assignatura 
+                        novaResposta.credentials = (user, l4)
+                        novaResposta.save()
+                    if form.cleaned_data['qo']: 
+                        novaResposta = RespostaAvaluacioQualitativa()
+                        novaResposta.alumne = alumne
+                        novaResposta.frase_oberta = form.cleaned_data['qo']
                         novaResposta.professor = professor
                         novaResposta.qualitativa = qualitativa
                         novaResposta.assignatura = assignatura 
@@ -312,20 +321,34 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     formset.append( form )
     
     for alumne in alumnes:
-        q1 = q2 = q3 = q4 = None
-        respostes = alumne.respostaavaluacioqualitativa_set.filter( aquestaQualitativa  )
+        q1 = q2 = q3 = None
+        qo = ""
+        respostes = (  alumne
+                      .respostaavaluacioqualitativa_set
+                      .filter( aquestaQualitativa  )
+                      .filter( frase_oberta = "" ) 
+                    )
         nRespostes = respostes.count()
         if nRespostes > 0: q1 = respostes[0].item
         if nRespostes > 1: q2 = respostes[1].item
         if nRespostes > 2: q3 = respostes[2].item
-        if nRespostes > 3: q4 = respostes[3].item
+        #if nRespostes > 3: q4 = respostes[3].item
+
+        respostes = ( alumne
+                     .respostaavaluacioqualitativa_set
+                     .filter( aquestaQualitativa  )
+                     .exclude( frase_oberta = "" ) 
+                    )
+        if respostes.exists():
+            qo = respostes[0].frase_oberta
+        
         form=qualitativaItemsForm(
                                 prefix=str( alumne.pk ),
                                 initial={ 'alumne':  alumne ,
                                          'q1': q1,
                                          'q2': q2,
                                          'q3': q3,
-                                         'q4': q4
+                                         'qo': qo
                                          } ,
                                 itemsQualitativa = itemsQualitativa)   
         
@@ -333,14 +356,14 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
             form.fields['q1'].widget.attrs['disabled']="True"
             form.fields['q2'].widget.attrs['disabled']="True"
             form.fields['q3'].widget.attrs['disabled']="True"
-            form.fields['q4'].widget.attrs['disabled']="True"
+            form.fields['qo'].widget.attrs['disabled']="True"
             tipusForm = "formset.html"
         #else:
         form.fields['alumne'].widget.attrs['style']="width: 400px"
         form.fields['q1'].widget.attrs['style']="width: 450px"
         form.fields['q2'].widget.attrs['style']="width: 450px"
         form.fields['q3'].widget.attrs['style']="width: 450px"
-        form.fields['q4'].widget.attrs['style']="width: 450px"    
+        form.fields['qo'].widget.attrs['style']="width: 450px"    
         #tipusForm = "formsetgrid.html"
                     
         formset.append( form )

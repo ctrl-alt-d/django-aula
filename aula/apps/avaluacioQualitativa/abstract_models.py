@@ -31,7 +31,8 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
     alumne = models.ForeignKey( 'alumnes.Alumne' )
     professor = models.ForeignKey('usuaris.Professor')
     assignatura = models.ForeignKey('assignatures.Assignatura')
-    item = models.ForeignKey( "avaluacioQualitativa.ItemQualitativa" )
+    item = models.ForeignKey( "avaluacioQualitativa.ItemQualitativa", blank=True, null=True )
+    frase_oberta = models.CharField(u'Frase oberta', max_length=120,  help_text = u'Frase oberta', blank=True)
     class Meta:
         abstract = True        
         ordering = ['qualitativa','assignatura','alumne' ]

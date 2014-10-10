@@ -45,8 +45,11 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
                         for respostaQualitativa in RespostaAvaluacioQualitativa.objects.filter(
                                          alumne = alumne,
                                          assignatura = assignatura ):
-
-                            resposta.frases.append(respostaQualitativa.item ) 
+                            
+                            if respostaQualitativa.frase_oberta:
+                                resposta.frases.append(respostaQualitativa.frase_oberta ) 
+                            else:
+                                resposta.frases.append(respostaQualitativa.item ) 
                         
                         report.respostes.append( resposta )
 

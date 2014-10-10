@@ -11,7 +11,8 @@ class qualitativaItemsForm(forms.Form):
     q1 = forms.ModelChoiceField( queryset = RespostaAvaluacioQualitativa.objects.none(), required = False  )
     q2 = forms.ModelChoiceField( queryset = RespostaAvaluacioQualitativa.objects.none(), required = False  )
     q3 = forms.ModelChoiceField( queryset = RespostaAvaluacioQualitativa.objects.none(), required = False  )
-    q4 = forms.ModelChoiceField( queryset = RespostaAvaluacioQualitativa.objects.none(), required = False  )
+    #q4 = forms.ModelChoiceField( queryset = RespostaAvaluacioQualitativa.objects.none(), required = False  )
+    qo = forms.CharField( max_length = 120, required = False )
 
     def __init__(self, *args, **kwargs):
         self.itemsQualitativa = kwargs.pop('itemsQualitativa', None)
@@ -19,7 +20,7 @@ class qualitativaItemsForm(forms.Form):
         self.fields['q1'].queryset = self.itemsQualitativa      
         self.fields['q2'].queryset = self.itemsQualitativa    
         self.fields['q3'].queryset = self.itemsQualitativa    
-        self.fields['q4'].queryset = self.itemsQualitativa      
+        #self.fields['q4'].queryset = self.itemsQualitativa      
         
 
 #from alumnes.models import Alumne

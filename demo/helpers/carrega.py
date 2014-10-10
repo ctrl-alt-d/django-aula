@@ -133,7 +133,7 @@ def fesCarrega( ):
                 alumnes =  [ alumne for grup in impartir.horari.grupsPotencials() for alumne in grup.alumne_set.all() ] 
                 random.shuffle( alumnes )
                 n_alumnes = random.randint( 3,7 )
-                afegeix=afegeixThread(expandir = True, alumnes=alumnes[:n_alumnes], impartir=impartir, usuari = impartir.horari.professor, matmulla = False)
+                afegeix=afegeixThread(expandir = False, alumnes=alumnes[:n_alumnes], impartir=impartir, usuari = impartir.horari.professor, matmulla = False)
                 afegeix.start()
                 afegeix.join()
     
