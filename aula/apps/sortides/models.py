@@ -1,13 +1,15 @@
 # This Python file uses the following encoding: utf-8
 from django.db import models
 from aula.apps.horaris.models import FranjaHoraria
-from aula.apps.usuaris.models import Departament
+from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 
 class Sortida(models.Model):
-    AMBIT_CHOICES = (
-                    (  'A',u'Alumnes'),
-                    (  'G',u'Grups' ) ,
+    CONSELL_ESCOLAR_CHOICES = (
+                    (  'P',u'Pendent'),
+                    (  'A',u'Aprovada'),
+                    (  'R',u'Rebutjada' ) ,
+                    (  'N',u'No necessita aprovació' ) ,
                     )
     
     TIPUS_TRANSPORT_CHOICES = (
@@ -29,9 +31,7 @@ class Sortida(models.Model):
     
     titol_de_la_sortida = models.CharField(max_length=250,help_text=u"Escriu un títol breu que serveixi per identificar aquesta sortida. Ex: 1rESO Sant Climent.")
 
-    esta_aprovada_pel_consell_escolar = models.NullBooleanField( u'Aprovada_pel_consell_escolar?', help_text=u"Marca si aquesta sortida ja ha estat aprovada pel consell escolar" )
-    
-    ambit = models.CharField(max_length=1, choices=AMBIT_CHOICES,help_text=u"A quin àmbit afecta aquesta sortida? 'Alumnes' si són uns pocs alumnes els que estan convocats o 'Grups' si és tot un grup o més.") 
+    esta_aprovada_pel_consell_escolar = models.CharField( u'Aprovada_pel_consell_escolar?',max_length=1, choices=CONSELL_ESCOLAR_CHOICES, default='P', help_text=u"Marca si aquesta sortida ja ha estat aprovada pel consell escolar" )
     
     departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza la sortida")
     
@@ -57,6 +57,9 @@ class Sortida(models.Model):
     programa_de_la_sortida = models.TextField(help_text=u"Descriu per als pares el programa de la sortida: objectius, horaris, recomanacions (crema solar, gorra, insecticida, ...), cal portar (boli, llibreta), altres informacions d'interès per a la família. Si no cal portar res cal indicar-ho.")
     
     comentaris_interns = models.TextField(blank=True, help_text=u"Espai per anotar allò que sigui rellevant de cares a la sortida. Si no hi ha comentaris rellevants indica-ho.")
+    
+    professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa la sortida")
+    
     
     def clean(self):
         clean_sortida( self )

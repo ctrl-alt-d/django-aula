@@ -23,7 +23,7 @@ def sortidesList( request ):
     
     professor = User2Professor( user )     
     
-    report = sortidesListRpt(  )
+    report = sortidesListRpt( user )
     
     menuCTX = [  ( r'/sortides/sortidaEdit', 'Nova Sortida',), ]
         
@@ -50,6 +50,7 @@ def sortidaEdit( request, pk = None ):
         instance = get_object_or_404( Sortida, pk = pk )
     else:
         instance = Sortida()
+        instance.professor_que_proposa = professor
     
     instance.credentials = credentials
    

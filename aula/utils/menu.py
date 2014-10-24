@@ -9,6 +9,7 @@ from aula.apps.usuaris.models import User2Professional
 from aula.apps.alumnes.models import Alumne
 from datetime import timedelta, datetime
 from django.template.defaultfilters import safe
+from django.conf import settings
 
 def calcula_menu( user , path ):
     
@@ -77,7 +78,7 @@ def calcula_menu( user , path ):
     except:
         return menu
     
-    arbre = (
+    arbre1 = (
                #--Aula--------------------------------------------------------------------------
                #  id,    nom     vista                 seg      label
                ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
@@ -200,6 +201,9 @@ def calcula_menu( user , path ):
                       ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al, None, None ),
                    )
                ),
+             )
+    
+    arbre2 = (
 
                #--Varis--------------------------------------------------------------------------
                ('varis', 'Ajuda i Avisos', 'varis__about__about' if al else 'varis__elmur__veure', tots, nMissatges > 0,
@@ -211,6 +215,19 @@ def calcula_menu( user , path ):
                ),
 
              )
+    
+    arbreSortides = ()
+    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU:
+        arbreSortides = (
+               #--Varis--------------------------------------------------------------------------
+               ('sortides', 'Sortides', 'sortides__sortides__list', di or pr, None,
+                  (
+                      ("Sortides", 'varis__avisos__envia_avis_administradors', di or pr, None, None ),
+                   )
+               ),                            
+                         )
+    
+    arbre = arbre1 + arbreSortides + arbre2
     
     for item_id, item_label, item_url, item_condicio, alerta , subitems in arbre:
 
