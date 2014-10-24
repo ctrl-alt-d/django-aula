@@ -266,9 +266,15 @@ def passaLlista( request, pk ):
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
             if form.is_valid():
-                control_aux = form.save()
-                hiHaRetard |= control_aux.estat.codi_estat == "R" 
-                quelcomBe |= True
+                try:                
+                    control_aux = form.save()
+                    hiHaRetard |= control_aux.estat.codi_estat == "R" 
+                    quelcomBe |= True
+                except ValidationError, e:
+                    totBe = False
+                    #Com que no és un formulari de model cal tractar a mà les incidències del save:
+                    for _, v in e.message_dict.items():
+                        form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )
             else:
                 totBe = False
                 #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )

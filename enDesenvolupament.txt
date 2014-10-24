@@ -1,0 +1,18 @@
+Sortides:
+
+* Es crea model sortida / altre activitats escolars.
+(ja existeix, cal canviar 'aprovada consell escolar' que prengui els valors sí, no, no cal )
+
+* Es crea nou model 'AbsèncieProgramades':
+Motiu (ex: sortida )
+Tractament (fk a Estat P,J,F,R )
+
+* Es crea llista d'alumnes que hi van:
+Es crearà nova fk 'AbsènciaProgramada' a 'ControlAssistencia'. 
+Quan el cap d'estudis apreta el botó, tots els de la llista passen a 'AbsènciaProgramada'.
+
+* Es crea llista d'alumnes que no hi van:
+Es dona opció a agrupar-los amb un professor a cada hora:
+8:15 a 9:15  (*) Prof. A    ( ) Prof. B    ( ) Prof. C ...
+
+Es podran treure alumnes de la llista dels que hi van i se'ls posa falta.

@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.template.defaultfilters import timesince_filter
 import datetime as dt
 from aula.apps.usuaris.models import User2Professor, User2Professional
 from aula.apps.tutoria.models import CartaAbsentisme
@@ -31,11 +32,17 @@ def controlAssistencia_clean( instance ):
         errors.setdefault(NON_FIELD_ERRORS, []).append( u'''Aquest controll d'assistència és massa antic per ser modificat (Té més de {0} dies)'''.format(nMaxDies) )
         
     #todo: altres controls:
+    socTutor = hasattr(instance, 'professor') and instance.professor and instance.professor in tutors
     daqui_2_hores = dt.datetime.now() + dt.timedelta( hours = 2)
-    if isUpdate and instance.impartir.diaHora() > daqui_2_hores :
+    daqui_15_dies = dt.datetime.now() + dt.timedelta( days = 15)
+    if isUpdate and (not socTutor and instance.impartir.diaHora() > daqui_2_hores): 
         errors.setdefault(NON_FIELD_ERRORS, []).append( u'''Encara no es pot entrar aquesta assistència 
                                     (Falta {0} per poder-ho fer )'''.format(
-                                       instance.impartir.diaHora()  - daqui_2_hores ) )
+                                      timesince_filter( dt.datetime.now(), instance.impartir.diaHora() - dt.timedelta( hours = 2) ) ) )
+    if isUpdate and (socTutor and instance.impartir.diaHora() > daqui_15_dies): 
+        errors.setdefault(NON_FIELD_ERRORS, []).append( u'''Encara no es pot entrar aquesta assistència 
+                                    (Falta {0} per poder-ho fer )'''.format(
+                                      timesince_filter( dt.datetime.now(), instance.impartir.diaHora() - dt.timedelta( days = 15) ) ) )
 
     #Una falta justificada pel tutor no pot ser matxacada per un professor
     socTutor = hasattr(instance, 'professor') and instance.professor and instance.professor in tutors    
