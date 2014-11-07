@@ -139,10 +139,12 @@ def sincronitza(f, user = None):
             
             # En cas que l'alumne pertanyi a un dels grups parametritzat com a estàtic,
             # no se li canviarà de grup en les importacions de SAGA.
-            grups_estatics, created = ParametreSaga.objects.get_or_create( nom_parametre = 'grups estatics' )
+            grups_estatics, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'grups estatics' )
             es_de_grup_estatic = False
             for prefixe_grup in grups_estatics.valor_parametre.split(','):
-                es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith( prefixe_grup.replace(' ','') )
+                prefix = prefixe_grup.replace(' ','')
+                if prefix:
+                    es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith(  )
 
             if a.grup.pk != alumneDadesAnteriors.grup.pk:
                 if es_de_grup_estatic: #no canviar-li de grup
