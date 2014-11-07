@@ -727,7 +727,7 @@ def llistaIncidenciesProfessional( request ):
                                                         tipus__es_informativa = False,
                                                         dia_incidencia__gte = fa_30_dies
                                                                                    )
-        calTramitarExpulsioPerAcumulacio = incidenciesAlumne.count() >= 3
+        calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
         exempleIncidenciaPerAcumulacio = incidenciesAlumne.order_by( 'dia_incidencia' ).reverse()[0] \
                                             if calTramitarExpulsioPerAcumulacio \
                                             else None
