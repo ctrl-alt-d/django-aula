@@ -38,7 +38,7 @@ def calcula_menu( user , path ):
         teExpulsionsSenseTramitar = professor.expulsio_set.exclude( tramitacio_finalitzada = True ).exists() 
         
         #Acumulació Incidències
-        if not teExpulsionsSenseTramitar:
+        if settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and not teExpulsionsSenseTramitar:
             professional = User2Professional( user )
             teExpulsionsSenseTramitar = ( Alumne
                                           .objects
