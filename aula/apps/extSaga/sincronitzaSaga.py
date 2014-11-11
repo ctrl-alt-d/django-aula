@@ -144,7 +144,7 @@ def sincronitza(f, user = None):
             for prefixe_grup in grups_estatics.valor_parametre.split(','):
                 prefix = prefixe_grup.replace(' ','')
                 if prefix:
-                    es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith(  )
+                    es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith( prefix )
 
             if a.grup.pk != alumneDadesAnteriors.grup.pk:
                 if es_de_grup_estatic: #no canviar-li de grup
