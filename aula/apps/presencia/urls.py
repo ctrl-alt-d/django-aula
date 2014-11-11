@@ -16,6 +16,9 @@ urlpatterns = patterns('aula.apps.presencia.views',
     url(r'^afegeixAlumnesLlista/(?P<pk>\d+)/$', 'afegeixAlumnesLlista', 
         name="aula__horari__afegir_alumnes" ),
                        
+    url(r'^copiarAlumnesLlista/(?P<pk>\d+)/$', 'copiarAlumnesLlista', 
+        name="aula__horari__copiar_alumnes" ),
+                       
     url(r'^marcarComHoraSenseAlumnes/(?P<pk>\d+)/$', 'marcarComHoraSenseAlumnes', 
         name="aula__horari__hora_sense_alumnes" ),
                        
