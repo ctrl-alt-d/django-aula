@@ -183,7 +183,9 @@ def calcula_menu( user , path ):
                       ("Reset Passwd", 'administracio__professorat__reset_passwd', di, None, None ),
                       ("Càrrega Inicial", 'administracio__configuracio__carrega_inicial', di, None, None ),
                       ("Promocions", 'administracio__promocions__llista', di, None, None),
-                      ("Nou Alumne", 'administracio__alumnes__noualumne', di, None, None),
+#                      ("Nou Alumne", 'administracio__alumnes__noualumne', di, None, None),
+# Aquesta pantalla encara no té implementada la seva funcionalitat.
+# Queda pendent acabar-la, o eliminar-la de l'aplicació.
                    )
                ),
              
