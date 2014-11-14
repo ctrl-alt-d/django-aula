@@ -155,6 +155,6 @@ def sortidaiCal( request):
 #     response['Content-Disposition'] = 'attachment; filename=shifts.ics'
 #     return response
 
-    HttpResponse( cal.to_ical() )
+    return HttpResponse( cal.to_ical() )
     
     
