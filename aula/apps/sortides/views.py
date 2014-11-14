@@ -18,6 +18,11 @@ from django_tables2.config import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
 
+from icalendar import Calendar, Event
+from icalendar import vCalAddress, vText
+from django.http.response import HttpResponse
+from django.utils.datetime_safe import datetime
+
 @login_required
 @group_required(['professors'])
 def sortidesMevesList( request ):
@@ -73,7 +78,7 @@ def sortidesGestioList( request ):
         
     
 @login_required
-@group_required(['professors'])
+@group_required(['professors'])   #TODO: i grup sortides
 def sortidaEdit( request, pk = None ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -83,6 +88,7 @@ def sortidaEdit( request, pk = None ):
     
     if bool( pk ):
         instance = get_object_or_404( Sortida, pk = pk )
+        #TODO: Comprovar seguretat: La sortida és del professor o bé és direcció o bé és grup sortides.
     else:
         instance = Sortida()
         instance.professor_que_proposa = professor
@@ -120,5 +126,34 @@ def sortidaEdit( request, pk = None ):
                     },
                     context_instance=RequestContext(request))    
     
-    
+def sortidaiCal( request):
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    cal = Calendar()
+    cal.add('method','PUBLISH' ) # IE/Outlook needs this
+
+    for instance in Sortida.objects.all():
+        event = Event()
         
+        d=instance.data_inici
+        t=instance.franja_inici.hora_inici
+        dtstart = datetime( d.year, d.month, d.day, t.hour, t.minute  )
+        d=instance.data_fi
+        t=instance.franja_fi.hora_fi
+        dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
+        
+        event.add('dtstart',dtstart)
+        event.add('dtend' ,dtend)
+        event.add('summary',instance.titol_de_la_sortida)
+        event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
+        event['location'] = vText( instance.ciutat )
+        
+        cal.add_component(event)
+
+    response = HttpResponse( cal.to_ical() , mimetype='text/calendar')
+    response['Filename'] = 'shifts.ics'  # IE needs this
+    response['Content-Disposition'] = 'attachment; filename=shifts.ics'
+    return response
+    
+    
+    

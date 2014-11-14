@@ -1,6 +1,6 @@
 # Development
 appy==0.8.4
-django>=1.5.1,<1.6
+django>=1.5.1,<=1.6
 #django-debug-toolbar
 django_extensions
 lxml
@@ -11,3 +11,4 @@ django-debug-toolbar
 #python-lxml
 python-dateutil
 django-tables2>=0.15
+icalendar>=3.8.4

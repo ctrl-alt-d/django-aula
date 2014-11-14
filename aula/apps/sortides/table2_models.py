@@ -9,6 +9,8 @@ from aula.apps.sortides.models import Sortida
 
 class Table2_Sortides(tables.Table):
     
+    titol_de_la_sortida = tables.LinkColumn('sortides__sortides__edit_by_pk', kwargs={'pk': A('pk'),})
+    
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
