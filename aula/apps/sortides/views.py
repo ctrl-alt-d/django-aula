@@ -44,7 +44,7 @@ def sortidesMevesList( request ):
         
     return render(
                   request, 
-                  'table2.html', 
+                  'lesMevesSortides.html', 
                   {'table': table,
                    }
                  )       
