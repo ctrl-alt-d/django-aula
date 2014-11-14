@@ -224,7 +224,7 @@ def calcula_menu( user , path ):
                #--Varis--------------------------------------------------------------------------
                ('sortides', 'Sortides', 'sortides__meves__list', di or pr, None,
                   (
-                      (u"Gestió de Sortides", 'sortides__gestio__list', di or pr, None, None ),
+                      (u"Gestió de Sortides", 'sortides__gestio__list', di , None, None ),
                       (u"Les meves propostes de Sortides", 'sortides__meves__list', pr, None, None ),
                    )
                ),                            
