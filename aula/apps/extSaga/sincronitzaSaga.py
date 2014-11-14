@@ -26,8 +26,10 @@ def sincronitza(f, user = None):
         return msgs
     
     errors = []
-        
-    Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).update( estat_sincronitzacio = 'PRC')
+    
+    #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
+    Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
+        .update( estat_sincronitzacio = 'PRC')
         #,"00_NOM","01_ADRE�A","02_CP","03_CENTRE PROCED�NCIA","04_CODI LOCALITAT","05_CORREU ELECTR�NIC","06_DATA NAIXEMENT","07_DOC. IDENTITAT","08_GRUPSCLASSE","09_NOM LOCALITAT","10_TEL�FONS","11_TUTOR(S)"
     reader = csv.DictReader(f)
     errors_nAlumnesSenseGrup=0
@@ -144,7 +146,7 @@ def sincronitza(f, user = None):
             for prefixe_grup in grups_estatics.valor_parametre.split(','):
                 prefix = prefixe_grup.replace(' ','')
                 if prefix:
-                    es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith(  )
+                    es_de_grup_estatic = es_de_grup_estatic or alumneDadesAnteriors.grup.descripcio_grup.startswith( prefix )
 
             if a.grup.pk != alumneDadesAnteriors.grup.pk:
                 if es_de_grup_estatic: #no canviar-li de grup
@@ -249,8 +251,9 @@ def sincronitza(f, user = None):
     #
     # FI
     #
-
-    Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).update( estat_sincronitzacio = '')
+    # Tornem a l'estat de sincronització en blanc, excepte els alumnes esborrats DEL i els alumnes entrats manualment MAN.
+    Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
+        .update( estat_sincronitzacio = '')
     errors.append( u'%d alumnes sense grup'%errors_nAlumnesSenseGrup )
     warnings= [  ]
     infos=    [   ]
@@ -258,6 +261,8 @@ def sincronitza(f, user = None):
     infos.append(u'{0} alumnes insertats'.format(info_nAlumnesInsertats) )
     infos.append(u'{0} alumnes esborrats'.format(info_nAlumnesEsborrats ) )
     infos.append(u'{0} alumnes canviats de grup'.format(info_nAlumnesCanviasDeGrup ) )
+    infos.append(u'{0} alumnes en estat sincronització manual'.format( \
+        len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
 
     msg = Missatge( 

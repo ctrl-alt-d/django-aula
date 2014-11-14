@@ -204,3 +204,20 @@ class passaLlistaGrupDataForm( forms.Form ):
 
 
 
+class llistaLesMevesHoresForm( forms.Form ):
+    hores = forms.ChoiceField(widget=forms.RadioSelect, choices=(('1','1')), required=True)
+    eliminarAlumnes = forms.BooleanField( label=u'Esborrar els alumnes actuals',required = False, initial=False,
+            help_text=u'''Vull eliminar els alumnes que tinc en aquesta hora. \r\n 
+            Compte no s'eliminaran els alumnes que tinguin assistències ja passades.\n
+            ES UN PROCES MOOOLT LENT!!!''',  )
+
+    def __init__(self, *args, **kwargs):
+        self.llistaHoresProfe = kwargs.pop('llistaHoresProfe', None)
+        super(llistaLesMevesHoresForm, self).__init__(*args, **kwargs)
+        self.fields['hores'] = forms.ChoiceField(widget=forms.RadioSelect, choices=self.llistaHoresProfe, required=True)
+
+#    Per fer validació extra.
+#    def clean(self):
+#        cleaned_data = super(llistaLesMevesHoresForm, self).clean()
+#        hores = cleaned_data.get("hores")
+

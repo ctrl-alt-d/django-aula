@@ -90,6 +90,7 @@ class AbstractAlumne(models.Model):
                 ('S-I', 'Sincronitzat Insert'),                            
                 ('S-U', 'Sincronitzat Update'),                            
                 ('DEL','Alumne donat de baixa'),
+                ('MAN','Alumne donat d\'alta manualment'),
                             )
     PERIODICITAT_FALTES_CHOICES = (
                 (0, 'No notificar'),

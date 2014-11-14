@@ -6,7 +6,8 @@ from django.template import RequestContext
 #formularis
 from aula.apps.presencia.forms import regeneraImpartirForm,ControlAssistenciaForm,\
     alertaAssistenciaForm, faltesAssistenciaEntreDatesForm,\
-    marcarComHoraSenseAlumnesForm, passaLlistaGrupDataForm
+    marcarComHoraSenseAlumnesForm, passaLlistaGrupDataForm,\
+    llistaLesMevesHoresForm
 from aula.apps.presencia.forms import afegeixTreuAlumnesLlistaForm, afegeixAlumnesLlistaExpandirForm
 from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsFormativesForm
 
@@ -940,6 +941,142 @@ def faltesAssistenciaEntreDates(request):
                 context_instance=RequestContext(request))
     
 
+# -----------------------------------------------------------------------------
+
+@login_required
+@group_required(['professors'])
+def copiarAlumnesLlista(request, pk):
+    credentials = getImpersonateUser(request) 
+    (user, l4) = credentials   
+    
+    head=u'Copiar alumnes a la llista a partir d\'una altre hora' 
+
+    pk = int(pk)
+    impartir = Impartir.objects.get ( pk = pk )
+    
+    #seg-------------------------------
+    pertany_al_professor = user.pk in [ impartir.horari.professor.pk,   \
+                                        impartir.professor_guardia.pk if impartir.professor_guardia else -1 ]
+    if not ( l4 or pertany_al_professor):
+        raise Http404() 
+
+    formset = []    
+
+    formHores = None
+
+    import datetime as t
+
+    dataRef = date.today()
+    dillunsSetmana = dataRef + t.timedelta(days=-dataRef.weekday())
+    #4 és el divendres 0,1,2,3,4 (5é dia)
+    divendresSetmana = dataRef + t.timedelta(days=4-dataRef.weekday())
+    dInici = date(year=dillunsSetmana.year, month=dillunsSetmana.month, day=dillunsSetmana.day)
+    dFi = date(year=divendresSetmana.year, month=divendresSetmana.month, day=divendresSetmana.day)
+
+    horarisProfe = Impartir.objects \
+                    .filter(dia_impartir__gte=dInici) \
+                    .filter(dia_impartir__lte=dFi) \
+                    .filter(horari__professor=user.pk) \
+                    .order_by('horari')
+    opcions = []
+    for eH in horarisProfe:
+        assistencies = ControlAssistencia.objects.filter(impartir__id=eH.id)
+        opcions.append((eH.id, 
+            unicode(eH.horari.assignatura) + " " + unicode(eH.horari.dia_de_la_setmana) + " " + unicode(eH.horari.hora) + 
+            u'--> Alumnes: ' + unicode(len(assistencies)) + ''))
+
+    if request.method == "POST":
+        formHores = llistaLesMevesHoresForm(request.POST, llistaHoresProfe=opcions)
+        if formHores.is_valid():
+            #Inicio el procés de copia.
+            #No deixar copiar si és la mateixa hora.
+            eliminarAlumnes = formHores.cleaned_data['eliminarAlumnes']
+            idHoraOrigen = formHores.cleaned_data['hores']
+            idHoraDesti = pk
+            horaDesti = Impartir.objects.get(id=idHoraDesti)
+            print "Origen {0}, Desti {1}".format(idHoraOrigen, idHoraDesti)
+
+            if int(idHoraOrigen) == int(idHoraDesti):
+                formHores._errors.setdefault(NON_FIELD_ERRORS, []).extend(
+                    [ u'''No pots copiar alumnes sobre la mateixa hora.'''])
+            else:
+                
+                #Obtenir llista d'alumnes de destí per veure solapaments.
+                alumnesDesti = {}
+                assistenciesDesti = ControlAssistencia.objects.filter(impartir__id=idHoraDesti)
+                for ca in assistenciesDesti:
+                    alumnesDesti[ca.alumne.id] = ca.alumne
+
+                assistenciesOrigen = ControlAssistencia.objects.filter(impartir__id=idHoraOrigen)
+                alumnesAAfegir = []
+                for ca in assistenciesOrigen:
+                    #Gravar la llista d'alumnes al destí.
+                    if eliminarAlumnes:
+                        #Copiem tots els alumnes perque els esborrarem tots abans.
+                        print "DEBUG: Alumne que cal copiar:" + str(ca.alumne)
+                        alumnesAAfegir.append(ca.alumne)
+                    else:
+                        #Copiem només els alumnes que ens interessen.
+                        if ca.alumne.id not in alumnesDesti:
+                            print "DEBUG: Alumne que cal copiar:" + str(ca.alumne)
+                            alumnesAAfegir.append(ca.alumne)
+
+                
+
+   
+                from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread, treuThread
+                #Eliminem alumnes abans de copiar.
+                if eliminarAlumnes:
+                    treu = treuThread(expandir=None, alumnes=alumnesDesti.values(), impartir=horaDesti, matmulla = False)
+                    treu.usuari = user
+                    treu.start()
+
+                    print "inici join"
+                    #Espera el final de l'eliminació.
+                    treu.join()
+                    print "fi join"
+                    
+                    #LOGGING
+                    Accio.objects.create( 
+                            tipus = 'LL',
+                            usuari = user,
+                            l4 = l4,
+                            impersonated_from = request.user if request.user != user else None,
+                            text = u"""Copiar alumnes, eliminar alumnes de {0}: {1}""".format(
+                                        horaDesti, 
+                                        u', '.join( [ unicode(a) for a in alumnesDesti ])))
+
+
+                #Llança el thread que expandirà a la resta del curs.
+                afegeix=afegeixThread(expandir=None, alumnes=alumnesAAfegir, impartir=horaDesti, usuari=user, matmulla=False)
+                afegeix.start()
+
+                #LOGGING
+                Accio.objects.create( 
+                        tipus = 'LL',
+                        usuari = user,
+                        l4 = l4,
+                        impersonated_from = request.user if request.user != user else None,
+                        text = u"""Copiar alumnes de {0} a {1}: {2}""".format(
+                                    impartir,                                                                         
+                                    horaDesti, 
+                                    u', '.join( [ unicode(a) for a in alumnesAAfegir ])))
+                            
+                #espero a que estigui fet el primer dia: abans de mostrar la pantalla de passar llista
+                import time
+                while afegeix and not afegeix.primerDiaFet(): time.sleep(  0.5 )
+                return HttpResponseRedirect('/presencia/passaLlista/%s/'% pk )
+    else:
+        formHores = llistaLesMevesHoresForm(llistaHoresProfe=opcions)
+
+    formset.append(formHores)
+    
+    return render_to_response(
+                  "formset.html", 
+                  {"formset": formset,
+                   "head": head,
+                   },
+                  context_instance=RequestContext(request))
 
     
     

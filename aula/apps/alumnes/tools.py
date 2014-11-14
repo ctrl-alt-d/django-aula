@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.models import Alumne, Grup
 from django.db.models import Q
 from aula.apps.incidencies.models import Incidencia, Expulsio, Sancio
 from aula.apps.presencia.models import ControlAssistencia
@@ -7,6 +7,9 @@ from aula.apps.tutoria.models import Actuacio, SeguimentTutorial
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa,\
     RespostaAvaluacioQualitativa
 from aula.apps.usuaris.models import Accio, LoginUsuari
+from datetime import date 
+import datetime
+
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
     a = Alumne.objects.get( pk = pk )
@@ -101,11 +104,23 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
     a_desti.save()
         
         
-        
-        
-        
-    
-    
-    
-    
-    
+def crea_alumne(nom, cognoms, dataNaixement, grup):
+    # Exemple d'ús:
+    #    from aula.apps.alumnes.tools import crea_alumne
+    #    crea_alumne("Cynthia", "Martínez Camps", "4-10-1996", "2CTX")
+
+
+    #Cal fer comprovacions dels paràmetres.
+    a=Alumne()
+    a.nom = nom
+    a.cognoms = cognoms
+    a.data_neixement = datetime.datetime.strptime(dataNaixement, "%d-%m-%Y").date()
+    descripcioGrup = str(grup)
+    grup = Grup.objects.get(descripcio_grup=descripcioGrup)
+    a.grup = grup
+    a.estat_sincronitzacio = 'MAN'
+    a.data_alta = date.today()
+    a.motiu_bloqueig = u'No sol·licitat'
+    a.tutors_volen_rebre_correu = False
+    a.save()
+
