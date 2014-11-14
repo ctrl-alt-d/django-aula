@@ -3,6 +3,7 @@ Sortides:
 * Es crea model sortida / altre activitats escolars.
 (ja existeix, cal canviar 'aprovada consell escolar' que prengui els valors sí, no, no cal )
 
+
 * Es crea nou model 'AbsèncieProgramades':
 Motiu (ex: sortida )
 Tractament (fk a Estat P,J,F,R )

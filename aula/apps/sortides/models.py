@@ -5,6 +5,14 @@ from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 
 class Sortida(models.Model):
+    
+    TIPUS_ACTIVITAT_CHOICES = (
+                    (  'E',u'Excursió - sortida'),
+                    (  'X',u'Xerrada'),
+                    (  'P',u'Parlament Verd'),
+                    (  'A',u'Altres (especificar-ho al títol)'),
+                   ) 
+    
     CONSELL_ESCOLAR_CHOICES = (
                     (  'P',u'Pendent'),
                     (  'A',u'Aprovada'),
@@ -29,20 +37,28 @@ class Sortida(models.Model):
 
     estat = models.CharField(max_length=1, default = 'E', choices=ESTAT_CHOICES,help_text=u"Estat de la sortida. No es considera proposta de sortida fins que no passa a estat 'Proposada'") 
     
-    titol_de_la_sortida = models.CharField(max_length=250,help_text=u"Escriu un títol breu que serveixi per identificar aquesta sortida. Ex: 1rESO Sant Climent.")
+    tipus = models.CharField(max_length=1, default = 'E', choices=TIPUS_ACTIVITAT_CHOICES,help_text=u"Tipus d'activitat") 
+    
+    titol_de_la_sortida = models.CharField(max_length=40,help_text=u"Escriu un títol breu que serveixi per identificar aquesta sortida.Ex: exemples: Visita al Museu Dalí, Ruta al barri gòtic, Xerrada sobre drogues ")
+
+    ambit = models.CharField(u"Àmbit", max_length=20,help_text=u"Quins alumnes hi van? Ex: 1r i 2n ESO. Ex: 1rESO grup A.")
+
+    ciutat = models.CharField(u"Ciutat", max_length=30,help_text=u"Ciutat(s) destinació. Ex: Girona, Cendrassos")
 
     esta_aprovada_pel_consell_escolar = models.CharField( u'Aprovada_pel_consell_escolar?',max_length=1, choices=CONSELL_ESCOLAR_CHOICES, default='P', help_text=u"Marca si aquesta sortida ja ha estat aprovada pel consell escolar" )
     
     departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza la sortida")
     
-    data_inici = models.DateField( help_text=u"Primer dia d'expulsió")
-    franja_inici = models.ForeignKey(FranjaHoraria, related_name='hora_inici_sortida',  help_text=u"Primera hora de la sortida")
-    data_fi = models.DateField(help_text=u"Darrer dia de la sortida")
-    franja_fi = models.ForeignKey(FranjaHoraria, related_name='hora_fi_sortida',  help_text=u"Darrera hora de la sortida")
+    data_inici = models.DateField( help_text=u"Primer dia lectiu de la sortida")
+    franja_inici = models.ForeignKey(FranjaHoraria, related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva de la sortida")
+    data_fi = models.DateField(help_text=u"Darrer dia  lectiu de la sortida")
+    franja_fi = models.ForeignKey(FranjaHoraria, related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva de la sortida que afecta a les classes")
     
-    materia = models.CharField(max_length=250,help_text=u"Matèria que es treballa a la sortida. Escriu el nom complet.")
+    materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a la sortida. Escriu el nom complet.")
     
     preu_per_alumne = models.CharField(max_length=100,help_text=u"Preu per alumne, escriu el preu que apareixerà a l'autorització. Si és gratuita cal indicar-ho.")
+
+    participacio = models.CharField(u"Participació", max_length=100,help_text=u"Nombre d’alumnes participants sobre el total possible. Per exemple: 46 de 60")
     
     mitja_de_transport = models.CharField(max_length=2, choices=TIPUS_TRANSPORT_CHOICES,help_text=u"Tria el mitjà de transport")
     
@@ -54,11 +70,15 @@ class Sortida(models.Model):
     
     feina_per_als_alumnes_aula = models.TextField(help_text=u"Descriu o comenta on els professors trobaran la feina que han de fer els alumnes que es quedin a l'aula. Si no queden alumnes a l'aula indica-ho.")
     
-    programa_de_la_sortida = models.TextField(help_text=u"Descriu per als pares el programa de la sortida: objectius, horaris, recomanacions (crema solar, gorra, insecticida, ...), cal portar (boli, llibreta), altres informacions d'interès per a la família. Si no cal portar res cal indicar-ho.")
+    programa_de_la_sortida = models.TextField(help_text=u"Descriu per als pares el programa de la sortida: horaris, objectius, pagaments a empreses, recomanacions (crema solar, gorra, insecticida, ...), cal portar (boli, llibreta), altres informacions d'interès per a la família. Si no cal portar res cal indicar-ho.")
     
     comentaris_interns = models.TextField(blank=True, help_text=u"Espai per anotar allò que sigui rellevant de cares a la sortida. Si no hi ha comentaris rellevants indica-ho.")
     
-    professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa la sortida")
+    professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa la sortida", related_name='professor_proposa_sortida')
+    
+    professor_responsable = models.ForeignKey(Professor,  help_text=u"Professor que proposa la sortida", related_name='professor_responsable_sortida')
+    
+    altres_professors_acompanyants = models.ManyToManyField(Professor, help_text=u"Professors acompanyants")
     
     
     def clean(self):

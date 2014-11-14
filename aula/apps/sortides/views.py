@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from aula.utils.widgets import DateTextImput
+from aula.utils.widgets import DateTextImput, bootStrapButtonSelect
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
@@ -13,29 +13,64 @@ from aula.apps.sortides.models import Sortida
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
+from aula.apps.sortides.table2_models import Table2_Sortides
+from django_tables2.config import RequestConfig
+from aula.utils.my_paginator import DiggPaginator
+from django.shortcuts import render
 
 @login_required
 @group_required(['professors'])
-def sortidesList( request ):
+def sortidesMevesList( request ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     
     professor = User2Professor( user )     
     
-    report = sortidesListRpt( user )
+    sortides = ( Sortida
+                   .objects
+                   .filter( professor_que_proposa = professor )
+                  )
+
+    table = Table2_Sortides( list( sortides ) ) 
+    table.order_by = 'total_expulsions_vigents' 
     
-    menuCTX = [  ( r'/sortides/sortidaEdit', 'Nova Sortida',), ]
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
-    return render_to_response(
-                'report.html',
-                    {'report': report,
-                     'head': 'Totes les sortides' ,
-                     'menuCTX': menuCTX,
-                    },
-                    context_instance=RequestContext(request))       
+    return render(
+                  request, 
+                  'table2.html', 
+                  {'table': table,
+                   }
+                 )       
+
+
+@login_required
+@group_required(['professors'])
+def sortidesGestioList( request ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
     
+    professor = User2Professor( user )     
     
+    sortides = ( Sortida
+                   .objects
+                   .exclude( estat = 'E' )
+                  )
+
+    table = Table2_Sortides( list( sortides ) ) 
+    table.order_by = 'total_expulsions_vigents' 
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+        
+    return render(
+                  request, 
+                  'table2.html', 
+                  {'table': table,
+                   }
+                 )       
+        
     
 @login_required
 @group_required(['professors'])
@@ -69,8 +104,13 @@ def sortidaEdit( request, pk = None ):
         
     form.fields['data_inici'].widget = DateTextImput()
     form.fields['data_fi'].widget = DateTextImput()
-    form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
+    #form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
+    w= bootStrapButtonSelect( )
+    w.choices = form.fields['estat'].widget.choices 
+    form.fields['estat'].widget = w
 
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
         
     return render_to_response(
                 'form.html',
