@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-
+from django.conf import settings
 #templates
 from django.template import RequestContext
 
@@ -363,6 +363,7 @@ def passaLlista( request, pk ):
                    "head": head,
                    "info": info,
                    "feelLuckyEnabled": True,
+                   "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA
                    },
                   context_instance=RequestContext(request))
     

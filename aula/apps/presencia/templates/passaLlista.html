@@ -130,7 +130,9 @@
     	<div class="col-sm-4 hidden-xs">
 			  <p><a href="/presencia/treuAlumnesLlista/{{id_impartir}}">Treure alumnes de la llista</a></p>
 			  <p><a href="/presencia/afegeixAlumnesLlista/{{id_impartir}}">Afegir alumnes a la llista</a></p>
+			  {% if permetCopiarDUnaAltreHoraEnabled %}
 			  <p><a href="/presencia/copiarAlumnesLlista/{{id_impartir}}" >Copiar alumnes d'una altre hora</a></p>
+			  {% endif %}
 			  <p><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}">Incidències</a></p>
 			  <p><a href="/baixes/feina/{{id_impartir}}" > 
 			    Feina a Realitzar 
