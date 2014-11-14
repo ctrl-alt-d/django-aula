@@ -102,7 +102,7 @@ def sortidaEdit( request, pk = None ):
         
         if form.is_valid():            
             form.save()
-            return HttpResponseRedirect( r'/sortides/sortidesList' )
+            return HttpResponseRedirect( r'/sortides/sortidesGestioList' )
             
     else:
 
@@ -150,10 +150,11 @@ def sortidaiCal( request):
         
         cal.add_component(event)
 
-    response = HttpResponse( cal.to_ical() , mimetype='text/calendar')
-    response['Filename'] = 'shifts.ics'  # IE needs this
-    response['Content-Disposition'] = 'attachment; filename=shifts.ics'
-    return response
-    
+#     response = HttpResponse( cal.to_ical() , mimetype='text/calendar')
+#     response['Filename'] = 'shifts.ics'  # IE needs this
+#     response['Content-Disposition'] = 'attachment; filename=shifts.ics'
+#     return response
+
+    HttpResponse( cal.to_ical() )
     
     
