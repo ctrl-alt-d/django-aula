@@ -1,0 +1,44 @@
+{% extends "table2.html" %}
+{% load i18n %}
+{% load django_tables2 %}
+{% load staticfiles %}
+{% load humanize %}
+
+
+{% block pretaula %} 
+
+	<div class="row row-padded" style="background-color:white">
+	<div class="col-sm-12 col-xs-12">
+	<div class="form-group">
+	    <label for="url_cal">URL per importar calendari:</label>
+			<input id="url_cal" 
+				   type="text" 
+				   name="url_cal" 
+				   value="{{url}}"		
+				   class="form-control" 
+				   data-toggle="popover" 
+				   data-trigger="hover" 
+				   data-placement="bottom" 
+				   data-content="ctrl-c per copiar"
+				   >
+			</input>       
+    </div>
+    </div> 
+    </div> 
+    <script>
+  
+		$("#url_cal").on( "click", function() {
+			$( this ).popover("show");
+			$( this ).select();
+		});  	
+		
+		$("#url_cal").popover();
+
+    	
+
+		
+    </script>
+	
+{% endblock %}
+
+

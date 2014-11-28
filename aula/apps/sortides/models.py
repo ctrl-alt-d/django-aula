@@ -3,6 +3,7 @@ from django.db import models
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
+from aula.apps.alumnes.models import Alumne
 
 class Sortida(models.Model):
     
@@ -49,16 +50,21 @@ class Sortida(models.Model):
     
     departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza la sortida")
     
-    data_inici = models.DateField( help_text=u"Primer dia lectiu de la sortida")
-    franja_inici = models.ForeignKey(FranjaHoraria, related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva de la sortida")
-    data_fi = models.DateField(help_text=u"Darrer dia  lectiu de la sortida")
-    franja_fi = models.ForeignKey(FranjaHoraria, related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva de la sortida que afecta a les classes")
+    data_inici = models.DateField( u"Presencia: Des de", help_text=u"Primer dia lectiu de la sortida", blank=True, null=True)
+    franja_inici = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Des de", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva de la sortida", blank=True, null=True)
+    data_fi = models.DateField(  u"Presencia: Fins a",help_text=u"Darrer dia  lectiu de la sortida", blank=True, null=True)
+    franja_fi = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Fins a", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva de la sortida que afecta a les classes", blank=True, null=True)
+    
+    calendari_desde = models.DateTimeField( u"Caldendari: Des de",help_text=u"Es publicarà al calendari del Centre")
+    calendari_finsa = models.DateTimeField( u"Caldendari: Fins a",help_text=u"Es publicarà al calendari del Centre")
+    
+    calendari_public = models.BooleanField(u"Publicar activitat", default=False, help_text = u"Ha d'apareixer al calendari públic de la web")
     
     materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a la sortida. Escriu el nom complet.")
     
     preu_per_alumne = models.CharField(max_length=100,help_text=u"Preu per alumne, escriu el preu que apareixerà a l'autorització. Si és gratuita cal indicar-ho.")
 
-    participacio = models.CharField(u"Participació", max_length=100,help_text=u"Nombre d’alumnes participants sobre el total possible. Per exemple: 46 de 60")
+    participacio = models.CharField(u"Participació", editable=False, default=u"N/A", max_length=100,help_text=u"Nombre d’alumnes participants sobre el total possible. Per exemple: 46 de 60")
     
     mitja_de_transport = models.CharField(max_length=2, choices=TIPUS_TRANSPORT_CHOICES,help_text=u"Tria el mitjà de transport")
     
@@ -80,12 +86,19 @@ class Sortida(models.Model):
     
     altres_professors_acompanyants = models.ManyToManyField(Professor, help_text=u"Professors acompanyants")
     
+    alumnes_convocats = models.ManyToManyField(Alumne, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
+
+    alumnes_que_no_vindran = models.ManyToManyField(Alumne, help_text=u"Alumnes que haurien de perquè estan convocats però no venen",related_name='sortides_on_ha_faltat')
     
     def clean(self):
         clean_sortida( self )
     
 
-    
+# ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
+from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_delete
+
+from aula.apps.sortides.business_rules.sortida import sortida_m2m_changed
+m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_que_no_vindran.through )    
     
     
     

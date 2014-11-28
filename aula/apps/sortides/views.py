@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
-from aula.utils.widgets import DateTextImput, bootStrapButtonSelect
+from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
+    DateTimeTextImput
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
@@ -13,7 +14,7 @@ from aula.apps.sortides.models import Sortida
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
-from aula.apps.sortides.table2_models import Table2_Sortides
+from aula.apps.sortides.table2_models import Table2_Sortides,Table2_SortidesGestio
 from django_tables2.config import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
@@ -22,6 +23,9 @@ from icalendar import Calendar, Event
 from icalendar import vCalAddress, vText
 from django.http.response import HttpResponse
 from django.utils.datetime_safe import datetime
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from aula.apps.alumnes.models import Alumne, AlumneGrupNom
 
 @login_required
 @group_required(['professors'])
@@ -64,22 +68,25 @@ def sortidesGestioList( request ):
                    .exclude( estat = 'E' )
                   )
 
-    table = Table2_Sortides( list( sortides ) ) 
+    table = Table2_SortidesGestio( list( sortides ) ) 
     table.order_by = 'total_expulsions_vigents' 
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
+    url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
+        
     return render(
                   request, 
-                  'table2.html', 
+                  'gestioDeSortides.html', 
                   {'table': table,
+                   'url': url,
                    }
                  )       
         
     
 @login_required
 @group_required(['professors'])   #TODO: i grup sortides
-def sortidaEdit( request, pk = None ):
+def sortidaEdit( request, pk = None, esGestio=False ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -100,9 +107,10 @@ def sortidaEdit( request, pk = None ):
     if request.method == "POST":
         form = formIncidenciaF(request.POST, instance = instance )
         
-        if form.is_valid():            
+        if form.is_valid(): 
             form.save()
-            return HttpResponseRedirect( r'/sortides/sortidesGestioList' )
+            nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+            return HttpResponseRedirect( nexturl )
             
     else:
 
@@ -114,9 +122,15 @@ def sortidaEdit( request, pk = None ):
     w= bootStrapButtonSelect( )
     w.choices = form.fields['estat'].widget.choices 
     form.fields['estat'].widget = w
-
+    form.fields['alumnes_convocats'].queryset = AlumneGrupNom.objects.all() 
+    form.fields['alumnes_que_no_vindran'].queryset = AlumneGrupNom.objects.all()     
+    
+    form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+
+    form.fields['calendari_desde'].widget = DateTimeTextImput()
+    form.fields['calendari_finsa'].widget = DateTimeTextImput()
         
     return render_to_response(
                 'form.html',

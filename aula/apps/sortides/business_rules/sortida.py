@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 
+
 def clean_sortida( instance ):
     
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
@@ -27,10 +28,10 @@ def clean_sortida( instance ):
     
     #si passem a proposat
     if instance.estat in (  'P', 'R' ):
-        if ( instance.data_inici < dt.date.today() or
-             instance.data_fi < instance.data_inici 
+        if ( instance.calendari_desde < dt.date.today() or
+             instance.calendari_finsa < instance.calendari_desde 
              ):
-            errors.append( u"Comprova les dates i franges de la sortida" )
+            errors.append( u"Comprova les dates del calendari" )
 
     
     #si passem a revisada 
@@ -66,13 +67,29 @@ def clean_sortida( instance ):
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot marcar com aprovada pel Consell Escolar." )
     
+    dades_presencia = [ bool(instance.data_inici),
+                        bool(instance.franja_inici),
+                        bool(instance.data_fi),
+                        bool(instance.franja_fi),  ]
+    if len( set( dades_presencia ) ) > 1:
+        errors.append( u"Dates i franges de control de presencia cal entrar-les totes o cap" )
+    
     
     if l4:
         pass
     elif bool(errors):
         raise ValidationError( errors  )
     
-
+def sortida_m2m_changed(sender, instance, action, reverse, *args, **kwargs):
+    
+    for alumne in instance.alumnes_que_no_vindran.all():
+        if alumne not in instance.alumnes_convocats.all():
+            instance.alumnes_convocats.add( alumne )
+    
+    instance.participacio = u"{0} de {1}".format( instance.alumnes_convocats.count() - instance.alumnes_que_no_vindran.count( ) ,
+                                                  instance.alumnes_convocats.count() )
+    instance.__class__.objects.filter(pk=instance.pk).update( participacio = instance.participacio )
+    
 
 
     
