@@ -28,7 +28,7 @@ def clean_sortida( instance ):
     
     #si passem a proposat
     if instance.estat in (  'P', 'R' ):
-        if ( instance.calendari_desde < dt.date.today() or
+        if ( instance.calendari_desde < datetime.now() or
              instance.calendari_finsa < instance.calendari_desde 
              ):
             errors.append( u"Comprova les dates del calendari" )

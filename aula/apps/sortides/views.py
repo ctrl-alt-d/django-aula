@@ -146,18 +146,18 @@ def sortidaiCal( request):
     cal = Calendar()
     cal.add('method','PUBLISH' ) # IE/Outlook needs this
 
-    for instance in Sortida.objects.all():
+    for instance in Sortida.objects.filter( calendari_desde__isnull = False ).all():
         event = Event()
         
-        d=instance.data_inici
-        t=instance.franja_inici.hora_inici
-        dtstart = datetime( d.year, d.month, d.day, t.hour, t.minute  )
-        d=instance.data_fi
-        t=instance.franja_fi.hora_fi
-        dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
+#         d=instance.data_inici
+#         t=instance.franja_inici.hora_inici
+#         dtstart = datetime( d.year, d.month, d.day, t.hour, t.minute  )
+#         d=instance.data_fi
+#         t=instance.franja_fi.hora_fi
+#         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
         
-        event.add('dtstart',dtstart)
-        event.add('dtend' ,dtend)
+        event.add('dtstart',instance.calendari_desde)
+        event.add('dtend' ,instance.calendari_finsa)
         event.add('summary',instance.titol_de_la_sortida)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
