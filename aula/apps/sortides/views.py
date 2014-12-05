@@ -21,11 +21,12 @@ from django.shortcuts import render
 
 from icalendar import Calendar, Event
 from icalendar import vCalAddress, vText
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, Http404
 from django.utils.datetime_safe import datetime
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom
+from django.contrib import messages
 
 @login_required
 @group_required(['professors'])
@@ -95,17 +96,19 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     
     if bool( pk ):
         instance = get_object_or_404( Sortida, pk = pk )
-        #TODO: Comprovar seguretat: La sortida és del professor o bé és direcció o bé és grup sortides.
+        potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+        if not potEntrar:
+            raise Http404
     else:
         instance = Sortida()
         instance.professor_que_proposa = professor
     
     instance.credentials = credentials
    
-    formIncidenciaF = modelform_factory(Sortida )
+    formIncidenciaF = modelform_factory(Sortida, exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', ) )
 
     if request.method == "POST":
-        form = formIncidenciaF(request.POST, instance = instance )
+        form = formIncidenciaF(request.POST, instance = instance)
         
         if form.is_valid(): 
             form.save()
@@ -114,16 +117,14 @@ def sortidaEdit( request, pk = None, esGestio=False ):
             
     else:
 
-        form = formIncidenciaF( instance = instance )
+        form = formIncidenciaF( instance = instance  )
         
     form.fields['data_inici'].widget = DateTextImput()
     form.fields['data_fi'].widget = DateTextImput()
     #form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
-    w= bootStrapButtonSelect( )
-    w.choices = form.fields['estat'].widget.choices 
-    form.fields['estat'].widget = w
-    form.fields['alumnes_convocats'].queryset = AlumneGrupNom.objects.all() 
-    form.fields['alumnes_que_no_vindran'].queryset = AlumneGrupNom.objects.all()     
+    widgetBootStrapButtonSelect= bootStrapButtonSelect( )
+    widgetBootStrapButtonSelect.choices = form.fields['estat'].widget.choices 
+    form.fields['estat'].widget = widgetBootStrapButtonSelect    
     
     form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
     for f in form.fields:
@@ -139,6 +140,136 @@ def sortidaEdit( request, pk = None, esGestio=False ):
                      'missatge': 'Sortides'
                     },
                     context_instance=RequestContext(request))    
+
+#-------------------------------------------------------------------
+    
+@login_required
+@group_required(['professors'])   #TODO: i grup sortides
+def alumnesConvocats( request, pk , esGestio=False ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404
+    
+    instance.credentials = credentials
+   
+    formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_convocats',  ) )
+
+    if request.method == "POST":
+        form = formIncidenciaF(request.POST, instance = instance)
+        
+        if form.is_valid(): 
+            form.save()
+            nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+            return HttpResponseRedirect( nexturl )
+            
+    else:
+
+        form = formIncidenciaF( instance = instance  )
+        
+    form.fields['alumnes_convocats'].queryset = AlumneGrupNom.objects.all() 
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+
+    form.fields['alumnes_convocats'].widget.attrs['style'] = "height: 500px;"
+        
+    return render_to_response(
+                'form.html',
+                    {'form': form,
+                     'head': 'Sortides' ,
+                     'missatge': 'Sortides'
+                    },
+                    context_instance=RequestContext(request))    
+
+
+
+
+#-------------------------------------------------------------------
+    
+@login_required
+@group_required(['professors'])   #TODO: i grup sortides
+def alumnesFallen( request, pk , esGestio=False ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404
+    
+    instance.credentials = credentials
+   
+    formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_que_no_vindran',  ) )
+
+    if request.method == "POST":
+        form = formIncidenciaF(request.POST, instance = instance)
+        
+        if form.is_valid(): 
+            form.save()
+            nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+            return HttpResponseRedirect( nexturl )
+            
+    else:
+
+        form = formIncidenciaF( instance = instance  )
+        
+    ids_alumnes_que_venen = [ a.id for a in instance.alumnes_convocats.all()  ]
+    form.fields['alumnes_que_no_vindran'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_que_venen ) 
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+
+    form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
+        
+    return render_to_response(
+                'form.html',
+                    {'form': form,
+                     'head': 'Sortides' ,
+                     'missatge': 'Sortides'
+                    },
+                    context_instance=RequestContext(request))    
+
+#-------------------------------------------------------------------
+
+
+    
+@login_required
+@group_required(['professors'])   #TODO: i grup sortides
+def esborrar( request, pk , esGestio=False ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404
+    
+    instance.credentials = credentials
+   
+    try:
+        instance.delete()
+    except:
+        messages.warning(request, u"Error esborrant la sortida." )
+    
+    nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+    return HttpResponseRedirect( nexturl )
+        
+
+
+#-------------------------------------------------------------------
     
 def sortidaiCal( request):
 

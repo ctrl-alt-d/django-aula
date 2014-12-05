@@ -98,7 +98,7 @@ class Sortida(models.Model):
 from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_delete
 
 from aula.apps.sortides.business_rules.sortida import sortida_m2m_changed
-m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_que_no_vindran.through )    
+m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_convocats.through )    
     
     
     

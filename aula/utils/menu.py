@@ -23,6 +23,7 @@ def calcula_menu( user , path ):
     pl = not al and Group.objects.get_or_create(name= 'professional' )[0] in user.groups.all()
     co = not al and Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
     pg = not al and Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
+    so = not al and Group.objects.get_or_create(name= 'sortides' )[0] in user.groups.all()
     tu = not al and pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )    
     tots = di or pr or pl or co or al or pg
     
@@ -224,7 +225,7 @@ def calcula_menu( user , path ):
                #--Varis--------------------------------------------------------------------------
                ('sortides', 'Sortides', 'sortides__meves__list', di or pr, None,
                   (
-                      (u"Gestió de Sortides", 'sortides__gestio__list', di , None, None ),
+                      (u"Gestió de Sortides", 'sortides__gestio__list', di or so, None, None ),
                       (u"Les meves propostes de Sortides", 'sortides__meves__list', pr, None, None ),
                    )
                ),                            

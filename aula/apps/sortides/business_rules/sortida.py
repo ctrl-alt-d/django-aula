@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 
 
+
 def clean_sortida( instance ):
     
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
@@ -72,23 +73,29 @@ def clean_sortida( instance ):
                         bool(instance.data_fi),
                         bool(instance.franja_fi),  ]
     if len( set( dades_presencia ) ) > 1:
-        errors.append( u"Dates i franges de control de presencia cal entrar-les totes o cap" )
-    
+        errors.append( u"Dates i franges de control de presencia cal entrar-les totes o cap" )    
     
     if l4:
         pass
     elif bool(errors):
         raise ValidationError( errors  )
     
-def sortida_m2m_changed(sender, instance, action, reverse, *args, **kwargs):
+def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args, **kwargs):
+    if action in ( "post_remove" , "post_add" ):   
+        
+        alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
+        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
+        
+        alumnesATreure = alumnesQueNoVenen - ( alumnesQueVenen & alumnesQueNoVenen )
+        
+        print 'esborrar', alumnesATreure
     
-    for alumne in instance.alumnes_que_no_vindran.all():
-        if alumne not in instance.alumnes_convocats.all():
-            instance.alumnes_convocats.add( alumne )
-    
-    instance.participacio = u"{0} de {1}".format( instance.alumnes_convocats.count() - instance.alumnes_que_no_vindran.count( ) ,
-                                                  instance.alumnes_convocats.count() )
-    instance.__class__.objects.filter(pk=instance.pk).update( participacio = instance.participacio )
+        for alumne in alumnesATreure:
+            instance.alumnes_que_no_vindran.remove( alumne )
+        
+        instance.participacio = u"{0} de {1}".format( instance.alumnes_convocats.count() - instance.alumnes_que_no_vindran.count( ) ,
+                                                      instance.alumnes_convocats.count() )
+        instance.__class__.objects.filter(pk=instance.pk).update( participacio = instance.participacio )
     
 
 
