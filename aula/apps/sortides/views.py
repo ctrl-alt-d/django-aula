@@ -253,6 +253,8 @@ def esborrar( request, pk , esGestio=False ):
     professor = User2Professor( user )     
     
     instance = get_object_or_404( Sortida, pk = pk )
+    
+    #TODO: si no és direcció o sortides cal comprovar l'estat de la sortida.
     potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404

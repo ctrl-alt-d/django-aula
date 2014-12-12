@@ -223,7 +223,7 @@ def calcula_menu( user , path ):
     if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU:
         arbreSortides = (
                #--Varis--------------------------------------------------------------------------
-               ('sortides', 'Sortides', 'sortides__meves__list', di or pr, None,
+               ('sortides', 'Activitats', 'sortides__meves__list', di or pr, None,
                   (
                       (u"Gestió de Sortides", 'sortides__gestio__list', di or so, None, None ),
                       (u"Les meves propostes de Sortides", 'sortides__meves__list', pr, None, None ),

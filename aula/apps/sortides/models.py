@@ -55,8 +55,8 @@ class Sortida(models.Model):
     data_fi = models.DateField(  u"Presencia: Fins a",help_text=u"Darrer dia  lectiu de la sortida", blank=True, null=True)
     franja_fi = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Fins a", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva de la sortida que afecta a les classes", blank=True, null=True)
     
-    calendari_desde = models.DateTimeField( u"Caldendari: Des de",help_text=u"Es publicarà al calendari del Centre")
-    calendari_finsa = models.DateTimeField( u"Caldendari: Fins a",help_text=u"Es publicarà al calendari del Centre")
+    calendari_desde = models.DateTimeField( u"Calendari: Des de",help_text=u"Es publicarà al calendari del Centre")
+    calendari_finsa = models.DateTimeField( u"Calendari: Fins a",help_text=u"Es publicarà al calendari del Centre")
     
     calendari_public = models.BooleanField(u"Publicar activitat", default=False, help_text = u"Ha d'apareixer al calendari públic de la web")
     

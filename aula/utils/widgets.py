@@ -177,13 +177,14 @@ class DateTimeTextImput(DateTimeInput):
                                 $('#datetime_""" + attrs['id'] + """').datetimepicker({
                                     pickSeconds: false   ,
                                     language: 'ca'      ,
-                                    weekStart: 1                       
+                                    weekStart: 1             
                                 });
                             });
                         </script>"""
         attrs.setdefault( 'class', "" ) 
         attrs['class'] += " form-control"        
-        attrs['data-format'] ="dd/MM/yyyy HH:mm"   
+        attrs['data-format'] ="dd/MM/yyyy hh:mm"   
+        self.format = "%d/%m/%Y %H:%M"  
         super_html = super( DateTimeTextImput, self ).render( name, value, attrs)
         
         return mark_safe(pre_html  + super_html +  post_html + javascript   )                                    
