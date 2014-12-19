@@ -261,10 +261,13 @@ def esborrar( request, pk , esGestio=False ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     
-    #TODO: si no és direcció o sortides cal comprovar l'estat de la sortida.
-    potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    mortalPotEntrar = (  instance.professor_que_proposa == professor  and  not instance.estat in [ 'R', 'G' ] )
+    direccio = ( request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    
+    potEntrar = mortalPotEntrar or direccio
     if not potEntrar:
-        raise Http404
+        messages.warning(request, u"No pots esborrar aquesta sortida." )
+        return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
     
     instance.credentials = credentials
    
