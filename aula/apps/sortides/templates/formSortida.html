@@ -1,0 +1,65 @@
+{% extends "form.html" %}
+
+
+	{% block postform  %}
+	
+	<script type="text/javascript">
+	
+	$(document).ready(function() {
+
+		$( "#id_data_inici" ).change(function() {
+		  actualitzaDatesCalendari();
+		});
+		
+		$( "#id_franja_inici" ).change(function() {
+		  actualitzaDatesCalendari();
+		});
+		
+		$( "#id_data_fi" ).change(function() {
+		  actualitzaDatesCalendari();
+		});
+		
+		$( "#id_franja_fi" ).change(function() {
+		  actualitzaDatesCalendari();
+		});
+		
+		$('#datetime_id_data_inici').bind('changeDate', actualitzaDatesCalendari);
+
+	});
+				
+	function actualitzaDatesCalendari() {
+		
+		valor_franja = $("#id_franja_inici option:selected").text();
+		desti_desde_en_blanc = $("#id_calendari_desde" ).val().length === 0;
+		data_origen_desde_informat = $( "#id_data_inici" ).val().length > 3;
+		temps_origen_desde_informat = valor_franja.length > 3 && valor_franja.substring(0,3) != "---";
+				
+		if( desti_desde_en_blanc) {
+			if (data_origen_desde_informat && temps_origen_desde_informat ) {
+				$("#id_calendari_desde" ).val( $( "#id_data_inici" ).val() +  ' ' + valor_franja.substring(0,5) );
+			} else {
+				$("#id_calendari_desde" ).val( '' );
+			}
+		}
+
+		valor_franja = $("#id_franja_fi option:selected").text();
+		desti_finsa_en_blanc = $("#id_calendari_finsa" ).val().length === 0;
+		data_origen_finsa_informat = $( "#id_data_fi" ).val().length > 3;
+		temps_origen_finsa_informat = valor_franja.length > 3 && valor_franja.substring(0,3) != "---";
+				
+		if( desti_finsa_en_blanc) {
+			if (data_origen_finsa_informat && temps_origen_finsa_informat ) {
+				$("#id_calendari_finsa" ).val( $( "#id_data_fi" ).val() +  ' ' + valor_franja.substring(8,13) );
+			} else {
+				$("#id_calendari_finsa" ).val( '' );
+			}
+		}
+
+
+
+	}
+		 
+	</script>
+	
+	{% endblock %}
+

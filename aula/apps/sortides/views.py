@@ -134,7 +134,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     form.fields['calendari_finsa'].widget = DateTimeTextImput()
         
     return render_to_response(
-                'form.html',
+                'formSortida.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides'
