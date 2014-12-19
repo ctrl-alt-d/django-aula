@@ -58,7 +58,7 @@ class Sortida(models.Model):
     calendari_desde = models.DateTimeField( u"Calendari: Des de",help_text=u"Es publicarà al calendari del Centre")
     calendari_finsa = models.DateTimeField( u"Calendari: Fins a",help_text=u"Es publicarà al calendari del Centre")
     
-    calendari_public = models.BooleanField(u"Publicar activitat", default=False, help_text = u"Ha d'apareixer al calendari públic de la web")
+    calendari_public = models.BooleanField(u"Publicar activitat", default=True, help_text = u"Ha d'apareixer al calendari públic de la web")
     
     materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a la sortida. Escriu el nom complet.")
     
@@ -99,6 +99,7 @@ from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_de
 
 from aula.apps.sortides.business_rules.sortida import sortida_m2m_changed
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_convocats.through )    
+m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_que_no_vindran.through )    
     
     
     

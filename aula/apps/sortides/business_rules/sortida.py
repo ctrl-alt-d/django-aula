@@ -9,6 +9,9 @@ from django.contrib.auth.models import User
 
 def clean_sortida( instance ):
     
+    if hasattr(instance, 'flag_clean_nomes_toco_alumnes'):
+        return
+    
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
 
     instance.instanceDB = None   #Estat a la base de dades
@@ -16,6 +19,11 @@ def clean_sortida( instance ):
         instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
     
     errors = []
+    
+#     ('E', u'Esborrany',),
+#     ('P', u'Proposada',),
+#     ('R', u'Revisada pel Coordinador',),
+#     ('G', u"Gestionada pel Cap d'estudis",), 
     
     #Per estats >= G només direcció pot tocar:
     if bool(instance.instanceDB) and instance.instanceDB.estat in [ 'G' ]:   
@@ -81,6 +89,18 @@ def clean_sortida( instance ):
         raise ValidationError( errors  )
     
 def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args, **kwargs):
+    #Un cop gestionada pel cap d'estudis ja no es pot tocar pels mortals.    
+    ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
+    if instance.pk:    
+        instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
+    errors = []
+
+    #Per estats >= G només direcció pot tocar:
+    if bool(instance.instanceDB) and instance.instanceDB.estat in [ 'G' ]:   
+        if not User.objects.filter( pk=user.pk, groups__name = 'direcció').exists():
+            errors.append( u"Només Direcció pot modificar una sortida que s'està gestionant." )                  
+    
+    
     if action in ( "post_remove" , "post_add" ):   
         
         alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
@@ -97,6 +117,11 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
                                                       instance.alumnes_convocats.count() )
         instance.__class__.objects.filter(pk=instance.pk).update( participacio = instance.participacio )
     
-
+    if l4:
+        pass
+    elif bool(errors):
+        raise ValidationError( errors  )
+    
+    
 
     

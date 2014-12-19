@@ -16,10 +16,10 @@ urlpatterns = patterns('aula.apps.sortides.views',
     url(r'^alumnesConvocatsGestio/(?P<pk>\d+)/$', 'alumnesConvocats', name = 'sortides__sortides__alumnesConvocatsGestio', kwargs={'esGestio':True}),
 
     url(r'^alumnesFallen/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesConvocats'),
-    url(r'^alumnesFallen/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesFallenGestio', kwargs={'esGestio':True}),
+    url(r'^alumnesFallenGestio/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesFallenGestio', kwargs={'esGestio':True}),
 
     url(r'^esborrar/(?P<pk>\d+)/$', 'esborrar', name = 'sortides__sortides__esborrar'),
-    url(r'^esborrar/(?P<pk>\d+)/$', 'esborrar', name = 'sortides__sortides__esborrarGestio', kwargs={'esGestio':True}),
+    url(r'^esborrarGestio/(?P<pk>\d+)/$', 'esborrar', name = 'sortides__sortides__esborrarGestio', kwargs={'esGestio':True}),
 
     url(r'^sortidaiCal/', 'sortidaiCal', name = 'sortides__sortides__ical'),
 

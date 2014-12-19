@@ -1,5 +1,25 @@
 {% extends "form.html" %}
 
+	{% block preform %}
+	<div class="row">
+		{% if form.instance.pk %}
+			<div class="col-sm-4  col-xs-12label_tag">
+	          <p class="text-right hidden-xs">
+	          	<label for="id_estat">Participació</label>
+	          </p>
+              <p class="visible-xs">
+              	<label for="id_estat">Participació</label>
+              </p>
+	          
+	        </div>
+			<div class="col-sm-8 col-xs-12 tria_tag">
+				{{ form.instance.participacio }}
+			</div>
+		{% endif %}
+	</div>
+	
+	{% endblock %}
+
 
 	{% block postform  %}
 	

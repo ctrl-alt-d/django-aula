@@ -27,6 +27,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom
 from django.contrib import messages
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 
 @login_required
 @group_required(['professors'])
@@ -43,7 +44,7 @@ def sortidesMevesList( request ):
                   )
 
     table = Table2_Sortides( list( sortides ) ) 
-    table.order_by = 'total_expulsions_vigents' 
+    table.order_by = '-calendari_desde' 
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
@@ -70,7 +71,7 @@ def sortidesGestioList( request ):
                   )
 
     table = Table2_SortidesGestio( list( sortides ) ) 
-    table.order_by = 'total_expulsions_vigents' 
+    table.order_by = '-calendari_desde' 
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
@@ -144,7 +145,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors'])   #TODO: i grup sortides
+@group_required(['professors'])   
 def alumnesConvocats( request, pk , esGestio=False ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -158,16 +159,19 @@ def alumnesConvocats( request, pk , esGestio=False ):
         raise Http404
     
     instance.credentials = credentials
-   
+    instance.flag_clean_nomes_toco_alumnes = True
     formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_convocats',  ) )
 
     if request.method == "POST":
         form = formIncidenciaF(request.POST, instance = instance)
         
-        if form.is_valid(): 
-            form.save()
-            nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
-            return HttpResponseRedirect( nexturl )
+        if form.is_valid():
+            try: 
+                form.save()
+                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
             
     else:
 
@@ -194,7 +198,7 @@ def alumnesConvocats( request, pk , esGestio=False ):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors'])   #TODO: i grup sortides
+@group_required(['professors'])   
 def alumnesFallen( request, pk , esGestio=False ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -203,6 +207,7 @@ def alumnesFallen( request, pk , esGestio=False ):
     professor = User2Professor( user )     
     
     instance = get_object_or_404( Sortida, pk = pk )
+    instance.flag_clean_nomes_toco_alumnes = True
     potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
@@ -215,10 +220,14 @@ def alumnesFallen( request, pk , esGestio=False ):
         form = formIncidenciaF(request.POST, instance = instance)
         
         if form.is_valid(): 
-            form.save()
-            nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
-            return HttpResponseRedirect( nexturl )
-            
+            try:
+                form.save()
+                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
+
+
     else:
 
         form = formIncidenciaF( instance = instance  )
@@ -240,8 +249,6 @@ def alumnesFallen( request, pk , esGestio=False ):
                     context_instance=RequestContext(request))    
 
 #-------------------------------------------------------------------
-
-
     
 @login_required
 @group_required(['professors'])   #TODO: i grup sortides
@@ -268,8 +275,6 @@ def esborrar( request, pk , esGestio=False ):
     
     nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
     return HttpResponseRedirect( nexturl )
-        
-
 
 #-------------------------------------------------------------------
     
