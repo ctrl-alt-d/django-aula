@@ -796,7 +796,7 @@ def alertesAcumulacioExpulsions( request ):
 
     tipus_incidencia = TipusIncidencia.objects.filter( es_informativa = False )
     alumnesAmbIncidenciesPerTipus = {}
-    if settings.CUSTOM_RANKING_BY_TIPUS:
+    if settings.CUSTOM_TIPUS_INCIDENCIES:
         for t in tipus_incidencia:
                 alumnesAmbIncidenciesPerTipus[t.id] = ( 
                             Incidencia
@@ -825,7 +825,7 @@ def alertesAcumulacioExpulsions( request ):
         alumnes_ids.add( x )
         alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
         
-    if settings.CUSTOM_RANKING_BY_TIPUS:
+    if settings.CUSTOM_TIPUS_INCIDENCIES:
         for t in tipus_incidencia:
             alumnesAmbIncidenciesPerTipus_dict[t.id] = {}
             for x, g in groupby(alumnesAmbIncidenciesPerTipus[t.id], lambda x: x):
