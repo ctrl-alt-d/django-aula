@@ -1219,7 +1219,7 @@ def cartaSancio( request, pk ):
         except:
             pass
         rpt_i.assignatura = u'{0}'.format( assignatura ) 
-                                 
+        rpt_i.tipus = i.tipus
         rpt_i.descripcio = i.descripcio_incidencia
         report.incidencies.append(rpt_i)
     
