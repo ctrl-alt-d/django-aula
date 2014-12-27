@@ -15,9 +15,9 @@ CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
     Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, frase amb la incidència que es genera
     
 CUSTOM_TIPUS_INCIDENCIES
-    Utilitza la possibilitat de classificar les incidències per tipus
-    A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència
-    
+    Utilitza la possibilitat de classificar les incidències per tipus:
+    - A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència
+
 CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA
     Període (dies) en el que es permet crear o modificar una incidència
     
