@@ -2,6 +2,7 @@
 
 from django.db import models
 from datetime import datetime
+from django.conf import settings
 
 
 class AbstractFrassesIncidenciaAula(models.Model):
@@ -176,10 +177,18 @@ class AbstractIncidencia(models.Model):
         return data
     
     def __unicode__(self):
-        informativa = u'''(informativa)''' if self.tipus.es_informativa else '' 
-        return u'''{0} {1}'''.format(informativa, self.descripcio_incidencia[:50])
+        tipus = ''
+        if self.tipus.es_informativa:
+            tipus = u'''(informativa)'''
+        elif settings.CUSTOM_TIPUS_INCIDENCIES:
+            tipus = u'''({0})'''.format(self.tipus)
+        return u'''{0} {1}'''.format(tipus, self.descripcio_incidencia[:100])
     
     def longUnicode(self):
-        informativa = u'''(informativa)''' if self.tipus.es_informativa else '' 
-        return u'''{0} {1} {2}'''.format(informativa, self.alumne, self.descripcio_incidencia)    
+        tipus = ''
+        if self.tipus.es_informativa:
+            tipus = u'''(informativa)'''
+        elif settings.CUSTOM_TIPUS_INCIDENCIES:
+            tipus = u'''({0})'''.format(self.tipus)
+        return u'''{0} {1} {2}'''.format(tipus, self.alumne, self.descripcio_incidencia)    
         

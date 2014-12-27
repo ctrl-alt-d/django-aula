@@ -16,7 +16,8 @@ CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
     
 CUSTOM_TIPUS_INCIDENCIES
     Utilitza la possibilitat de classificar les incidències per tipus:
-    - A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència
+    - A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència.
+    - El valor de les incidències en unicode inclou el seu tipus.
 
 CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA
     Període (dies) en el que es permet crear o modificar una incidència
