@@ -796,7 +796,7 @@ def alertesAcumulacioExpulsions( request ):
 
     tipus_incidencia = TipusIncidencia.objects.filter( es_informativa = False )
     alumnesAmbIncidenciesPerTipus = {}
-    if settings.CUSTOM_RANKING_BY_TIPUS:
+    if settings.CUSTOM_TIPUS_INCIDENCIES:
         for t in tipus_incidencia:
                 alumnesAmbIncidenciesPerTipus[t.id] = ( 
                             Incidencia
@@ -825,7 +825,7 @@ def alertesAcumulacioExpulsions( request ):
         alumnes_ids.add( x )
         alumnesAmbIncidenciesForaAula_dict[x] = len( list(g) )
         
-    if settings.CUSTOM_RANKING_BY_TIPUS:
+    if settings.CUSTOM_TIPUS_INCIDENCIES:
         for t in tipus_incidencia:
             alumnesAmbIncidenciesPerTipus_dict[t.id] = {}
             for x, g in groupby(alumnesAmbIncidenciesPerTipus[t.id], lambda x: x):
@@ -842,7 +842,7 @@ def alertesAcumulacioExpulsions( request ):
         alumne.nIncidenciesAulaSort = alumne.nIncidenciesAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesForaAula 
         alumne.nIncidenciesForaAulaSort =  alumne.nIncidenciesForaAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesAula
         
-        if settings.CUSTOM_RANKING_BY_TIPUS:
+        if settings.CUSTOM_TIPUS_INCIDENCIES:
             alumne.nIncidenciesPerTipus = {}
             alumne.nIncidenciesPerTipusSort = {}
             for t in tipus_incidencia:
@@ -853,7 +853,7 @@ def alertesAcumulacioExpulsions( request ):
         
     
     # Envio les dades al table2
-    if settings.CUSTOM_RANKING_BY_TIPUS:
+    if settings.CUSTOM_TIPUS_INCIDENCIES:
         import django_tables2 as tables
         attrs = dict(( str( t.id ), tables.Column(
                                                   verbose_name=t.tipus, 
@@ -1219,7 +1219,7 @@ def cartaSancio( request, pk ):
         except:
             pass
         rpt_i.assignatura = u'{0}'.format( assignatura ) 
-                                 
+        rpt_i.tipus = i.tipus
         rpt_i.descripcio = i.descripcio_incidencia
         report.incidencies.append(rpt_i)
     
