@@ -995,7 +995,6 @@ def copiarAlumnesLlista(request, pk):
             idHoraOrigen = formHores.cleaned_data['hores']
             idHoraDesti = pk
             horaDesti = Impartir.objects.get(id=idHoraDesti)
-            print "Origen {0}, Desti {1}".format(idHoraOrigen, idHoraDesti)
 
             if int(idHoraOrigen) == int(idHoraDesti):
                 formHores._errors.setdefault(NON_FIELD_ERRORS, []).extend(

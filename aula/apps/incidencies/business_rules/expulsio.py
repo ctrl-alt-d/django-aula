@@ -101,8 +101,6 @@ def expulsio_pre_delete( sender, instance, **kwargs):
         errors={}
         if  user:
             errors[NON_FIELD_ERRORS] = [u'''No es poden esborrar expulsions.''']   
-
-        print "xxxxxx", instance.__class__
         
         if len( errors ) > 0:
             raise ValidationError( errors )    
