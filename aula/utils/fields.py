@@ -36,6 +36,5 @@ class JqSplitDateTimeField(fields.MultiValueField):
                 raise forms.ValidationError("Data no informada.")
             input_time = strptime(data_list[1], "%H:%M")
             datetime_string = "%s %s" % (data_list[0], strftime('%H:%M', input_time))
-            print "Data i hora: %s"%datetime_string
             return datetime_string
         return None

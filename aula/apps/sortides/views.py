@@ -97,7 +97,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     
     if bool( pk ):
         instance = get_object_or_404( Sortida, pk = pk )
-        potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+        potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
         if not potEntrar:
             raise Http404
     else:
@@ -154,7 +154,7 @@ def alumnesConvocats( request, pk , esGestio=False ):
     professor = User2Professor( user )     
     
     instance = get_object_or_404( Sortida, pk = pk )
-    potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
     
@@ -208,7 +208,7 @@ def alumnesFallen( request, pk , esGestio=False ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
-    potEntrar = ( instance.professor_que_proposa == professor or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
     
@@ -247,6 +247,57 @@ def alumnesFallen( request, pk , esGestio=False ):
                      'missatge': 'Sortides'
                     },
                     context_instance=RequestContext(request))    
+
+
+#-------------------------------------------------------------------
+    
+@login_required
+@group_required(['professors'])   
+def professorsAcompanyants( request, pk , esGestio=False ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    instance.flag_clean_nomes_toco_alumnes = True
+    potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404
+    
+    instance.credentials = credentials
+   
+    formIncidenciaF = modelform_factory(Sortida, fields=( 'altres_professors_acompanyants',  ) )
+
+    if request.method == "POST":
+        form = formIncidenciaF(request.POST, instance = instance)
+        
+        if form.is_valid(): 
+            try:
+                form.save()
+                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
+
+    else:
+
+        form = formIncidenciaF( instance = instance  )
+        
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+
+    form.fields['altres_professors_acompanyants'].widget.attrs['style'] = "height: 500px;"
+        
+    return render_to_response(
+                'form.html',
+                    {'form': form,
+                     'head': 'Sortides' ,
+                     'missatge': 'Sortides'
+                    },
+                    context_instance=RequestContext(request))    
+
 
 #-------------------------------------------------------------------
     

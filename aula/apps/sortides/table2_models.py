@@ -38,6 +38,12 @@ class Table2_Sortides(tables.Table):
                       </li>
                     
                       <li>
+                        <a href="/sortides/professorsAcompanyants/{{record.id}}">
+                        Professors acompanyants<br>
+                        </a>
+                      </li>
+                    
+                      <li>
                         <a href='javascript:confirmAction("/sortides/esborrar/{{record.id}}"  , "Segur que vols esborrar la sortida {{record.titol_de_la_sortida}} ?")'>
                         Esborrar<br>
                         </a>

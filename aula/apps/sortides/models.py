@@ -82,9 +82,9 @@ class Sortida(models.Model):
     
     professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa la sortida", related_name='professor_proposa_sortida')
     
-    professor_responsable = models.ForeignKey(Professor,  help_text=u"Professor que proposa la sortida", related_name='professor_responsable_sortida')
+    professors_responsables = models.ManyToManyField(Professor, blank=True, help_text=u"Professors responsables de la sortida", related_name='professors_responsables_sortida')
     
-    altres_professors_acompanyants = models.ManyToManyField(Professor, help_text=u"Professors acompanyants")
+    altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants")
     
     alumnes_convocats = models.ManyToManyField(Alumne, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
 
@@ -100,7 +100,6 @@ from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_de
 from aula.apps.sortides.business_rules.sortida import sortida_m2m_changed
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_convocats.through )    
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_que_no_vindran.through )    
-    
-    
-    
-     
+m2m_changed.connect(sortida_m2m_changed, sender = Sortida.professors_responsables.through )    
+
+

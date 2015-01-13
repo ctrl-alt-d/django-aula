@@ -100,27 +100,31 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         if not User.objects.filter( pk=user.pk, groups__name = 'direcció').exists():
             errors.append( u"Només Direcció pot modificar una sortida que s'està gestionant." )                  
     
+    if l4:
+        pass
+    elif bool(errors):
+        raise ValidationError( errors  )
     
     if action in ( "post_remove" , "post_add" ):   
         
+        #a la llista 'alumnesQueNoVenen' no poden haver altres alumnes dels que apareixen a 'alumnesQueVenen'
         alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
         alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
         
         alumnesATreure = alumnesQueNoVenen - ( alumnesQueVenen & alumnesQueNoVenen )
         
-        print 'esborrar', alumnesATreure
-    
         for alumne in alumnesATreure:
             instance.alumnes_que_no_vindran.remove( alumne )
         
+        #actualitzo index de participació
         instance.participacio = u"{0} de {1}".format( instance.alumnes_convocats.count() - instance.alumnes_que_no_vindran.count( ) ,
                                                       instance.alumnes_convocats.count() )
         instance.__class__.objects.filter(pk=instance.pk).update( participacio = instance.participacio )
+        
+        #actualitzo professors acompanyants.
+        if instance.professor_que_proposa not in instance.professors_responsables.all():
+            instance.professors_responsables.add( instance.professor_que_proposa )
     
-    if l4:
-        pass
-    elif bool(errors):
-        raise ValidationError( errors  )
     
     
 
