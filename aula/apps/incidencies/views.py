@@ -25,6 +25,7 @@ from aula.apps.incidencies.models import TipusSancio, TipusIncidencia
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
     Accio
 from aula.apps.incidencies.models import Expulsio
+from aula.apps.horaris.models import DiaDeLaSetmana
 from aula.utils import tools    
 
 from aula.utils.widgets import DateTimeTextImput,DateTextImput
@@ -1191,7 +1192,11 @@ def cartaSancio( request, pk ):
     report.dia_final = sancio.data_fi.strftime( '%d/%m/%Y' )
     report.hora_inicial = sancio.franja_inici.hora_inici.strftime('%H:%M')
     report.hora_final = sancio.franja_fi.hora_fi.strftime('%H:%M')    
-    report.quantitat_dies = abs((sancio.data_fi - sancio.data_inici).days) + 1
+
+    capDeSetmana = DiaDeLaSetmana.objects.filter(es_festiu=True).values_list('n_dia_ca', flat=True)
+    generadorDies = (sancio.data_inici + timedelta(d) for d in xrange((sancio.data_fi-sancio.data_inici).days+1))
+    report.quantitat_dies = sum(1 for dia in generadorDies if dia.weekday() not in capDeSetmana)
+    
     report.motiu = sancio.motiu
     report.signat_per = sancio.signat
     report.data_signatura = sancio.data_carta.strftime( '%d/%m/%Y' )
