@@ -94,14 +94,14 @@ def incidencia_despres_de_posar(instance):
         if settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO:
             #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
             import datetime as t
-            fa_30_dies = instance.dia_incidencia - t.timedelta( days = +30)
+            dia_prescriu_incidencia = instance.dia_incidencia - t.timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
             Incidencia = get_model( 'incidencies','Incidencia')
             nIncidenciesAlumneProfessor = Incidencia.objects.filter( 
                                                 es_vigent = True, 
                                                 tipus__es_informativa = False,
                                                 professional = instance.professional, 
                                                 alumne = instance.alumne,
-                                                dia_incidencia__gt =  fa_30_dies
+                                                dia_incidencia__gt =  dia_prescriu_incidencia
                                             ).count()
             if nIncidenciesAlumneProfessor > 2:                
                 txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers 30 dies. 

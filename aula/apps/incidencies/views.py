@@ -610,7 +610,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
     
-    fa_30_dies = date.today() - timedelta( days = 30 )
+    dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
     try:
         incidencia = Incidencia.objects.get(pk =pk)
     except:
@@ -639,7 +639,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
     incidencies = alumne.incidencia_set.filter(  
                                                es_vigent = True,
                                                tipus__es_informativa = False,
-                                               dia_incidencia__gte = fa_30_dies,
+                                               dia_incidencia__gte = dia_prescriu_incidencia,
                                                professional = professional
                                             ) 
     enTe3oMes = incidencies.count() >= 3
@@ -721,12 +721,12 @@ def llistaIncidenciesProfessional( request ):
     alumnes = {}
     for incidencia in professional.incidencia_set.all():
         alumne_str = unicode ( incidencia.alumne)
-        fa_30_dies = date.today() - timedelta( days = 30 )
+        dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
         incidenciesAlumne = incidencia.alumne.incidencia_set.filter(
                                                         professional = professional, 
                                                         es_vigent = True,
                                                         tipus__es_informativa = False,
-                                                        dia_incidencia__gte = fa_30_dies
+                                                        dia_incidencia__gte = dia_prescriu_incidencia
                                                                                    )
         calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
         exempleIncidenciaPerAcumulacio = incidenciesAlumne.order_by( 'dia_incidencia' ).reverse()[0] \
@@ -892,12 +892,12 @@ def sancio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
     
-    fa_30_dies = date.today() - timedelta( days = 30 )
+    dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
     
     professor = User2Professor(user)
     
     alumne = Alumne.objects.get( pk = pk )
-    alumne.incidencia_set.filter( dia_incidencia__lte = fa_30_dies).update( es_vigent = False )
+    alumne.incidencia_set.filter( dia_incidencia__lte = dia_prescriu_incidencia).update( es_vigent = False )
 
     try:
         tipus = TipusSancio.objects.all()[0]
@@ -1337,17 +1337,17 @@ def editaSancio( request, pk ):
             else:
                 formSancio.save()
 
-                fa_30_dies = date.today() - timedelta( days = 30 )
-                fa_60_dies = date.today() - timedelta( days = 60 )                
+                dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
+                dia_prescriu_expulsio = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_EXPULSIO )                
                                 
                 incidencies = formSelectIncidencies.cleaned_data['incidenciesRelacionades']
                 incidencies_a_desvincular = sancio.incidencia_set.exclude( pk__in = [ i.pk for i in incidencies ] )
-                incidencies_a_desvincular.filter( dia_incidencia__gte = fa_30_dies).update( es_vigent = True  )
+                incidencies_a_desvincular.filter( dia_incidencia__gte = dia_prescriu_incidencia).update( es_vigent = True  )
                 incidencies_a_desvincular.update(  provoca_sancio = None )  
 
                 expulsions = formSelectIncidencies.cleaned_data['expulsionsRelacionades']
                 expulsions_a_desvincular = sancio.expulsio_set.exclude( pk__in = [ i.pk for i in expulsions ] )
-                expulsions_a_desvincular.filter( dia_expulsio__gte = fa_60_dies).update( es_vigent = True  )
+                expulsions_a_desvincular.filter( dia_expulsio__gte = dia_prescriu_expulsio).update( es_vigent = True  )
                 expulsions_a_desvincular.update(  provoca_sancio = None )  
                 
             url = '/incidencies/sancions/'
