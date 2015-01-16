@@ -97,7 +97,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     
     if bool( pk ):
         instance = get_object_or_404( Sortida, pk = pk )
-        potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+        potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
         if not potEntrar:
             raise Http404
     else:
@@ -154,7 +154,7 @@ def alumnesConvocats( request, pk , esGestio=False ):
     professor = User2Professor( user )     
     
     instance = get_object_or_404( Sortida, pk = pk )
-    potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
     
@@ -177,7 +177,15 @@ def alumnesConvocats( request, pk , esGestio=False ):
 
         form = formIncidenciaF( instance = instance  )
         
-    form.fields['alumnes_convocats'].queryset = AlumneGrupNom.objects.all() 
+    form.fields['alumnes_convocats'].queryset = ( AlumneGrupNom
+                                                  .objects
+                                                  .order_by( 'grup__curs__nivell__ordre_nivell', 
+                                                             'grup__curs__nom_curs', 
+                                                             'grup__nom_grup',
+                                                             'cognoms',
+                                                             'nom')
+                                                  .all()
+                                                 ) 
 
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
@@ -208,7 +216,7 @@ def alumnesFallen( request, pk , esGestio=False ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
-    potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
     
@@ -262,7 +270,7 @@ def professorsAcompanyants( request, pk , esGestio=False ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
-    potEntrar = ( professor in instance.altres_professors_acompanyants.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
     

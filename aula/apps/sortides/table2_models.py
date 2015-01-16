@@ -51,14 +51,15 @@ class Table2_Sortides(tables.Table):
                     
                     </ul>
                   </div>
-    """ )
+    """,
+    orderable = False,)
     
     
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", "professor_responsable", )
+        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", )
         fields = sequence
         template = 'bootable2.html' 
 
@@ -99,12 +100,13 @@ class Table2_SortidesGestio(tables.Table):
                     
                     </ul>
                   </div>
-    """ )
+    """,
+    orderable = False, )
     
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", "professor_responsable", )
+        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", )
         fields = sequence
         template = 'bootable2.html'         
