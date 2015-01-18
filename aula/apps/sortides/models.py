@@ -48,7 +48,8 @@ class Sortida(models.Model):
 
     esta_aprovada_pel_consell_escolar = models.CharField( u'Aprovada_pel_consell_escolar?',max_length=1, choices=CONSELL_ESCOLAR_CHOICES, default='P', help_text=u"Marca si aquesta sortida ja ha estat aprovada pel consell escolar" )
     
-    departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza la sortida")
+    departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza la sortida", blank=True, null=True)
+    comentari_organitza = models.CharField(max_length=50,help_text=u"En cas de no ser organitzat per un departament cal informar qui organitza la sortida.", blank = True )
     
     data_inici = models.DateField( u"Presencia: Des de", help_text=u"Primer dia lectiu de la sortida", blank=True, null=True)
     franja_inici = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Des de", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva de la sortida", blank=True, null=True)
@@ -82,7 +83,7 @@ class Sortida(models.Model):
     
     professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa la sortida", related_name='professor_proposa_sortida')
     
-    professors_responsables = models.ManyToManyField(Professor, blank=True, help_text=u"Professors responsables de la sortida", related_name='professors_responsables_sortida')
+    professors_responsables = models.ManyToManyField(Professor, blank=True, verbose_name=u"Professors que organitzen", help_text=u"Professors responsables de la sortida", related_name='professors_responsables_sortida')
     
     altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants")
     
