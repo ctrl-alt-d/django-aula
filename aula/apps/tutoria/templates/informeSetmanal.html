@@ -1,6 +1,25 @@
 {% extends "base.html" %}
 
 {% block extrahead  %}
+
+<style type="text/css">
+.vertical{
+    writing-mode:tb-rl;
+    -webkit-transform:rotate(90deg);
+    -moz-transform:rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform:rotate(90deg);
+    white-space:nowrap;
+    display:block;
+    bottom:0px;
+    width:15px;
+    height:15px;
+}
+.td-vertical{
+    height: 40px;
+}
+</style>
+
 <script>
 // Create the tooltips only on document load
 $(document).ready(function() 
@@ -70,13 +89,15 @@ $(document).ready(function()
 <div style="max-width:820px;">
 <table class="table table-striped table-bordered table-condensed" >
  <tr >
-  <td > {{dades.grup}}
+  <td >{{dades.grup}}
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
   <td style="text-align:center;"  colspan="{{ hores.compte }}" >
   		{{ dia }} 
   </td>
   {% endfor %}
+  <td >{{dades.grup}}
+  </td>
  </tr>
  
  <tr>
@@ -84,9 +105,10 @@ $(document).ready(function()
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
   	{% for hora in hores %}
-  		<td style="font-size:80%; text-align:center;"> {{hora}} </td>
+  		<td class="td-vertical" style="font-size:80%; text-align:center;"><div class="vertical">{{hora.text_hora_inici}}</div></td>
   	{% endfor %}
   {% endfor %}
+  <td>Alumnes
  </tr>
  
   {% for alumne,filera in dades.quadre.itemsEnOrdre %}
@@ -125,6 +147,9 @@ $(document).ready(function()
   		{% endfor %}
   </td>
   {% endfor %}
+  <td>
+  	<div style="width:150px; overflow:hidden">{{alumne}}</div>
+  </td>
  </tr>
  {% endfor %}
  </table>

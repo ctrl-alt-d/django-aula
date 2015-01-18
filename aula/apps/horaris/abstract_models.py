@@ -30,6 +30,8 @@ class AbstractFranjaHoraria(models.Model):
         verbose_name_plural = u'Franges Horàries'
     def __unicode__(self):
         return  self.nom_franja if self.nom_franja else  unicode(self.hora_inici)[0:5] + ' a ' + unicode(self.hora_fi)[0:5]
+    def text_hora_inici(self):
+        return self.hora_inici.strftime("%H:%M");
 
 #------------------------------------------------------------------------------------------------
 
