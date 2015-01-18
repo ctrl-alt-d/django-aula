@@ -1357,8 +1357,8 @@ def editaSancio( request, pk ):
         formSancio = editaSancioFormF( instance = sancio )
         can_delete = ckbxForm( data=request.POST, label = 'Esborrar sanció:', 
                              help_text=u'''Marca aquesta cassella per esborrar aquesta sanció''' )
-        formSelectIncidencies = incidenciesRelacionadesForm( querysetIncidencies = sancio.incidencia_set.all(),
-                                                             querysetExpulsions  = sancio.expulsio_set.all() )
+        formSelectIncidencies = incidenciesRelacionadesForm( querysetIncidencies = sancio.incidencia_set.order_by('dia_incidencia').all(),
+                                                             querysetExpulsions  = sancio.expulsio_set.order_by('dia_expulsio').all() )
 
     formset = [ formSancio, formSelectIncidencies ]
     formset.extend ( [  can_delete ] if l4 else []  )

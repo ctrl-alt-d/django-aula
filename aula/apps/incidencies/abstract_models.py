@@ -182,7 +182,7 @@ class AbstractIncidencia(models.Model):
             tipus = u'''(informativa)'''
         elif settings.CUSTOM_TIPUS_INCIDENCIES:
             tipus = u'''({0})'''.format(self.tipus)
-        return u'''{0} {1}'''.format(tipus, self.descripcio_incidencia[:100])
+        return u'''{0} {1} {2}'''.format(self.dia_incidencia, tipus, self.descripcio_incidencia[:100])
     
     def longUnicode(self):
         tipus = ''
