@@ -68,6 +68,7 @@ def enviaMissatgeTutors( request ):
         msg.credentials = credentials
         formAlumne = triaAlumneForm( data = request.POST)
         formData= dataForm( data = request.POST  )
+        formData.fields['data'].required = True
         msgForm = msgFormF( data = request.POST, instance = msg )        
         
         if formAlumne.is_valid() and msgForm.is_valid() and formData.is_valid():
@@ -78,6 +79,7 @@ def enviaMissatgeTutors( request ):
                 formAlumne._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''No trobat el tutor d'aquest alumne. Cal trucar al cap d'estudis.'''  )
             else:
                 msg.save()
+                request.session['consergeria_darrera_data'] = data
                 strTutors = u''
                 separador = ''
                 for tutor in tutors:
@@ -97,11 +99,16 @@ def enviaMissatgeTutors( request ):
                 url = '/missatgeria/elMeuMur/'  
                 return HttpResponseRedirect( url )  
     else:
+        
+        consergeria_darrera_data = request.session.get( 'consergeria_darrera_data' , datetime.today() )
         formAlumne = triaAlumneForm( )
-        formData = dataForm(  label='Data', help_text=u'El text del missatge començarà per: Amb data ______, ' )        
+        formData = dataForm(  label='Data', 
+                              help_text=u'El text del missatge començarà per: Amb data ______, ' ,
+                              initial = {'data': consergeria_darrera_data })        
+        formData.fields['data'].required = True
         msgForm = msgFormF(  )
     
-    formData.fields['data'].required = True
+    
     
     formset.append( formAlumne )
     formset.append( formData )
