@@ -9,6 +9,7 @@ site_media_site_css = os.path.join(os.path.dirname(__file__), 'site-css' )
 site_media_web_demo = os.path.join(os.path.dirname(__file__), '../demo/static-web/demo' )
 
 urlpatterns = patterns('',
+    url(r'^select2/', include('aula.django_select2.urls')),                   
     (r'^menu/$', 'aula.utils.views.menu'),
     #(r'^$', 'missatgeria.views.elMeuMur'),
     #(r'^$', 'presencia.views.mostraImpartir'),       

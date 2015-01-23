@@ -4,8 +4,11 @@ from django import forms as forms
 from aula.utils.widgets import SelectAjax, bootStrapButtonSelect
 from django.forms import ModelForm
 
-from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne
+from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne, AlumneGrupNom,\
+    AlumneGrup
 from aula.apps.usuaris.models import Professor
+from aula.django_select2.fields import AutoModelSelect2Field
+from aula.django_select2.widgets import AutoHeavySelect2Widget
 
     
 class triaAlumneForm(forms.Form):    
@@ -112,6 +115,27 @@ class newAlumne(ModelForm):
     class Meta:
         model = Alumne
         fields = ['grup', 'nom', 'cognoms', 'data_neixement', 'correu_tutors', 'correu_relacio_familia_pare', 'correu_relacio_familia_mare', 'tutors_volen_rebre_correu', 'centre_de_procedencia', 'localitat', 'telefons', 'tutors', 'adreca']
+
+
+
+#----------------
+
+############# Choice fields ###################
+
+class AlumnesChoices(AutoModelSelect2Field):
+    queryset = AlumneGrup.objects
+    search_fields = ['cognoms__icontains','nom__icontains', 'grup__descripcio_grup__icontains' ]
+    
+class triaAlumneSelect2Form(forms.Form): 
+    alumne = AlumnesChoices(
+                widget=AutoHeavySelect2Widget(
+                                    select2_options={
+                                        'width': '100%',
+                                        'placeholder': u"Buscar alumne",
+                                        'minimumResultsForSearch': 50,
+                                    }
+                                )
+                            )
 
 
 

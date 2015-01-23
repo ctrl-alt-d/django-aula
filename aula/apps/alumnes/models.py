@@ -28,6 +28,16 @@ class AlumneGrupNom(Alumne):
     def __unicode__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + self.nom         
 
+class AlumneGrup(Alumne):
+
+    class Meta:
+        proxy = True
+
+    def __unicode__(self):
+        return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + self.nom         
+
+
+
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
 from django.db.models.signals import post_save  #, pre_save, pre_delete
 

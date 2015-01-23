@@ -14,7 +14,7 @@ from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from aula.utils import tools
 from django.forms.models import modelform_factory
-from aula.apps.alumnes.forms import triaAlumneForm
+from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
 from aula.apps.missatgeria.models import Missatge, Destinatari
 from aula.apps.tutoria.models import Tutor
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -66,7 +66,7 @@ def enviaMissatgeTutors( request ):
     if request.method == 'POST':        
         msg = Missatge( remitent = user )
         msg.credentials = credentials
-        formAlumne = triaAlumneForm( data = request.POST)
+        formAlumne = triaAlumneSelect2Form( data = request.POST)
         formData= dataForm( data = request.POST  )
         formData.fields['data'].required = True
         msgForm = msgFormF( data = request.POST, instance = msg )        
@@ -101,7 +101,7 @@ def enviaMissatgeTutors( request ):
     else:
         
         consergeria_darrera_data = request.session.get( 'consergeria_darrera_data' , datetime.today() )
-        formAlumne = triaAlumneForm( )
+        formAlumne = triaAlumneSelect2Form( )
         formData = dataForm(  label='Data', 
                               help_text=u'El text del missatge començarà per: Amb data ______, ' ,
                               initial = {'data': consergeria_darrera_data })        

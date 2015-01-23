@@ -175,6 +175,11 @@ INSTALLED_APPS_AULA = [
     'aula.utils',
 ]
 
+#select2
+AUTO_RENDER_SELECT2_STATICS=False
+#---
+
+
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
