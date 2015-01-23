@@ -250,7 +250,7 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
 
 #vistes -----------------------------------------------------------------------------------
 
-from aula.apps.alumnes.forms import triaAlumneForm
+from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
 
 @login_required
 @group_required(['professors','professional'])
@@ -272,7 +272,8 @@ def posaIncidencia( request ):
     formset = []
     if request.method == 'POST':
         
-        formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
+        #formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
+        formAlumne = triaAlumneSelect2Form(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
         incidencia = Incidencia ( es_vigent = True )
         incidencia.professional = User2Professional(user)
         incidencia.credentials = credentials
@@ -318,7 +319,8 @@ def posaIncidencia( request ):
         
     else:
 
-        formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)        
+        #formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)
+        formAlumne = triaAlumneSelect2Form()        
 #        formIncidenciaF = modelform_factory(Incidencia, fields=['dia_incidencia',
 #                                                                'franja_incidencia',
 #                                                                'descripcio_incidencia',
@@ -354,7 +356,8 @@ def posaExpulsio( request ):
         expulsio.credentials = credentials
         expulsio.professor_recull =  User2Professor( user )
         
-        formAlumne = triaAlumneForm(request.POST )   
+        #formAlumne = triaAlumneForm(request.POST )  
+        formAlumne = triaAlumneSelect2Form(request.POST ) 
         formExpulsio = posaExpulsioForm(data=request.POST, instance = expulsio )
 
         if formAlumne.is_valid():
@@ -372,7 +375,8 @@ def posaExpulsio( request ):
         
     else:
 
-        formAlumne = triaAlumneForm( ) 
+        #formAlumne = triaAlumneForm( ) 
+        formAlumne = triaAlumneSelect2Form( )
         
         franja_actual = None
         try:
