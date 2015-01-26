@@ -1,13 +1,26 @@
 {% extends "base.html" %}
 
 {% block extrahead  %}
-<script type="text/javascript" src="{{STATIC_URL}}/js/jquery.flip.min.js"></script>
 
 <style type="text/css">
-
-
+.vertical{
+    writing-mode:tb-rl;
+    -webkit-transform:rotate(90deg);
+    -moz-transform:rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform:rotate(90deg);
+    white-space:nowrap;
+    display:block;
+    bottom:0px;
+    width:15px;
+    height:15px;
+}
+.td-vertical{
+    height: 40px;
+}
 </style>
 
+<script type="text/javascript" src="{{STATIC_URL}}/js/jquery.flip.min.js"></script>
 <script type="text/javascript">
 // Create the tooltips only on document load
 $(document).ready(function() 
@@ -88,6 +101,8 @@ $(document).ready(function()
   		{{ dia }} 
   </td>
   {% endfor %}
+  <td > {{dades.grup}}
+  </td>
  </tr>
  
  <tr>
@@ -95,10 +110,12 @@ $(document).ready(function()
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
   	{% for hora in hores %}
-  		<td style="font-size:80%; text-align:center;"> {{hora}} </td>
+  		<td class="td-vertical" style="font-size:80%; text-align:center;"><div class="vertical">{{hora.text_hora_inici}}</div></td>
   	{% endfor %}
 
   {% endfor %}
+  <td>Alumnes
+  </td>
  </tr>
  
   {% for alumne,filera in dades.quadre.itemsEnOrdre %}
@@ -110,18 +127,36 @@ $(document).ready(function()
   <td style="padding-left:1px;"> 
   		{% for ca in cella.c %}
   		<div id="ca{{ca.pk}}" style="float:left;margin-left: 1px;margin-top: 1px;">
-  		   <span id="sca{{ca.pk}}" class="label {% if ca.swaped %}label-warning{%else%}label-info{%endif%}">
+  		   <span id="sca{{ca.pk}}" class="label
+  		   	  {% if ca.swaped %}label-info
+  		   	  {%elif ca.estat.codi_estat == "F" %}label-danger
+  		   	  {%elif ca.estat.codi_estat == "R" %}label-warning
+  		   	  {%else%}label-default
+  		   	  {%endif%}">
   		      {% if ca.estat.codi_estat %}{{ ca.estat.codi_estat }}{% else %}_{%endif%}
   		   </span> 
   		</div>
   		{% endfor %}
   </td>
   {% endfor %}
+  <td>
+  	<div style="width:150px; overflow:hidden">{{alumne}}</div>
+  </td>
  </tr>
  {% endfor %}
  </table>
 
 <div style="clear: both;"> </div>
+
+<p>
+<em>Llegenda</em> &nbsp;&nbsp;
+<span class="label label-info">J</span> Justificada &nbsp;&nbsp;
+<span class="label label-danger">F</span> Falta &nbsp;&nbsp;
+<span class="label label-warning">R</span> Retard &nbsp;&nbsp;
+<span class="label label-default">P</span> Present &nbsp;&nbsp;
+<span class="label label-default">_</span> No s'ha passat llista
+</p>
+
 <div >
 	<ul class="pagination">
 	{% for  professor, moment, altre_data in altres_moments %}
@@ -136,7 +171,6 @@ $(document).ready(function()
   <ul id="comentaris">
   </ul>
 </div>
-
  </div>
  
  <script>
