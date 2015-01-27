@@ -143,6 +143,32 @@ $(document).ready(function()
   </td>
  </tr>
  {% endfor %}
+
+ <tr>
+  <td>Alumnes
+  </td>
+  {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
+  	{% for hora in hores %}
+  		<td class="td-vertical" style="font-size:80%; text-align:center;"><div class="vertical">{{hora.text_hora_inici}}</div></td>
+  	{% endfor %}
+
+  {% endfor %}
+  <td>Alumnes
+  </td>
+ </tr>
+
+ <tr >
+  <td > {{dades.grup}}
+  </td>
+  {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
+  <td style="text-align:center;"  colspan="{{ hores.compte }}" >
+  		{{ dia }} 
+  </td>
+  {% endfor %}
+  <td > {{dades.grup}}
+  </td>
+ </tr>
+
  </table>
 
 <div style="clear: both;"> </div>
