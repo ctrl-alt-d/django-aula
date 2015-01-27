@@ -91,11 +91,11 @@ $(document).ready(function()
   <td><strong>{{dades.grup}}</strong>
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
-  <td style="text-align:center;"  colspan="{{ hores.compte }}" >
+  <td style="text-align:center; border-left-width: 2px; border-left-color: #999999;"  colspan="{{ hores.compte }}" >
   		<strong>{{ dia }}</strong> 
   </td>
   {% endfor %}
-  <td><strong>{{dades.grup}}</strong>
+  <td style="border-left-width: 2px; border-left-color: #999999;"><strong>{{dades.grup}}</strong>
   </td>
  </tr>
  
@@ -104,10 +104,14 @@ $(document).ready(function()
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
   	{% for hora in hores %}
-  		<td class="td-vertical" style="font-size:80%; text-align:center;"><div class="vertical"><em>{{hora.text_hora_inici}}</em></div></td>
+  		<td class="td-vertical" style="font-size:80%; text-align:center;
+  			{% if hora == hores.0 %}border-left-width: 2px; border-left-color: #999999;{% endif %}
+  		">
+  			<div class="vertical"><em>{{hora.text_hora_inici}}</em></div>
+  		</td>
   	{% endfor %}
   {% endfor %}
-  <td><em>Alumnes</em>
+  <td style="border-left-width: 2px; border-left-color: #999999;"><em>Alumnes</em>
  </tr>
  
   {% for alumne,filera in dades.quadre.itemsEnOrdre %}
@@ -117,7 +121,9 @@ $(document).ready(function()
   </td>
   {% for cella in filera %}
   
-  <td style="text-align:center; vertical-align:middle; padding: 0px 0px 0px 0px; background-color:{{cella.color}};" >
+  <td style="text-align:center; vertical-align:middle; padding: 0px 0px 0px 0px; background-color:{{cella.color}};
+  		{% if cella.primera_hora %} border-left-width: 2px; border-left-color: #999999;{% endif %}"
+  >
   		{% for x in cella.f %}
   		   <span id="f{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-warning">f</span>
   		{% endfor %}
@@ -146,7 +152,7 @@ $(document).ready(function()
   		{% endfor %}
   </td>
   {% endfor %}
-  <td>
+  <td style="border-left-width: 2px; border-left-color: #999999;">
   	<div style="width:150px; overflow:hidden">{{alumne}}</div>
   </td>
  </tr>
@@ -157,21 +163,25 @@ $(document).ready(function()
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
   	{% for hora in hores %}
-  		<td class="td-vertical" style="font-size:80%; text-align:center;"><div class="vertical"><em>{{hora.text_hora_inici}}</em></div></td>
+  		<td class="td-vertical" style="font-size:80%; text-align:center;
+  			{% if hora == hores.0 %}border-left-width: 2px; border-left-color: #999999;{% endif %}
+  		">
+  			<div class="vertical"><em>{{hora.text_hora_inici}}</em></div>
+  		</td>
   	{% endfor %}
   {% endfor %}
-  <td><em>Alumnes</em>
+  <td style="border-left-width: 2px; border-left-color: #999999;"><em>Alumnes</em>
  </tr>
  
   <tr>
   <td><strong>{{dades.grup}}</strong>
   </td>
   {% for dia, hores in dades.dia_hores.itemsEnOrdre %}
-  <td style="text-align:center;"  colspan="{{ hores.compte }}" >
+  <td style="text-align:center;border-left-width: 2px; border-left-color: #999999;"  colspan="{{ hores.compte }}" >
   		<strong>{{ dia }}</strong> 
   </td>
   {% endfor %}
-  <td><strong>{{dades.grup}}</strong>
+  <td style="border-left-width: 2px; border-left-color: #999999;"><strong>{{dades.grup}}</strong>
   </td>
  </tr>
  

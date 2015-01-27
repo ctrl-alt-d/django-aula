@@ -536,6 +536,11 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True,
                     else:
                         cella.color = 'white'
                 
+                if hora == hora_inici:
+                    cella.primera_hora = True
+                else:
+                    cella.primera_hora = False
+                
                 dades.quadre[unicode(alumne)].append( cella )
                 
     return dades
