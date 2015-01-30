@@ -28,6 +28,7 @@ from django.core.urlresolvers import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom
 from django.contrib import messages
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.templatetags.tz import localtime
 
 @login_required
 @group_required(['professors'])
@@ -356,8 +357,9 @@ def sortidaiCal( request):
 #         t=instance.franja_fi.hora_fi
 #         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
         
-        event.add('dtstart',instance.calendari_desde)
-        event.add('dtend' ,instance.calendari_finsa)
+        
+        event.add('dtstart',localtime(instance.calendari_desde) )
+        event.add('dtend' ,localtime(instance.calendari_finsa) )
         event.add('summary',instance.titol_de_la_sortida)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
