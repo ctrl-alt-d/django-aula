@@ -1,5 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
+from django.conf import settings
+
 #templates
 from django.template import RequestContext
 
@@ -748,6 +750,55 @@ def elMeuInforme( request, pk = None ):
         taula.fileres.append( filera )
     
         report.append(taula)
+
+    #----Sortides -----------------------------------------------------------------------------   
+    if detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU:
+        sortides = alumne.notificasortida_set.all()
+        sortidesNoves = sortides.filter(  relacio_familia_revisada__isnull = True )
+        
+        taula = tools.classebuida()
+        taula.codi = nTaula; nTaula+=1
+        taula.tabTitle = 'Activitats/Sortides {0}'.format( pintaNoves( sortidesNoves.count() ) )
+    
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+    
+        taula.capceleres = []
+        
+        capcelera = tools.classebuida()
+        capcelera.amplade = 200
+        capcelera.contingut = u'Dates'
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+    
+        capcelera = tools.classebuida()
+        capcelera.amplade = 800
+        capcelera.contingut = u'Detall'
+        taula.capceleres.append(capcelera)
+                
+        taula.fileres = []
+            
+        for sortida in sortides.order_by( '-sortida__data_inici' ):
+            filera = []
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0} a {1}'.format( sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ) ,  sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y  %H:%M' ))       
+            camp.negreta = False if sortida.relacio_familia_revisada else True                
+            filera.append(camp)
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format( sortida.sortida.titol_de_la_sortida )        
+            camp.negreta = False if sortida.relacio_familia_revisada else True                
+            filera.append(camp)
+            #--
+            taula.fileres.append( filera )
+    
+        report.append(taula)
+        if not semiImpersonat:
+            sortidesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
 
     
     return render_to_response(

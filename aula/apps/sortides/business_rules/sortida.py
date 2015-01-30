@@ -4,9 +4,6 @@ import datetime as dt
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
-
-
-
 def clean_sortida( instance ):
     
     if hasattr(instance, 'flag_clean_nomes_toco_alumnes'):
@@ -41,7 +38,6 @@ def clean_sortida( instance ):
              instance.calendari_finsa < instance.calendari_desde 
              ):
             errors.append( u"Comprova les dates del calendari" )
-
     
     #si passem a revisada 
     if instance.estat in ( 'R', ):

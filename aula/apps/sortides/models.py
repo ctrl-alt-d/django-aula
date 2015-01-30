@@ -87,13 +87,18 @@ class Sortida(models.Model):
     
     altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants")
     
-    alumnes_convocats = models.ManyToManyField(Alumne, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
+    alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
 
-    alumnes_que_no_vindran = models.ManyToManyField(Alumne, help_text=u"Alumnes que haurien de perquè estan convocats però no venen",related_name='sortides_on_ha_faltat')
+    alumnes_que_no_vindran = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que haurien de perquè estan convocats però no venen",related_name='sortides_on_ha_faltat')
     
     def clean(self):
-        clean_sortida( self )
-    
+        clean_sortida( self )    
+
+class NotificaSortida( models.Model):
+    alumne = models.ForeignKey( Alumne )
+    sortida = models.ForeignKey(Sortida )
+    relacio_familia_revisada = models.DateTimeField( null=True )    
+    relacio_familia_notificada = models.DateTimeField( null=True ) 
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
 from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_delete
