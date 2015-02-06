@@ -29,6 +29,7 @@ from aula.apps.alumnes.models import Alumne, AlumneGrupNom
 from django.contrib import messages
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.templatetags.tz import localtime
+from django.utils.safestring import SafeText
 
 @login_required
 @group_required(['professors'])
@@ -114,6 +115,18 @@ def sortidaEdit( request, pk = None, esGestio=False ):
         
         if form.is_valid(): 
             form.save()
+            
+            if not esGestio:
+                messages.warning(request,  
+                                SafeText(u"""RECORDA: Una vegada enviades les dades, 
+                                  has de seleccionar els <a href="{0}">alumnes convocats</a> i els 
+                                  <a href="{1}">alumnes que no hi van</a> 
+                                  des del menú desplegable ACCIONS""".format(
+                                        "/sortides/alumnesConvocats/{{id}}".format( id = instance.id),
+                                        "/sortides/alumnesFallen/{{id}}".format( id = instance.id),
+                                                                             )
+                                ))
+            
             nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
             return HttpResponseRedirect( nexturl )
             
@@ -134,6 +147,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
 
     form.fields['calendari_desde'].widget = DateTimeTextImput()
     form.fields['calendari_finsa'].widget = DateTimeTextImput()
+    
         
     return render_to_response(
                 'formSortida.html',
@@ -326,7 +340,7 @@ def esborrar( request, pk , esGestio=False ):
     
     potEntrar = mortalPotEntrar or direccio
     if not potEntrar:
-        messages.warning(request, u"No pots esborrar aquesta sortida." )
+        messages.warning(request, u"No pots esborrar aquesta activitat." )
         return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
     
     instance.credentials = credentials
@@ -334,7 +348,7 @@ def esborrar( request, pk , esGestio=False ):
     try:
         instance.delete()
     except:
-        messages.warning(request, u"Error esborrant la sortida." )
+        messages.warning(request, u"Error esborrant la activitat." )
     
     nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
     return HttpResponseRedirect( nexturl )
@@ -358,9 +372,12 @@ def sortidaiCal( request):
 #         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
         
         
+        text_a_mostrar = u"{ambit}: {titol}".format(ambit=instance.ambit ,
+                                                   titol= instance.titol_de_la_sortida)
+        
         event.add('dtstart',localtime(instance.calendari_desde) )
         event.add('dtend' ,localtime(instance.calendari_finsa) )
-        event.add('summary',instance.titol_de_la_sortida)
+        event.add('summary',text_a_mostrar)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
         

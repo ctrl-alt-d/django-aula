@@ -44,7 +44,7 @@ class Table2_Sortides(tables.Table):
                       </li>
                     
                       <li>
-                        <a href='javascript:confirmAction("/sortides/esborrar/{{record.id}}"  , "Segur que vols esborrar la sortida {{record.titol_de_la_sortida}} ?")'>
+                        <a href='javascript:confirmAction("/sortides/esborrar/{{record.id}}"  , "Segur que vols esborrar l'activitat {{record.titol_de_la_sortida}} ?")'>
                         Esborrar<br>
                         </a>
                       </li>
@@ -54,18 +54,21 @@ class Table2_Sortides(tables.Table):
     """,
     orderable = False,)
     
+    participacio = tables.Column ( orderable = False,)
+    n_acompanyants = tables.Column ( orderable = False,)
     
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", )
+        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", "participacio" , "n_acompanyants" )
         fields = sequence
         template = 'bootable2.html' 
 
 class Table2_SortidesGestio(tables.Table):
     
     titol_de_la_sortida = tables.LinkColumn('sortides__sortides__editGestio_by_pk', kwargs={'pk': A('pk'),})
+    participacio = tables.Column ( orderable = False,)
     accions = tables.TemplateColumn( u"""
                 <div class="btn-group btn-group-xs">
                     <a class="btn dropdown-toggle btn-primary btn-xs" data-toggle="dropdown" href="#">
@@ -93,7 +96,7 @@ class Table2_SortidesGestio(tables.Table):
                       </li>
                     
                       <li>
-                        <a href='javascript:confirmAction("/sortides/esborrarGestio/{{record.id}}"  , "Segur que vols esborrar la sortida {{record.titol_de_la_sortida}} ?")'>
+                        <a href='javascript:confirmAction("/sortides/esborrarGestio/{{record.id}}"  , "Segur que vols esborrar l'activitat {{record.titol_de_la_sortida}} ?")'>
                         Esborrar<br>
                         </a>
                       </li>
@@ -102,11 +105,14 @@ class Table2_SortidesGestio(tables.Table):
                   </div>
     """,
     orderable = False, )
+
+    participacio = tables.Column ( orderable = False,)
+    n_acompanyants = tables.Column ( orderable = False,)
     
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", )
+        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", "participacio", "n_acompanyants" )
         fields = sequence
         template = 'bootable2.html'         
