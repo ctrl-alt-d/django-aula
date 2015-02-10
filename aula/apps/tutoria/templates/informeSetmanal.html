@@ -18,6 +18,15 @@
 .td-vertical{
     height: 40px;
 }
+.label-incidencia{
+	background-color:#995599
+}
+.label-expulsio{
+	background-color:#33dd00
+}
+.label-informativa{
+	background-color:#998899
+}
 </style>
 
 <script>
@@ -125,25 +134,25 @@ $(document).ready(function()
   		{% if cella.primera_hora %} border-left-width: 2px; border-left-color: #999999;{% endif %}"
   >
   		{% for x in cella.f %}
-  		   <span id="f{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-warning">f</span>
+  		   <span id="f{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-danger">F</span>
   		{% endfor %}
   		{% for x in cella.r %}
   		   <span id="r{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-warning">r</span>
   		{% endfor %}
   		{% for x in cella.j %}
-  		   <span id="j{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-info">j</span>
+  		   <span id="j{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-info">J</span>
   		{% endfor %}
   		{% for x in cella.I %}
-  		   <span id="I{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-warning">I</span>
+  		   <span id="I{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-incidencia">I</span>
   		{% endfor %}
   		{% for x in cella.i %}
-  		   <span id="i{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-warning">i</span>
+  		   <span id="i{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-informativa">i</span>
   		{% endfor %}
   		{% for x in cella.E %}
-  		   <span id="E{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-danger">E</span>
+  		   <span id="E{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-expulsio">E</span>
   		{% endfor %}
   		{% for x in cella.e %}
-  		   <span id="e{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-danger">e</span>
+  		   <span id="e{{x.pk}}" style="font:bold; padding:0,1,0,0; font-family: monospace;" class="label label-expulsio">e</span>
   		{% endfor %}
   		{% for x in cella.c  %}
   		   {% if x.professor %}
@@ -187,18 +196,29 @@ $(document).ready(function()
  
  </table>
  
+<div class="well well-sm">
+<strong>Llegenda</strong>
+</p>
 <p>
-<em>Llegenda</em> &nbsp;&nbsp;
-<span class="label label-danger">E</span> Expulsi&ograve; &nbsp;&nbsp;
-<span class="label label-warning">i</span> Incid&egrave;ncia informativa &nbsp;&nbsp;
-<span class="label label-warning">I</span> Incid&egrave;ncia no informativa &nbsp;&nbsp;
-<span class="label label-warning">f</span> Falta &nbsp;&nbsp;
+<em>Comportament</em>
+</p>
+<p style="margin-left:5em">
+<span class="label label-expulsio">E</span> Expulsi&ograve; &nbsp;&nbsp;
+<span class="label label-expulsio">e</span> Expulsi&ograve; per acum. d'incid&egrave;ncies&nbsp;&nbsp;
+<span class="label label-incidencia">I</span> Incid&egrave;ncia no informativa &nbsp;&nbsp;
+<span class="label label-informativa">i</span> Incid&egrave;ncia informativa &nbsp;&nbsp;
+</p>
+<p>
+<em>Assist&egrave;ncia</em>
+</p>
+<p style="margin-left:5em">
+<span class="label label-danger">F</span> Falta &nbsp;&nbsp;
 <span class="label label-warning">r</span> Retard &nbsp;&nbsp;
-<span class="label label-info">j</span> Justificada &nbsp;&nbsp;
+<span class="label label-info">J</span> Justificada &nbsp;&nbsp;
 <span class="label label-default">i</span> Informaci&oacute;
 </p>
 
-<table>
+<table style="margin-left:5em">
 <tr>
 <td style="background-color:#505050;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 <td>L'alumne no està a cap llista</td>
@@ -208,5 +228,6 @@ $(document).ready(function()
 <td>El professor encara no ha passat llista</td>
 </tr>
 </table>
+</div>
 
 {% endblock %}
