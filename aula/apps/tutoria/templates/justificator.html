@@ -45,10 +45,17 @@ $(document).ready(function()
         url:"/tutoria/justificaNext/{{ca.pk}}", 
         success:function(data) {
         	if ( data.ok ) {
-        	   if (data.swaped ) 
-        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-warning">'+data.codi+'</span>';
-        	   else 
+        	   if (data.swaped )
         	      newcontent = '<span id="sca{{ca.pk}}" class="label label-info">'+data.codi+'</span>';
+        	   else if (data.codi == 'F')
+        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-danger">'+data.codi+'</span>';
+        	   else if (data.codi == 'R')
+        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-warning">'+data.codi+'</span>';
+        	   else if (data.codi == ' ')
+        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-default">_</span>';
+        	   else
+        	      newcontent = '<span id="sca{{ca.pk}}" class="label label-default">'+data.codi+'</span>';
+
         	   $('#ca{{ca.pk}}').flip({
 					direction: 'tb',
 					content: newcontent,
