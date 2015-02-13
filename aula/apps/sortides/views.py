@@ -225,15 +225,24 @@ def alumnesConvocats( request, pk , esGestio=False ):
 
         form = formIncidenciaF( instance = instance  )
         
-    form.fields['alumnes_convocats'].queryset = ( AlumneGrupNom
-                                                  .objects
-                                                  .order_by( 'grup__curs__nivell__ordre_nivell', 
-                                                             'grup__curs__nom_curs', 
-                                                             'grup__nom_grup',
-                                                             'cognoms',
-                                                             'nom')
-                                                  .all()
-                                                 ) 
+        
+    from itertools import groupby
+    q_base = ( AlumneGrupNom
+              .objects
+              .order_by( 'grup__curs__nivell__ordre_nivell', 
+                         'grup__curs__nom_curs', 
+                         'grup__nom_grup',
+                         'cognoms',
+                         'nom')
+              .all()
+             ) 
+    
+    choices = []
+    for k, g in groupby(q_base, lambda x: x.grup.descripcio_grup):
+        choices.append(( k , [ ( o.id, unicode(o) ) for o in g] ))
+        
+    form.fields['alumnes_convocats'].queryset = q_base
+    form.fields['alumnes_convocats'].widget.choices = choices
 
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
@@ -241,7 +250,7 @@ def alumnesConvocats( request, pk , esGestio=False ):
     form.fields['alumnes_convocats'].widget.attrs['style'] = "height: 500px;"
         
     return render_to_response(
-                'form.html',
+                'formSortidesAlumnes.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides'
@@ -445,6 +454,7 @@ def sortidaiCal( request):
         event.add('dtstart',localtime(instance.calendari_desde) )
         event.add('dtend' ,localtime(instance.calendari_finsa) )
         event.add('summary',text_a_mostrar)
+        event.add('description',instance.programa_de_la_sortida)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
         
