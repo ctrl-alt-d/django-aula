@@ -30,6 +30,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.templatetags.tz import localtime
 from django.utils.safestring import SafeText
+from aula.apps.missatgeria.models import Missatge
 
 @login_required
 @group_required(['professors'])
@@ -97,11 +98,19 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     
     professor = User2Professor( user )     
     
+    professors_acompanyen_abans = set( )
+    professors_acompanyen_despres = set( ) 
+
+    professors_organitzen_abans = set( )
+    professors_organitzen_despres = set( ) 
+    
     if bool( pk ):
         instance = get_object_or_404( Sortida, pk = pk )
         potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
         if not potEntrar:
             raise Http404
+        professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
+        professors_organitzen_abans = set( instance.professors_responsables.all() )
     else:
         instance = Sortida()
         instance.professor_que_proposa = professor
@@ -122,11 +131,35 @@ def sortidaEdit( request, pk = None, esGestio=False ):
                                   has de seleccionar els <a href="{0}">alumnes convocats</a> i els 
                                   <a href="{1}">alumnes que no hi van</a> 
                                   des del menú desplegable ACCIONS""".format(
-                                        "/sortides/alumnesConvocats/{{id}}".format( id = instance.id),
-                                        "/sortides/alumnesFallen/{{id}}".format( id = instance.id),
+                                        "/sortides/alumnesConvocats/{id}".format( id = instance.id),
+                                        "/sortides/alumnesFallen/{id}".format( id = instance.id),
                                                                              )
                                 ))
+
+            professors_acompanyen_despres = set( instance.altres_professors_acompanyants.all() )
+            professors_organitzen_despres = set( instance.professors_responsables.all() )
             
+            acompanyen_nous = professors_acompanyen_despres - professors_acompanyen_abans
+            organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
+            
+            #missatge a acompanyants:
+            txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
+            del dia {dia}
+            """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+            msg = Missatge( remitent = user, text_missatge = txt )
+            for nou in acompanyen_nous:                
+                importancia = 'VI'
+                msg.envia_a_usuari(nou, importancia)                
+
+            #missatge a responsables:
+            txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
+            del dia {dia}
+            """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+            msg = Missatge( remitent = user, text_missatge = txt )
+            for nou in organitzen_nous:                
+                importancia = 'VI'
+                msg.envia_a_usuari(nou, importancia)                
+                        
             nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
             return HttpResponseRedirect( nexturl )
             
@@ -285,11 +318,19 @@ def professorsAcompanyants( request, pk , esGestio=False ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
+    
+    professors_acompanyen_despres = set( ) 
+    professors_organitzen_despres = set( )     
+    
+    professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
+    professors_organitzen_abans = set( instance.professors_responsables.all() )
+    estat_abans = instance.estat
+    
     potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
         raise Http404
     
-    instance.credentials = credentials
+    instance.credentials = credentials    
    
     formIncidenciaF = modelform_factory(Sortida, fields=( 'altres_professors_acompanyants',  ) )
 
@@ -299,7 +340,33 @@ def professorsAcompanyants( request, pk , esGestio=False ):
         if form.is_valid(): 
             try:
                 form.save()
-                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+
+                if instance.estat in ['R','G']:
+                    professors_acompanyen_despres = set( instance.altres_professors_acompanyants.all() )
+                    professors_organitzen_despres = set( instance.professors_responsables.all() )
+                    
+                    acompanyen_nous = professors_acompanyen_despres - professors_acompanyen_abans
+                    organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
+                    
+                    #missatge a acompanyants:
+                    txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
+                    del dia {dia}
+                    """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+                    msg = Missatge( remitent = user, text_missatge = txt )
+                    for nou in acompanyen_nous:                
+                        importancia = 'VI'
+                        msg.envia_a_usuari(nou, importancia)                
+        
+                    #missatge a responsables:
+                    txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
+                    del dia {dia}
+                    """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+                    msg = Missatge( remitent = user, text_missatge = txt )
+                    for nou in organitzen_nous:                
+                        importancia = 'VI'
+                        msg.envia_a_usuari(nou, importancia) 
+                                    
+                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'                
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
