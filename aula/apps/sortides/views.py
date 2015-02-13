@@ -104,9 +104,10 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     professors_organitzen_abans = set( )
     professors_organitzen_despres = set( ) 
     
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
     if bool( pk ):
         instance = get_object_or_404( Sortida, pk = pk )
-        potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+        potEntrar = ( professor in instance.professors_responsables.all() or fEsDireccioOrGrupSortides )
         if not potEntrar:
             raise Http404
         professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
@@ -116,8 +117,9 @@ def sortidaEdit( request, pk = None, esGestio=False ):
         instance.professor_que_proposa = professor
     
     instance.credentials = credentials
-   
-    formIncidenciaF = modelform_factory(Sortida, exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', ) )
+
+    exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', )
+    formIncidenciaF = modelform_factory(Sortida, exclude=exclude )
 
     if request.method == "POST":
         form = formIncidenciaF(request.POST, instance = instance)
@@ -180,6 +182,9 @@ def sortidaEdit( request, pk = None, esGestio=False ):
 
     form.fields['calendari_desde'].widget = DateTimeTextImput()
     form.fields['calendari_finsa'].widget = DateTimeTextImput()
+    
+    if not fEsDireccioOrGrupSortides:
+        form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
     
         
     return render_to_response(
