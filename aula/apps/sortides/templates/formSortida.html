@@ -25,7 +25,11 @@
 	
 	<script type="text/javascript">
 	
+	
 	$(document).ready(function() {
+
+		$("#id_professors_responsables").select2();
+	    $("#id_altres_professors_acompanyants").select2();
 
 		$( "#id_data_inici" ).change(function() {
 		  actualitzaDatesCalendari();
@@ -75,10 +79,9 @@
 			}
 		}
 
-
-
 	}
-		 
+
+    		 
 	</script>
 	
 	{% endblock %}
