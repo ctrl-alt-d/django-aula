@@ -10,9 +10,9 @@ School Attendance Software
 **[Llicència i Crèdits](https://github.com/ctrl-alt-d/django-aula/blob/master/LICENSE)**
 
 Quick demo
-==========
+=========
 
-* apt-get install python-virtualenv python-pip libxml2-dev libxslt-dev python-libxml2
+* apt-get install python-virtualenv python-pip libxml2-dev libxslt-dev python-libxml2 git
 * mkdir djau
 * cd djau
 * virtualenv venv
