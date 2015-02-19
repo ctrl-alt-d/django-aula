@@ -170,7 +170,8 @@ def sincronitza(file, usuari):
 				grup 			= horari.grup,
 				professor 		= horari.professor,
 				assignatura 		= horari.assignatura,
-				dia_de_la_setmana 	= horari.dia_de_la_setmana)
+				dia_de_la_setmana 	= horari.dia_de_la_setmana,
+                                defaults={'es_actiu': True, })
 			
 			nouHorari.es_actiu = True
 			nouHorari.nom_aula = horari.nom_aula
