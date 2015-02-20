@@ -14,7 +14,7 @@ from aula.apps.sortides.models import Sortida
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
-from aula.apps.sortides.table2_models import Table2_Sortides,Table2_SortidesGestio
+from aula.apps.sortides.table2_models import Table2_Sortides
 from django_tables2.config import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
@@ -31,6 +31,7 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.templatetags.tz import localtime
 from django.utils.safestring import SafeText
 from aula.apps.missatgeria.models import Missatge
+from django.contrib.auth.models import User
 
 @login_required
 @group_required(['professors'])
@@ -46,7 +47,7 @@ def sortidesMevesList( request ):
                    .filter( professor_que_proposa = professor )
                   )
 
-    table = Table2_Sortides( list( sortides ) ) 
+    table = Table2_Sortides( list( sortides ), origen="Meves" ) 
     table.order_by = '-calendari_desde' 
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
@@ -61,6 +62,37 @@ def sortidesMevesList( request ):
 
 @login_required
 @group_required(['professors'])
+def sortidesAllList( request ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    sortides = list( Sortida
+                     .objects
+                     .all()
+                )
+ 
+    table = Table2_Sortides( data=sortides, origen="All" ) 
+    table.order_by = '-calendari_desde' 
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+        
+    url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
+        
+    return render(
+                  request, 
+                  'table2.html', 
+                  {'table': table,
+                   'url': url,
+                   }
+                 )       
+
+
+
+@login_required
+@group_required(['professors'])
 def sortidesGestioList( request ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -68,12 +100,24 @@ def sortidesGestioList( request ):
     
     professor = User2Professor( user )     
     
+    filtre = []
+    socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
+    socCoordinador = User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides'] ).exists()
+
+    #si sóc equip directiu només les que tinguin estat 'R' (Revisada pel coordinador)
+    if socEquipDirectiu:
+        filtre.append('R')
+    #si sóc coordinador de sortides només les que tinguin estat 'P' (Proposada)
+    if socCoordinador:
+        filtre.append('P')
+    
     sortides = ( Sortida
                    .objects
                    .exclude( estat = 'E' )
-                  )
-
-    table = Table2_SortidesGestio( list( sortides ) ) 
+                   .filter( estat__in = filtre )
+                  )    
+    
+    table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 
     table.order_by = '-calendari_desde' 
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
@@ -91,7 +135,7 @@ def sortidesGestioList( request ):
     
 @login_required
 @group_required(['professors'])   #TODO: i grup sortides
-def sortidaEdit( request, pk = None, esGestio=False ):
+def sortidaEdit( request, pk = None, origen=False ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -113,7 +157,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
         professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
         professors_organitzen_abans = set( instance.professors_responsables.all() )
     else:
-        instance = Sortida()
+        instance = Sortida()        
         instance.professor_que_proposa = professor
     
     instance.credentials = credentials
@@ -122,12 +166,16 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     formIncidenciaF = modelform_factory(Sortida, exclude=exclude )
 
     if request.method == "POST":
-        form = formIncidenciaF(request.POST, instance = instance)
+        post_mutable = request.POST.copy()
+        if 'esta_aprovada_pel_consell_escolar' not in post_mutable:
+            post_mutable['esta_aprovada_pel_consell_escolar'] = 'P'
         
+        form = formIncidenciaF(post_mutable, instance = instance)
+            
         if form.is_valid(): 
             form.save()
             
-            if not esGestio:
+            if origen=="Meves":
                 messages.warning(request,  
                                 SafeText(u"""RECORDA: Una vegada enviades les dades, 
                                   has de seleccionar els <a href="{0}">alumnes convocats</a> i els 
@@ -144,10 +192,15 @@ def sortidaEdit( request, pk = None, esGestio=False ):
             acompanyen_nous = professors_acompanyen_despres - professors_acompanyen_abans
             organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
             
-            #missatge a acompanyants:
+            #helper missatges:
+            data_inici = u"( data activitat encara no informada )"
+            if instance.data_inici is not None:
+                data_inici = """del dia {dia}""".format( dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+            
+            #missatge a acompanyants:                
             txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
-            del dia {dia}
-            """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+            {dia}
+            """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             msg = Missatge( remitent = user, text_missatge = txt )
             for nou in acompanyen_nous:                
                 importancia = 'VI'
@@ -155,14 +208,14 @@ def sortidaEdit( request, pk = None, esGestio=False ):
 
             #missatge a responsables:
             txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
-            del dia {dia}
-            """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+            {dia}
+            """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             msg = Missatge( remitent = user, text_missatge = txt )
             for nou in organitzen_nous:                
                 importancia = 'VI'
                 msg.envia_a_usuari(nou, importancia)                
                         
-            nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+            nexturl =  r"/sortides/sortides{origen}".format( origen = origen) 
             return HttpResponseRedirect( nexturl )
             
     else:
@@ -185,6 +238,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
+
     
         
     return render_to_response(
@@ -199,7 +253,7 @@ def sortidaEdit( request, pk = None, esGestio=False ):
     
 @login_required
 @group_required(['professors'])   
-def alumnesConvocats( request, pk , esGestio=False ):
+def alumnesConvocats( request, pk , origen ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -221,7 +275,7 @@ def alumnesConvocats( request, pk , esGestio=False ):
         if form.is_valid():
             try: 
                 form.save()
-                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+                nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -269,7 +323,7 @@ def alumnesConvocats( request, pk , esGestio=False ):
     
 @login_required
 @group_required(['professors'])   
-def alumnesFallen( request, pk , esGestio=False ):
+def alumnesFallen( request, pk , origen ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -292,7 +346,7 @@ def alumnesFallen( request, pk , esGestio=False ):
         if form.is_valid(): 
             try:
                 form.save()
-                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -323,7 +377,7 @@ def alumnesFallen( request, pk , esGestio=False ):
     
 @login_required
 @group_required(['professors'])   
-def professorsAcompanyants( request, pk , esGestio=False ):
+def professorsAcompanyants( request, pk , origen ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -380,7 +434,7 @@ def professorsAcompanyants( request, pk , esGestio=False ):
                         importancia = 'VI'
                         msg.envia_a_usuari(nou, importancia) 
                                     
-                nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'                
+                nexturl =  r'/sortides/sortides{origen}'.format( origen )                
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -407,7 +461,7 @@ def professorsAcompanyants( request, pk , esGestio=False ):
     
 @login_required
 @group_required(['professors'])   #TODO: i grup sortides
-def esborrar( request, pk , esGestio=False ):
+def esborrar( request, pk , origen):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -431,7 +485,7 @@ def esborrar( request, pk , esGestio=False ):
     except:
         messages.warning(request, u"Error esborrant la activitat." )
     
-    nexturl =  r'/sortides/sortidesGestio' if esGestio else r'/sortides/sortidesMeves'
+    nexturl =  r'/sortides/sortides{origen}'.format( origen )
     return HttpResponseRedirect( nexturl )
 
 #-------------------------------------------------------------------
