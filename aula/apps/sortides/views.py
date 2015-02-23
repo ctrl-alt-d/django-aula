@@ -434,7 +434,7 @@ def professorsAcompanyants( request, pk , origen ):
                         importancia = 'VI'
                         msg.envia_a_usuari(nou, importancia) 
                                     
-                nexturl =  r'/sortides/sortides{origen}'.format( origen )                
+                nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )                
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -485,7 +485,7 @@ def esborrar( request, pk , origen):
     except:
         messages.warning(request, u"Error esborrant la activitat." )
     
-    nexturl =  r'/sortides/sortides{origen}'.format( origen )
+    nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )
     return HttpResponseRedirect( nexturl )
 
 #-------------------------------------------------------------------
