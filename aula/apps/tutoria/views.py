@@ -1615,7 +1615,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
 
 @login_required
-@group_required(['direcció'])        
+@group_required(['direcció', 'professors'])        
 def informeCompletFaltesIncidencies(request):
     
     formset = []
@@ -1627,6 +1627,9 @@ def informeCompletFaltesIncidencies(request):
         ('n', u'No Imprimir'),
         ('r', u'Imprimir Recordatori')
     )
+
+    grups_usuari = request.user.groups.values_list('name',flat=True)
+    es_direccio = u'direcció' in grups_usuari
 
     if request.method == 'POST':
         
@@ -1643,7 +1646,11 @@ def informeCompletFaltesIncidencies(request):
         alumnes_recordatori = []
         alumnes_informe = []
         grups = []
-        for grup in Grup.objects.filter( alumne__isnull = False ).distinct():
+        if es_direccio:
+            grups_a_mostrar = Grup.objects.filter( alumne__isnull = False ).distinct()
+        else:
+            grups_a_mostrar = [ t.grup for t in Tutor.objects.filter( professor = User2Professor(request.user) )]
+        for grup in grups_a_mostrar:
             #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
             formInclouGrup=ckbxForm(request.POST,
                                     prefix=str( grup.pk ),
@@ -1706,7 +1713,11 @@ def informeCompletFaltesIncidencies(request):
         form = dataForm( request.POST, prefix = 'data_fi' , label = u'Data fins a', help_text = u'Darrer dia a incloure al llistat' )       
         formset.append( form )
         
-        for grup in Grup.objects.filter( alumne__isnull = False ).distinct():
+        if es_direccio:
+            grups_a_mostrar = Grup.objects.filter( alumne__isnull = False ).distinct()
+        else:
+            grups_a_mostrar = [ t.grup for t in Tutor.objects.filter( professor = User2Professor(request.user) )]
+        for grup in grups_a_mostrar:
             #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
             formInclouGrup=ckbxForm(
                                     prefix=str( grup.pk ),

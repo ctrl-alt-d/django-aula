@@ -113,7 +113,8 @@ def calcula_menu( user , path ):
                       ("Assistència", 'tutoria__assistencia__list_entre_dates', tu, None, None ),                                      
                       ("Informe", 'tutoria__alumne__informe_setmanal', tu, None, None ),                                      
                       ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None, None ),
-                      ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),                                      
+                      ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),
+                      ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', tu, None, None ),                                      
                    )
                ),
              
