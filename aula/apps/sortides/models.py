@@ -86,7 +86,7 @@ class Sortida(models.Model):
     
     professors_responsables = models.ManyToManyField(Professor, blank=True, verbose_name=u"Professors que organitzen", help_text=u"Professors responsables de l'activitat", related_name='professors_responsables_sortida')
     
-    altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants")
+    altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants", blank=True)
     
     alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
 
@@ -95,6 +95,10 @@ class Sortida(models.Model):
     @property
     def n_acompanyants(self):
         return self.altres_professors_acompanyants.count()
+
+    @property
+    def nom_acompanyants(self):
+        return u", ".join( [ unicode(u) for u in self.altres_professors_acompanyants.all() ] )
     
     def clean(self):
         clean_sortida( self )    

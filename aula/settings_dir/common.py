@@ -186,6 +186,9 @@ INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+#Notice: keep safe your SECRET_KEY, we use PickleSerializer.
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
 SEND_BROKEN_LINK_EMAILS = False
 
 LOGGING = {

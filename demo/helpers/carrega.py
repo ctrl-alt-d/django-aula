@@ -63,7 +63,7 @@ def fesCarrega( ):
     print u"#CREEM NIVELL-CURS-GRUP"
     handlerKronowin=open( fitxerKronowin, 'r' )
     inici_curs = date.today() + relativedelta( months = -1)
-    fi_curs = date.today() + relativedelta( months = 1)
+    fi_curs = date.today() + relativedelta( days = 10 )
     sincronitzaKronowin.creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
     
     print u"#Creem correspondències amb horaris"
@@ -128,11 +128,12 @@ def fesCarrega( ):
     print u"Posar alumnes a llistes"
     seguents7dies = Impartir.objects.values( 'dia_impartir').order_by('dia_impartir').distinct()[:5]
     for dia in seguents7dies:
+        print 'Dia', dia, u' ( ompliré 5 dies )'
         for impartir in Impartir.objects.filter( dia_impartir = dia['dia_impartir'] ):
             if not impartir.controlassistencia_set.exists():
                 alumnes =  [ alumne for grup in impartir.horari.grupsPotencials() for alumne in grup.alumne_set.all() ] 
                 random.shuffle( alumnes )
-                n_alumnes = random.randint( 3,7 )
+                n_alumnes = random.randint( 1,4 )
                 afegeix=afegeixThread(expandir = False, alumnes=alumnes[:n_alumnes], impartir=impartir, usuari = impartir.horari.professor, matmulla = False)
                 afegeix.start()
                 afegeix.join()
@@ -147,9 +148,3 @@ def fesCarrega( ):
         
     return msg
 
-
-    
-    
-    
-    
-    
