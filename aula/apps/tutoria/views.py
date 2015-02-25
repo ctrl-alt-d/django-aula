@@ -1631,6 +1631,8 @@ def informeCompletFaltesIncidencies(request):
     grups_usuari = request.user.groups.values_list('name',flat=True)
     es_direccio = u'direcció' in grups_usuari
 
+    # TODO: Fer que apareguin els alumnes dels tutors individualitzats
+
     if request.method == 'POST':
         
         form = dataForm( request.POST, prefix = 'data_ini', label = u'Data des de', help_text = u'Primer dia a incloure al llistat' )
