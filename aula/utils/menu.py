@@ -79,6 +79,21 @@ def calcula_menu( user , path ):
     except:
         return menu
     
+    arbre_tutoria = (
+                      ("Actuacions", 'tutoria__actuacions__list', tu, None, None ),
+                      ("Justificar", 'tutoria__justificar__pre_justificar', tu, None, None ),                                      
+                      ("Cartes", 'tutoria__cartes_assistencia__gestio_cartes', tu, None, None ),                                      
+                      ("Alumnes", 'tutoria__alumnes__list', tu, None, None ),
+                      ("Assistència", 'tutoria__assistencia__list_entre_dates', tu, None, None ),                                      
+                      ("Informe", 'tutoria__alumne__informe_setmanal', tu, None, None ),                                      
+                      ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None, None ),
+                      ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),
+                    )
+    if settings.CUSTOM_TUTORS_INFORME:
+        arbre_tutoria += (
+                      ("Impressió Faltes i Incid.", 'tutoria__informe__informe_faltes_incidencies', tu, None, None ),                                      
+                    )
+    
     arbre1 = (
                #--Aula--------------------------------------------------------------------------
                #  id,    nom     vista                 seg      label
@@ -105,17 +120,7 @@ def calcula_menu( user , path ):
 
                #--Tutoria--------------------------------------------------------------------------
                ('tutoria', 'Tutoria', 'tutoria__actuacions__list', tu, None,
-                  (
-                      ("Actuacions", 'tutoria__actuacions__list', tu, None, None ),
-                      ("Justificar", 'tutoria__justificar__pre_justificar', tu, None, None ),                                      
-                      ("Cartes", 'tutoria__cartes_assistencia__gestio_cartes', tu, None, None ),                                      
-                      ("Alumnes", 'tutoria__alumnes__list', tu, None, None ),
-                      ("Assistència", 'tutoria__assistencia__list_entre_dates', tu, None, None ),                                      
-                      ("Informe", 'tutoria__alumne__informe_setmanal', tu, None, None ),                                      
-                      ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None, None ),
-                      ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),
-                      ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', tu, None, None ),                                      
-                   )
+                   arbre_tutoria
                ),
              
                #--psicopedagog--------------------------------------------------------------------------
@@ -226,7 +231,6 @@ def calcula_menu( user , path ):
                #--Varis--------------------------------------------------------------------------
                ('sortides', 'Activitats', 'sortides__meves__list', di or pr, None,
                   (
-                      (u"Històric", 'sortides__all__list', di or so, None, None ),
                       (u"Gestió d'activitats", 'sortides__gestio__list', di or so, None, None ),
                       (u"Les meves propostes d'activitats", 'sortides__meves__list', pr, None, None ),
                    )
