@@ -37,6 +37,9 @@ urlpatterns = patterns('aula.apps.tutoria.views',
     url(r'^informeCompletFaltesIncidencies/$', 'informeCompletFaltesIncidencies',
         name="coordinacio_alumnes__alumne__informe_faltes_incidencies"),
                        
+    url(r'^tutoriaInformeFaltesIncidencies/$', 'informeCompletFaltesIncidencies',
+        name="tutoria__informe__informe_faltes_incidencies"),                       
+                       
     url(r'^informeSetmanalPrint/(?P<pk>\w+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<suport>\w+)/$', 'informeSetmanalPrint',
         name="tutoria__alumne__informe_setmanal_print"),
                        
