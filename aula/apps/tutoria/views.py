@@ -1102,6 +1102,20 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres.append(capcelera)
         
         taula.fileres = []
+
+            #----nom alumne------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Nom'        
+        filera.append(camp)
+    
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}, {1}'.format( alumne.cognoms, alumne.nom )        
+        filera.append(camp)
+    
+        taula.fileres.append( filera )
     
             #----grup------------------------------------------
         filera = []
