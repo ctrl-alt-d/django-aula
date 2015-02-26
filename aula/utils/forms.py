@@ -9,9 +9,11 @@ class ckbxForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.label = kwargs.pop('label', None)
         self.help_text = kwargs.pop('help_text', None)
+        self.defecte = kwargs.pop('defecte', False)
         super(ckbxForm,self).__init__(*args,**kwargs)
         self.fields['ckbx'].label = self.label 
         self.fields['ckbx'].help_text = self.help_text    
+        self.fields['ckbx'].initial = self.defecte
         
 class dataForm(forms.Form):
     data = forms.DateField( required = False ,

@@ -15,11 +15,20 @@
 		
 	  {% endfor %}
     }
+    
+    function noimprimirres() {
+      {% for f in formset %}
+        $('#id_{{f.prefix}}-opcio_1').prop("checked", true);
+      {% endfor %}
+    }
 
     $(document).ready(
     function($){    
-      $("#noPrint").click(function(){
+      $("#noPrintRecordatori").click(function(){
     	norecordatoris();
+      });
+      $("#noPrintRes").click(function(){
+    	noimprimirres();
       });
     });
     
@@ -33,8 +42,9 @@
             {{missatge}}
           </div>
 	  {% endif %}
-	  
-	  <a class="btn btn-primary" id="noPrint">No imprimir recordatoris!</a>
-	  
+	  <p>
+	  <a class="btn btn-warning" id="noPrintRecordatori">No imprimir cap recordatori!</a>
+	  <a class="btn btn-danger" id="noPrintRes">No imprimir res!</a>
+	  </p>
 {% endblock %}
 

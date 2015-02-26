@@ -1657,7 +1657,8 @@ def informeCompletFaltesIncidencies(request):
             formInclouGrup=ckbxForm(request.POST,
                                     prefix=str( grup.pk ),
                                     label = u'Incloure {0}'.format(grup),
-                                    help_text = u"Marca aquesta casella per incloure al llistat els alumnes d'aquest grup"                          
+                                    help_text = u"Marca aquesta casella per incloure al llistat els alumnes d'aquest grup",
+                                    defecte = not es_direccio                
                                      )
             formInclouGrup.formSetDelimited = True
             formset.append( formInclouGrup )
@@ -1724,7 +1725,8 @@ def informeCompletFaltesIncidencies(request):
             formInclouGrup=ckbxForm(
                                     prefix=str( grup.pk ),
                                     label = u'Incloure {0}'.format(grup),
-                                    help_text = u"Marca aquesta casella per incloure al llistat els alumnes d'aquest grup"                          
+                                    help_text = u"Marca aquesta casella per incloure al llistat els alumnes d'aquest grup",
+                                    defecte = not es_direccio                          
                                      )
             formInclouGrup.formSetDelimited = True
             formset.append( formInclouGrup )
