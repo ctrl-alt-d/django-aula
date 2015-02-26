@@ -41,9 +41,15 @@ class Table2_ExpulsioTramitar(tables.Table):
 
 class Table2_AlertesAcumulacioExpulsions(tables.Table):
     alumne = tables.TemplateColumn(
-                                   template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/all/">{{ record }}</a> ({{ record.grup  }})""", 
+                                   template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/all/">{{ record }}</a>""", 
                                    order_by=( 'cognoms', 'nom'),
-                                   verbose_name=u"Alumne:"
+                                   verbose_name=u"Alumne"
+                                   )
+
+    grup = tables.TemplateColumn(
+                                   template_code = u"""{{ record.grup  }}""", 
+                                   order_by=( 'grup.descripcio_grup'),
+                                   verbose_name=u"Grup"
                                    )
 
     expulsions = tables.TemplateColumn(
@@ -80,7 +86,7 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
     
     class Meta:
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("alumne", "expulsions", "incidenciesAula", "incidenciesForaAula", "sancionar")
+        sequence = ("alumne", "grup", "expulsions", "incidenciesAula", "incidenciesForaAula", "sancionar")
         fields = sequence
         order_by = ("expulsions", "incidenciesAula", "incidenciesForaAula" )
         template = 'bootable2.html'
