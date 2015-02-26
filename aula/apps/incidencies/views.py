@@ -865,7 +865,7 @@ def alertesAcumulacioExpulsions( request ):
                                                   order_by=str("-"+str(t.id)) 
                                                  ) ) for t in tipus_incidencia )
         attrs['Meta'] = type('Meta', (), {'attrs':{"class": "paleblue table table-striped", },
-                                          'sequence':["alumne", "expulsions", "incidenciesAula", "incidenciesForaAula",] + 
+                                          'sequence':["alumne", "grup", "expulsions", "incidenciesAula", "incidenciesForaAula",] + 
                                                      [ str( t.id ) for t in tipus_incidencia ] + 
                                                      [ "sancionar"],
                                           'order_by':("expulsions", "incidenciesAula", "incidenciesForaAula" ),
