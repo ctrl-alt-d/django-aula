@@ -10,7 +10,7 @@ urlpatterns = patterns('aula.apps.sortides.views',
     url(r'^sortidaEditGestio/$', 'sortidaEdit',name = "sortides__sortides__editGestio", kwargs={'origen':'Gestio'}),
     url(r'^sortidaEditAll/$', 'sortidaEdit',name = "sortides__sortides__editAll", kwargs={'origen':'All'}),
 
-    url(r'^sortidaEdit/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__edit_by_pk'),
+    url(r'^sortidaEdit/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__edit_by_pk', kwargs={'origen':'Meves'}),
     url(r'^sortidaEditGestio/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__editGestio_by_pk', kwargs={'origen':'Gestio'}),
     url(r'^sortidaEditAll/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__editAll_by_pk', kwargs={'origen':'All'}),
 
