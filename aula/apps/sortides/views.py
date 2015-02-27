@@ -32,6 +32,7 @@ from django.templatetags.tz import localtime
 from django.utils.safestring import SafeText
 from aula.apps.missatgeria.models import Missatge
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 @login_required
 @group_required(['professors'])
@@ -42,9 +43,13 @@ def sortidesMevesList( request ):
     
     professor = User2Professor( user )     
     
+    q_professor_proposa = Q( professor_que_proposa = professor  )
+    q_professors_responsables = Q( professors_responsables = professor  )
+    
+    
     sortides = ( Sortida
                    .objects
-                   .filter( professor_que_proposa = professor )
+                   .filter( q_professor_proposa | q_professors_responsables )
                   )
 
     table = Table2_Sortides( list( sortides ), origen="Meves" ) 
