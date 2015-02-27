@@ -339,7 +339,7 @@ def alumnesFallen( request, pk , origen ):
     instance.flag_clean_nomes_toco_alumnes = True
     potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
     if not potEntrar:
-        raise Http404
+        raise Http404 
     
     instance.credentials = credentials
    

@@ -16,6 +16,8 @@ class Table2_Sortides(tables.Table):
     participacio = tables.Column ( orderable = False,)
     n_acompanyants = tables.TemplateColumn ( template_code="{{record.n_acompanyants}}", orderable = False,)
     
+    professor_que_proposa = tables.Column ( order_by=("professors_responsables__lastname", "professors_responsables__firstname") )
+    
     def __init__(self, data, origen, *args, **kwargs):
         accions_html=""
         if origen=="Gestio":
