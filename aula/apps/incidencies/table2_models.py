@@ -48,7 +48,7 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
 
     grup = tables.TemplateColumn(
                                    template_code = u"""{{ record.grup  }}""", 
-                                   order_by=( 'grup.descripcio_grup'),
+                                   order_by=( 'grup.descripcio_grup', 'cognoms', 'nom'),
                                    verbose_name=u"Grup"
                                    )
 
