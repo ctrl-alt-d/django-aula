@@ -70,6 +70,12 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
                                                 verbose_name=u"Inc. fora de l'aula"
                                                 )
 
+    expulsionsAndIncidencies= tables.TemplateColumn(
+                                                template_code = u"""<a href="/tutoria/detallTutoriaAlumne/{{record.pk}}/incidencies">{{record.nExpAndInc}}</a>""",
+                                                order_by='-nExpAndInc',
+                                                verbose_name=u"Exp+Inc"
+                                                )
+
     sancionar = tables.TemplateColumn(
                         template_code = u"""<a href=\'javascript:confirmAction(\"/incidencies/sancio/{{record.pk}}\", \"Segur que vols sancionar a {{record}}?\")\'>sancionar...</a>""", 
                         verbose_name = " ",
@@ -86,7 +92,7 @@ class Table2_AlertesAcumulacioExpulsions(tables.Table):
     
     class Meta:
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("alumne", "grup", "expulsions", "incidenciesAula", "incidenciesForaAula", "sancionar")
+        sequence = ("alumne", "grup", "expulsions", "incidenciesAula", "incidenciesForaAula", "expulsionsAndIncidencies", "sancionar")
         fields = sequence
         order_by = ("expulsions", "incidenciesAula", "incidenciesForaAula" )
         template = 'bootable2.html'

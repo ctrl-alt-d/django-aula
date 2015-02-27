@@ -842,6 +842,7 @@ def alertesAcumulacioExpulsions( request ):
         alumne.nExpulsions = alumnesAmbExpulsions_dict.get(alumne.id, 0 )        
         alumne.nIncidenciesAula = alumnesAmbIncidenciesAula_dict.get(alumne.id, 0 )
         alumne.nIncidenciesForaAula = alumnesAmbIncidenciesForaAula_dict.get(alumne.id, 0 )
+        alumne.nExpAndInc = alumne.nExpulsions + alumne.nIncidenciesAula + alumne.nIncidenciesForaAula
         
         alumne.nExpulsionsSort = alumne.nExpulsions * 10000 +  ( alumne.nIncidenciesAula + alumne.nIncidenciesForaAula )
         alumne.nIncidenciesAulaSort = alumne.nIncidenciesAula * 10000 + alumne.nExpulsions * 100 + alumne.nIncidenciesForaAula 
@@ -867,7 +868,7 @@ def alertesAcumulacioExpulsions( request ):
         attrs['Meta'] = type('Meta', (), {'attrs':{"class": "paleblue table table-striped", },
                                           'sequence':["alumne", "grup", "expulsions", "incidenciesAula", "incidenciesForaAula",] + 
                                                      [ str( t.id ) for t in tipus_incidencia ] + 
-                                                     [ "sancionar"],
+                                                     [ "expulsionsAndIncidencies", "sancionar"],
                                           'order_by':("expulsions", "incidenciesAula", "incidenciesForaAula" ),
                                           'template':'bootable2.html',
                                           } ) 
