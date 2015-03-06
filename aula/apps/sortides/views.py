@@ -504,7 +504,7 @@ def sortidaiCal( request):
     cal = Calendar()
     cal.add('method','PUBLISH' ) # IE/Outlook needs this
 
-    for instance in Sortida.objects.filter( calendari_desde__isnull = False ).all():
+    for instance in Sortida.objects.filter( calendari_desde__isnull = False ).exclude(estat__in = ['E', 'P', ]).all():
         event = Event()
         
 #         d=instance.data_inici
