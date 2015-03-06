@@ -50,6 +50,7 @@ def sortidesMevesList( request ):
     sortides = ( Sortida
                    .objects
                    .filter( q_professor_proposa | q_professors_responsables )
+                   .distinct()
                   )
 
     table = Table2_Sortides( list( sortides ), origen="Meves" ) 
@@ -77,6 +78,7 @@ def sortidesAllList( request ):
     sortides = list( Sortida
                      .objects
                      .all()
+                     .distinct()                     
                 )
  
     table = Table2_Sortides( data=sortides, origen="All" ) 
@@ -120,6 +122,7 @@ def sortidesGestioList( request ):
                    .objects
                    .exclude( estat = 'E' )
                    .filter( estat__in = filtre )
+                   .distinct()
                   )    
     
     table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 

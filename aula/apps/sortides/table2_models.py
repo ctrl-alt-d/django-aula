@@ -14,7 +14,7 @@ class Table2_Sortides(tables.Table):
     accions = tables.TemplateColumn( template_code="x", orderable = False, )
 
     participacio = tables.Column ( orderable = False,)
-    n_acompanyants = tables.TemplateColumn ( template_code="{{record.n_acompanyants}}", orderable = False,)
+    n_acompanyants = tables.TemplateColumn ( verbose_name=u"Acompanyants", template_code="{{record.n_acompanyants}}", orderable = False,)
     
     professor_que_proposa = tables.Column ( order_by=("professor_que_proposa.last_name", "professor_que_proposa.first_name") )
     
@@ -149,8 +149,8 @@ class Table2_Sortides(tables.Table):
 
         super(Table2_Sortides, self).__init__(data, *args, **kwargs)        
         self.columns['accions'].column.template_code = accions_html
-        if origen == "Gestio":
-            self.columns['n_acompanyants'].column.template_code = "{{record.nom_acompanyants}}"
+        #if origen == "Gestio":
+        self.columns['n_acompanyants'].column.template_code = "{{record.nom_acompanyants}}"
     
     class Meta:
         model = Sortida

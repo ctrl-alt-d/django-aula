@@ -755,6 +755,7 @@ def elMeuInforme( request, pk = None ):
     if detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU:
         sortides = alumne.notificasortida_set.all()
         sortidesNoves = sortides.filter(  relacio_familia_revisada__isnull = True )
+        sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list( 'id', flat=True ).distinct()           
         
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -773,6 +774,12 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
+        capcelera.amplade = 200
+        capcelera.contingut = u' '
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+    
+        capcelera = tools.classebuida()
         capcelera.amplade = 800
         capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
@@ -787,6 +794,15 @@ def elMeuInforme( request, pk = None ):
             camp.contingut = u'{0} a {1}'.format( sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ) ,  sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y  %H:%M' ))       
             camp.negreta = False if sortida.relacio_familia_revisada else True                
             filera.append(camp)
+            
+            #----------------------------------------------
+            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT, HA D’ASSISTIR A CLASSE." if sortida.sortida.pk in sortides_on_no_assistira else ''
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = comentari_no_ve       
+            camp.negreta = False if sortida.relacio_familia_revisada else True                
+            filera.append(camp)
+            
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None

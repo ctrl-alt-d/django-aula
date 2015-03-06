@@ -98,7 +98,10 @@ class Sortida(models.Model):
 
     @property
     def nom_acompanyants(self):
-        return u", ".join( [ unicode(u) for u in self.altres_professors_acompanyants.all() ] )
+        nom_acompanyants = u", ".join( [ unicode(u) for u in self.altres_professors_acompanyants.all() ] )
+        n_acompanyants = self.altres_professors_acompanyants.count()
+        txt_acompanyants = u"({0}) {1}".format( n_acompanyants, nom_acompanyants) if n_acompanyants else "Sense acompanyants"
+        return txt_acompanyants
     
     def clean(self):
         clean_sortida( self )    
