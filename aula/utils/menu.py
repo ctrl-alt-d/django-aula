@@ -248,13 +248,20 @@ def calcula_menu( user , path ):
                            .count()
                           )    
         
+        n_avis_sortides_meves = ( Sortida
+                           .objects
+                           .filter( estat = 'E' )
+                           .filter( professor_que_proposa__pk = user.pk )
+                           .count()
+                          )  
+        
         arbreSortides = (
                #--Varis--------------------------------------------------------------------------
-               ('sortides', 'Activitats', 'sortides__meves__list', di or pr, n_avis_sortides > 0,
+               ('sortides', 'Activitats', 'sortides__meves__list', di or pr, n_avis_sortides + n_avis_sortides_meves> 0,
                   (
                       (u"Històric", 'sortides__all__list', di or so, None, None ),
                       (u"Gestió d'activitats", 'sortides__gestio__list', di or so, ( n_avis_sortides ,'info', ) if n_avis_sortides > 0 else None, None ),
-                      (u"Les meves propostes d'activitats", 'sortides__meves__list', pr, None, None ),
+                      (u"Les meves propostes d'activitats", 'sortides__meves__list', pr, ( n_avis_sortides_meves ,'info', ) if n_avis_sortides_meves > 0 else None, None ),
                    )
                ),                            
                          )
