@@ -31,6 +31,7 @@ from django.utils.datetime_safe import datetime
 from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja
 
 import random
+from django.contrib.humanize.templatetags.humanize import naturalday
 
 #@login_required
 #@group_required(['professors'])
@@ -796,7 +797,7 @@ def elMeuInforme( request, pk = None ):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0} a {1}'.format( sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ) ,  sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y  %H:%M' ))       
+            camp.contingut = naturalday(sortida.sortida.calendari_desde)       
             camp.negreta = False if sortida.relacio_familia_revisada else True                
             filera.append(camp)
             
@@ -819,12 +820,15 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.modal = {}
-            camp.modal['id'] = sortida.id
+            camp.modal['id'] = sortida.id 
             camp.modal['txtboto'] = u'Detalls' 
-            camp.modal['tittle'] = sortida.sortida.titol_de_la_sortida 
+            camp.modal['tittle'] =  u"{0} ({1})".format( 
+                                        sortida.sortida.titol_de_la_sortida,
+                                        naturalday(sortida.sortida.calendari_desde),
+                                        )
             camp.modal['body'] =  u'{0} a {1} \n\n{2}'.format( 
                                         sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
-                                        sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y  %H:%M' ),
+                                        sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),                                        
                                         sortida.sortida.programa_de_la_sortida,
                                         ) 
             filera.append(camp)
