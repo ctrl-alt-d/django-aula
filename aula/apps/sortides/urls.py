@@ -20,7 +20,7 @@ urlpatterns = patterns('aula.apps.sortides.views',
 
     url(r'^alumnesFallen/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesConvocats', kwargs={'origen':'Meves'}),
     url(r'^alumnesFallenGestio/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesFallenGestio', kwargs={'origen':'Gestio'}),
-    url(r'^alumnesFallenGestio/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesFallenGestio', kwargs={'origen':'All'}),
+    url(r'^alumnesFallenAll/(?P<pk>\d+)/$', 'alumnesFallen', name = 'sortides__sortides__alumnesFallenGestio', kwargs={'origen':'All'}),
 
     url(r'^professorsAcompanyants/(?P<pk>\d+)/$', 'professorsAcompanyants', name = 'sortides__sortides__professorsAcompanyants', kwargs={'origen':'Meves'}),
     url(r'^professorsAcompanyantsGestio/(?P<pk>\d+)/$', 'professorsAcompanyants', name = 'sortides__sortides__professorsAcompanyants', kwargs={'origen':'Gestio'}),
