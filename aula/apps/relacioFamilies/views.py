@@ -784,6 +784,11 @@ def elMeuInforme( request, pk = None ):
         capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
                 
+        capcelera = tools.classebuida()
+        capcelera.amplade = 200
+        capcelera.contingut = u' '
+        taula.capceleres.append(capcelera)
+                
         taula.fileres = []
             
         for sortida in sortides.order_by( '-sortida__data_inici' ):
@@ -796,7 +801,7 @@ def elMeuInforme( request, pk = None ):
             filera.append(camp)
             
             #----------------------------------------------
-            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT, HA D’ASSISTIR A CLASSE." if sortida.sortida.pk in sortides_on_no_assistira else ''
+            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT." if sortida.sortida.pk in sortides_on_no_assistira else ''
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = comentari_no_ve       
@@ -808,6 +813,20 @@ def elMeuInforme( request, pk = None ):
             camp.enllac = None
             camp.contingut = u'{0}'.format( sortida.sortida.titol_de_la_sortida )        
             camp.negreta = False if sortida.relacio_familia_revisada else True                
+            filera.append(camp)
+            
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.modal = {}
+            camp.modal['id'] = sortida.id
+            camp.modal['txtboto'] = u'Detalls' 
+            camp.modal['tittle'] = sortida.sortida.titol_de_la_sortida 
+            camp.modal['body'] =  u'{0} a {1} \n\n{2}'.format( 
+                                        sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
+                                        sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y  %H:%M' ),
+                                        sortida.sortida.programa_de_la_sortida,
+                                        ) 
             filera.append(camp)
             #--
             taula.fileres.append( filera )

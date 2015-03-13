@@ -48,9 +48,33 @@
       	  {% for camp in filera %}
             <td>
              {% if camp.codi %}<a name="{{camp.codi}}"> </a>{% endif %}
-             {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
-             {{camp.contingut|linebreaksbr}}
-             {% if camp.enllac %}</a>{%endif%}
+             
+             {% if camp.modal %}
+             	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#{{camp.modal.id}}">
+				  {{camp.modal.txtboto}}
+				</button>
+				<div class="modal fade" id="{{camp.modal.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				  <div class="modal-dialog">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				        <h4 class="modal-title" id="myModalLabel">{{camp.modal.tittle}}</h4>
+				      </div>
+				      <div class="modal-body">
+				        {{camp.modal.body | linebreaks}}
+				      </div>
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-primary" data-dismiss="modal">Tancar</button>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+             {% else %}
+	            {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
+	            {{camp.contingut|linebreaksbr}}
+	            {% if camp.enllac %}</a>{%endif%}
+             {% endif %}
+             
              {% if camp.multipleContingut %}
                 {% if camp.esMenu %} 
                   <div class="btn-group">
