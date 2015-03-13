@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils.tools import classebuida
 from django.core.urlresolvers import resolve, reverse
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from aula.apps.usuaris.models import User2Professor, AlumneUser
 from django.db.models.aggregates import Count
 from django.utils.datetime_safe import date
@@ -10,6 +10,7 @@ from aula.apps.alumnes.models import Alumne
 from datetime import timedelta, datetime
 from django.template.defaultfilters import safe
 from django.conf import settings
+from aula.apps.sortides.models import Sortida
 
 def calcula_menu( user , path ):
     
@@ -226,13 +227,33 @@ def calcula_menu( user , path ):
              )
     
     arbreSortides = ()
-    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU:
+    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU and ( di or pr ):
+        
+        filtre = []
+        socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
+        socCoordinador = User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides'] ).exists()
+    
+        #si sóc equip directiu només les que tinguin estat 'R' (Revisada pel coordinador)
+        if socEquipDirectiu:
+            filtre.append('R')
+        #si sóc coordinador de sortides només les que tinguin estat 'P' (Proposada)
+        if socCoordinador:
+            filtre.append('P')
+        
+        n_avis_sortides = ( Sortida
+                           .objects
+                           .exclude( estat = 'E' )
+                           .filter( estat__in = filtre )
+                           .distinct()
+                           .count()
+                          )    
+        
         arbreSortides = (
                #--Varis--------------------------------------------------------------------------
-               ('sortides', 'Activitats', 'sortides__meves__list', di or pr, None,
+               ('sortides', 'Activitats', 'sortides__meves__list', di or pr, n_avis_sortides > 0,
                   (
                       (u"Històric", 'sortides__all__list', di or so, None, None ),
-                      (u"Gestió d'activitats", 'sortides__gestio__list', di or so, None, None ),
+                      (u"Gestió d'activitats", 'sortides__gestio__list', di or so, ( n_avis_sortides ,'info', ) if n_avis_sortides > 0 else None, None ),
                       (u"Les meves propostes d'activitats", 'sortides__meves__list', pr, None, None ),
                    )
                ),                            
