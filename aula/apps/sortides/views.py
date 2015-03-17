@@ -373,7 +373,7 @@ def alumnesFallen( request, pk , origen ):
     form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
         
     return render_to_response(
-                'form.html',
+                'formSortidesAlumnesFallen.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides'
@@ -455,7 +455,7 @@ def professorsAcompanyants( request, pk , origen ):
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
 
     form.fields['altres_professors_acompanyants'].widget.attrs['style'] = "height: 500px;"
-        
+    
     return render_to_response(
                 'form.html',
                     {'form': form,
