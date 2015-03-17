@@ -314,7 +314,7 @@ def alumnesConvocats( request, pk , origen ):
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
 
-    form.fields['alumnes_convocats'].widget.attrs['style'] = "height: 500px;"
+    #form.fields['alumnes_convocats'].widget.attrs['style'] = "height: 500px;"
         
     return render_to_response(
                 'formSortidesAlumnes.html',
@@ -370,7 +370,7 @@ def alumnesFallen( request, pk , origen ):
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
 
-    form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
+    #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
         
     return render_to_response(
                 'formSortidesAlumnesFallen.html',
@@ -454,10 +454,10 @@ def professorsAcompanyants( request, pk , origen ):
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
 
-    form.fields['altres_professors_acompanyants'].widget.attrs['style'] = "height: 500px;"
+    #form.fields['altres_professors_acompanyants'].widget.attrs['style'] = "height: 500px;"
     
     return render_to_response(
-                'form.html',
+                'formSortidaProfessorAcompanyant.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides'
