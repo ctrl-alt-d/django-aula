@@ -515,15 +515,19 @@ def sortidaiCal( request):
 #         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
         
         
-        text_a_mostrar = u"{ambit}: {titol}".format(ambit=instance.ambit ,
+        summary = u"{ambit}: {titol}".format(ambit=instance.ambit ,
                                                    titol= instance.titol_de_la_sortida)
         
         event.add('dtstart',localtime(instance.calendari_desde) )
         event.add('dtend' ,localtime(instance.calendari_finsa) )
-        event.add('summary',text_a_mostrar)
-        event.add('description',instance.programa_de_la_sortida)
+        event.add('summary',summary)
+        organitzador = u"\nOrtanitza: "
+        organitzador += u"Departament {0}".format( instance.departament_que_organitza ) if instance.departament_que_organitza_id else u""
+        organitzador += " " + instance.comentari_organitza
+        event.add('description',instance.programa_de_la_sortida + organitzador)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
+
         
         cal.add_component(event)
 

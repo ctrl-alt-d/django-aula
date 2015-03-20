@@ -18,6 +18,8 @@ class Table2_Sortides(tables.Table):
     
     professor_que_proposa = tables.Column ( order_by=("professor_que_proposa.last_name", "professor_que_proposa.first_name") )
     
+    #migracio bootstrap 3.1.1: http://stackoverflow.com/questions/18892351/bootstrap-dropdown-bubble-align-right-not-push-right
+    
     def __init__(self, data, origen, *args, **kwargs):
         accions_html=""
         if origen=="Gestio":
@@ -27,7 +29,7 @@ class Table2_Sortides(tables.Table):
                           Accions
                           <span class="caret"></span>
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu pull-right dropdown-menu-right">
                         
                           <li>
                             <a href="/sortides/sortidaEditGestio/{{record.id}}">
@@ -69,7 +71,7 @@ class Table2_Sortides(tables.Table):
                       Accions
                       <span class="caret"></span>
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu pull-right dropdown-menu-right">
                     
                       <li>
                         <a href="/sortides/sortidaEdit/{{record.id}}">
@@ -111,7 +113,7 @@ class Table2_Sortides(tables.Table):
                           Accions
                           <span class="caret"></span>
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu pull-right dropdown-menu-right">
                         
                           <li>
                             <a href="/sortides/sortidaEditAll/{{record.id}}">
