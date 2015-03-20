@@ -30,6 +30,10 @@ urlpatterns = patterns('aula.apps.sortides.views',
     url(r'^esborrarGestio/(?P<pk>\d+)/$', 'esborrar', name = 'sortides__sortides__esborrarGestio', kwargs={'origen':'Gestio'}),
     url(r'^esborrarAll/(?P<pk>\d+)/$', 'esborrar', name = 'sortides__sortides__esborrarAll', kwargs={'origen':'All'}),
 
+    url(r'^sortidaExcel/(?P<pk>\d+)/$', 'sortidaExcel', name = 'sortides__sortides__sortidaExcel'),
+
+
+
     url(r'^sortidaiCal/', 'sortidaiCal', name = 'sortides__sortides__ical'),
 
 )

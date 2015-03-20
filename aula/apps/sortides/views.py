@@ -8,7 +8,7 @@ from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template.context import RequestContext
+from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
 from aula.apps.sortides.models import Sortida
 from django.forms.models import modelform_factory
@@ -33,6 +33,8 @@ from django.utils.safestring import SafeText
 from aula.apps.missatgeria.models import Missatge
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.template import loader
+from django.template.defaultfilters import slugify
 
 @login_required
 @group_required(['professors'])
@@ -537,5 +539,72 @@ def sortidaiCal( request):
 #     return response
 
     return HttpResponse( cal.to_ical() )
+    
+    
+    
+
+@login_required
+@group_required(['professors'])  
+def sortidaExcel( request, pk ):
+    """
+    Generates an Excel spreadsheet for review by a staff member.
+    """
+    sortida = get_object_or_404( Sortida, pk = pk )
+    
+    no_assisteixen = list( sortida.alumnes_que_no_vindran.all() )
+    
+    #capcelera
+    capcelera = []
+    
+    #Dades de la sortida
+    detall = [
+                [ sortida.get_tipus_display() , sortida.get_estat_display(),  ],
+                [],
+                [ sortida.titol_de_la_sortida  ,   ],
+                [],
+                [ u"Comença ", u"Finalitza", ],
+                [ sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ) , sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' )  ],              
+                [],
+    ]
+    detall += [[ u"Organitzen", ]] + [[unicode( p )] for p in sortida.professors_responsables.all()] + [[]]
+    detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
+    
+    #Alumnes
+    alumnes = [ [ u'Alumne', u'grup', u'nivell', u"assitència" ], ]
+    alumnes += [
+                        [e,
+                         e.grup.descripcio_grup,
+                         e.grup.curs.nivell,
+                         u"No assisteix a la sortida" if e in no_assisteixen else u"",
+                        ]
+                        for e in sortida.alumnes_convocats.all() 
+                ]
+    
+    dades_sortida = detall + alumnes
+
+    template = loader.get_template("export.csv")
+    context = Context({
+                         'capcelera':capcelera,
+                         'dades':dades_sortida,
+    })
+    
+    response = HttpResponse()  
+    filename = "sortida-{0}.csv".format( slugify( sortida.titol_de_la_sortida )) 
+
+
+    response['Content-Disposition'] = 'attachment; filename='+filename
+    response['Content-Type'] = 'text/csv; charset=utf-8'
+    #response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
+    # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
+    # encoding is ANSI and special characters will be mangled
+    response.write("\xEF\xBB\xBF")
+    response.write(template.render(context))
+
+
+    return response
+
+
+    
+    
     
     

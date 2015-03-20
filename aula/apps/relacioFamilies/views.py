@@ -802,7 +802,7 @@ def elMeuInforme( request, pk = None ):
             filera.append(camp)
             
             #----------------------------------------------
-            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT." if sortida.sortida.pk in sortides_on_no_assistira else ''
+            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT. L'alumne ha d'assistir al centre excepte si són de viatge de final de curs." if sortida.sortida.pk in sortides_on_no_assistira else ''
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = comentari_no_ve       
