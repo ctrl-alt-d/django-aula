@@ -131,6 +131,7 @@ class AbstractExpulsio(models.Model):
 class AbstractTipusIncidencia(models.Model):
     tipus = models.CharField("Tipus", max_length=50, unique=True, help_text=u"Tipus d'incidència")
     es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si les incidències d'aquest tipus son només informatives i no implicaràn mesures disciplinàries. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
+    notificar_equip_directiu = models.BooleanField( default = False, help_text=u"Notifica a tots els membres de l'equip directiu quan se'n crea una" )
     class Meta:
         abstract = True        
         verbose_name = u"Tipus d'incidència"
