@@ -147,4 +147,10 @@ def incidencia_despres_de_posar(instance):
                 importancia = 'PI'
                 msg1.envia_a_usuari( professor.getUser(), importancia )
         
-
+        if instance.tipus.notificar_equip_directiu:
+            #es notifica aquest tipus d'incidència a tots els membres de l'equip directiu
+            Professor = get_model( 'usuaris','Professor')
+            membres_equip_directiu = Professor.objects.filter( groups__name = u"direcció" )
+            for professor in membres_equip_directiu:
+                msg1.envia_a_usuari( professor.getUser(), 'VI' )
+                
