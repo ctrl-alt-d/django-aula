@@ -34,6 +34,19 @@ CUSTOM_DIES_PRESCRIU_INCIDENCIA = 30
 CUSTOM_DIES_PRESCRIU_EXPULSIO = 60
     Dies en els que les expulsions prescriuen.
 
+CUSTOM_MODUL_SORTIDES_ACTIU = False
+	Si True, activa el mòdul de sortides a l'aplicació.
+
+CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA = False
+	Si True, permet utilitzar la funcionalitat que copia els alumnes d'una hora setmanal a una altra.
+ 
+CUSTOM_TUTORS_INFORME = False
+	Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
+
+CUSTOM_NOTIFICAR_ASSISTENCIA = -1.0
+	Percentatge a partir del qual es notifica a l'equip directiu quan un alumne el sobrepassa en faltes d'assstència.
+	Deixar en negatiu per a desactivar aquestes notificacions.
+
 
 A la base de dades
 ------------------
