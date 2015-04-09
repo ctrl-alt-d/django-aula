@@ -10,8 +10,8 @@ TEMPLATE_DIRS = [
 
 
 INSTALLED_APPS  = [
-                   'demo',
-                   'django.contrib.staticfiles',
+#                   'demo',
+#                   'django.contrib.staticfiles',
                    ] + INSTALLED_APPS
 
 NOM_CENTRE = 'Centre de Demo'
