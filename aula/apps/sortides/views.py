@@ -172,7 +172,7 @@ def sortidaEdit( request, pk = None, origen=False ):
     
     instance.credentials = credentials
 
-    exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', )
+    exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', )
     formIncidenciaF = modelform_factory(Sortida, exclude=exclude )
 
     if request.method == "POST":
@@ -368,6 +368,59 @@ def alumnesFallen( request, pk , origen ):
         
     ids_alumnes_que_venen = [ a.id for a in instance.alumnes_convocats.all()  ]
     form.fields['alumnes_que_no_vindran'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_que_venen ) 
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+
+    #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
+        
+    return render_to_response(
+                'formSortidesAlumnesFallen.html',
+                    {'form': form,
+                     'head': 'Sortides' ,
+                     'missatge': 'Sortides'
+                    },
+                    context_instance=RequestContext(request))    
+
+#-------------------------------------------------------------------
+    
+@login_required
+@group_required(['professors'])   
+def alumnesJustificats( request, pk , origen ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    instance.flag_clean_nomes_toco_alumnes = True
+    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404 
+    
+    instance.credentials = credentials
+   
+    formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_justificacio',  ) )
+
+    if request.method == "POST":
+        form = formIncidenciaF(request.POST, instance = instance)
+        
+        if form.is_valid(): 
+            try:
+                form.save()
+                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
+
+
+    else:
+
+        form = formIncidenciaF( instance = instance  )
+        
+    ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
+    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_no_vindran ) 
 
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 

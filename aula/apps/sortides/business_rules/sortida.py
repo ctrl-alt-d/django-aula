@@ -107,12 +107,17 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         
         #a la llista 'alumnesQueNoVenen' no poden haver altres alumnes dels que apareixen a 'alumnesQueVenen'
         alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
-        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
-        
-        alumnesATreure = alumnesQueNoVenen - ( alumnesQueVenen & alumnesQueNoVenen )
-        
+        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )        
+        alumnesATreure = alumnesQueNoVenen - ( alumnesQueVenen & alumnesQueNoVenen )        
         for alumne in alumnesATreure:
             instance.alumnes_que_no_vindran.remove( alumne )
+            
+        #a la llista 'alumnesJustificats' no poden haver altres alumnes dels que apareixen a 'alumnesQueNoVenen'
+        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
+        alumnesJustificats = set( [i.pk for i in instance.alumnes_justificacio.all() ] )        
+        alumnesATreure = alumnesJustificats - ( alumnesQueNoVenen & alumnesJustificats )        
+        for alumne in alumnesATreure:
+            instance.alumnes_justificacio.remove( alumne )
         
         #actualitzo index de participació
         instance.participacio = u"{0} de {1}".format( instance.alumnes_convocats.count() - instance.alumnes_que_no_vindran.count( ) ,
