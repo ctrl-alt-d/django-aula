@@ -208,7 +208,7 @@ def sortidaEdit( request, pk = None, origen=False ):
                 data_inici = """del dia {dia}""".format( dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
             
             #missatge a acompanyants:                
-            txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
+            txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
             {dia}
             """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             msg = Missatge( remitent = user, text_missatge = txt )
@@ -217,7 +217,7 @@ def sortidaEdit( request, pk = None, origen=False ):
                 msg.envia_a_usuari(nou, importancia)                
 
             #missatge a responsables:
-            txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
+            txt = u"""Has estat afegit com a professor responsable a l'activitat {sortida} 
             {dia}
             """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             msg = Missatge( remitent = user, text_missatge = txt )
@@ -300,7 +300,7 @@ def alumnesConvocats( request, pk , origen ):
               .objects
               .order_by( 'grup__curs__nivell__ordre_nivell', 
                          'grup__curs__nom_curs', 
-                         'grup__nom_grup',
+                         'grup__descripcio_grup',
                          'cognoms',
                          'nom')
               .all()
@@ -427,7 +427,7 @@ def professorsAcompanyants( request, pk , origen ):
                     organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
                     
                     #missatge a acompanyants:
-                    txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
+                    txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
                     del dia {dia}
                     """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
                     msg = Missatge( remitent = user, text_missatge = txt )
@@ -436,7 +436,7 @@ def professorsAcompanyants( request, pk , origen ):
                         msg.envia_a_usuari(nou, importancia)                
         
                     #missatge a responsables:
-                    txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
+                    txt = u"""Has estat afegit com a professor responsable a l'activitat {sortida} 
                     del dia {dia}
                     """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
                     msg = Missatge( remitent = user, text_missatge = txt )
@@ -526,6 +526,7 @@ def sortidaiCal( request):
         organitzador = u"\nOrtanitza: "
         organitzador += u"Departament {0}".format( instance.departament_que_organitza ) if instance.departament_que_organitza_id else u""
         organitzador += " " + instance.comentari_organitza
+        event.add('organizer',organitzador)
         event.add('description',instance.programa_de_la_sortida + organitzador)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )

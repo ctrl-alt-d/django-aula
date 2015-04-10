@@ -88,7 +88,7 @@ class Sortida(models.Model):
     
     altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants", blank=True)
     
-    alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
+    alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes convocats. Per seleccionar un grup sencer, clica una sola vegada damunt el nom del grup.",related_name='sortides_confirmades')
 
     alumnes_que_no_vindran = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que haurien de perquè estan convocats però no venen",related_name='sortides_on_ha_faltat')
     
