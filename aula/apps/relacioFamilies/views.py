@@ -757,6 +757,7 @@ def elMeuInforme( request, pk = None ):
         sortides = alumne.notificasortida_set.all()
         sortidesNoves = sortides.filter(  relacio_familia_revisada__isnull = True )
         sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list( 'id', flat=True ).distinct()           
+        sortides_justificades = alumne.sortides_falta_justificat.values_list( 'id', flat=True ).distinct()           
         
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -802,7 +803,13 @@ def elMeuInforme( request, pk = None ):
             filera.append(camp)
             
             #----------------------------------------------
-            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT. L'alumne ha d'assistir al centre excepte si són de viatge de final de curs." if sortida.sortida.pk in sortides_on_no_assistira else ''
+            #  NO INSCRIT A L’ACTIVITAT. L'alumne ha d'assistir al centre excepte si són de viatge de final de curs. 
+            comentari_no_ve = u""            
+            if sortida.sortida.pk in sortides_on_no_assistira:
+                comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT."
+                if sortida.sortida.pk in sortides_justificades:
+                    comentari_no_ve += u"NO INSCRIT A L’ACTIVITAT. Té justificada l'absència."
+
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = comentari_no_ve       
