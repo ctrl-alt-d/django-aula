@@ -43,6 +43,10 @@ CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA = False
 CUSTOM_TUTORS_INFORME = False
 	Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 
+CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
+	Indica la descripció i l'adreça del tutorial per a les famílies.
+	Per exemple CUSTOM_PORTAL_FAMILIES_TUTORIAL = u"Tutorial disponible a http://goo.gl/lQrkaG"
+
 
 A la base de dades
 ------------------

@@ -198,7 +198,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
     else:
         #envio missatge:
         urlDjangoAula = settings.URL_DJANGO_AULA
-        urlVideoTutorial = '- No disponible -' 
+        textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL 
         
         txtCapcelera = u"Enviat missatge a {0} .".format( 
                                 u", ".join( correusFamilia )
@@ -220,7 +220,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
                      settings.NOM_CENTRE,
                      u"",
                      u"",
-                     u"Video Tutorial d'ajuda a {0}".format( urlVideoTutorial ),                     
+                     u"".format( textTutorial ),                     
                     ]
     
         from django.core.mail import send_mail
