@@ -579,7 +579,7 @@ def sortidaiCal( request):
         organitzador = u"\nOrtanitza: "
         organitzador += u"{0}".format( u"Departament" + instance.departament_que_organitza.nom if instance.departament_que_organitza_id else u"" )
         organitzador += " " + instance.comentari_organitza
-        event.add('organizer',  vText( u"{0} {1}".format( u"Departament " + instance.departament_que_organitza  if instance.departament_que_organitza_id else u"" , instance.comentari_organitza )))
+        event.add('organizer',  vText( u"{0} {1}".format( u"Departament " + instance.departament_que_organitza.nom  if instance.departament_que_organitza_id else u"" , instance.comentari_organitza )))
         event.add('description',instance.programa_de_la_sortida + organitzador)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
