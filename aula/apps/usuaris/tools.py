@@ -220,7 +220,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
                      settings.NOM_CENTRE,
                      u"",
                      u"",
-                     u"".format( textTutorial ),                     
+                     u"{0}".format( textTutorial ),                     
                     ]
     
         from django.core.mail import send_mail

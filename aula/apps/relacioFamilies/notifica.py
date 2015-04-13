@@ -81,7 +81,7 @@ def notifica():
                              settings.NOM_CENTRE,
                              u"",
                              u"",
-                             u"".format( textTutorial ),
+                             u"{0}".format( textTutorial ),
                             ]
                     
                     try:                        
