@@ -39,13 +39,19 @@ class Table2_Sortides(tables.Table):
                         
                           <li>
                             <a href="/sortides/alumnesConvocatsGestio/{{record.id}}">
-                            Gestionar alumnes convocats<br>
+                            Alumnes convocats<br>
                             </a>
                           </li>
                         
                           <li>
                             <a href="/sortides/alumnesFallenGestio/{{record.id}}">
-                            Gestionar alumnes que faltaran<br>
+                            Alumnes que faltaran<br>
+                            </a>
+                          </li>
+
+                          <li>
+                            <a href="/sortides/alumnesJustificatsGestio/{{record.id}}">
+                            Alumnes que faltaran i no han de venir al centre<br>
                             </a>
                           </li>
 
@@ -87,16 +93,22 @@ class Table2_Sortides(tables.Table):
                     
                       <li>
                         <a href="/sortides/alumnesConvocats/{{record.id}}">
-                        Gestionar alumnes convocats<br>
+                        Alumnes convocats<br>
                         </a>
                       </li>
                     
                       <li>
                         <a href="/sortides/alumnesFallen/{{record.id}}">
-                        Gestionar alumnes que faltaran<br>
+                        Alumnes que faltaran<br>
                         </a>
                       </li>
-                    
+
+                      <li>
+                        <a href="/sortides/alumnesJustificats/{{record.id}}">
+                        Alumnes que faltaran i no han de venir al centre<br>
+                        </a>
+                      </li>
+                                              
                       <li>
                         <a href="/sortides/professorsAcompanyants/{{record.id}}">
                         Professors acompanyants<br>
@@ -134,13 +146,19 @@ class Table2_Sortides(tables.Table):
                         
                           <li>
                             <a href="/sortides/alumnesConvocatsAll/{{record.id}}">
-                            Gestionar alumnes convocats<br>
+                            Alumnes convocats<br>
                             </a>
                           </li>
                         
                           <li>
                             <a href="/sortides/alumnesFallenAll/{{record.id}}">
-                            Gestionar alumnes que faltaran<br>
+                            Alumnes que faltaran<br>
+                            </a>
+                          </li>
+
+                          <li>
+                            <a href="/sortides/alumnesJustificatsAll/{{record.id}}">
+                            Alumnes que faltaran i no han de venir al centre<br>
                             </a>
                           </li>
 

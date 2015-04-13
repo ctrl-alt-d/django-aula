@@ -1,6 +1,6 @@
 # Development
 appy==0.8.4
-django>=1.5.1,<=1.7
+django>=1.5.1,<1.7
 #django-debug-toolbar
 django_extensions
 lxml

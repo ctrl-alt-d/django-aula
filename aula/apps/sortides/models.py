@@ -88,9 +88,11 @@ class Sortida(models.Model):
     
     altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants", blank=True)
     
-    alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que ha confirmat assistència",related_name='sortides_confirmades')
+    alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes convocats. Per seleccionar un grup sencer, clica una sola vegada damunt el nom del grup.",related_name='sortides_confirmades')
 
-    alumnes_que_no_vindran = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que haurien de perquè estan convocats però no venen",related_name='sortides_on_ha_faltat')
+    alumnes_que_no_vindran = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que haurien d'assistir-hi perquè estan convocats però sabem que no venen.",related_name='sortides_on_ha_faltat')
+
+    alumnes_justificacio = models.ManyToManyField(Alumne, blank=True, help_text=u"Dels alumnes que no van a la sortida cal seleccionar els que tenen justificació per no assistir al Centre.",related_name='sortides_falta_justificat')
     
     @property
     def n_acompanyants(self):
@@ -117,7 +119,8 @@ from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_de
 
 from aula.apps.sortides.business_rules.sortida import sortida_m2m_changed
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_convocats.through )    
-m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_que_no_vindran.through )    
+m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_que_no_vindran.through )
+m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_justificacio.through )      
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.professors_responsables.through )    
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.altres_professors_acompanyants.through )    
 

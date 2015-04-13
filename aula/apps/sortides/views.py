@@ -172,7 +172,7 @@ def sortidaEdit( request, pk = None, origen=False ):
     
     instance.credentials = credentials
 
-    exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', )
+    exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', )
     formIncidenciaF = modelform_factory(Sortida, exclude=exclude )
 
     if request.method == "POST":
@@ -208,7 +208,7 @@ def sortidaEdit( request, pk = None, origen=False ):
                 data_inici = """del dia {dia}""".format( dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
             
             #missatge a acompanyants:                
-            txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
+            txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
             {dia}
             """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             msg = Missatge( remitent = user, text_missatge = txt )
@@ -217,7 +217,7 @@ def sortidaEdit( request, pk = None, origen=False ):
                 msg.envia_a_usuari(nou, importancia)                
 
             #missatge a responsables:
-            txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
+            txt = u"""Has estat afegit com a professor responsable a l'activitat {sortida} 
             {dia}
             """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             msg = Missatge( remitent = user, text_missatge = txt )
@@ -300,7 +300,7 @@ def alumnesConvocats( request, pk , origen ):
               .objects
               .order_by( 'grup__curs__nivell__ordre_nivell', 
                          'grup__curs__nom_curs', 
-                         'grup__nom_grup',
+                         'grup__descripcio_grup',
                          'cognoms',
                          'nom')
               .all()
@@ -382,6 +382,59 @@ def alumnesFallen( request, pk , origen ):
                     },
                     context_instance=RequestContext(request))    
 
+#-------------------------------------------------------------------
+    
+@login_required
+@group_required(['professors'])   
+def alumnesJustificats( request, pk , origen ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    instance.flag_clean_nomes_toco_alumnes = True
+    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404 
+    
+    instance.credentials = credentials
+   
+    formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_justificacio',  ) )
+
+    if request.method == "POST":
+        form = formIncidenciaF(request.POST, instance = instance)
+        
+        if form.is_valid(): 
+            try:
+                form.save()
+                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
+
+
+    else:
+
+        form = formIncidenciaF( instance = instance  )
+        
+    ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
+    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_no_vindran ) 
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+
+    #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
+        
+    return render_to_response(
+                'formSortidesAlumnesFallen.html',
+                    {'form': form,
+                     'head': 'Sortides' ,
+                     'missatge': 'Sortides'
+                    },
+                    context_instance=RequestContext(request))    
+
 
 #-------------------------------------------------------------------
     
@@ -427,7 +480,7 @@ def professorsAcompanyants( request, pk , origen ):
                     organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
                     
                     #missatge a acompanyants:
-                    txt = u"""Has estat afegit com a professor acompanyant a la sortida {sortida} 
+                    txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
                     del dia {dia}
                     """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
                     msg = Missatge( remitent = user, text_missatge = txt )
@@ -436,7 +489,7 @@ def professorsAcompanyants( request, pk , origen ):
                         msg.envia_a_usuari(nou, importancia)                
         
                     #missatge a responsables:
-                    txt = u"""Has estat afegit com a professor responsable a la sortida {sortida} 
+                    txt = u"""Has estat afegit com a professor responsable a l'activitat {sortida} 
                     del dia {dia}
                     """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
                     msg = Missatge( remitent = user, text_missatge = txt )
@@ -526,6 +579,7 @@ def sortidaiCal( request):
         organitzador = u"\nOrtanitza: "
         organitzador += u"Departament {0}".format( instance.departament_que_organitza ) if instance.departament_que_organitza_id else u""
         organitzador += " " + instance.comentari_organitza
+        event.add('organizer',organitzador)
         event.add('description',instance.programa_de_la_sortida + organitzador)
         event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
         event['location'] = vText( instance.ciutat )
