@@ -10,11 +10,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
-<link rel="stylesheet" href="{{STATIC_URL}}eonasdan-dt-picker/css/bootstrap-datetimepicker.min.css">
+<link href="{{STATIC_URL}}static-select2/css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{STATIC_URL}}static-select2/css/extra.css" type="text/css" media="screen" rel="stylesheet" />
 <link rel="stylesheet" href="{{STATIC_URL}}bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="{{STATIC_URL}}glyphicons/css/bootstrap-glyphicons.css">
-
 <title>-djAu- Programari control de presència i incidències per a Instituts, Escoles i Acadèmies.</title>
 <meta name="description" content = "-djAu- Permet passar llista amb pocs clics així com la gestió completa de les incidències. 
                                     Les principals característiques són: estalviar temps, millorar la gestió i el rendiment dels alumnes." >
@@ -24,7 +22,6 @@
 <script> 
 $.fn.bootstrapDP = null;                 
 </script>
-<script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
   function confirmAction(url, msg) {
@@ -35,6 +32,10 @@ $.fn.bootstrapDP = null;
 </script>
 
 {% block extrahead %} {% endblock %}
+
+<style type="text/css">
+  container { background-color: white; }
+</style>
 
 </head>
 
@@ -66,10 +67,14 @@ $.fn.bootstrapDP = null;
   
   </div> <!--container-->
 
-
-
+<script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}static-select2/js/heavy_data.min.js"></script>
+<script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
 <script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
 <script src="{{STATIC_URL}}eonasdan-dt-picker/js/catala.js"></script>
+<script type="text/javascript">
+  $('button[data-toggle=popover]').popover();
+</script>
 
 		<div style="visibility:hidden;">
 		<div itemscope itemtype="http://data-vocabulary.org/Product">
@@ -90,7 +95,6 @@ $.fn.bootstrapDP = null;
 		  </span>
 		</div>
 		</div>
-
 
 
 </body>

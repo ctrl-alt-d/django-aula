@@ -19,7 +19,7 @@ def notifica():
     from aula.apps.usuaris.models import Accio
         
     urlDjangoAula = settings.URL_DJANGO_AULA
-    urlVideoTutorial = "- No disponible -"
+    textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL
     
     with transaction.autocommit():
         
@@ -81,7 +81,7 @@ def notifica():
                              settings.NOM_CENTRE,
                              u"",
                              u"",
-                             u"Video Tutorial d'ajuda a {0}".format( urlVideoTutorial ),
+                             u"{0}".format( textTutorial ),
                             ]
                     
                     try:                        
