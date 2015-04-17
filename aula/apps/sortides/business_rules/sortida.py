@@ -3,6 +3,7 @@ from django.utils.datetime_safe import datetime
 import datetime as dt
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from aula.apps.tutoria.models import Tutor
 
 def clean_sortida( instance ):
     
@@ -127,6 +128,10 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         #actualitzo professors acompanyants.
         if instance.professor_que_proposa not in instance.professors_responsables.all():
             instance.professors_responsables.add( instance.professor_que_proposa )
+            
+        #actualitzem tutors alumnes
+        tutors = Tutor.objects.filter( grup__id__in = instance.alumnes_convocats.values_list( 'grup', flat=True ).distinct() )
+        instance.tutors_alumnes_convocats = [ t.professor for t in tutors ]
     
     
     
