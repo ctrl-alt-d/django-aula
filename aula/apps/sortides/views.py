@@ -241,7 +241,7 @@ def sortidaEdit( request, pk = None, origen=False ):
     
     form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
     for f in form.fields:
-        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     form.fields['calendari_desde'].widget = DateTimeTextImput()
     form.fields['calendari_finsa'].widget = DateTimeTextImput()
@@ -314,7 +314,7 @@ def alumnesConvocats( request, pk , origen ):
     form.fields['alumnes_convocats'].widget.choices = choices
 
     for f in form.fields:
-        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['alumnes_convocats'].widget.attrs['style'] = "height: 500px;"
         
@@ -370,7 +370,7 @@ def alumnesFallen( request, pk , origen ):
     form.fields['alumnes_que_no_vindran'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_que_venen ) 
 
     for f in form.fields:
-        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
         
@@ -423,7 +423,7 @@ def alumnesJustificats( request, pk , origen ):
     form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_no_vindran ) 
 
     for f in form.fields:
-        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
         
@@ -507,7 +507,7 @@ def professorsAcompanyants( request, pk , origen ):
         form = formIncidenciaF( instance = instance  )
         
     for f in form.fields:
-        form.fields[f].widget.attrs['class'] = ' form-control' + form.fields[f].widget.attrs.get('class',"") 
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['altres_professors_acompanyants'].widget.attrs['style'] = "height: 500px;"
     

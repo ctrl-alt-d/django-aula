@@ -147,7 +147,12 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
     for control_assistencia in impartir.controlassistencia_set.all():
         for expulsio in control_assistencia.expulsio_set.all():
             expulsions.append(expulsio)
-                        
+
+
+    for f in ['frases', 'frase', 'alumnes' ]:
+        form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class',"") 
+        
+                            
     return render_to_response(
                   "posaIncidenciaAula.html", 
                   {"form": form,

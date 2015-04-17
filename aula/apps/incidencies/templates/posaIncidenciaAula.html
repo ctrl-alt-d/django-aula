@@ -19,6 +19,9 @@
 
 </style>
 
+	<script src="{{STATIC_URL}}bootstrap-multiselect/js/bootstrap-multiselect.js"></script>
+    <link href="{{STATIC_URL}}bootstrap-multiselect/js/bootstrap-multiselect.css" type="text/css" media="screen" rel="stylesheet" />
+	
 {% endblock %}
 
 {% block preform  %}
@@ -96,6 +99,18 @@
 		}
 	</script>
 
+	<script type="text/javascript">
+	
+	$(document).ready(function() {
 
+		$("#id_alumnes").multiselect({
+            enableClickableOptGroups: true
+        });
+
+	});
+    		 
+	</script>
 {% endblock %}
+
+--------------
 
