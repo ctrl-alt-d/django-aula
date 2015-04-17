@@ -272,7 +272,6 @@ def posaIncidencia( request ):
 #                                                            'es_informativa'])
                                                             'descripcio_incidencia'])
     formIncidenciaF.base_fields['dia_incidencia'].widget =  DateTextImput()               
-    formIncidenciaF.base_fields['descripcio_incidencia'].widget = forms.TextInput(attrs={'style':'width:400px;'} )   
 
     formset = []
     if request.method == 'POST':
@@ -335,6 +334,9 @@ def posaIncidencia( request ):
 
         formset.append( formAlumne )
         formset.append( formIncidencia )
+
+    for f in ['descripcio_incidencia' ]: #, 'franja_incidencia', 'tipus' ]:
+        formIncidencia.fields[f].widget.attrs['class'] = 'form-control ' + formIncidencia.fields[f].widget.attrs.get('class',"") 
         
     return render_to_response(
                 'formset.html',
