@@ -183,7 +183,25 @@ class Table2_Sortides(tables.Table):
                         </ul>
                       </div>
             """
-
+        elif origen=="Tutoria":
+            accions_html= u"""
+                <div class="btn-group btn-group-xs">
+                    <a class="btn dropdown-toggle btn-primary btn-xs" data-toggle="dropdown" href="#">
+                      Accions
+                      <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu pull-right dropdown-menu-right">
+                                              
+                      <li>
+                        <a href="/tutoria/justificarSortidaAlumne/{{record.id}}">
+                        Alumnes que faltaran i no han de venir al centre<br>
+                        </a>
+                      </li>                    
+                    
+                    </ul>
+                  </div>
+            """        
+            
         super(Table2_Sortides, self).__init__(data, *args, **kwargs)        
         self.columns['accions'].column.template_code = accions_html
         #if origen == "Gestio":

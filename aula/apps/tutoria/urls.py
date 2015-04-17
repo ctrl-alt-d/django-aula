@@ -82,5 +82,13 @@ urlpatterns = patterns('aula.apps.tutoria.views',
     url(r'^tutorsBlanc/$', 'blanc',
         name="professorat__tutors__blanc"),
 
+
+    #sortides
+    url(r'^justificarSortida/$', 'justificarSortida',
+    name="tutoria__justificarSortida__list"),
+                       
+    url(r'^justificarSortidaAlumne/(?P<pk>\d+)/$', 'justificarSortidaAlumne',
+        name="tutoria__justificarSortida__detall"),
+                       
 )
 

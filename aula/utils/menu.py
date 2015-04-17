@@ -94,6 +94,25 @@ def calcula_menu( user , path ):
         arbre_tutoria += (
                       ("Impressió Faltes i Incid.", 'tutoria__informe__informe_faltes_incidencies', tu, None, None ),                                      
                     )
+        
+    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU and ( di or pr ):
+        professor = User2Professor( user )
+        filtre = [ 'P', 'R', ]
+        te_sortides_actives = ( Sortida
+                       .objects
+                       .exclude( estat = 'E' )
+                       .filter( estat__in = filtre )
+                       .filter( data_inici__lte = datetime.now() )
+                       .filter( tutors_alumnes_convocats = professor )
+                       .exists()
+                      )    
+        arbre_tutoria += (
+                      ("Sortides", 'tutoria__justificarSortida__list', tu, ( u'!', 'info' ) if te_sortides_actives else None, None
+                      ),                                      
+                    )
+
+
+
     
     arbre1 = (
                #--Aula--------------------------------------------------------------------------

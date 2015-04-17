@@ -6,7 +6,7 @@ from django.template import RequestContext
 from django.http import HttpResponse
 
 #workflow
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, render
 from django.http import HttpResponseRedirect
 
 #auth
@@ -27,7 +27,7 @@ from datetime import timedelta
 from aula.apps.tutoria.models import Actuacio, Tutor, SeguimentTutorialPreguntes,\
     SeguimentTutorial, SeguimentTutorialRespostes, ResumAnualAlumne,\
     CartaAbsentisme
-from aula.apps.alumnes.models import Alumne, Grup
+from aula.apps.alumnes.models import Alumne, Grup, AlumneGrupNom
 from django.forms.models import modelform_factory, modelformset_factory
 from django import forms
 from django.db.models import Min, Max, Q
@@ -52,6 +52,10 @@ from aula.apps.tutoria import report_carta_absentisme
 from aula.apps.tutoria.report_carta_absentisme import report_cartaAbsentisme
 from aula.apps.tutoria.rpt_totesLesCartes import totesLesCartesRpt
 from django.core.urlresolvers import reverse
+from aula.apps.sortides.models import Sortida
+from aula.apps.sortides.table2_models import Table2_Sortides
+from django_tables2.config import RequestConfig
+from aula.utils.my_paginator import DiggPaginator
 
 @login_required
 @group_required(['professors','professional'])
@@ -1953,4 +1957,93 @@ def blanc( request ):
                 'blanc.html',
                     {},
                     context_instance=RequestContext(request)) 
+
+# Sortides
+
+@login_required
+@group_required(['professors'])        
+def justificarSortida(request):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    filtre = [ 'P', 'R', ]
+    
+    sortides = ( Sortida
+                   .objects
+                   .exclude( estat = 'E' )
+                   .filter( estat__in = filtre )
+                   .filter( data_inici__lte = datetime.now() )
+                   .filter( tutors_alumnes_convocats = professor )
+                   .distinct()
+                  )    
+    
+    table = Table2_Sortides( data=list( sortides ), origen="Tutoria" ) 
+    table.order_by = '-calendari_desde' 
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+        
+    return render(
+                  request, 
+                  'table2.html', 
+                  {'table': table
+                   }
+                 )       
+
+@login_required
+@group_required(['professors'])        
+def justificarSortidaAlumne(request, pk ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    instance.flag_clean_nomes_toco_alumnes = True
+    potEntrar = ( professor in instance.tutors_alumnes_convocats.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    if not potEntrar:
+        raise Http404 
+    
+    instance.credentials = credentials
+   
+    formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_justificacio',  ) )
+
+    if request.method == "POST":
+        form = formIncidenciaF(request.POST, instance = instance)
+        
+        if form.is_valid(): 
+            try:
+                form.save()
+                nexturl =  r'/tutoria/justificarSortida/'
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
+
+
+    else:
+
+        form = formIncidenciaF( instance = instance  )
+        
+    ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
+    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_no_vindran ) 
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
+
+    #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
+        
+    return render_to_response(
+                'formSortidesAlumnesFallen.html',
+                    {'form': form,
+                     'head': 'Sortides' ,
+                     'missatge': 'Sortides'
+                    },
+                    context_instance=RequestContext(request))    
+
+
+    
+
         
