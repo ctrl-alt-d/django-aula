@@ -2016,7 +2016,16 @@ def justificarSortidaAlumne(request, pk ):
         
         if form.is_valid(): 
             try:
-                form.save()
+
+                nous=set([ x.pk for x in form.cleaned_data['alumnes_justificacio'] ] )
+                ante=set([ x.pk for x in instance.alumnes_justificacio.all() ] )
+                #afegir
+                for alumne in nous - ante:
+                    instance.alumnes_justificacio.add( alumne )
+                #treure
+                for alumne in ante - nous:
+                    instance.alumnes_justificacio.remove( alumne )
+                    
                 nexturl =  r'/tutoria/justificarSortida/'
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
@@ -2027,8 +2036,9 @@ def justificarSortidaAlumne(request, pk ):
 
         form = formIncidenciaF( instance = instance  )
         
-    ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
-    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_no_vindran ) 
+    #ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
+    ids_alumnes_que_venen = [ a.id for a in instance.alumnes_convocats.all()  ]
+    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_que_venen ) 
 
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 

@@ -6,17 +6,18 @@ from django.contrib.auth.models import User
 from aula.apps.tutoria.models import Tutor
 
 def clean_sortida( instance ):
+
+    errors = []
     
     if hasattr(instance, 'flag_clean_nomes_toco_alumnes'):
         return
-    
+        
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
 
     instance.instanceDB = None   #Estat a la base de dades
     if instance.pk:    
         instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
     
-    errors = []
     
 #     ('E', u'Esborrany',),
 #     ('P', u'Proposada',),
@@ -93,7 +94,21 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
     if instance.pk:    
         instance.instanceDB = instance.__class__.objects.get( pk = instance.pk )
     errors = []
-
+    
+    #Alumnes justificats que no estan convocats:
+    if action in ( "post_add", "post_clear", "post_remove"  ): 
+        #comprovar alumnes justificats a la llista de convocats
+        alumnesJustificats = set( [ a.pk for a in instance.alumnes_justificacio.all() ] ) 
+        alumnesQueVenen = set(  [ a.pk for a in instance.alumnes_convocats.all() ]  )
+        justificats_que_venen = alumnesJustificats - alumnesQueVenen
+        print justificats_que_venen, '<----', alumnesJustificats, alumnesQueVenen
+        if bool( justificats_que_venen ):
+            l=list( [ a for a in instance.alumnes_justificacio.all() if a.pk in justificats_que_venen  ] )
+            l_str = u", ".join(  [ unicode(a) for a in l[:3]  ] )
+            if len(l)>3:
+                l_str += ' i ' + unicode(len(l)) + ' més.'
+            errors.append( u"Hi ha alumnes que no vindran a la sortida, tenen justificat no assistir al Centre i no estan convocats: " + l_str )
+        
     #Per estats >= G només direcció pot tocar:
     if bool(instance.instanceDB) and instance.instanceDB.estat in [ 'G' ]:   
         if not User.objects.filter( pk=user.pk, groups__name = 'direcció').exists():
@@ -104,7 +119,7 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
     elif bool(errors):
         raise ValidationError( errors  )
     
-    if action in ( "post_remove" , "post_add" ):   
+    if action in (  "post_add", "post_clear", "post_remove"  ):      
         
         #a la llista 'alumnesQueNoVenen' no poden haver altres alumnes dels que apareixen a 'alumnesQueVenen'
         alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
@@ -113,12 +128,16 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         for alumne in alumnesATreure:
             instance.alumnes_que_no_vindran.remove( alumne )
             
-        #a la llista 'alumnesJustificats' no poden haver altres alumnes dels que apareixen a 'alumnesQueNoVenen'
-        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
+        #a la llista 'alumnesJustificats' no poden haver altres alumnes dels que apareixen a 'alumnesQueVenen'
         alumnesJustificats = set( [i.pk for i in instance.alumnes_justificacio.all() ] )        
-        alumnesATreure = alumnesJustificats - ( alumnesQueNoVenen & alumnesJustificats )        
+        alumnesATreure = alumnesJustificats - ( alumnesQueVenen & alumnesJustificats )        
         for alumne in alumnesATreure:
             instance.alumnes_justificacio.remove( alumne )
+
+        #els alumnes justificats han d'aparèixer a la llista d'alumnes que no vindran
+        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
+        for alumne in ( alumnesJustificats - alumnesQueNoVenen ):
+            instance.alumnes_que_no_vindran.add( alumne )
         
         #actualitzo index de participació
         instance.participacio = u"{0} de {1}".format( instance.alumnes_convocats.count() - instance.alumnes_que_no_vindran.count( ) ,

@@ -284,7 +284,16 @@ def alumnesConvocats( request, pk , origen ):
         
         if form.is_valid():
             try: 
-                form.save()
+
+                nous=set([ x.pk for x in form.cleaned_data['alumnes_convocats'] ] )
+                ante=set([ x.pk for x in instance.alumnes_convocats.all() ] )
+                #afegir
+                for alumne in nous - ante:
+                    instance.alumnes_convocats.add( alumne )
+                #treure
+                for alumne in ante - nous:
+                    instance.alumnes_convocats.remove( alumne )
+
                 nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
@@ -355,7 +364,20 @@ def alumnesFallen( request, pk , origen ):
         
         if form.is_valid(): 
             try:
-                form.save()
+                nous=set([ x.pk for x in form.cleaned_data['alumnes_que_no_vindran'] ] )
+                ante=set([ x.pk for x in instance.alumnes_que_no_vindran.all() ] )
+                #afegir
+                for alumne in nous - ante:
+                    instance.alumnes_que_no_vindran.add( alumne )
+                #treure
+                for alumne in ante - nous:
+                    instance.alumnes_que_no_vindran.remove( alumne )
+                
+                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
+                return HttpResponseRedirect( nexturl )
+            except ValidationError, e:
+                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
+
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
@@ -407,20 +429,29 @@ def alumnesJustificats( request, pk , origen ):
         form = formIncidenciaF(request.POST, instance = instance)
         
         if form.is_valid(): 
+               
             try:
-                form.save()
+                nous=set([ x.pk for x in form.cleaned_data['alumnes_justificacio'] ] )
+                ante=set([ x.pk for x in instance.alumnes_justificacio.all() ] )
+                #afegir
+                for alumne in nous - ante:
+                    instance.alumnes_justificacio.add( alumne )
+                #treure
+                for alumne in ante - nous:
+                    instance.alumnes_justificacio.remove( alumne )
+                
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
             except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
-
     else:
 
         form = formIncidenciaF( instance = instance  )
         
-    ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
-    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_no_vindran ) 
+    #ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
+    ids_alumnes_que_venen = [ a.id for a in instance.alumnes_convocats.all()  ]
+    form.fields['alumnes_justificacio'].queryset = AlumneGrupNom.objects.filter( id__in = ids_alumnes_que_venen ) 
 
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
