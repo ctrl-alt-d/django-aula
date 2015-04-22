@@ -33,77 +33,87 @@
     </style>
     
     <script type="text/javascript">
-      // Desactiva tots els botons
+      // DEPRECATED: Desactiva tots els botons
+/*
       function totnet() {
         $(".btn").removeClass("active");
         $(".rad").prop("checked", false);
         $("div[id^='prediccio']").remove();
       }
+*/
 
       $(document).ready(
       function($){
           /* Posar tot a ... */
           $("#totpresent, #totpresent2").click(function(){
-            totnet();
-            $(".btn").each(function () {
-              if($(this).hasClass('btnPresent')) {
-                $(this).addClass('active');
+            $("div[id^='prediccio']").remove();
+            $(".btn-group").each(function () {
+              if(! $(this).find('.btnJustificada').hasClass('active') ) {
+                $(this).find('.btn').removeClass('active');
+                $(this).find('.rad').prop("checked", false);
+                $(this).find('.btnPresent').addClass('active');
+                $(this).find('.radPresent').prop("checked", true);
               }
             });
-            $(".rad").each(function () {
-              if($(this).hasClass('radPresent')) {
-                $(this).prop("checked", true);
-              }
-            });
-            $("prediccio_{{f.prefix}}").remove();
             return false;
           });
           
           $("#totfalta, #totfalta2").click(function(){
-            totnet();
-            $(".btn").each(function () {
-              if($(this).hasClass('btnFalta')) {
-                $(this).addClass('active');
-              }
-            });
-            $(".rad").each(function () {
-              if($(this).hasClass('radFalta')) {
-                $(this).prop("checked", true);
+            $("div[id^='prediccio']").remove();
+            $(".btn-group").each(function () {
+              if(! $(this).find('.btnJustificada').hasClass('active') ) {
+                $(this).find('.btn').removeClass('active');
+                $(this).find('.rad').prop("checked", false);
+                $(this).find('.btnFalta').addClass('active');
+                $(this).find('.radFalta').prop("checked", true);
               }
             });
             return false;
           });
-          
+
           $("#horaAnterior, #horaAnterior2").click(function(){
-				    totnet();
-				    {% for f in formset %}
-				      {% if f.hora_anterior == 0  %}
-					      $('#label_id_{{f.prefix}}-estat_0').addClass('active');
-					      $('#rad_id_{{f.prefix}}-estat_0').prop("checked", true);
-				      {% endif %}
-				      {% if f.hora_anterior == 1  %}
-					      $('#label_id_{{f.prefix}}-estat_1').addClass('active');
-					      $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
-				      {% endif %}
-				    {% endfor %}
-				    return false;
+            $("div[id^='prediccio']").remove();
+            {% for f in formset %}
+              if(! $('#label_id_{{f.prefix}}-estat_2').hasClass('active') ) {
+                $('#label_id_{{f.prefix}}-estat_3').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_3').prop("checked", false);
+                {% if f.hora_anterior == 0  %}
+                  $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
+                  $('#label_id_{{f.prefix}}-estat_0').addClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", true);
+                {% elif f.hora_anterior == 1  %}
+                  $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
+                  $('#label_id_{{f.prefix}}-estat_1').addClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
+                {% endif %}
+              }
+            {% endfor %}
+            return false;
           });
           
 		$("#feelLucky, #feelLucky2").click(function(){
-				    totnet();
-				    {% for f in formset %}
-				      {% if f.prediccio == 0 %}
-					      $('#label_id_{{f.prefix}}-estat_0').addClass('active');
-					      $('#rad_id_{{f.prefix}}-estat_0').prop("checked", true);
-				      {% endif %}
-				      {% if f.prediccio == 1 %}
-					      $('#label_id_{{f.prefix}}-estat_1').addClass('active');
-					      $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
-				      {% endif %}
-                      
-				      $( "label[for|='id_{{f.prefix}}-estat']" ).after( "<div id='prediccio_{{f.prefix}}'><div style='max-width:100px;' class='pull-right hidden-xs label label-{{f.avis}}'>Predicció {{f.avis_pct}}</div></div>" );
-				    {% endfor %}
-				    return false;
+            $("div[id^='prediccio']").remove();
+            {% for f in formset %}
+              if(! $('#label_id_{{f.prefix}}-estat_2').hasClass('active') ) {
+                $('#label_id_{{f.prefix}}-estat_3').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_3').prop("checked", false);
+                {% if f.prediccio == 0 %}
+                  $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
+                  $('#label_id_{{f.prefix}}-estat_0').addClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", true);
+                {% elif f.prediccio == 1 %}
+                  $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
+                  $('#label_id_{{f.prefix}}-estat_1').addClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
+                {% endif %}
+                $( "label[for|='id_{{f.prefix}}-estat']" ).after( "<div id='prediccio_{{f.prefix}}'><div style='max-width:100px;' class='pull-right hidden-xs label label-{{f.avis}}'>Predicció {{f.avis_pct}}</div></div>" );
+              }
+            {% endfor %}
+            return false;
           });
         });
     </script>
