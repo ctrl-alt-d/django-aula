@@ -43,7 +43,7 @@ class Sortida(models.Model):
     
     titol_de_la_sortida = models.CharField(max_length=40,help_text=u"Escriu un títol breu que serveixi per identificar aquesta activitat.Ex: exemples: Visita al Museu Dalí, Ruta al barri gòtic, Xerrada sobre drogues ")
 
-    ambit = models.CharField(u"Àmbit", max_length=20,help_text=u"Quins alumnes hi van? Ex: 1r i 2n ESO. Ex: 1rESO grup A.")
+    ambit = models.CharField(u"Àmbit", max_length=20,help_text=u"Quins alumnes hi van? Ex: 1r i 2n ESO. Ex: 1r ESO A.")
 
     ciutat = models.CharField(u"Ciutat", max_length=30,help_text=u"Ciutat(s) destinació. Ex: Girona, Cendrassos")
 
@@ -88,13 +88,13 @@ class Sortida(models.Model):
     
     altres_professors_acompanyants = models.ManyToManyField(Professor, verbose_name=u"Professors acompanyants", help_text=u"Professors acompanyants", blank=True )
     
-    tutors_alumnes_convocats = models.ManyToManyField(Professor, verbose_name=u"Tutors dels alumnes", help_text=u"Tutors dels alumnes", blank=True, related_name='tutors_sortida' )
+    tutors_alumnes_convocats = models.ManyToManyField(Professor, Editable=False, verbose_name=u"Tutors dels alumnes", help_text=u"Tutors dels alumnes", blank=True, related_name='tutors_sortida' )
     
     alumnes_convocats = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes convocats. Per seleccionar un grup sencer, clica una sola vegada damunt el nom del grup.",related_name='sortides_confirmades')
 
     alumnes_que_no_vindran = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que haurien d'assistir-hi perquè estan convocats però sabem que no venen.",related_name='sortides_on_ha_faltat')
 
-    alumnes_justificacio = models.ManyToManyField(Alumne, blank=True, help_text=u"Dels alumnes que no van a la sortida cal seleccionar els que tenen justificació per no assistir al Centre.",related_name='sortides_falta_justificat')
+    alumnes_justificacio = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que no venen i disposen de justificació per no assistir al Centre el dia de l'activitat.",related_name='sortides_falta_justificat')
     
     @property
     def n_acompanyants(self):

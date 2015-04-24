@@ -607,7 +607,7 @@ def sortidaiCal( request):
         event.add('dtstart',localtime(instance.calendari_desde) )
         event.add('dtend' ,localtime(instance.calendari_finsa) )
         event.add('summary',summary)
-        organitzador = u"\nOrtanitza: "
+        organitzador = u"\nOrganitza: "
         organitzador += u"{0}".format( u"Departament" + instance.departament_que_organitza.nom if instance.departament_que_organitza_id else u"" )
         organitzador += " " + instance.comentari_organitza
         event.add('organizer',  vText( u"{0} {1}".format( u"Departament " + instance.departament_que_organitza.nom  if instance.departament_que_organitza_id else u"" , instance.comentari_organitza )))
