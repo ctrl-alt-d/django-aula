@@ -67,12 +67,12 @@
     {% for item in menu.subitems %}
         {% if item.subsubitems %}
         <li role="presentation" class="dropdown {{item.active}}" >
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{item.label}} {% if item.medalla %}<span class="label label-{{item.medalla.tipus}}">{{ item.medalla.valor }}</span>{% endif %} <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{item.label}} {% if item.medalla %}<span class="label label-{{item.medalla.tipus}}">{{ item.medalla.valor }}</span>{% endif %} <span class="caret" {% if item.active %} style="border-top:4px solid white;" {% endif %}></span></a>
           <ul class="dropdown-menu" role="menu">
           {% for subsubitem in item.subsubitems %}
             <li><a href="{{subsubitem.url}}" >{{subsubitem.label}} {% if subsubitem.medalla %}<span class="label label-{{item.medalla.tipus}}">{{ subsubitem.medalla.valor }}</span>{% endif %}</a></li>
           {% endfor %}
-          </ul>          	
+          </ul>
         </li>
 		{% else %}
 		<li role="presentation" class="{{item.active}}" >
