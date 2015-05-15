@@ -142,13 +142,15 @@ def sortidesGestioList( request ):
                    }
                  )       
         
-    
+     
 @login_required
 @group_required(['professors'])   #TODO: i grup sortides
-def sortidaEdit( request, pk = None, origen=False ):
+def sortidaEdit( request, pk = None, clonar=False, origen=False ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
+    
+    es_post = ( request.method == "POST" )
     
     professor = User2Professor( user )     
     
@@ -159,13 +161,27 @@ def sortidaEdit( request, pk = None, origen=False ):
     professors_organitzen_despres = set( ) 
     
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
-    if bool( pk ):
+    if bool( pk ) and not clonar:
         instance = get_object_or_404( Sortida, pk = pk )
         potEntrar = ( professor in instance.professors_responsables.all() or fEsDireccioOrGrupSortides )
         if not potEntrar:
             raise Http404
         professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
         professors_organitzen_abans = set( instance.professors_responsables.all() )
+    elif bool( pk ) and clonar:
+        instance = get_object_or_404( Sortida, pk = pk )
+        instance.pk = None
+        instance.estat = 'E'
+        instance.titol_de_la_sortida = u"**CLONADA** " + instance.titol_de_la_sortida
+        instance.esta_aprovada_pel_consell_escolar = 'P'
+#         instance.professors_responsables = None
+#         instance.altres_professors_acompanyants = None
+#         instance.tutors_alumnes_convocats = None
+#         instance.alumnes_convocats = None
+#         instance.alumnes_que_no_vindran = None
+#         instance.alumnes_justificacio = None
+#         instance.professor_que_proposa_id = None
+
     else:
         instance = Sortida()        
         instance.professor_que_proposa = professor
@@ -257,7 +273,7 @@ def sortidaEdit( request, pk = None, origen=False ):
                      'head': 'Sortides' ,
                      'missatge': 'Sortides'
                     },
-                    context_instance=RequestContext(request))    
+                    context_instance=RequestContext(request))     
 
 #-------------------------------------------------------------------
     

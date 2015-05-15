@@ -14,6 +14,8 @@ urlpatterns = patterns('aula.apps.sortides.views',
     url(r'^sortidaEditGestio/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__editGestio_by_pk', kwargs={'origen':'Gestio'}),
     url(r'^sortidaEditAll/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__editAll_by_pk', kwargs={'origen':'All'}),
 
+    url(r'^sortidaClonar/(?P<pk>\d+)/$', 'sortidaEdit', name = 'sortides__sortides__clonar_by_pk', kwargs={ 'clonar':True, 'origen':'Meves',  }),
+
     url(r'^alumnesConvocats/(?P<pk>\d+)/$', 'alumnesConvocats', name = 'sortides__sortides__alumnesConvocats', kwargs={'origen':'Meves'}),
     url(r'^alumnesConvocatsGestio/(?P<pk>\d+)/$', 'alumnesConvocats', name = 'sortides__sortides__alumnesConvocatsGestio', kwargs={'origen':'Gestio'}),
     url(r'^alumnesConvocatsAll/(?P<pk>\d+)/$', 'alumnesConvocats', name = 'sortides__sortides__alumnesConvocatsAll', kwargs={'origen':'All'}),

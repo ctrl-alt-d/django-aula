@@ -125,6 +125,13 @@ class Table2_Sortides(tables.Table):
                         Esborrar<br>
                         </a>
                       </li>
+
+                      <li>
+                        <a href="/sortides/sortidaClonar/{{record.id}}">
+                        Clonar sortida<br>
+                        </a>
+                      </li>
+                    
                     
                     </ul>
                   </div>
