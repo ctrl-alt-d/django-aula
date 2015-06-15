@@ -1,15 +1,63 @@
-djAu no és multi curs per decissió de disseny. Però es poden passar dades d'un curs a un altre.
-Això és fa mitjançant les capceleres de tutoria: 'SeguimentTutorial'
+djAu no és multi curs per decissió de disseny. 
 
+Hi ha dos opcions per iniciar nou curs:
+* Clonar la base de dades i esborrar el del curs passat 
+* Fer una base de dades nova i portar de la vella el que calgui. Jo aposto per la segona opció.
 
------ El resum anual -------
+*** Opció fer net (recomenada) ***
 
-Un cop finalitzat el curs cal fer el resum anual:
+- crear una base de dades nova
+- feu una instal·lació neta creant les taules amb el syncdb i instal·lant les fixtures per defecte
+- parametritzar ( incidències i sancions amb el corresponent .odt )  **TODO: apuntar quines són**
+- crear els grups a partir d'exportació cronowin ( des de la web )
+- modificar inici-fi de curs per cursos i afegir festius ( des de la web )
+- (opcional) Si volem passar llista des del primer dia llavors cal importar els alumnes i promocionar-los.
+- (opcional) Quan tinguem els alumnes a la bd nova: a la base de dades del curs passat fer el resum anual i 
+  passar-lo a la base de dades nova (es pot fer un cop engegat el curs, no hi ha presssa)
 
   from aula.apps.tutoria.others import calculaResumAnualProcess
   calculaResumAnualProcess()
 
------- Fer neteja d'un curs per l'altre -----
+  --**TODO**: sentències per passar les taules de la base de dades vella a la nova i posar els comptadors al id que toqui.
+  tutoria_seguimenttutorial
+  tutoria_seguimenttutorialpreguntes
+  tutoria_seguimenttutorialrespostes
+  tutoria_resumanualalumne
+
+  ----- Connectar i desconnectar capceleres de seguiment tutorial -----
+  --Les capceleres de tutoria (SeguimentTutorial) es poden desconectar de l'Alumne:
+
+      SeguimentTutorial.alumne = None
+
+  Per tonar-los a connectar (un cop importat des de la base de dades del curs passat):
+
+  --Amb SQL:
+   update tutoria_seguimenttutorial
+   set alumne_id = alumnes_alumne.id
+   from alumnes_alumne
+   where alumnes_alumne.nom = tutoria_seguimenttutorial.nom and 
+      alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
+      alumnes_alumne.data_neixement = tutoria_seguimenttutorial.data_neixement;
+
+   update tutoria_seguimenttutorial
+   set 
+      alumne_id = alumnes_alumne.id,
+      data_neixement = alumnes_alumne.data_neixement
+   from alumnes_alumne
+   where alumnes_alumne.nom = tutoria_seguimenttutorial.nom and 
+      alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
+      alumne_id is null;
+      
+   --esborrar les que han quedat sense alumne ( perquè l'alumne ja no és al centre)
+   delete from tutoria_resumanualalumne where seguiment_tutorial_id in ( select id from tutoria_seguimenttutorial where alumne_id is null);
+   delete from tutoria_seguimenttutorialrespostes where seguiment_tutorial_id in ( select id from tutoria_seguimenttutorial where alumne_id is null);  
+   delete from tutoria_seguimenttutorial where alumne_id is null;
+
+  --Amb models django:
+  ( todo )
+
+
+*** Opció clonar (no recomenada) ***
 
 (Todo) Cal esborrar al menys: 
 
@@ -24,31 +72,7 @@ Un cop finalitzat el curs cal fer el resum anual:
 	Missatgeria: Destinatari, DetallMissatge, Missatge
 	Incidències: Sancio, Expulsio, Incidencia
 	Assignatures: Assignatura
-
-
------ Connectar i desconnectar capceleres de seguiment tutorial -----
-
-Les capceleres de tutoria (SeguimentTutorial) es poden desconectar de l'Alumne:
-
-  SeguimentTutorial.alumne = None
-
-Per tonar-los a connectar:
-
-  --Amb SQL:
-  update tutoria_seguimenttutorial
-  set alumne_id = alumnes_alumne.id
-  from alumnes_alumne
-  where alumnes_alumne.nom = tutoria_seguimenttutorial.nom and 
-      alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
-      alumnes_alumne.data_neixement = tutoria_seguimenttutorial.data_neixement;
-
-  delete from tutoria_resumanualalumne where seguiment_tutorial_id in ( select id from tutoria_seguimenttutorial where alumne_id is null);
-
-  delete from tutoria_seguimenttutorialrespostes where seguiment_tutorial_id in ( select id from tutoria_seguimenttutorial where alumne_id is null);  
-
-  delete from tutoria_seguimenttutorial where alumne_id is null;
-
-
-  --Amb models django:
-  ( todo )
+	
+Cal revisar arbre: nivell, curs, grup, ...
+Cal fer els lligams assignatures django amb assignatures noves del kronowin.
 
