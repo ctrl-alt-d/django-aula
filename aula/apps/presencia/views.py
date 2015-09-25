@@ -618,7 +618,7 @@ def afegeixAlumnesLlista(request, pk):
             formset.append( form )
         
     return render_to_response(
-                  "formset.html", 
+                  "AfegirAlumnes.html", 
                   {"formset": formset,
                    "head": head,
                    },
@@ -722,7 +722,7 @@ def treuAlumnesLlista(request, pk):
         formset.append( form )
         
     return render_to_response(
-                  "formset.html", 
+                  "AfegirAlumnes.html", 
                   {"formset": formset,
                    "head": head,
                    "missatge":u"""Atenció, no s'esborraran els alumnes que ja s'hagi passat llista o els que tinguin

@@ -1,0 +1,25 @@
+{% extends "formset.html" %}
+
+{% block extrahead %} 
+	<script src="{{STATIC_URL}}bootstrap-multiselect/js/bootstrap-multiselect.js"></script>
+    <link href="{{STATIC_URL}}bootstrap-multiselect/js/bootstrap-multiselect.css" type="text/css" media="screen" rel="stylesheet" />
+	
+{% endblock %}
+
+{% block postform  %} 
+
+
+	<script type="text/javascript">
+	
+	$(document).ready(function() {
+
+		$('select[id*="-alumnes"]').multiselect({
+            enableClickableOptGroups: true
+        });
+
+	});
+    		 
+	</script>
+
+
+{% endblock %}
