@@ -168,6 +168,7 @@ def sincronitza(f, user = None):
                 a.relacio_familia_darrera_notificacio = alumneDadesAnteriors.relacio_familia_darrera_notificacio
                 a.periodicitat_faltes                 = alumneDadesAnteriors.periodicitat_faltes
                 a.periodicitat_incidencies            = alumneDadesAnteriors.periodicitat_incidencies
+                a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
         
         a.save()
     
