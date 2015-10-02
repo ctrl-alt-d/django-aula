@@ -124,7 +124,7 @@ class AbstractAlumne(models.Model):
     data_alta = models.DateField( default = date.today(), null=False )
     data_baixa = models.DateField( null=True, blank = True )
     
-    user_associat = models.OneToOneField(  AlumneUser , null=True  )
+    user_associat = models.OneToOneField(  AlumneUser , null=True, on_delete=models.SET_NULL,  )
     
     relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
     

@@ -9,6 +9,8 @@ from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa,\
 from aula.apps.usuaris.models import Accio, LoginUsuari
 from datetime import date 
 import datetime
+from aula.apps.sortides.models import Sortida
+from django.contrib.auth.models import User
 
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
@@ -51,33 +53,67 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
     
     controls_desti = a_desti.controlassistencia_set.values_list('impartir__pk', flat=True)
     
+    print a_fusionar
+    
     for a in a_fusionar:
-        
+
         if a.data_baixa is None:
             a_desti.data_baixa = None
+            a_desti.estat_sincronitzacio = ''
+
+        #sortides
+        q_convocats = Q( alumnes_convocats = a )
+        q_que_no_vindran = Q( alumnes_que_no_vindran = a )
+        q_justificacio = Q( alumnes_justificacio = a )
+        sortides = Sortida.objects.filter( q_convocats | q_que_no_vindran | q_justificacio ).distinct()
+        ####debug
+        if sortides: 
+            print 'sortida trobada'
+        else:
+            print 'sortida no trobada'
+            0/0 
+            
+        for sortida in sortides:
+            sortida.credentials = credentials
+            colleccions = [ sortida.alumnes_convocats, sortida.alumnes_justificacio, sortida.alumnes_que_no_vindran ]
+            for colleccio in colleccions:
+                if a in colleccio.all():
+                    colleccio.remove(a)
+                    if a_desti not in colleccio.all():
+                        colleccio.add( a_desti )
+            
+        #dades bàsiques
         a_desti.nom = a.nom
         a_desti.cognoms = a.cognoms
         a_desti.data_neixement = a.data_neixement
         
+        #portal
         if bool( a.correu_relacio_familia_pare ) :
             a_desti.correu_relacio_familia_pare = a.correu_relacio_familia_pare
         
         if bool( a.correu_relacio_familia_mare ):
             a_desti.correu_relacio_familia_mare = a.correu_relacio_familia_mare
+
         
+        #incidències, expulsions i sancions
         Incidencia.objects.filter( alumne = a ).update( alumne = a_desti  )
         Expulsio.objects.filter( alumne = a ).update( alumne = a_desti )
-                
+        Sancio.objects.filter( alumne = a ).update( alumne = a_desti )
+
+        
+        #controls assistència        
         controls = ControlAssistencia.objects.filter( alumne = a ).exclude( impartir__pk__in = controls_desti ).values_list( 'pk', flat = True)
         for i in controls:
             ControlAssistencia.objects.filter( pk = i ).update( alumne = a_desti )
 
         ControlAssistencia.objects.filter( alumne = a ).delete()
 
-        Sancio.objects.filter( alumne = a ).update( alumne = a_desti )
 
+        #actuacions
         Actuacio.objects.filter( alumne = a ).update( alumne = a_desti )
+
         
+        #qualitativa
         for x in RespostaAvaluacioQualitativa.objects.filter( alumne = a ):
             x.alumne = a_desti 
             x.credentials = credentials
@@ -86,21 +122,31 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
             except:
                 pass
 
-        if a.get_user_associat():
-            if  a_desti.get_user_associat():
-                Accio.objects.filter( usuari = a.get_user_associat() ).update( usuari = a_desti.get_user_associat() )
-                LoginUsuari.objects.filter( usuari = a.get_user_associat() ).update( usuari = a_desti.get_user_associat() )
-            else:
-                Accio.objects.filter( usuari = a.get_user_associat() ).delete()
-                LoginUsuari.objects.filter( usuari = a.get_user_associat() ).delete()
-            a.get_user_associat().delete()
-
+                        
+        #seguiment tutorial
         if SeguimentTutorial.objects.filter( alumne = a ).exists():
             SeguimentTutorial.objects.filter( alumne = a_desti ).delete()                
             SeguimentTutorial.objects.filter( alumne = a ).update( alumne = a_desti )
+
+
+        #portal famílies
+        usuari_associat =  a.get_user_associat()
+        if usuari_associat:
+            if  a_desti.get_user_associat():
+                Accio.objects.filter( usuari = usuari_associat ).update( usuari = a_desti.get_user_associat() )
+                LoginUsuari.objects.filter( usuari = usuari_associat ).update( usuari = a_desti.get_user_associat() )
+            else:
+                Accio.objects.filter( usuari = usuari_associat ).delete()
+                LoginUsuari.objects.filter( usuari = usuari_associat ).delete()
+
+            a.user_associat = None
+            a.save()
+            User.objects.filter( id=usuari_associat.id ).delete()
                         
+        #i un cop despullat de totes les seves relacions matem el nou:                        
         Alumne.objects.filter( pk = a.pk  ).delete()
-        
+    
+    #desem les noves dades    
     a_desti.save()
         
         
