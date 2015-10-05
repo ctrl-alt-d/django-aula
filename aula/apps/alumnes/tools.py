@@ -60,18 +60,13 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
         if a.data_baixa is None:
             a_desti.data_baixa = None
             a_desti.estat_sincronitzacio = ''
+            a_desti.motiu_bloqueig = ''
 
         #sortides
         q_convocats = Q( alumnes_convocats = a )
         q_que_no_vindran = Q( alumnes_que_no_vindran = a )
         q_justificacio = Q( alumnes_justificacio = a )
         sortides = Sortida.objects.filter( q_convocats | q_que_no_vindran | q_justificacio ).distinct()
-        ####debug
-        if sortides: 
-            print 'sortida trobada'
-        else:
-            print 'sortida no trobada'
-            0/0 
             
         for sortida in sortides:
             sortida.credentials = credentials
