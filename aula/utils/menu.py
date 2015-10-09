@@ -217,7 +217,7 @@ def calcula_menu( user , path ):
                ),
              
                #--Consergeria--------------------------------------------------------------------------
-               ('consergeria', 'Psicopedagog', 'consergeria__missatges__envia_tutors', co, None,
+               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
                   (
                       ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
                    )
