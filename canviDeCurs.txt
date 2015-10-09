@@ -18,34 +18,71 @@ Hi ha dos opcions per iniciar nou curs:
   from aula.apps.tutoria.others import calculaResumAnualProcess
   calculaResumAnualProcess()
 
-  --**TODO**: sentències per passar les taules de la base de dades vella a la nova i posar els comptadors al id que toqui.
+  --: sentències per passar les taules de la base de dades vella a la nova i posar els comptadors al id que toqui.
+
   tutoria_seguimenttutorial
   tutoria_seguimenttutorialpreguntes
   tutoria_seguimenttutorialrespostes
   tutoria_resumanualalumne
 
+
+#esborrar les taules;
+for TAULA in    tutoria_seguimenttutorialpreguntes tutoria_seguimenttutorialrespostes tutoria_resumanualalumne tutoria_seguimenttutorial
+do
+  psql -U ghap2015 -d ghap2015 -c "delete from ${TAULA};"; 
+done;
+  
+#passar les dades velles a la nova:
+for TAULA in   tutoria_seguimenttutorial tutoria_seguimenttutorialpreguntes tutoria_seguimenttutorialrespostes tutoria_resumanualalumne
+do
+  ( psql -U ghap2014 -d ghap2014 -c "copy (select * from $TAULA) to stdout with csv HEADER" ) \
+  |  psql -U ghap2015 -d ghap2015 -c "copy ${TAULA} from stdin csv HEADER; update tutoria_seguimenttutorial set alumne_id=null;" 
+done;
+
+#posar els ID's al màxim:
+for TAULA in   tutoria_seguimenttutorial tutoria_seguimenttutorialpreguntes tutoria_seguimenttutorialrespostes tutoria_resumanualalumne
+do
+  psql -U ghap2015 -d ghap2015 -c "SELECT setval('${TAULA}_id_seq', COALESCE((SELECT MAX(id)+1 FROM ${TAULA}), 1), false);";
+done;
+
+
   ----- Connectar i desconnectar capceleres de seguiment tutorial -----
   --Les capceleres de tutoria (SeguimentTutorial) es poden desconectar de l'Alumne:
 
-      SeguimentTutorial.alumne = None
 
   Per tonar-los a connectar (un cop importat des de la base de dades del curs passat):
 
+  --Buscar els possibles repetits:
+  select array_agg( a.id ),
+      unaccent(a.nom), 
+      unaccent(a.cognoms), 
+      a.data_neixement 
+   from tutoria_seguimenttutorial a
+   group by 
+      unaccent(a.nom), 
+      unaccent(a.cognoms), 
+      a.data_neixement
+  having count(*) > 1;
+
+  delete from tutoria_resumanualalumne where seguiment_tutorial_id in (5420, 5419, 5301 );
+  delete from tutoria_seguimenttutorial where id in (5420, 5419, 5301 );  
+ 
   --Amb SQL:
    update tutoria_seguimenttutorial
    set alumne_id = alumnes_alumne.id
    from alumnes_alumne
-   where alumnes_alumne.nom = tutoria_seguimenttutorial.nom and 
-      alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
-      alumnes_alumne.data_neixement = tutoria_seguimenttutorial.data_neixement;
+   where unaccent(alumnes_alumne.nom) = unaccent(tutoria_seguimenttutorial.nom) and 
+      unaccent(alumnes_alumne.cognoms) = unaccent(tutoria_seguimenttutorial.cognoms) and
+      alumnes_alumne.data_neixement = tutoria_seguimenttutorial.data_neixement and
+      alumnes_alumne.data_baixa is null;
 
    update tutoria_seguimenttutorial
    set 
       alumne_id = alumnes_alumne.id,
       data_neixement = alumnes_alumne.data_neixement
    from alumnes_alumne
-   where alumnes_alumne.nom = tutoria_seguimenttutorial.nom and 
-      alumnes_alumne.cognoms = tutoria_seguimenttutorial.cognoms and
+   where unaccent(alumnes_alumne.nom) = unaccent(tutoria_seguimenttutorial.nom) and 
+      unaccent(alumnes_alumne.cognoms) = unaccent(tutoria_seguimenttutorial.cognoms) and
       alumne_id is null;
       
    --esborrar les que han quedat sense alumne ( perquè l'alumne ja no és al centre)

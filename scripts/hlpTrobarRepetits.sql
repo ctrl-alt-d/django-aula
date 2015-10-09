@@ -1,3 +1,32 @@
+###  SLUGIFYING ###
+
+from django.contrib.auth.models import User as U
+d=U.objects.get(username='coor')
+c=(d,False)
+
+from django.template.defaultfilters import slugify
+from aula.apps.alumnes.models import Alumne as A
+from aula.apps.alumnes.tools import fusiona_alumnes as f
+
+a = list(A.objects.all() )
+
+criteri_nom_i_data = lambda x: u"{0}{1}".format( x.nom, x.data_neixement )
+criteri_cognom_i_data = lambda x: u"{0}{1}".format( x.cognoms, x.data_neixement )
+
+criteri = criteri_cognom_i_data
+
+for x in a:
+  x.ss = slugify( criteri(x) )
+
+for x in a:
+     repetits = [ y for y in a if y.ss == x.ss and y.id != x.id ]  # and not y.data_baixa
+     if repetits and all( [ (x.id < r.id) for r in repetits ] ):
+        print x.id, [ z.id for z in repetits ]
+        print x,  repetits 
+        f( x, repetits, c )
+        
+
+### ---- SQL ---- ###
 ### per data, centre, tutors, ... ###
 
 select string_agg(id::text, ', ' order by id), max( a.nom || ' ' || a.cognoms)  , min( a.nom || ' ' || a.cognoms)  

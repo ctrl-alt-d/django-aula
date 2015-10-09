@@ -19,7 +19,8 @@ from aula.utils.decorators import group_required
 from aula.apps.usuaris.models import User2Professor
 
 #forms
-from aula.apps.alumnes.forms import  triaMultiplesAlumnesForm
+from aula.apps.alumnes.forms import  triaMultiplesAlumnesForm,\
+    triaAlumneSelect2Form
 from aula.apps.alumnes.forms import triaAlumneForm
 
 #helpers
@@ -170,14 +171,14 @@ def informePsicopedagoc( request  ):
 
     if request.method == 'POST':
         
-        formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
+        formAlumne = triaAlumneSelect2Form(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
         if formAlumne.is_valid():            
             alumne = formAlumne.cleaned_data['alumne']
             return HttpResponseRedirect( r'/tutoria/detallTutoriaAlumne/{0}/all/'.format( alumne.pk ) )
         
     else:
 
-        formAlumne = triaAlumneForm( )         
+        formAlumne = triaAlumneSelect2Form( )         
         
     return render_to_response(
                 'form.html',
