@@ -81,6 +81,20 @@
 
 	}
 
+
+	$(document).ready(function() {
+		if ({{deshabilitat}}) {
+			$('#label_id_estat_0').attr('disabled','disabled');
+			$('#label_id_estat_1').attr('disabled','disabled');
+			$('#label_id_estat_2').attr('disabled','disabled');
+			$('#label_id_estat_3').attr('disabled','disabled');
+			
+			$('.date .input-group-addon').hide();
+			
+			$(':submit').hide();
+		}
+	});
+
     		 
 	</script>
 	

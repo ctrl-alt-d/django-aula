@@ -22,7 +22,12 @@
 
 	});
     		 
-	</script>
+	$(document).ready(function() {
+			if ({{deshabilitat}}) {
+				$(':submit').hide();
+			}
+	});
+			</script>
 	
 	{% endblock %}
 

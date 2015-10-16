@@ -4,6 +4,30 @@ Sortides:
 (ja existeix, cal canviar 'aprovada consell escolar' que prengui els valors sí, no, no cal )
 
 
+- Informació per professors acompanyants: Cal que els profes acompanyants puguin veure TOTA la informació de la sortida, sense poder 
+modificar-la. Quan cliques activitat, una nova pestanya "En sóc acompanyant"  on al clicar es veiessin les sortides.
+
+- Informació a professors dels alumnes: No sé si caldria, però estaria bé, els tutors ja ho poden veure. Si ho poguéssin veure, els 
+ajudaria a programar deures, examens, o altres activitats. La pestanya seria "Els meus alumnes".. Haurien de veure les activitats 
+d'alumnes que tenen a classe.  NO SÉ SI ÉS COMPLICAT....Així els professor afectats ho veurien...
+
+- Pagament TPV: -
+
+
+Van proposar: SELECCIÓ ALUMNES: Per seleccionar tot un curs que hi hagi el quadradet com en la selecció d’alumnes individualment.
+Penso que si fos possible haurien de sortir els cursos sense desplegar, i poder escollir grups sencers, i hagués l'opció de desplegar 
+el grup per escollir alumnes individualment.
+Canvi d'ordre: l'ordre és per curs 1,2,3,4, potser seria millor ordenats per ENSENYAMENT, CURS,GRUP:
+E1A, E1B.... fins a E4U, ... ara surtes ESO, barrejats amb btx i CF...
+
+Van proposar: CAMPS NO OBLIGATORIS; alguns camps que no seguin obligatoris d’omplir…., o estiguin omplerts per defecte... 
+  
+Van proposar: MILLORA SISTEMA PAGAMENT: apreto a la Mercè...la cosa va fent...Ara li envio mail-..
+
+
+
+
+
 * Es crea nou model 'AbsèncieProgramades':
 Motiu (ex: sortida )
 Tractament (fk a Estat P,J,F,R )

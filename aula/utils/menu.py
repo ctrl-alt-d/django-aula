@@ -271,6 +271,7 @@ def calcula_menu( user , path ):
                            .objects
                            .filter( estat = 'E' )
                            .filter( professor_que_proposa__pk = user.pk )
+                           .distinct( )
                            .count()
                           )  
         

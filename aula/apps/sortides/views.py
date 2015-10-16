@@ -47,11 +47,12 @@ def sortidesMevesList( request ):
     
     q_professor_proposa = Q( professor_que_proposa = professor  )
     q_professors_responsables = Q( professors_responsables = professor  )
+    q_professors_acompanyants = Q(altres_professors_acompanyants = professor  )
     
     
     sortides = ( Sortida
                    .objects
-                   .filter( q_professor_proposa | q_professors_responsables )
+                   .filter( q_professor_proposa | q_professors_responsables | q_professors_acompanyants )
                    .distinct()
                   )
 
@@ -163,7 +164,9 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
     if bool( pk ) and not clonar:
         instance = get_object_or_404( Sortida, pk = pk )
-        potEntrar = ( professor in instance.professors_responsables.all() or fEsDireccioOrGrupSortides )
+        potEntrar = ( professor in instance.professors_responsables.all() or 
+                      professor in instance.altres_professors_acompanyants.all() or
+                      fEsDireccioOrGrupSortides )
         if not potEntrar:
             raise Http404
         professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
@@ -174,6 +177,7 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
         instance.estat = 'E'
         instance.titol_de_la_sortida = u"**CLONADA** " + instance.titol_de_la_sortida
         instance.esta_aprovada_pel_consell_escolar = 'P'
+        instance.professor_que_proposa = professor
 #         instance.professors_responsables = None
 #         instance.altres_professors_acompanyants = None
 #         instance.tutors_alumnes_convocats = None
@@ -227,7 +231,8 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
             txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
             {dia}
             """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
-            msg = Missatge( remitent = user, text_missatge = txt )
+            enllac=reverse( 'sortides__sortides__edit_by_pk', kwargs={'pk':instance.id } )
+            msg = Missatge( remitent = user, text_missatge = txt, enllac = enllac )
             for nou in acompanyen_nous:                
                 importancia = 'VI'
                 msg.envia_a_usuari(nou, importancia)                
@@ -264,14 +269,24 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
     
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
-
-    
         
+    #si no és propietari tot a disabled
+    deshabilitat = ( instance.id and 
+                     not ( professor in instance.professors_responsables.all() or 
+                         fEsDireccioOrGrupSortides )
+                    )
+    
+    if deshabilitat:
+        for field in form.fields:
+            form.fields[field].widget.attrs['disabled'] = u"disabled"
+        form.fields['estat'].label += u": {0} ".format( instance.get_estat_display() )
+    
     return render_to_response(
                 'formSortida.html',
                     {'form': form,
                      'head': 'Sortides' ,
-                     'missatge': 'Sortides'
+                     'missatge': 'Sortides',
+                     'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
                     context_instance=RequestContext(request))     
 
@@ -287,7 +302,11 @@ def alumnesConvocats( request, pk , origen ):
     professor = User2Professor( user )     
     
     instance = get_object_or_404( Sortida, pk = pk )
-    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    potEntrar = ( professor in instance.professors_responsables.all() or 
+                  professor in instance.altres_professors_acompanyants.all() or 
+                  fEsDireccioOrGrupSortides
+                   )
     if not potEntrar:
         raise Http404
     
@@ -342,12 +361,23 @@ def alumnesConvocats( request, pk , origen ):
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['alumnes_convocats'].widget.attrs['style'] = "height: 500px;"
+
+    #si no és propietari tot a disabled
+    deshabilitat = ( instance.id and 
+                     not ( professor in instance.professors_responsables.all() or 
+                         fEsDireccioOrGrupSortides )
+                    )
+    
+    if deshabilitat:
+        for field in form.fields:
+            form.fields[field].widget.attrs['disabled'] = u"disabled"    
         
     return render_to_response(
                 'formSortidesAlumnes.html',
                     {'form': form,
                      'head': 'Sortides' ,
-                     'missatge': 'Sortides'
+                     'missatge': 'Sortides',
+                     'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
                     context_instance=RequestContext(request))    
 
@@ -367,7 +397,12 @@ def alumnesFallen( request, pk , origen ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
-    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    potEntrar = ( professor in instance.professors_responsables.all() or 
+                  professor in instance.altres_professors_acompanyants.all() or 
+                  fEsDireccioOrGrupSortides
+                   )
+    
     if not potEntrar:
         raise Http404 
     
@@ -411,12 +446,23 @@ def alumnesFallen( request, pk , origen ):
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
+    #si no és propietari tot a disabled
+    deshabilitat = ( instance.id and 
+                     not ( professor in instance.professors_responsables.all() or 
+                         fEsDireccioOrGrupSortides )
+                    )
+    
+    if deshabilitat:
+        for field in form.fields:
+            form.fields[field].widget.attrs['disabled'] = u"disabled" 
+
         
     return render_to_response(
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
                      'head': 'Sortides' ,
-                     'missatge': 'Sortides'
+                     'missatge': 'Sortides',
+                     'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
                     context_instance=RequestContext(request))    
 
@@ -433,10 +479,15 @@ def alumnesJustificats( request, pk , origen ):
     
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
-    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    potEntrar = ( professor in instance.professors_responsables.all() or 
+                  professor in instance.altres_professors_acompanyants.all() or 
+                  fEsDireccioOrGrupSortides
+                   )
+
     if not potEntrar:
         raise Http404 
-    
+        
     instance.credentials = credentials
    
     formIncidenciaF = modelform_factory(Sortida, fields=( 'alumnes_justificacio',  ) )
@@ -473,12 +524,23 @@ def alumnesJustificats( request, pk , origen ):
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
-        
+
+    #si no és propietari tot a disabled
+    deshabilitat = ( instance.id and 
+                     not ( professor in instance.professors_responsables.all() or 
+                         fEsDireccioOrGrupSortides )
+                    )
+    
+    if deshabilitat:
+        for field in form.fields:
+            form.fields[field].widget.attrs['disabled'] = u"disabled" 
+                    
     return render_to_response(
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
                      'head': 'Sortides' ,
-                     'missatge': 'Sortides'
+                     'missatge': 'Sortides',
+                     'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
                     context_instance=RequestContext(request))    
 
@@ -504,9 +566,15 @@ def professorsAcompanyants( request, pk , origen ):
     professors_organitzen_abans = set( instance.professors_responsables.all() )
     estat_abans = instance.estat
     
-    potEntrar = ( professor in instance.professors_responsables.all() or request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    potEntrar = ( professor in instance.professors_responsables.all() or 
+                  professor in instance.altres_professors_acompanyants.all() or 
+                  fEsDireccioOrGrupSortides
+                   )
+
     if not potEntrar:
-        raise Http404
+        raise Http404 
+    
     
     instance.credentials = credentials    
    
@@ -557,12 +625,22 @@ def professorsAcompanyants( request, pk , origen ):
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
 
     #form.fields['altres_professors_acompanyants'].widget.attrs['style'] = "height: 500px;"
+    #si no és propietari tot a disabled
+    deshabilitat = ( instance.id and 
+                     not ( professor in instance.professors_responsables.all() or 
+                         fEsDireccioOrGrupSortides )
+                    )
+    
+    if deshabilitat:
+        for field in form.fields:
+            form.fields[field].widget.attrs['disabled'] = u"disabled" 
     
     return render_to_response(
                 'formSortidaProfessorAcompanyant.html',
                     {'form': form,
                      'head': 'Sortides' ,
-                     'missatge': 'Sortides'
+                     'missatge': 'Sortides',
+                     'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
                     context_instance=RequestContext(request))    
 
