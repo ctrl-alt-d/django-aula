@@ -729,6 +729,19 @@ def sortidaExcel( request, pk ):
     Generates an Excel spreadsheet for review by a staff member.
     """
     sortida = get_object_or_404( Sortida, pk = pk )
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    professor = User2Professor( user )     
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    potEntrar = ( professor in sortida.professors_responsables.all() or 
+                  professor in sortida.altres_professors_acompanyants.all() or 
+                  fEsDireccioOrGrupSortides
+                   )
+
+    if not potEntrar:
+        raise Http404 
+
     
     no_assisteixen = list( sortida.alumnes_que_no_vindran.all() )
     
