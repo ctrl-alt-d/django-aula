@@ -51,7 +51,7 @@
     <div class="row text_center" style="padding-top: 5px;{% if forloop.counter|divisibleby:2 %}background-color: #F0F0F0;{% endif %}">
         {% for imparticions, esDataActual in impartir_franja %}
             <div class="col-sm-2 col-xs-12 {% if forloop.counter != 1 and not esDataActual %}hidden-xs{% endif %}"   >
-              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia in imparticions %}                    
+              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia, hi_ha_sortida in imparticions %}                    
                 <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
                   {%if esGuardia%}
                    <div style="border: 1px solid gray;">
@@ -60,12 +60,18 @@
                       </div>
                   {%endif%}
                   {%if grup %}
-                    <a href="/presencia/passaLlista/{{pk}}">
+                    
                     	<div style="background-color:{{color}}">
+                    		<a href="/presencia/passaLlista/{{pk}}">
                     		{{ assignatura }} {{ aula }} {{ grup }}</br>
-                    		<span class="label label-{{color2}}">{{ resum }}</span></br>
-                      </div>
-                    </a>														
+                    		</a>
+                    		<span class="label label-{{color2}}">{{ resum }}</span>
+                    		{%if hi_ha_sortida %}
+                    			<span class="glyphicon glyphicon-plane"></span>
+                    		{%endif%}
+                    		</br>
+                        </div>
+                    														
                   {%else%}
                   	<div style="background-color:{{color}}">
                   		{{ assignatura }} {{ aula }} {{ grup }}</br>

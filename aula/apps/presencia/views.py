@@ -168,6 +168,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                              x.color(),                             
                              x.resum(),
                              (x.professor_guardia  and x.professor_guardia.pk == professor.pk),
+                             x.hi_ha_alumnes_amb_activitat_programada,
                             )
                             for x in Impartir.objects.filter( franja_impartir & dia_impartir & (user_impartir | guardia)   ) ]
             
@@ -199,6 +200,26 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     
     calendari = [ (_date( d, 'D'), d.strftime('%d/%m/%Y'), d==data_actual) for d in dies_calendari]
     
+    ###miscelania Sortides: ####################################################################################
+    #q's sortida es ara
+    data_llindar = max( data, t.date.today() )
+    q_fi_sortida_menor_que_dilluns = Q( dia_impartir__lt =  data_llindar )
+    q_inici_sortida_despres_divendres = Q( dia_impartir__gt = data + t.timedelta( days = 14 ) )
+    q_sortida_no_inclou_setmana_vinent = ( q_fi_sortida_menor_que_dilluns | q_inici_sortida_despres_divendres  ) 
+    #q es meu
+    q_es_meu = Q( horari__professor = professor )
+    
+    imparticions_daquests_dies = Impartir.objects.filter( ~q_sortida_no_inclou_setmana_vinent & q_es_meu )
+    
+    alumnes_surten = any ( x.hi_ha_alumnes_amb_activitat_programada for x in imparticions_daquests_dies )
+    
+    if alumnes_surten:
+        msg =  u"""Properament hi ha activitats previstes on els teus alumnes hi participen."""  
+        messages.warning(request,  SafeText(msg ) )
+        
+        
+    ###fi miscelania sortides.####################################################################################
+    
     return render_to_response(
                 'mostraImpartir.html', 
                 {
@@ -210,8 +231,13 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                 context_instance=RequestContext(request))
 
 
+
+
 #------------------------------------------------------------------------------------------
 
+
+
+#------------------------------------------------------------------------------------------
 
 #http://streamhacker.com/2010/03/01/django-model-formsets/    
 @login_required
