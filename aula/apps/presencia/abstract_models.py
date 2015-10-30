@@ -101,7 +101,7 @@ class AbstractImpartir(models.Model):
         q_es_meu = Q( id = self.id )    
             
         #tinc alumnes?
-        hi_ha_alumnes_a_la_sortida = ( self.__class__
+        hi_ha_alumnes_a_la_sortida = False and ( self.__class__
                                           .objects
                                           .filter( ~q_fora_de_rang & q_es_meu )
                                           .exists()
