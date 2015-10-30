@@ -104,7 +104,7 @@ class AbstractImpartir(models.Model):
                                           .exists()
                                         )        
         
-        return hi_ha_alumnes_a_la_sortida
+        return False and hi_ha_alumnes_a_la_sortida
 
 class AbstractEstatControlAssistencia(models.Model):
     codi_estat = models.CharField( max_length=1, unique=True)
