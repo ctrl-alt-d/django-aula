@@ -80,31 +80,58 @@ class AbstractImpartir(models.Model):
         
     @property
     def hi_ha_alumnes_amb_activitat_programada(self):
-        Alumne = get_model( 'alumnes', 'Alumne' )
-        
-        q_sortida_comenca_mes_tard = ( Q( sortides_confirmades__data_inici__gt =  self.dia_impartir ) |
-                                       ( Q( sortides_confirmades__franja_inici__hora_inici__gt =  self.horari.hora.hora_inici ) &
-                                         Q( sortides_confirmades__data_inici =  self.dia_impartir )
+#         Alumne = get_model( 'alumnes', 'Alumne' )
+#         
+#         q_sortida_comenca_mes_tard = ( Q( sortides_confirmades__data_inici__gt =  self.dia_impartir ) |
+#                                        ( Q( sortides_confirmades__franja_inici__hora_inici__gt =  self.horari.hora.hora_inici ) &
+#                                          Q( sortides_confirmades__data_inici =  self.dia_impartir )
+#                                        )
+#                                      )
+#         q_sortida_acaba_abans = ( Q( sortides_confirmades__data_fi__lt =  self.dia_impartir ) |
+#                                        ( Q( sortides_confirmades__franja_fi__hora_fi__lt =  self.horari.hora.hora_fi ) &
+#                                          Q( sortides_confirmades__data_inici =  self.dia_impartir )
+#                                        )
+#                                      )
+#         
+#         
+#         q_fora_de_rang = ( q_sortida_comenca_mes_tard | q_sortida_acaba_abans  ) 
+#         #q activitat inclou nens meus
+#         q_es_meu = Q( controlassistencia__impartir = self )
+#         #tinc alumnes?
+#         hi_ha_alumnes_a_la_sortida = ( Alumne
+#                                           .objects
+#                                           .filter( ~q_fora_de_rang & q_es_meu )
+#                                           .exists()
+#                                         )        
+
+        #
+        q_sortida_comenca_mes_tard = ( Q( controlassistencia__alumne__sortides_confirmades__data_inici__gt =  self.dia_impartir ) |
+                                       ( Q( controlassistencia__alumne__sortides_confirmades__franja_inici__hora_inici__gt =  self.horari.hora.hora_inici ) &
+                                         Q( controlassistencia__alumne__sortides_confirmades__data_inici =  self.dia_impartir )
                                        )
                                      )
-        q_sortida_acaba_abans = ( Q( sortides_confirmades__data_fi__lt =  self.dia_impartir ) |
-                                       ( Q( sortides_confirmades__franja_fi__hora_fi__lt =  self.horari.hora.hora_fi ) &
-                                         Q( sortides_confirmades__data_inici =  self.dia_impartir )
+        q_sortida_acaba_abans = ( Q( controlassistencia__alumne__sortides_confirmades__data_fi__lt =  self.dia_impartir ) |
+                                       ( Q( controlassistencia__alumne__sortides_confirmades__franja_fi__hora_fi__lt =  self.horari.hora.hora_fi ) &
+                                         Q( controlassistencia__alumne__sortides_confirmades__data_inici =  self.dia_impartir )
                                        )
                                      )
         
         
         q_fora_de_rang = ( q_sortida_comenca_mes_tard | q_sortida_acaba_abans  ) 
+
         #q activitat inclou nens meus
-        q_es_meu = Q( controlassistencia__impartir = self )
+        q_es_meu = Q( id = self.id )    
+            
         #tinc alumnes?
-        hi_ha_alumnes_a_la_sortida = ( Alumne
+        hi_ha_alumnes_a_la_sortida = ( self.__class__
                                           .objects
                                           .filter( ~q_fora_de_rang & q_es_meu )
                                           .exists()
-                                        )        
+                                        )               
+
+
         
-        return False and hi_ha_alumnes_a_la_sortida
+        return hi_ha_alumnes_a_la_sortida
 
 class AbstractEstatControlAssistencia(models.Model):
     codi_estat = models.CharField( max_length=1, unique=True)
