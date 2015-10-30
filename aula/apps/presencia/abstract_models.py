@@ -80,7 +80,7 @@ class AbstractImpartir(models.Model):
         
     @property
     def hi_ha_alumnes_amb_activitat_programada(self):
-                           )        
+
 
         #
         q_sortida_comenca_mes_tard = ( Q( controlassistencia__alumne__sortides_confirmades__data_inici__gt =  self.dia_impartir ) |
@@ -101,15 +101,17 @@ class AbstractImpartir(models.Model):
         q_es_meu = Q( id = self.id )    
             
         #tinc alumnes?
-        hi_ha_alumnes_a_la_sortida = False and ( self.__class__
+        hi_ha_alumnes_a_la_sortida = ( self.__class__
                                           .objects
                                           .filter( ~q_fora_de_rang & q_es_meu )
                                           .exists()
                                         )               
 
-
+        print (  self.__class__
+                                          .objects
+                                          .filter( ~q_fora_de_rang & q_es_meu ).query )
         
-        return  hi_ha_alumnes_a_la_sortida
+        return False and hi_ha_alumnes_a_la_sortida
 
 class AbstractEstatControlAssistencia(models.Model):
     codi_estat = models.CharField( max_length=1, unique=True)
