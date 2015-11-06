@@ -101,15 +101,18 @@ class AbstractImpartir(models.Model):
         q_es_meu = Q( id = self.id )    
             
         #tinc alumnes?
+        
+        ######### Ho comento! la query és massa béstia. Cal optimitzar!
+        
         hi_ha_alumnes_a_la_sortida = False and ( self.__class__
                                           .objects
                                           .filter( ~q_fora_de_rang & q_es_meu )
                                           .exists()
                                         )               
 
-        print (  self.__class__
-                                          .objects
-                                          .filter( ~q_fora_de_rang & q_es_meu ).query )
+#         print (  self.__class__
+#                                           .objects
+#                                           .filter( ~q_fora_de_rang & q_es_meu ).query )
         
         return False and hi_ha_alumnes_a_la_sortida
 
