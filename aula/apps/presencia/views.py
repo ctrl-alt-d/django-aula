@@ -292,6 +292,7 @@ def passaLlista( request, pk ):
                                     instance=control_a )
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
+            form.fields['estat'].label = control_a.alumne   
             if form.is_valid():
                 try:                
                     control_aux = form.save()
@@ -310,10 +311,12 @@ def passaLlista( request, pk ):
                                     prefix=str( control_a.pk ),
                                     instance=ControlAssistencia.objects.get( id= control_a.pk)  )
                 form._errors =  errors_formulari
+                form.fields['estat'].label = control_a.alumne
                 
-            form.fields['estat'].label = control_a.alumne   
-            formset.append( form )                
+            formset.append( form )
+                            
         if quelcomBe:
+            #algun control d'assistència s'ha desat. Desem també el model Impartir.
             impartir.dia_passa_llista = datetime.now()
             impartir.professor_passa_llista = User2Professor( request.user )
             impartir.currentUser = user
