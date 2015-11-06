@@ -292,7 +292,7 @@ def passaLlista( request, pk ):
                                     instance=control_a )
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
-            form.fields['estat'].label = control_a.alumne   
+
             if form.is_valid():
                 try:                
                     control_aux = form.save()
@@ -308,11 +308,12 @@ def passaLlista( request, pk ):
                 #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
                 errors_formulari = form._errors
                 form=ControlAssistenciaForm(
-                                    prefix=str( control_a.pk ),
-                                    instance=ControlAssistencia.objects.get( id= control_a.pk)  )
+                                     prefix=str( control_a.pk ),
+                                     instance=ControlAssistencia.objects.get( id= control_a.pk)  )
                 form._errors =  errors_formulari
-                form.fields['estat'].label = control_a.alumne
-                
+            
+            
+            form.fields['estat'].label = unicode( control_a.alumne )                        
             formset.append( form )
                             
         if quelcomBe:

@@ -13,6 +13,7 @@ from aula.utils.widgets import bootStrapButtonSelect
 
 class ControlAssistenciaForm(ModelForm):
     estat = forms.ModelChoiceField( 
+                        label = "x",
                         queryset= EstatControlAssistencia.objects.all(), 
                         empty_label=None,
                         widget = bootStrapButtonSelect( attrs={'class':'presenciaEstat'} ),
