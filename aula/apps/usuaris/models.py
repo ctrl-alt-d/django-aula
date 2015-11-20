@@ -13,9 +13,9 @@ class Departament(AbstractDepartament):
 #-------------------------------------------------------------
 
 class AlumneUserManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         grupAlumnes, _ = Group.objects.get_or_create( name = 'alumne' )
-        return super(AlumneUserManager, self).get_query_set().filter( groups = grupAlumnes   )
+        return super(AlumneUserManager, self).get_queryset().filter( groups = grupAlumnes   )
 
 
 class AlumneUser(User):
@@ -42,9 +42,9 @@ class AlumneUser(User):
 #----------------------------------------------------------------------------------------------
 
 class ProfessorManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         grupProfessors, _ = Group.objects.get_or_create( name = 'professors' )
-        return super(ProfessorManager, self).get_query_set().filter( groups = grupProfessors   )
+        return super(ProfessorManager, self).get_queryset().filter( groups = grupProfessors   )
 
 class Professor(User):
     objects = ProfessorManager()
@@ -73,9 +73,9 @@ def User2Professor( user ):
 #----------------------------------------------------------------------------------------------
 
 class ProfessionalManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         grupProfessional, _ = Group.objects.get_or_create( name = 'professional' )
-        return super(ProfessionalManager, self).get_query_set().filter( groups = grupProfessional   )
+        return super(ProfessionalManager, self).get_queryset().filter( groups = grupProfessional   )
 
 class Professional(User):
     objects = ProfessionalManager()
