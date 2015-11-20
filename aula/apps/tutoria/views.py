@@ -709,7 +709,7 @@ def justificadorMKTable(request, year, month, day ):
                          Q( alumne = alumne )
 
             controls = [ c for c in ControlAssistencia.objects.select_related(
-                                'estat', 'impartir__assignatura','professor','estat_backup','professor_backup'
+                                'estat', 'impartir__horari__assignatura','professor','estat_backup','professor_backup'
                                 ).filter( q_controls ) ]
 
             for hora in hores:
