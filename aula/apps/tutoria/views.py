@@ -796,7 +796,7 @@ def justificaNext(request, pk):
         'swaped' : (control.swaped)
     }
     
-    return HttpResponse( simplejson.dumps(resposta, ensure_ascii=False ) ,mimetype= 'application/json')
+    return HttpResponse( simplejson.dumps(resposta, ensure_ascii=False ) ,content_type= 'application/json')
 
 @login_required
 @group_required(['professors'])
