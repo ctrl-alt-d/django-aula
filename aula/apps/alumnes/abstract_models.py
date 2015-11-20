@@ -6,6 +6,7 @@ from django.utils.datetime_safe import datetime
 from aula.apps.usuaris.models import Professor, AlumneUser
 from aula.apps.tutoria.models import SeguimentTutorial
 from aula.apps.alumnes.named_instances import Nivells_no_obligatoris
+from django.utils import timezone
 
 class AbstractNivell(models.Model):
     nom_nivell = models.CharField("Nom nivell",max_length=45, unique=True)
@@ -121,7 +122,7 @@ class AbstractAlumne(models.Model):
     tutors = models.CharField(max_length=250, blank=True)
     adreca = models.CharField(max_length=250, blank=True)
     
-    data_alta = models.DateField( default = date.today(), null=False )
+    data_alta = models.DateField( default = timezone.now, null=False )
     data_baixa = models.DateField( null=True, blank = True )
     
     user_associat = models.OneToOneField(  AlumneUser , null=True, on_delete=models.SET_NULL,  )

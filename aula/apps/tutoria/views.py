@@ -42,7 +42,7 @@ from aula.utils.tools import llista
 from aula.apps.avaluacioQualitativa.forms import alumnesGrupForm
 from aula.utils.forms import dataForm, ckbxForm, choiceForm
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
-from django.utils import simplejson
+import json as simplejson
 from django.core import serializers
 from aula.apps.tutoria.reports import reportCalendariCursEscolarTutor
 from aula.apps.tutoria.rpt_elsMeusAlumnesTutorats import elsMeusAlumnesTutoratsRpt

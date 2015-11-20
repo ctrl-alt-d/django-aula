@@ -1,4 +1,5 @@
-#django select2 ha canviat completament. Ha passat a widgets! Cal descarregar-lo i canviar tots els llocs on es fa servir. Ex:
+#django select2 ha canviat completament. 
+Ha passat a widgets! Cal descarregar-lo i canviar tots els llocs on es fa servir. Ex:
 
 aula/apps/alumnes/forms.py
 

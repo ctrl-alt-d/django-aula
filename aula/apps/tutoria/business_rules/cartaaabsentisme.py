@@ -3,8 +3,9 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta, date
 
 
-from django.db.models.loading import get_model
+
 from aula.apps.alumnes.named_instances import curs_any_fi
+from django.db.models.loading import get_model
 
 
 def cartaabsentisme_clean( instance ):

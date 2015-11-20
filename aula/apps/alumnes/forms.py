@@ -4,11 +4,13 @@ from django import forms as forms
 from aula.utils.widgets import SelectAjax, bootStrapButtonSelect
 from django.forms import ModelForm
 
-from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne, AlumneGrupNom,\
-    AlumneGrup
+from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne,  AlumneGrup
 from aula.apps.usuaris.models import Professor
-from aula.django_select2.fields import AutoModelSelect2Field
-from aula.django_select2.widgets import AutoHeavySelect2Widget
+from aula.django_select2.forms import ModelSelect2Widget
+from django.forms.models import ModelChoiceField
+
+
+
 
     
 class triaAlumneForm(forms.Form):    
@@ -122,21 +124,15 @@ class newAlumne(ModelForm):
 
 ############# Choice fields ###################
 
-class AlumnesChoices(AutoModelSelect2Field):
-    queryset = AlumneGrup.objects
-    search_fields = ['cognoms__icontains','nom__icontains', 'grup__descripcio_grup__icontains' ]
-    
 class triaAlumneSelect2Form(forms.Form): 
-    alumne = AlumnesChoices(
-                widget=AutoHeavySelect2Widget(
-                                    select2_options={
-                                        'width': '100%',
-                                        'placeholder': u"Buscar alumne",
-                                        'minimumResultsForSearch': 50,
-                                    }
-                                )
-                            )
-
+    alumne = ModelChoiceField(
+                   widget=ModelSelect2Widget(
+                                        queryset=AlumneGrup.objects.all(),
+                                        search_fields = ['cognoms__icontains','nom__icontains', 'grup__descripcio_grup__icontains' ],
+                                        attrs={'style':"'width': '100%'"}
+                                                    ), 
+                   queryset=AlumneGrup.objects.all(), 
+                   required=True)
 
 
 

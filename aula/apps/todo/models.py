@@ -3,6 +3,7 @@
 from django.db import models
 from django.utils.datetime_safe import datetime
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class ToDo(models.Model):
@@ -18,7 +19,7 @@ class ToDo(models.Model):
                      )
     
     propietari = models.ForeignKey( User, db_index = True ) 
-    data = models.DateTimeField( default = datetime.now(), db_index = True )   
+    data = models.DateTimeField( default = timezone.now, db_index = True )   
     tasca = models.CharField(max_length=100, help_text=u"Tasca a realitzar")
     informacio_adicional = models.TextField("Informació adicional", help_text=u"Informació adicional")
     estat = models.CharField(max_length=2, choices=ESTAT_CHOICES, default = 'P')
