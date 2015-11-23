@@ -1274,7 +1274,7 @@ def cartaSancio( request, pk ):
     if not excepcio:
         sancio.impres = True
         sancio.save()
-        response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
+        response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format( nom_fitxer, slugify( unicode(sancio.alumne ) ) )
                                                      
     else:

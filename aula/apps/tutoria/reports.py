@@ -223,7 +223,7 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
         excepcio = unicode( e )
         
     if not excepcio:
-        response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
+        response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = 'attachment; filename=assistencia_i_incidencies.odt'
     else:
         response = http.HttpResponse('''Els Gremlins odien el teu llistat! %s''' % cgi.escape(excepcio))

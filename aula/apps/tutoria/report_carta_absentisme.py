@@ -54,7 +54,7 @@ def report_cartaAbsentisme( request, carta ):
         excepcio = unicode( e )
         
     if not excepcio:
-        response = http.HttpResponse( contingut, mimetype='application/vnd.oasis.opendocument.text')
+        response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = 'attachment; filename=cartaAbsencies.odt'
     else:
         response = http.HttpResponse('''Gremlin's ate you! %s''' % cgi.escape(excepcio))

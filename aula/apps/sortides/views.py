@@ -712,7 +712,7 @@ def sortidaiCal( request):
         
         cal.add_component(event)
 
-#     response = HttpResponse( cal.to_ical() , mimetype='text/calendar')
+#     response = HttpResponse( cal.to_ical() , content_type='text/calendar')
 #     response['Filename'] = 'shifts.ics'  # IE needs this
 #     response['Content-Disposition'] = 'attachment; filename=shifts.ics'
 #     return response
