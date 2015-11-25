@@ -120,6 +120,8 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
             except:
                 pass
 
+        if RespostaAvaluacioQualitativa.objects.filter( alumne = a ).exists():
+            raise ValidationError( "No han canviat d'alumne les qualitatives" )
                         
         #seguiment tutorial
         if SeguimentTutorial.objects.filter( alumne = a ).exists():
