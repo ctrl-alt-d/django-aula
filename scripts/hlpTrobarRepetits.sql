@@ -2,7 +2,7 @@
 
 from django.contrib.auth.models import User as U
 d=U.objects.get(username='coor')
-c=(d,False)
+c=(d,True)
 
 from django.template.defaultfilters import slugify
 from aula.apps.alumnes.models import Alumne as A
@@ -19,8 +19,8 @@ for x in a:
   x.ss = slugify( criteri(x) )
 
 for x in a:
-     repetits = [ y for y in a if y.ss == x.ss and y.id != x.id ]  # and not y.data_baixa
-     if repetits and all( [ (x.id < r.id) for r in repetits ] ):
+     repetits = [ y for y in a if y.ss == x.ss and y.id != x.id and y.id !=  544 ]  # and not y.data_baixa
+     if repetits and all( [ (x.id < r.id) for r in repetits ] ) and x.data_baixa:
         print x.id, [ z.id for z in repetits ]
         print x,  repetits 
         f( x, repetits, c )
