@@ -329,7 +329,7 @@ def justificaFaltes(request, pk, year, month, day):
     head='Justificar faltes'
     missatge = ''
     
-    alumne = Alumne.objects.get( pk = int(pk) )
+    alumne = get_object_or_404( Alumne, pk = int(pk) )
     
     #---seg-----
     esAlumneTutorat = professor in alumne.tutorsDeLAlumne() 
