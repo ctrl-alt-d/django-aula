@@ -91,8 +91,8 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
 
         
         #incidències, expulsions i sancions
-        Incidencia.objects.filter( alumne = a ).update( alumne = a_desti  )
-        Expulsio.objects.filter( alumne = a ).update( alumne = a_desti )
+        Incidencia.objects.filter( alumne = a ).update( alumne = a_desti, control_assistencia = None  )
+        Expulsio.objects.filter( alumne = a ).update( alumne = a_desti, control_assistencia = None  )
         Sancio.objects.filter( alumne = a ).update( alumne = a_desti )
 
         
