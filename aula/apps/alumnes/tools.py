@@ -12,6 +12,7 @@ import datetime
 from aula.apps.sortides.models import Sortida
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
@@ -119,8 +120,8 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
             x.credentials = credentials
             try:
                 x.save()
-            except:
-                pass
+            except IntegrityError:
+                x.delete()
 
         if RespostaAvaluacioQualitativa.objects.filter( alumne = a ).exists():
             raise ValidationError( "No han canviat d'alumne les qualitatives" )
