@@ -11,6 +11,7 @@ from datetime import date
 import datetime
 from aula.apps.sortides.models import Sortida
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
@@ -112,8 +113,9 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
 
         
         #qualitativa
-        for x in RespostaAvaluacioQualitativa.objects.filter( alumne = a ):
+        for x in list( RespostaAvaluacioQualitativa.objects.filter( alumne = a ).all() ):
             x.alumne = a_desti 
+            x.alumne_id = a_desti.id
             x.credentials = credentials
             try:
                 x.save()
