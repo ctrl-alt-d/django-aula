@@ -173,7 +173,7 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
         
     try:
         incidencia = Incidencia.objects.get(pk =pk)
-    except:
+    except Incidencia.DoesNotExist:
         return render_to_response(
                         'resultat.html', 
                         {'head': u'Error eliminant incidència.' ,
