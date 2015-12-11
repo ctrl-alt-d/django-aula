@@ -170,17 +170,24 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
     
-        
+    es_consultable = True
     try:
         incidencia = Incidencia.objects.get(pk =pk)
     except Incidencia.DoesNotExist:
+        es_consultable = False
+    
+    try:
+        #la incidència ha de ser d'aula:
+        pk_impartir = incidencia.control_assistencia.impartir.pk
+    except:
+        es_consultable = False
+    
+    if not es_consultable:
         return render_to_response(
                         'resultat.html', 
                         {'head': u'Error eliminant incidència.' ,
                          'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
                         context_instance=RequestContext(request)) 
-    
-    pk_impartir = incidencia.control_assistencia.impartir.pk
 
     url_next = '/incidencies/posaIncidenciaAula/%s/'% ( pk_impartir )
     try:
