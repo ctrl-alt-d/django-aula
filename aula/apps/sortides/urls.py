@@ -42,4 +42,7 @@ urlpatterns = patterns('aula.apps.sortides.views',
 
     url(r'^sortidaiCal/', 'sortidaiCal', name = 'sortides__sortides__ical'),
 
+    url(r'^imprimir/(?P<pk>\d+)/$', 'imprimir', name = 'sortides__sortides__imprimir' ),
+
+
 )

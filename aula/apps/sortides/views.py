@@ -35,6 +35,89 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.template import loader
 from django.template.defaultfilters import slugify
+from aula.utils.tools import classebuida
+
+
+@login_required
+@group_required(['professors'])  
+def imprimir( request, pk ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, _ ) = credentials
+    
+    professor = User2Professor( user )     
+    
+    instance = get_object_or_404( Sortida, pk = pk )
+    instance.flag_clean_nomes_toco_alumnes = True
+    
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    potEntrar = ( professor in instance.professors_responsables.all() or 
+                  professor in instance.altres_professors_acompanyants.all() or 
+                  fEsDireccioOrGrupSortides
+                   )
+
+    if not potEntrar:
+        raise Http404 
+        
+    alumnes_que_hi_van = set( instance.alumnes_convocats.all() ) 
+    alumnes_que_no_hi_van = set( instance.alumnes_que_no_vindran.all() )
+    alumnes = list( alumnes_que_hi_van - alumnes_que_no_hi_van )
+    
+    report = []
+    
+    for alumne in Alumne.objects.filter( pk__in = [ a.id for a in alumnes ] ):
+        o = classebuida()
+        o.alumne = unicode( alumne )
+        o.grup = unicode( alumne.grup )
+        o.preu = instance.preu_per_alumne
+        o.departament = unicode( instance.departament_que_organitza ) if instance.departament_que_organitza else instance.comentari_organitza
+        o.titol = instance.titol_de_la_sortida 
+        o.desde = instance.calendari_desde.strftime( "%d/%m/%Y %H:%M:%S" )
+        o.desde_dia = instance.calendari_desde.strftime( "%d/%m/%Y" )
+        o.finsa = instance.calendari_finsa.strftime( "%d/%m/%Y %H:%M:%S" )
+        o.mitja = instance.get_mitja_de_transport_display()
+        o.programa_de_la_sortida = instance.programa_de_la_sortida.split("\n") or ['',]
+        o.condicions_generals = instance.condicions_generals.split("\n") or ['',]
+        report.append(o)
+        
+
+    #from django.template import Context                              
+    from appy.pod.renderer import Renderer
+    import cgi
+    import os
+    from django import http
+    import time
+    
+    excepcio = None
+
+    #try:
+        
+    #resultat = StringIO.StringIO( )
+    resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
+    #context = Context( {'reports' : reports, } )
+    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt')
+    if not os.path.isfile(path):
+        path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt')
+
+    renderer = Renderer(path, {'report' :report, }, resultat)  
+    renderer.run()
+    docFile = open(resultat, 'rb')
+    contingut = docFile.read()
+    docFile.close()
+    os.remove(resultat)
+        
+#     except Exception, e:
+#         excepcio = unicode( e )
+        
+    if True: #not excepcio:
+        response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
+        response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format( "autoritzacio_sortida", pk )
+                                                     
+    else:
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
+    
+    return response
+    
 
 @login_required
 @group_required(['professors'])
@@ -798,6 +881,12 @@ def sortidaExcel( request, pk ):
 
 
     
+    
+    
+#-----------------
+    
+    
+
     
     
     

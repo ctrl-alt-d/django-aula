@@ -1262,10 +1262,8 @@ def cartaSancio( request, pk ):
         #resultat = StringIO.StringIO( )
         resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
         #context = Context( {'reports' : reports, } )
-        path = None
-        try:
-            path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/'+nom_fitxer+'.odt')
-        except: 
+        path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/'+nom_fitxer+'.odt')
+        if not os.path.isfile(path):
             path = os.path.join(os.path.dirname(__file__), 'templates/'+nom_fitxer+'.odt')
 
         renderer = Renderer(path, {'report' :report, }, resultat)  
