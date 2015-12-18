@@ -68,7 +68,7 @@ class Sortida(models.Model):
 
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
-    condicions_generals = models.TextField(blank=True, help_text=u"Condicions generals. (mètode de pagament, entrepants, entrades, comentaris...")
+    condicions_generals = models.TextField(blank=True, help_text=u"Condicions generals. (mètode de pagament, entrepans, entrades, comentaris...")
 
     participacio = models.CharField(u"Participació", editable=False, default=u"N/A", max_length=100,help_text=u"Nombre d’alumnes participants sobre el total possible. Per exemple: 46 de 60")
     
