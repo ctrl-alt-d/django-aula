@@ -266,6 +266,7 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
 
     form.fields['calendari_desde'].widget = DateTimeTextImput()
     form.fields['calendari_finsa'].widget = DateTimeTextImput()
+    form.fields['termini_pagament'].widget = DateTimeTextImput()
     
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
