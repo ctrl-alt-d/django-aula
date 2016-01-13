@@ -216,11 +216,17 @@ def elsProfessors( request ):
                                      )
         pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 'N/A'
         camp.contingut = u'{0}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
+        camp.codi_ordenacio = pct
         filera.append(camp)
 
 
         #--
         taula.fileres.append( filera )
+        
+    
+    fileres_ordenades = sorted( taula.fileres, key = lambda x: x.codi_ordenacio )
+    
+    taula.fileres = fileres_ordenades
     
     report.append(taula)
         
