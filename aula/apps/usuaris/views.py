@@ -198,9 +198,22 @@ def elsProfessors( request ):
         qFinsAhir = Q( dia_impartir__lt = datetime.today() )
         qFinsAra  = qFinsAhir | qAvui
         qTeGrup = Q( horari__grup__isnull = False)
-        imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup )
-        nImparticios = imparticions.exclude( pot_no_tenir_alumnes = True).count()
-        nImparticionsLlistaPassada = imparticions.exclude( pot_no_tenir_alumnes = True).filter( professor_passa_llista__isnull = False ).count()
+        imparticions = ( Impartir
+                         .objects
+                         .filter(qProfessor & qFinsAra & qTeGrup )
+                         .exclude( pot_no_tenir_alumnes = True)
+                        )
+        nImparticios = ( imparticions
+                         .values_list( 'dia_impartir', 'horari__dia_de_la_setmana_id','horari__hora_id' )
+                         .distinct()
+                         .count()
+                        )
+        nImparticionsLlistaPassada = ( imparticions
+                                       .filter( professor_passa_llista__isnull = False )
+                                       .values_list( 'dia_impartir', 'horari__dia_de_la_setmana_id','horari__hora_id' )
+                                       .distinct()
+                                       .count()
+                                     )
         pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 'N/A'
         camp.contingut = u'{0}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
         filera.append(camp)
