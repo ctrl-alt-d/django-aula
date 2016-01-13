@@ -224,9 +224,8 @@ def elsProfessors( request ):
         taula.fileres.append( filera )
         
     
-    fileres_ordenades = sorted( taula.fileres, key = lambda x: x.codi_ordenacio )
-    
-    taula.fileres = fileres_ordenades
+    #fileres_ordenades = sorted( taula.fileres, key = lambda x: x.codi_ordenacio )    
+    #taula.fileres = fileres_ordenades
     
     report.append(taula)
         
