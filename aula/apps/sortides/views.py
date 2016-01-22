@@ -78,7 +78,7 @@ def imprimir( request, pk ):
         o.finsa = instance.calendari_finsa.strftime( "%H:%Mh del %d/%m/%Y" )
         o.mitja = instance.get_mitja_de_transport_display()
         o.programa_de_la_sortida = instance.programa_de_la_sortida.split("\n") or ['',]
-        o.condicions_generals = instance.condicions_generals.split("\n") or ['',]
+        o.condicions_generals = instance.condicions_generals.split("\n") or ['-',]
         report.append(o)
         
     #from django.template import Context                              
