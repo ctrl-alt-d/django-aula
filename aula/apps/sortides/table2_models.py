@@ -63,10 +63,16 @@ class Table2_Sortides(tables.Table):
                                               
                           <li>
                             <a href="/sortides/sortidaExcel/{{record.id}}">
+                            Imprimir fulls autorització<br>
+                            </a>
+                          </li>
+
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}">
                             Descarregar dades en Excel<br>
                             </a>
                           </li>
-                                                                            
+                                                                                                            
                           <li>
                             <a href='javascript:confirmAction("/sortides/esborrarGestio/{{record.id}}"  , " {{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol_de_la_sortida}} ?")'>
                             Esborrar<br>
@@ -119,7 +125,14 @@ class Table2_Sortides(tables.Table):
                         <a href="/sortides/sortidaExcel/{{record.id}}">
                         Descarregar dades en Excel<br>
                         </a>
-                      </li>                    
+                      </li>            
+                      
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}">
+                            Imprimir fulls autorització<br>
+                            </a>
+                          </li>
+                                                              
                       <li>
                         <a href='javascript:confirmAction("/sortides/esborrar/{{record.id}}"  , "{{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol_de_la_sortida|escapejs }} ?")'>
                         Esborrar<br>
@@ -178,6 +191,12 @@ class Table2_Sortides(tables.Table):
                           <li>
                             <a href="/sortides/sortidaExcel/{{record.id}}">
                             Descarregar dades en Excel<br>
+                            </a>
+                          </li>
+                                              
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}">
+                            Imprimir fulls autorització<br>
                             </a>
                           </li>
                                               

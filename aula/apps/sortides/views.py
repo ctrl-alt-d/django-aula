@@ -69,17 +69,19 @@ def imprimir( request, pk ):
         o = classebuida()
         o.alumne = unicode( alumne )
         o.grup = unicode( alumne.grup )
+        o.ciutat = instance.ciutat
         o.preu = instance.preu_per_alumne
         o.departament = unicode( instance.departament_que_organitza ) if instance.departament_que_organitza else instance.comentari_organitza
         o.titol = instance.titol_de_la_sortida 
-        o.desde = instance.calendari_desde.strftime( "%d/%m/%Y %H:%M:%S" )
+        o.desde = instance.calendari_desde.strftime( "%H:%Mh del %d/%m/%Y" )
         o.desde_dia = instance.calendari_desde.strftime( "%d/%m/%Y" )
-        o.finsa = instance.calendari_finsa.strftime( "%d/%m/%Y %H:%M:%S" )
+        o.finsa = instance.calendari_finsa.strftime( "%H:%Mh del %d/%m/%Y" )
         o.mitja = instance.get_mitja_de_transport_display()
         o.programa_de_la_sortida = instance.programa_de_la_sortida.split("\n") or ['',]
         o.condicions_generals = instance.condicions_generals.split("\n") or ['',]
         report.append(o)
         
+        print o.ciutat, o.preu
 
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
@@ -500,7 +502,7 @@ def alumnesFallen( request, pk , origen ):
         if form.is_valid(): 
             try:
                 nous=set([ x.pk for x in form.cleaned_data['alumnes_que_no_vindran'] ] )
-                ante=set([ x.pk for x in instance.alumnes_que_no_vindran.all() ] )
+                ante=set([ x.pk for x in instance.alumnes_que_no_vindran.all().distinct() ] )
                 #afegir
                 for alumne in nous - ante:
                     instance.alumnes_que_no_vindran.add( alumne )
