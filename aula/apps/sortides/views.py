@@ -81,8 +81,6 @@ def imprimir( request, pk ):
         o.condicions_generals = instance.condicions_generals.split("\n") or ['',]
         report.append(o)
         
-        print o.ciutat, o.preu
-
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
     import cgi

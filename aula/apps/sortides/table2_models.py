@@ -63,13 +63,13 @@ class Table2_Sortides(tables.Table):
                                               
                           <li>
                             <a href="/sortides/sortidaExcel/{{record.id}}">
-                            Imprimir fulls autorització<br>
+                            Descarregar dades en Excel<br>
                             </a>
                           </li>
 
                           <li>
                             <a href="/sortides/imprimir/{{record.id}}">
-                            Descarregar dades en Excel<br>
+                            Imprimir fulls autorització<br>
                             </a>
                           </li>
                                                                                                             
