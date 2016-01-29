@@ -793,7 +793,7 @@ def elMeuInforme( request, pk = None ):
                 
         taula.fileres = []
             
-        for sortida in sortides.order_by( '-sortida__data_inici' ):
+        for sortida in sortides.order_by( '-sortida__calendari_desde' ):
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
