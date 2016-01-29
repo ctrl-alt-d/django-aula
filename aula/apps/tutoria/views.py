@@ -1811,7 +1811,7 @@ def seguimentTutorialPreguntes(request):
 
     head=u'Preguntes de Seguiment Tutorial' 
     
-    formset_f = modelformset_factory( SeguimentTutorialPreguntes , extra=10, can_delete=True )
+    formset_f = modelformset_factory( SeguimentTutorialPreguntes , exclude=(), extra=10, can_delete=True )
     missatge = ''
 
     if request.method == 'POST':
