@@ -799,7 +799,7 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = naturalday(sortida.sortida.calendari_desde)       
-            camp.negreta = False if sortida.relacio_familia_revisada else True                
+            camp.negreta = False if bool( sortida.relacio_familia_revisada ) else True                
             filera.append(camp)
             
             #----------------------------------------------
@@ -813,7 +813,7 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = comentari_no_ve       
-            camp.negreta = False if sortida.relacio_familia_revisada else True                
+            camp.negreta = False if bool( sortida.relacio_familia_revisada ) else True                
             filera.append(camp)
             
             #----------------------------------------------
@@ -833,10 +833,11 @@ def elMeuInforme( request, pk = None ):
                                         sortida.sortida.titol_de_la_sortida,
                                         naturalday(sortida.sortida.calendari_desde),
                                         )
-            camp.modal['body'] =  u'{0} a {1} \n\n{2}'.format( 
+            camp.modal['body'] =  u'{0} a {1} \n\n{2}\n--{3}--'.format( 
                                         sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
                                         sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),                                        
                                         sortida.sortida.programa_de_la_sortida,
+                                        sortida.relacio_familia_revisada,
                                         ) 
             filera.append(camp)
             #--
