@@ -876,7 +876,7 @@ def sortidaExcel( request, pk ):
     # encoding is ANSI and special characters will be mangled
     #response.write("\xEF\xBB\xBF")
     response.write(codecs.BOM_UTF16_LE)
-    response.write(  template.render(context).decode('utf8').encode('utf_16_le')   )
+    response.write(  template.render(context)   )
 
 
     return response
