@@ -36,6 +36,7 @@ from django.db.models import Q
 from django.template import loader
 from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
+import codecs
 
 
 @login_required
@@ -874,8 +875,8 @@ def sortidaExcel( request, pk ):
     # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
     # encoding is ANSI and special characters will be mangled
     #response.write("\xEF\xBB\xBF")
-    response.write(u'\ufeff'.encode('utf8'))
-    response.write(template.render(context))
+    response.write(codecs.BOM_UTF16_LE)
+    response.write(  template.render(context).decode('utf8').encode('utf_16_le')   )
 
 
     return response
