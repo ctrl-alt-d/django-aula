@@ -875,7 +875,7 @@ def sortidaExcel( request, pk ):
     # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
     # encoding is ANSI and special characters will be mangled
     #response.write("\xEF\xBB\xBF")
-    response.write(codecs.BOM_UTF16_LE)
+    response.write(codecs.BOM_UTF8)
     response.write(  template.render(context)   )
 
 
