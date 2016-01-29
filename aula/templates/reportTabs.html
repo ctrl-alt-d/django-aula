@@ -71,7 +71,14 @@
 				</div>
              {% else %}
 	            {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
+	            	
+	            {% if camp.negreta %}<strong>{%endif%}
+	            	
 	            {{camp.contingut|linebreaksbr}}
+	            
+	            {% if camp.negreta %}</strong>{%endif%}
+	            
+	            
 	            {% if camp.enllac %}</a>{%endif%}
              {% endif %}
              
