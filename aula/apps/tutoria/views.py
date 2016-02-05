@@ -56,6 +56,9 @@ from aula.apps.sortides.models import Sortida
 from aula.apps.sortides.table2_models import Table2_Sortides
 from django_tables2.config import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
+from aula.apps.tutoria.table2_models import Table2_Actuacions
+
+from django.contrib import messages
 
 @login_required
 @group_required(['professors','professional'])
@@ -66,95 +69,117 @@ def lesMevesActuacions(request):
     
     professional = User2Professional( user )     
     
-    report = []
-    for alumne in  Alumne.objects.filter( actuacio__professional = professional ).distinct():
-            taula = tools.classebuida()
+    actuacions = ( Actuacio
+                   .objects
+                   .filter( professional = professional )
+                   .distinct()
+                  )
 
-            taula.titol = tools.classebuida()
-            taula.titol.contingut = ''
-            taula.titol.enllac = None
-
-            taula.capceleres = []
-            
-            capcelera = tools.classebuida()
-            capcelera.amplade = 200
-            capcelera.contingut = u'{0} ({1})'.format(unicode( alumne ) , unicode( alumne.grup ) )
-            capcelera.enllac = reverse('tutoria__alumne__detall', args=[ alumne.pk , 'all' ])
-            taula.capceleres.append(capcelera)
-
-            capcelera = tools.classebuida()
-            capcelera.amplade = 70
-            capcelera.contingut = u'Qui?'
-            taula.capceleres.append(capcelera)
-
-            capcelera = tools.classebuida()
-            capcelera.amplade = 70
-            capcelera.contingut = u'Amb qui?'
-            taula.capceleres.append(capcelera)
-            
-            capcelera = tools.classebuida()
-            capcelera.amplade = 200
-            capcelera.contingut = u'Assumpte'
-            taula.capceleres.append(capcelera)
-            
-            capcelera = tools.classebuida()
-            capcelera.amplade = ''
-            capcelera.contingut = u'Esborra'
-            taula.capceleres.append(capcelera)
-            
-            taula.fileres = []
-            for actuacio in alumne.actuacio_set.filter( professional = professional).order_by('moment_actuacio').reverse():
-                
-                filera = []
-                
-                #-moment--------------------------------------------
-                camp = tools.classebuida()
-                camp.enllac = None
-                camp.contingut = unicode(actuacio.moment_actuacio)
-                camp.enllac = "/tutoria/editaActuacio/{0}".format( actuacio.pk )
-                filera.append(camp)
-
-                #-qui--------------------------------------------
-                camp = tools.classebuida()
-                camp.enllac = None
-                camp.contingut = u'''{0} ({1})'''.format(
-                                             unicode( actuacio.professional ),
-                                             unicode(actuacio.get_qui_fa_actuacio_display() ) )
-                filera.append(camp)
-
-                #-amb qui--------------------------------------------
-                camp = tools.classebuida()
-                camp.enllac = None
-                camp.contingut = unicode(actuacio.get_amb_qui_es_actuacio_display() )
-                filera.append(camp)
-
-                #-assumpte--------------------------------------------
-                camp = tools.classebuida()
-                camp.enllac = None
-                camp.contingut = unicode(actuacio.assumpte )
-                filera.append(camp)
-
-                #-delete--------------------------------------------
-                camp = tools.classebuida()
-                camp.enllac = '/tutoria/esborraActuacio/{0}'.format(actuacio.pk )
-                camp.contingut = '[ X ]'
-                filera.append(camp)
-
-
-                #--
-                taula.fileres.append( filera )
-            
-            report.append(taula)
+    table = Table2_Actuacions( list( actuacions ) ) 
+    table.order_by = '-moment_actuacio' 
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
-    return render_to_response(
-                'actuacions.html',
-                    {'report': report,
-                     'head': 'Informació actuacions' ,
-                    },
-                    context_instance=RequestContext(request))            
-        
+    return render(
+                  request, 
+                  'lesMevesActuacions.html', 
+                  {'table': table,
+                   }
+                 )       
+#     
+#     -----------------------------###  OBSOLET ###-----------------------------
+#
+#
+#
+#     report = []
+#     for alumne in  Alumne.objects.filter( actuacio__professional = professional ).distinct():
+#             taula = tools.classebuida()
+# 
+#             taula.titol = tools.classebuida()
+#             taula.titol.contingut = ''
+#             taula.titol.enllac = None
+# 
+#             taula.capceleres = []
+#             
+#             capcelera = tools.classebuida()
+#             capcelera.amplade = 200
+#             capcelera.contingut = u'{0} ({1})'.format(unicode( alumne ) , unicode( alumne.grup ) )
+#             capcelera.enllac = reverse('tutoria__alumne__detall', args=[ alumne.pk , 'all' ])
+#             taula.capceleres.append(capcelera)
+# 
+#             capcelera = tools.classebuida()
+#             capcelera.amplade = 70
+#             capcelera.contingut = u'Qui?'
+#             taula.capceleres.append(capcelera)
+# 
+#             capcelera = tools.classebuida()
+#             capcelera.amplade = 70
+#             capcelera.contingut = u'Amb qui?'
+#             taula.capceleres.append(capcelera)
+#             
+#             capcelera = tools.classebuida()
+#             capcelera.amplade = 200
+#             capcelera.contingut = u'Assumpte'
+#             taula.capceleres.append(capcelera)
+#             
+#             capcelera = tools.classebuida()
+#             capcelera.amplade = ''
+#             capcelera.contingut = u'Esborra'
+#             taula.capceleres.append(capcelera)
+#             
+#             taula.fileres = []
+#             for actuacio in alumne.actuacio_set.filter( professional = professional).order_by('moment_actuacio').reverse():
+#                 
+#                 filera = []
+#                 
+#                 #-moment--------------------------------------------
+#                 camp = tools.classebuida()
+#                 camp.enllac = None
+#                 camp.contingut = unicode(actuacio.moment_actuacio)
+#                 camp.enllac = "/tutoria/editaActuacio/{0}".format( actuacio.pk )
+#                 filera.append(camp)
+# 
+#                 #-qui--------------------------------------------
+#                 camp = tools.classebuida()
+#                 camp.enllac = None
+#                 camp.contingut = u'''{0} ({1})'''.format(
+#                                              unicode( actuacio.professional ),
+#                                              unicode(actuacio.get_qui_fa_actuacio_display() ) )
+#                 filera.append(camp)
+# 
+#                 #-amb qui--------------------------------------------
+#                 camp = tools.classebuida()
+#                 camp.enllac = None
+#                 camp.contingut = unicode(actuacio.get_amb_qui_es_actuacio_display() )
+#                 filera.append(camp)
+# 
+#                 #-assumpte--------------------------------------------
+#                 camp = tools.classebuida()
+#                 camp.enllac = None
+#                 camp.contingut = unicode(actuacio.assumpte )
+#                 filera.append(camp)
+# 
+#                 #-delete--------------------------------------------
+#                 camp = tools.classebuida()
+#                 camp.enllac = '/tutoria/esborraActuacio/{0}'.format(actuacio.pk )
+#                 camp.contingut = '[ X ]'
+#                 filera.append(camp)
+# 
+# 
+#                 #--
+#                 taula.fileres.append( filera )
+#             
+#             report.append(taula)
+#         
+#     return render_to_response(
+#                 'actuacions.html',
+#                     {'report': report,
+#                      'head': 'Informació actuacions' ,
+#                     },
+#                     context_instance=RequestContext(request))            
+#         
 
-from aula.apps.alumnes.forms import triaAlumneForm
+from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
 
 @login_required
 @group_required(['professors','professional'])
@@ -169,7 +194,7 @@ def novaActuacio(request):
         actuacio = Actuacio()
         actuacio.professional = User2Professional( user)
         actuacio.credentials = credentials
-        formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)  
+        formAlumne = triaAlumneSelect2Form(request.POST ) #todo: multiple=True (multiples alumnes de cop)  
         widgets = { 'moment_actuacio': DateTimeTextImput()}      
         formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'], widgets = widgets)
         formActuacio = formActuacioF(request.POST, instance = actuacio ) 
@@ -189,7 +214,9 @@ def novaActuacio(request):
                         impersonated_from = request.user if request.user != user else None,
                         text = u"""Enregistrada actuació a l'alumne {0}. """.format( actuacio.alumne )
                     )          
-                        
+                
+                messages.success(request, u"Actuació desada correctament")
+                
                 url = '/tutoria/lesMevesActuacions/'
                 return HttpResponseRedirect( url )    
 
@@ -198,7 +225,7 @@ def novaActuacio(request):
         
     else:
 
-        formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)       
+        formAlumne = triaAlumneSelect2Form( ) #todo: multiple=True (multiples alumnes de cop)       
         widgets = { 'moment_actuacio': DateTimeTextImput()} 
         formActuacio = modelform_factory(Actuacio, exclude=['alumne','professional'],widgets = widgets) 
 
@@ -259,8 +286,11 @@ def editaActuacio(request, pk):
                     impersonated_from = request.user if request.user != user else None,
                     text = u"""Editada actuació a l'alumne {0}. """.format( actuacio.alumne )
                 )     
+            
+            messages.success(request, u"Actuació desada correctament")
                             
             url = '/tutoria/lesMevesActuacions/'
+            
             return HttpResponseRedirect( url )    
 
         formset.append( formActuacio )
@@ -296,7 +326,8 @@ def esborraActuacio(request, pk):
     url_next = '/tutoria/lesMevesActuacions/'
     try:
         actuacio.delete()
-        
+        messages.success(request, u"Actuació esborrada")
+
         #LOGGING
         Accio.objects.create( 
                 tipus = 'AC',
