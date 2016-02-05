@@ -28,12 +28,14 @@ class Table2_Actuacions(tables.Table):
     
     qui = tables.TemplateColumn(
                         template_code = u"""{{ record.professional }} ( {{record.get_qui_fa_actuacio_display}})""", 
-                        order_by=( 'record.professional' )
+                        order_by=( 'record.professional' ),
+                        verbose_name=u"Qui?"
                         )
     
     ambqui = tables.TemplateColumn(
                         template_code = u"""{{ record.get_amb_qui_es_actuacio_display }}""", 
-                        order_by=( 'record.amb_qui_es_actuacio', 'record.alumne.grup', 'record.alumne.cognoms', 'record.alumne.nom' )
+                        order_by=( 'record.amb_qui_es_actuacio', 'record.alumne.grup', 'record.alumne.cognoms', 'record.alumne.nom' ),
+                        verbose_name=u"Amb qui?"
                         )
     
     assumpte  = tables.TemplateColumn(
@@ -51,7 +53,7 @@ class Table2_Actuacions(tables.Table):
                         
                           <li>
                             <a href="/tutoria/editaActuacio/{{record.pk}}">
-                            Modificar dades<br>
+                            Modificar/Veure dades<br>
                             </a>
                           </li>
                         
