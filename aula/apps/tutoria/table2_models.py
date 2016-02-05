@@ -17,30 +17,30 @@ class Table2_Actuacions(tables.Table):
     
     grup = tables.TemplateColumn(
                         template_code = u"""{{ record.alumne.grup }}""", 
-                        order_by=( 'record.alumne.grup', 'record.alumne.cognoms', 'record.alumne.nom' )
+                        order_by=( 'alumne.grup', 'alumne.cognoms', 'alumne.nom' )
                         )
     
     alumne  = tables.TemplateColumn(
                         template_code = u"""{{ record.alumne }}""", 
-                        order_by=( 'record.alumne.cognoms', 'record.alumne.nom'  )
+                        order_by=( 'alumne.cognoms', 'alumne.nom'  )
                         )
     
     
     qui = tables.TemplateColumn(
                         template_code = u"""{{ record.professional }} ( {{record.get_qui_fa_actuacio_display}})""", 
-                        order_by=( 'record.professional' ),
+                        order_by=( 'professional' ),
                         verbose_name=u"Qui?"
                         )
     
     ambqui = tables.TemplateColumn(
                         template_code = u"""{{ record.get_amb_qui_es_actuacio_display }}""", 
-                        order_by=( 'record.amb_qui_es_actuacio', 'record.alumne.grup', 'record.alumne.cognoms', 'record.alumne.nom' ),
+                        order_by=( 'amb_qui_es_actuacio', 'alumne.grup', 'alumne.cognoms', 'alumne.nom' ),
                         verbose_name=u"Amb qui?"
                         )
     
     assumpte  = tables.TemplateColumn(
                         template_code = u"""{{ record.assumpte }}""", 
-                        order_by=( 'record.assumpte', 'record.alumne.grup', 'record.alumne.cognoms', 'record.alumne.nom' )
+                        order_by=( 'assumpte', 'alumne.grup', 'alumne.cognoms', 'alumne.nom' )
                         )
     
     accions= tables.TemplateColumn( template_code=u"""
