@@ -269,7 +269,8 @@ def editaActuacio(request, pk):
           ('Professional', unicode( actuacio.professional ) )      
                 ]
     
-    formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'])
+    widgets = { 'moment_actuacio': DateTimeTextImput()}      
+    formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'], widgets = widgets)
     formActuacioF.base_fields['moment_actuacio'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
     formset = []
     if request.method == 'POST':
