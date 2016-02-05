@@ -60,7 +60,7 @@ class AbstractActuacio(models.Model):
             ('A', u'''Altres''',),
                    )
     AMB_QUI_CHOICES = (
-            ('A', u'''alumnes.Alumne''',),
+            ('A', u'''Alumne''',),
             ('F', u'''Familia''',),
             ('T', u'''Altres''',),
                    )
