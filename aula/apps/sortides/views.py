@@ -80,6 +80,7 @@ def imprimir( request, pk ):
         o.mitja = instance.get_mitja_de_transport_display()
         o.programa_de_la_sortida = instance.programa_de_la_sortida.split("\n") or ['',]
         o.condicions_generals = instance.condicions_generals.split("\n") or ['-',]
+        o.terminipagament = u"" if not bool( instance.termini_pagament ) else u"abans del {0}".format( instance.termini_pagament.strftime( '%d/%m/%Y' ) ) 
         report.append(o)
         
     #from django.template import Context                              

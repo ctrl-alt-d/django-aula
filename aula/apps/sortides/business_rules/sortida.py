@@ -101,7 +101,6 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         alumnesJustificats = set( [ a.pk for a in instance.alumnes_justificacio.all() ] ) 
         alumnesQueVenen = set(  [ a.pk for a in instance.alumnes_convocats.all() ]  )
         justificats_que_venen = alumnesJustificats - alumnesQueVenen
-        print justificats_que_venen, '<----', alumnesJustificats, alumnesQueVenen
         if bool( justificats_que_venen ):
             l=list( [ a for a in instance.alumnes_justificacio.all() if a.pk in justificats_que_venen  ] )
             l_str = u", ".join(  [ unicode(a) for a in l[:3]  ] )
