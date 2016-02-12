@@ -55,7 +55,7 @@ def assignaGrups( request ):
     #https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms    
     formset = []
     
-    factoria = modelformset_factory( Grup2Aula, extra = 0, can_delete=False )
+    factoria = modelformset_factory( Grup2Aula, extra = 0, exclude=(), can_delete=False )
     
     if request.method == "POST":
         #un formulari per cada grup

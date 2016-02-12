@@ -17,24 +17,24 @@ class Table2_Actuacions(tables.Table):
     
     grup = tables.TemplateColumn(
                         template_code = u"""{{ record.alumne.grup }}""", 
-                        order_by=( 'alumne.grup', 'alumne.cognoms', 'alumne.nom' )
+                        order_by=( 'alumne.grup', 'alumne.cognoms', 'alumne.nom', '-moment_actuacio',  )
                         )
     
     alumne  = tables.TemplateColumn(
                         template_code = u"""{{ record.alumne }}""", 
-                        order_by=( 'alumne.cognoms', 'alumne.nom'  )
+                        order_by=( 'alumne.cognoms', 'alumne.nom', '-moment_actuacio',   )
                         )
     
     
     qui = tables.TemplateColumn(
                         template_code = u"""{{ record.professional }} ( {{record.get_qui_fa_actuacio_display}})""", 
-                        order_by=( 'professional' ),
+                        order_by=( 'professional', '-moment_actuacio',  ),
                         verbose_name=u"Qui?"
                         )
     
     ambqui = tables.TemplateColumn(
                         template_code = u"""{{ record.get_amb_qui_es_actuacio_display }}""", 
-                        order_by=( 'amb_qui_es_actuacio', 'alumne.grup', 'alumne.cognoms', 'alumne.nom' ),
+                        order_by=( 'amb_qui_es_actuacio', 'alumne.grup', 'alumne.cognoms', 'alumne.nom', '-moment_actuacio',  ),
                         verbose_name=u"Amb qui?"
                         )
     
