@@ -27,7 +27,7 @@
 					({{msg.missatge.remitent.email}})
 				{% endif %}
 			</b>,</span>
-			<span>{{msg.missatge.text_missatge}}</span>
+			<span>{{msg.missatge.text_missatge|linebreaks}}</span>
 			{% if msg.missatge.enllac %}
 			    <a class="enllacmsg-{{msg.followed}}" href="/missatgeria/llegeix/{{msg.pk}}">
 			      {% if msg.followed %}
