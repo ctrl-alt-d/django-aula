@@ -54,7 +54,6 @@ class AbstractSancio(models.Model):
 
     @staticmethod
     def alumne_sancionat_en_data( alumne, dia, franja ):
-        print 'XXXX', alumne, dia, franja
         Sancio = get_model('incidencies','Sancio')
         q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
         q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
