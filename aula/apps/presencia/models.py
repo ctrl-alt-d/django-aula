@@ -1,7 +1,8 @@
 # This Python file uses the following encoding: utf-8
 
 from aula.apps.presencia.abstract_models import AbstractImpartir,\
-    AbstractEstatControlAssistencia, AbstractControlAssistencia
+    AbstractEstatControlAssistencia, AbstractControlAssistencia,\
+    AbstractNoHaDeSerALAula
 from aula.apps.presencia.business_rules.impartir import impartir_clean,\
     impartir_pre_delete, impartir_pre_save, impartir_post_save
 from aula.apps.presencia.business_rules.estatcontrolassistencia import estatControlAssistencia_clean,\
@@ -22,6 +23,9 @@ class EstatControlAssistencia(AbstractEstatControlAssistencia):
 class ControlAssistencia(AbstractControlAssistencia):
     def clean(self):
         controlAssistencia_clean(self)
+
+class NoHaDeSerALAula(AbstractNoHaDeSerALAula):
+    pass
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
 from django.db.models.signals import post_save, pre_save, pre_delete

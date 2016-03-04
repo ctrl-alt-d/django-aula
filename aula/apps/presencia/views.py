@@ -7,7 +7,7 @@ from django.template import RequestContext
 from aula.apps.presencia.forms import regeneraImpartirForm,ControlAssistenciaForm,\
     alertaAssistenciaForm, faltesAssistenciaEntreDatesForm,\
     marcarComHoraSenseAlumnesForm, passaLlistaGrupDataForm,\
-    llistaLesMevesHoresForm
+    llistaLesMevesHoresForm, ControlAssistenciaFormFake
 from aula.apps.presencia.forms import afegeixTreuAlumnesLlistaForm, afegeixAlumnesLlistaExpandirForm
 from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsFormativesForm
 
@@ -44,7 +44,7 @@ from aula.apps.assignatures.models import Assignatura
 from aula.apps.presencia.reports import alertaAssitenciaReport 
 from aula.apps.presencia.rpt_faltesAssistenciaEntreDatesProfessor import faltesAssistenciaEntreDatesProfessorRpt
 from django.forms.models import modelformset_factory
-from django.forms.widgets import RadioSelect
+from django.forms.widgets import RadioSelect, HiddenInput, TextInput
 from aula.apps.BI.utils import dades_dissociades
 from aula.apps.BI.prediccio_assistencia import predictTreeModel
 from aula.apps.presencia.business_rules.impartir import impartir_despres_de_passar_llista
@@ -286,17 +286,26 @@ def passaLlista( request, pk ):
         formset.append( form0 )
         for control_a in impartir.controlassistencia_set.order_by( 'alumne__grup', 'alumne' ):
             control_a.currentUser = user
-            form=ControlAssistenciaForm(
-                                    request.POST,
-                                    prefix=str( control_a.pk ),
-                                    instance=control_a )
+            if control_a.nohadeseralaula_set.exists():
+                form=ControlAssistenciaFormFake()
+                form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + ( u" ( Sanció )" )
+                                              )                
+                
+            else:
+                form=ControlAssistenciaForm(
+                                        request.POST,
+                                        prefix=str( control_a.pk ),
+                                        instance=control_a )
+                form.fields['estat'].label = unicode( control_a.alumne )   
+
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
 
             if form.is_valid():
                 try:                
                     control_aux = form.save()
-                    hiHaRetard |= control_aux.estat.codi_estat == "R" 
+                    hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R") 
                     quelcomBe |= True
                 except ValidationError, e:
                     totBe = False
@@ -305,15 +314,20 @@ def passaLlista( request, pk ):
                         form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )
             else:
                 totBe = False
-                #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
                 errors_formulari = form._errors
-                form=ControlAssistenciaForm(
-                                     prefix=str( control_a.pk ),
-                                     instance=ControlAssistencia.objects.get( id= control_a.pk)  )
+                #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
+                if control_a.nohadeseralaula_set.exists():
+                    form=ControlAssistenciaFormFake()
+                    form.fields['estat'].label = ( unicode( control_a.alumne )
+                                                   + ( u" ( Sanció )" )
+                                                  )                                    
+                else:
+                    form=ControlAssistenciaForm(
+                                         prefix=str( control_a.pk ),
+                                         instance=ControlAssistencia.objects.get( id= control_a.pk)  )
+                    form.fields['estat'].label = unicode( control_a.alumne )                        
                 form._errors =  errors_formulari
             
-            
-            form.fields['estat'].label = unicode( control_a.alumne )                        
             formset.append( form )
                             
         if quelcomBe:
@@ -351,17 +365,28 @@ def passaLlista( request, pk ):
                 
     else:
         for control_a in impartir.controlassistencia_set.order_by( 'alumne' ):
-            form=ControlAssistenciaForm(
-                                    prefix=str( control_a.pk ),
-                                    instance=control_a )
-            avui_es_anivesari = ( control_a.alumne.data_neixement.month == impartir.dia_impartir.month and
-                                  control_a.alumne.data_neixement.day == impartir.dia_impartir.day )  
-            form.fields['estat'].label = unicode( control_a.alumne ) + ( '(fa anys en aquesta data)' if avui_es_anivesari else '')
+            if control_a.nohadeseralaula_set.exists():
+                form=ControlAssistenciaFormFake()
+                form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + ( u" ( Sanció )" )
+                                              )                
+            else:
+                form=ControlAssistenciaForm(
+                                prefix=str( control_a.pk ),
+                                instance=control_a )
+                form.fields['estat'].label = unicode( control_a.alumne )               
+                avui_es_anivesari = ( control_a.alumne.data_neixement.month == impartir.dia_impartir.month and
+                                      control_a.alumne.data_neixement.day == impartir.dia_impartir.day )  
+                form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + ( '(fa anys en aquesta data)' if avui_es_anivesari else '')
+                                              )
+            
             formset.append( form )
     
 
     for form in formset:
         if hasattr(form, 'instance'):
+            
             #0 = present #1 = Falta
             d = dades_dissociades(  form.instance )
             form.hora_anterior = ( 0 if d['assistenciaaHoraAnterior'] == 'Present' else 

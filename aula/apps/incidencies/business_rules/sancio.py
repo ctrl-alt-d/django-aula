@@ -4,7 +4,7 @@
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.utils.datetime_safe import datetime
 from django.db.models import get_model
-
+from datetime import datetime, timedelta, tzinfo
 
 def sancio_pre_delete(sender, instance, **kwargs):
     #
@@ -25,7 +25,7 @@ def sancio_pre_delete(sender, instance, **kwargs):
     if not l4 and len( errors ) > 0:
         raise ValidationError(errors)
     
-    
+    get_model(  'presencia.NoHaDeSerALAula' ).objects.filter( sancio__id = instance.pk )
         
 
 def sancio_clean(instance):
@@ -54,6 +54,7 @@ def sancio_pre_save(sender, instance, **kwargs):
     if  instance.pk is not None:
         db_instance = instance.__class__.objects.get( pk = instance.pk )
         instance.tmp__calNotificar =  not db_instance.impres and instance.impres
+        get_model(  'presencia.NoHaDeSerALAula' ).objects.filter( sancio__id = instance.pk )
 
 def sancio_post_save(sender, instance, created, **kwargs):
     # missatge pels professors que tenen aquest alumne a l'aula (exepte el professor que sanciona):
@@ -67,5 +68,22 @@ def sancio_post_save(sender, instance, created, **kwargs):
             esTutor = True if professor in instance.alumne.tutorsDeLAlumne() else False
             importancia = 'VI' if esTutor else 'PI'
             msg.envia_a_usuari( professor.getUser(), importancia )
+            
+    #es fa save controlAssistència per marcar com a no ha de ser present
+    ControlAssistencia = get_model(  'presencia.ControlAssistencia' )
+    dia_iterador = instance.data_inici
+    totes_les_franges = list( get_model(  'horaris.FranjaHoraria' ).objects.all() )
+    un_dia = timedelta(days=1)
+    while dia_iterador <= instance.data_fi:
+        for franja in totes_les_franges:
+            for control in ControlAssistencia.objects.filter( alumne = instance.alumne,
+                                       impartir__dia_impartir = dia_iterador,
+                                       impartir__horari__hora = franja ):
+                control.save()
+                print control.impartir.dia_impartir
+    
+        dia_iterador += un_dia
+    
+    
 
 

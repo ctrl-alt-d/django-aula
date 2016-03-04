@@ -35,11 +35,11 @@ def controlAssistencia_clean( instance ):
     socTutor = hasattr(instance, 'professor') and instance.professor and instance.professor in tutors
     daqui_2_hores = dt.datetime.now() + dt.timedelta( hours = 2)
     daqui_15_dies = dt.datetime.now() + dt.timedelta( days = 15)
-    if isUpdate and (not socTutor and instance.impartir.diaHora() > daqui_2_hores): 
+    if isUpdate and bool(instance.estat) and (not socTutor and instance.impartir.diaHora() > daqui_2_hores): 
         errors.setdefault(NON_FIELD_ERRORS, []).append( u'''Encara no es pot entrar aquesta assistència 
                                     (Falta {0} per poder-ho fer )'''.format(
                                       timesince_filter( dt.datetime.now(), instance.impartir.diaHora() - dt.timedelta( hours = 2) ) ) )
-    if isUpdate and (socTutor and instance.impartir.diaHora() > daqui_15_dies): 
+    if isUpdate and bool(instance.estat) and (socTutor and instance.impartir.diaHora() > daqui_15_dies): 
         errors.setdefault(NON_FIELD_ERRORS, []).append( u'''Encara no es pot entrar aquesta assistència 
                                     (Falta {0} per poder-ho fer )'''.format(
                                       timesince_filter( dt.datetime.now(), instance.impartir.diaHora() - dt.timedelta( days = 15) ) ) )
@@ -99,19 +99,19 @@ def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
-    
+  
     #si els retards provoquen incidència la posem:
     if settings.CUSTOM_RETARD_PROVOCA_INCIDENCIA:
-        
-        
+         
+         
         frase = settings.CUSTOM_RETARD_FRASE
-        
+         
         TipusIncidencia = get_model('incidencies','TipusIncidencia')
         tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
-    
+     
         Incidencia = get_model('incidencies','Incidencia')
         abans_no_era_retard = created or ( hasattr(instance, 'instanceDB') and  instance.instanceDB and instance.instanceDB.estat and instance.instanceDB.estat.codi_estat != 'R' )
-        
+         
         #posem incidència si arriba tard ( només si passem de res a retard )
         if instance.estat and instance.estat.codi_estat == 'R' and abans_no_era_retard:
             ja_hi_es = Incidencia.objects.filter( 
@@ -119,7 +119,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                               control_assistencia = instance,
                                                               descripcio_incidencia = frase,
                                                               tipus= tipus ,).exists()
-    
+     
             if not ja_hi_es:
                 i = Incidencia.objects.create(    
                                           professional = User2Professional( instance.professor ),
@@ -128,8 +128,8 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                           descripcio_incidencia = frase,
                                           tipus = tipus ,)
                 incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
-
-        
+ 
+         
         #treiem incidència retard si arriba a l'hora
         elif instance.estat and instance.estat.codi_estat != 'R':
             try:
@@ -140,5 +140,27 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                               tipus = tipus,).delete()
             except:
                 pass
-            
- 
+             
+  
+    #-- si està expulsat del centre aquell dia ho anotem:
+    Sancio = get_model('incidencies','Sancio')
+    sancio = Sancio.alumne_sancionat_en_data( instance.alumne,              #alumne
+                                        instance.impartir.dia_impartir,     #dia
+                                        instance.impartir.horari.hora       #franja
+                                       )
+      
+    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
+    if bool(sancio):
+        print 'si sancio'          
+        NoHaDeSerALAula.objects.get_or_create( control = instance, 
+                                               motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE,
+                                               sancio=sancio )
+    else:
+        print 'no sancio'
+        instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).delete()
+         
+    #-- si té una sortida aquell dia ho anotem:
+    
+    
+    
+    

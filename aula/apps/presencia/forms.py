@@ -22,6 +22,10 @@ class ControlAssistenciaForm(ModelForm):
         model = ControlAssistencia
         fields = ('estat', )
 
+class ControlAssistenciaFormFake(forms.Form):
+    estat = forms.ChoiceField( required= False,  choices = [], widget = RadioSelect() )
+
+
 #----------------------------------------------------------------
 
 class afegeixGuardiaForm(forms.Form):

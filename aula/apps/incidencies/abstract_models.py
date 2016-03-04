@@ -3,7 +3,8 @@
 from django.db import models
 from datetime import datetime
 from django.conf import settings
-
+from django.db.models import get_model
+from django.db.models import Q
 
 class AbstractFrassesIncidenciaAula(models.Model):
     tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
@@ -50,6 +51,25 @@ class AbstractSancio(models.Model):
         verbose_name = u'Sanció'
         verbose_name_plural = u'Sancions'
         ordering = ['alumne']    
+
+    @staticmethod
+    def alumne_sancionat_en_data( alumne, dia, franja ):
+        print 'XXXX', alumne, dia, franja
+        Sancio = get_model('incidencies','Sancio')
+        q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
+        q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
+        q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
+        l =  ( Sancio
+                 .objects
+                 .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
+                 .filter( tipus__justificar = True  )
+                 .all()[:1]
+                )
+        
+        return l[0] if bool(l) else None
+        
+        
+
 
 class AbstractExpulsio(models.Model):
     ESTAT_CHOICES = (

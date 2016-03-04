@@ -152,6 +152,34 @@ class AbstractControlAssistencia(models.Model):
     def __unicode__(self):
         return unicode(self.alumne) + u' -> '+ unicode(self.estat)    
 
+class AbstractNoHaDeSerALAula(models.Model):
+    #cal recalcular-lo en aquesta casos:
+    #  - crear control assistència
+    #  - afegir ó modificar expulsió
+    #  - afegir ó modificar sortida
+    
+    EXPULSAT_DEL_CENTRE = 'E'
+    ACTIVITAT = 'A'
+    
+    MOTIUS_CHOICE = ( 
+                       (EXPULSAT_DEL_CENTRE, u"Expulsat del centre",),
+                       (ACTIVITAT,u"Activitat",),
+                     )
+    
+    motiu = models.CharField(  max_length=5, choices =  MOTIUS_CHOICE )
+    control=models.ForeignKey(to = 'presencia.ControlAssistencia', on_delete=models.CASCADE, db_index=True)
+    sancio =models.ForeignKey(to = 'incidencies.Sancio',blank=True, null=True, on_delete=models.CASCADE, db_index=True)
+    sortida =models.ForeignKey(to = 'sortides.Sortida',blank=True, null=True, on_delete=models.CASCADE, db_index=True)
+    
+    
+    
+    class Meta:
+        abstract = True
+        verbose_name = u'Motiu no ha està pressent'
+        verbose_name_plural = u'Motius no presència a l\'aula'
+        
+    def __unicode__(self):
+        return unicode(self.control.alumne) + u' -> '+ unicode(self.get_motiu_display() )    
 
 
 
