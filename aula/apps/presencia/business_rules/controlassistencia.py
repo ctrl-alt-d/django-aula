@@ -150,7 +150,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                        )
       
     NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
-    if False and bool(sancio):   # TODO: encara no està preparat
+    if bool(sancio):  
         NoHaDeSerALAula.objects.get_or_create( control = instance, 
                                                motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE,
                                                sancio=sancio )
