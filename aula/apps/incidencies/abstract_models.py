@@ -60,6 +60,7 @@ class AbstractSancio(models.Model):
         q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
         l =  ( Sancio
                  .objects
+                 .filter( alumne = alumne )
                  .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
                  .filter( tipus__justificar = True  )
                  .all()[:1]
