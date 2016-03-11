@@ -132,7 +132,8 @@ class Sortida(models.Model):
                  .all()
                 )
         
-        return l
+        #TODO: revisar condicio franges per sortides que son en un mateix dia
+        return Sortida.objects.none()
 
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne )
