@@ -302,7 +302,9 @@ def passaLlista( request, pk ):
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
 
-            if form.is_valid():
+            if control_a.nohadeseralaula_set.exists():
+                    quelcomBe |= True
+            elif form.is_valid():
                 try:                
                     control_aux = form.save()
                     hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R") 

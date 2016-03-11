@@ -61,7 +61,14 @@ class AbstractImpartir(models.Model):
         return u'Al:{0} In:{1} Ex:{2}'.format(nAlumnes,  nIncidencies, nExpulsions )
     
     def hi_ha_nulls(self):
-        return self.controlassistencia_set.filter( estat__isnull = True   ).count() >0 
+        return ( self
+                 .controlassistencia_set
+                 .filter( estat__isnull = True   )
+                 .exclude( nohadeseralaula__id__isnull = False )
+                 .order_by( )
+                 .distinct( )
+                 .exists()
+                ) 
     
     def color(self):
         if self.dia_passa_llista:

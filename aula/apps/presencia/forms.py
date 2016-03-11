@@ -24,7 +24,8 @@ class ControlAssistenciaForm(ModelForm):
 
 class ControlAssistenciaFormFake(forms.Form):
     estat = forms.ChoiceField( required= False,  choices = [], widget = RadioSelect() )
-
+    def is_valid(self):
+        return True
 
 #----------------------------------------------------------------
 
