@@ -71,6 +71,9 @@ def sancio_post_save(sender, instance, created, **kwargs):
             
     #es fa save controlAssistència per marcar com a no ha de ser present
     ControlAssistencia = get_model(  'presencia.ControlAssistencia' )
+    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
+    NoHaDeSerALAula.objects.filter( sancio = instance  ).delete()
+    
     dia_iterador = instance.data_inici
     totes_les_franges = list( get_model(  'horaris.FranjaHoraria' ).objects.all() )
     un_dia = timedelta(days=1)
@@ -80,7 +83,6 @@ def sancio_post_save(sender, instance, created, **kwargs):
                                        impartir__dia_impartir = dia_iterador,
                                        impartir__horari__hora = franja ):
                 control.save()
-                print control.impartir.dia_impartir
     
         dia_iterador += un_dia
     

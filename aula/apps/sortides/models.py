@@ -4,6 +4,8 @@ from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne
+from django.db.models import get_model
+from django.db.models import Q
 
 class Sortida(models.Model):
     
@@ -113,6 +115,24 @@ class Sortida(models.Model):
     
     def clean(self):
         clean_sortida( self )    
+
+
+    @staticmethod
+    def alumne_te_sortida_en_data( alumne, dia, franja ):
+        Sortida = get_model('sortides','Sortida')
+        q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
+        q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
+        q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
+        l =  ( Sortida
+                 .objects
+                 .filter( alumnes_convocats = alumne )
+                 .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
+                 .filter( estat = 'R' )
+                 .distinct()
+                 .all()
+                )
+        
+        return l
 
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne )

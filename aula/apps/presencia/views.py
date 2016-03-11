@@ -21,6 +21,7 @@ from aula.apps.usuaris.models import User2Professor, Accio
 from aula.apps.presencia.regeneraImpartir import regeneraThread
 from aula.utils.tools import getImpersonateUser, getSoftColor
 from django.utils.safestring import SafeText
+from django.db.models import get_model
 
 #consultes
 from django.db.models import Q
@@ -245,6 +246,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 def passaLlista( request, pk ):
     credentials = getImpersonateUser(request) 
     (user, l4) = credentials
+    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
     
     #prefixes:
     #https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms    
@@ -286,10 +288,15 @@ def passaLlista( request, pk ):
         formset.append( form0 )
         for control_a in impartir.controlassistencia_set.order_by( 'alumne__grup', 'alumne' ):
             control_a.currentUser = user
-            if control_a.nohadeseralaula_set.exists():
+            if control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + ( u" ( Sanció )" )
+                                              )                
+            elif control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).exists():
+                form=ControlAssistenciaFormFake()
+                form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + ( u" ( Sortida )" )
                                               )                
                 
             else:
@@ -318,10 +325,15 @@ def passaLlista( request, pk ):
                 totBe = False
                 errors_formulari = form._errors
                 #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
-                if control_a.nohadeseralaula_set.exists():
+                if control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).exists():
                     form=ControlAssistenciaFormFake()
                     form.fields['estat'].label = ( unicode( control_a.alumne )
                                                    + ( u" ( Sanció )" )
+                                                  )                                    
+                elif control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).exists():
+                    form=ControlAssistenciaFormFake()
+                    form.fields['estat'].label = ( unicode( control_a.alumne )
+                                                   + ( u" ( Sortida )" )
                                                   )                                    
                 else:
                     form=ControlAssistenciaForm(
@@ -367,10 +379,15 @@ def passaLlista( request, pk ):
                 
     else:
         for control_a in impartir.controlassistencia_set.order_by( 'alumne' ):
-            if control_a.nohadeseralaula_set.exists():
+            if control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + ( u" ( Sanció )" )
+                                              )                
+            elif control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).exists():
+                form=ControlAssistenciaFormFake()
+                form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + ( u" ( Sortida )" )
                                               )                
             else:
                 form=ControlAssistenciaForm(

@@ -141,6 +141,14 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
             except:
                 pass
              
+
+    #
+    #
+    # --  casos en que no s'ha de passar llista
+    #
+    #
+
+    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
   
     #-- si està expulsat del centre aquell dia ho anotem:
     Sancio = get_model('incidencies','Sancio')
@@ -149,16 +157,27 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                         instance.impartir.horari.hora       #franja
                                        )
       
-    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
-    if bool(sancio):  
+    instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).delete()
+    for x in sancio:
         NoHaDeSerALAula.objects.get_or_create( control = instance, 
                                                motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE,
-                                               sancio=sancio )
-    else:
-        instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).delete()
+                                               sancio=x )
+        
          
     #-- si té una sortida aquell dia ho anotem:
-    
+    Sortida = get_model('sortides','Sortida')
+    sortida = Sortida.alumne_te_sortida_en_data( instance.alumne,                   #alumne
+                                                instance.impartir.dia_impartir,     #dia
+                                                instance.impartir.horari.hora       #franja
+                                               )
+      
+    instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).delete()
+    for x in sortida:
+        NoHaDeSerALAula.objects.get_or_create( control = instance, 
+                                               motiu = NoHaDeSerALAula.SORTIDA,
+                                               sortida=x )
+        
+            
     
     
     

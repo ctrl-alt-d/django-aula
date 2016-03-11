@@ -63,10 +63,10 @@ class AbstractSancio(models.Model):
                  .filter( alumne = alumne )
                  .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
                  .filter( tipus__justificar = True  )
-                 .all()[:1]
+                 .all()
                 )
         
-        return l[0] if bool(l) else None
+        return l
         
         
 

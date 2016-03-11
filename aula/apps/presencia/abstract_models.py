@@ -166,11 +166,11 @@ class AbstractNoHaDeSerALAula(models.Model):
     #  - afegir ó modificar sortida
     
     EXPULSAT_DEL_CENTRE = 'E'
-    ACTIVITAT = 'A'
+    SORTIDA = 'A'
     
     MOTIUS_CHOICE = ( 
                        (EXPULSAT_DEL_CENTRE, u"Expulsat del centre",),
-                       (ACTIVITAT,u"Activitat",),
+                       (SORTIDA,u"Activitat",),
                      )
     
     motiu = models.CharField(  max_length=5, choices =  MOTIUS_CHOICE )
