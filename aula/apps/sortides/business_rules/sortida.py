@@ -161,7 +161,7 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         dia_iterador = instance.data_inici
         totes_les_franges = list( get_model(  'horaris.FranjaHoraria' ).objects.all() )
         un_dia = timedelta(days=1)
-        while dia_iterador <= instance.data_fi:
+        while bool( dia_iterador ) and dia_iterador <= instance.data_fi:
             for franja in totes_les_franges:
                 for control in ControlAssistencia.objects.filter( alumne__in = alumnes_fora_aula,
                                            impartir__dia_impartir = dia_iterador,
