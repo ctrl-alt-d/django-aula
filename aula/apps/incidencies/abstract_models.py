@@ -55,13 +55,28 @@ class AbstractSancio(models.Model):
     @staticmethod
     def alumne_sancionat_en_data( alumne, dia, franja ):
         Sancio = get_model('incidencies','Sancio')
+#         q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
+#         q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
+#         q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
+
+        #tornen el mateix dia
+        q_mateix_dia = Q( data_inici = dia, data_fi = dia ) 
+        
+        #condicio 1
         q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
         q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
         q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
+        q_c1 = ~q_mateix_dia & (  q_entre_dates | q_primer_dia |  q_darrer_dia )
+
+        #condicio 2
+        q_entre_hores = Q( franja_inici__hora_inici__lte = franja.hora_inici, franja_fi__hora_inici__gte = franja.hora_inici  )        
+        q_c2 = q_mateix_dia & q_entre_hores
+
         l =  ( Sancio
                  .objects
                  .filter( alumne = alumne )
-                 .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
+#                 .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
+                 .filter( q_c1 | q_c2)
                  .filter( tipus__justificar = True  )
                  .all()
                 )

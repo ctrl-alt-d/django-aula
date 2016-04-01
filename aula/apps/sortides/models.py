@@ -120,20 +120,31 @@ class Sortida(models.Model):
     @staticmethod
     def alumne_te_sortida_en_data( alumne, dia, franja ):
         Sortida = get_model('sortides','Sortida')
+        
+        #tornen el mateix dia
+        q_mateix_dia = Q( data_inici = dia, data_fi = dia ) 
+        
+        #condicio 1
         q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
         q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
         q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
+        q_c1 = ~q_mateix_dia & (  q_entre_dates | q_primer_dia |  q_darrer_dia )
+
+        #condicio 2
+        q_entre_hores = Q( franja_inici__hora_inici__lte = franja.hora_inici, franja_fi__hora_inici__gte = franja.hora_inici  )        
+        q_c2 = q_mateix_dia & q_entre_hores
+        
         l =  ( Sortida
                  .objects
                  .filter( alumnes_convocats = alumne )
-                 .filter( q_entre_dates | q_primer_dia |  q_darrer_dia )
+                 .filter( q_c1 | q_c2)
                  .filter( estat = 'R' )
                  .distinct()
                  .all()
                 )
         
         #TODO: revisar condicio franges per sortides que son en un mateix dia
-        return Sortida.objects.none()
+        return l
 
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne )
