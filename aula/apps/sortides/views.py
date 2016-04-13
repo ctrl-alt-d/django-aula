@@ -410,10 +410,14 @@ def alumnesConvocats( request, pk , origen ):
                 ante=set([ x.pk for x in instance.alumnes_convocats.all() ] )
                 #afegir
                 for alumne in nous - ante:
-                    instance.alumnes_convocats.add( alumne )
+                    #aquest if no caldria però per algun motiu falla per clau duplicada.
+                    if not instance.alumnes_convocats.filter( alumne__id = alumne.id ).exists():
+                        instance.alumnes_convocats.add( alumne )
                 #treure
                 for alumne in ante - nous:
-                    instance.alumnes_convocats.remove( alumne )
+                    #aquest if no caldria. és només per seguretat.
+                    if instance.alumnes_convocats.filter( alumne__id = alumne.id ).exists():
+                        instance.alumnes_convocats.remove( alumne )
 
                 nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
                 return HttpResponseRedirect( nexturl )
