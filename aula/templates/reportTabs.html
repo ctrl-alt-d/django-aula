@@ -26,7 +26,12 @@
 	<div class="tab-content">
 		
 	{% for taula in report %}
+	
 	  <div class="tab-pane {% if forloop.first %}  active{% endif %}"  id="tabs{{taula.codi}}">
+	  	
+	  <div id="div_{{taula.codi}}"></div>	
+	  	
+	  	
 	  {% if taula.titol.enllac %}<a href="{{ taula.titol.enllac }}">{%endif%}
 	  {{ taula.titol.contingut }}
 	  {% if taula.titol.enllac %}</a>{%endif%}

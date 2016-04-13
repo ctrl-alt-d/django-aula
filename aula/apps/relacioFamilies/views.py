@@ -32,6 +32,8 @@ from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
+import json
+from django.utils.html import escapejs
 
 #@login_required
 #@group_required(['professors'])
@@ -408,6 +410,9 @@ def elMeuInforme( request, pk = None ):
         capcelera.contingut = u'Falta, assignatura i franja horària.'
         taula.capceleres.append(capcelera)
         
+        
+        assistencia_calendari = []  #{"date":"2016-04-02","badge":true,"title":"Example 2"}
+        
         for control in controls.order_by( '-impartir__dia_impartir' , '-impartir__horari__hora'):
             
             filera = []
@@ -429,6 +434,10 @@ def elMeuInforme( request, pk = None ):
                                     )        
             camp.negreta = False if control.relacio_familia_revisada else True      
             filera.append(camp)
+            assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
+                                             'badge': control.estat.codi_estat == 'F', 
+                                             'title': escapejs( camp.contingut )
+                                            } )
     
             #--
             taula.fileres.append( filera )
@@ -851,6 +860,7 @@ def elMeuInforme( request, pk = None ):
                 'report_detall_families.html',
                     {'report': report,
                      'head': u'Informació alumne {0}'.format( head ) ,
+                     'assistencia_calendari': json.dumps(  assistencia_calendari ),
                     },
                     context_instance=RequestContext(request))            
 
