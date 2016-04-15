@@ -418,7 +418,7 @@ def elMeuInforme( request, pk = None ):
             gs= list(g)
             assistencia_calendari.append(   { 'date': k.strftime( '%Y-%m-%d' ),
                                               'badge': any( [ c.estat.codi_estat == 'F' for c in gs ] ),
-                                              'title':  u'<br>'.join(  [  escapejs(u'{0} a {1} ({2})'.format(
+                                              'title':  u'\n'.join(  [  escapejs(u'{0} a {1} ({2})'.format(
                                                                                      c.estat,
                                                                                      c.impartir.horari.assignatura,
                                                                                      c.impartir.horari.hora 
