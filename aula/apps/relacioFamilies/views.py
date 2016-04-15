@@ -415,7 +415,7 @@ def elMeuInforme( request, pk = None ):
         assistencia_calendari = []  #{"date":"2016-04-02","badge":true,"title":"Example 2"}
         from itertools import groupby
         for k, g in groupby(tots_els_controls, lambda x: x.impartir.dia_impartir ):
-            gs= list(g)
+            gs= list(g).reverse()
             assistencia_calendari.append(   { 'date': k.strftime( '%Y-%m-%d' ),
                                               'badge': any( [ c.estat.codi_estat == 'F' for c in gs ] ),
                                               'title':  u'\n'.join(  [  escapejs(u'{0} a {1} ({2})'.format(
