@@ -410,12 +410,12 @@ def elMeuInforme( request, pk = None ):
         capcelera.contingut = u'Falta, assignatura i franja horària.'
         taula.capceleres.append(capcelera)
         
-        tots_els_controls = list( controls.select_related('impartir').order_by( '-impartir__dia_impartir' , '-impartir__horari__hora') )
+        tots_els_controls = list( controls.select_related('impartir', 'estat').order_by( '-impartir__dia_impartir' , '-impartir__horari__hora') )
         
         assistencia_calendari = []  #{"date":"2016-04-02","badge":true,"title":"Example 2"}
         from itertools import groupby
         for k, g in groupby(tots_els_controls, lambda x: x.impartir.dia_impartir ):
-            gs= list(g).reverse()
+            gs= list(g).reverse() or []
             assistencia_calendari.append(   { 'date': k.strftime( '%Y-%m-%d' ),
                                               'badge': any( [ c.estat.codi_estat == 'F' for c in gs ] ),
                                               'title':  u'\n'.join(  [  escapejs(u'{0} a {1} ({2})'.format(
