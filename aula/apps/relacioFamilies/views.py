@@ -410,10 +410,27 @@ def elMeuInforme( request, pk = None ):
         capcelera.contingut = u'Falta, assignatura i franja horària.'
         taula.capceleres.append(capcelera)
         
+        tots_els_controls = list( controls.select_related('impartir').order_by( '-impartir__dia_impartir' , '-impartir__horari__hora') )
         
         assistencia_calendari = []  #{"date":"2016-04-02","badge":true,"title":"Example 2"}
+        from itertools import groupby
+        for k, g in groupby(tots_els_controls, lambda x: x.impartir.dia_impartir ):
+            gs= list(g)
+            assistencia_calendari.append(   { 'date': k.strftime( '%Y-%m-%d' ),
+                                              'badge': any( [ c.estat.codi_estat == 'F' for c in gs ] ),
+                                              'title':  u'<br>'.join(  [  escapejs(u'{0} a {1} ({2})'.format(
+                                                                                     c.estat,
+                                                                                     c.impartir.horari.assignatura,
+                                                                                     c.impartir.horari.hora 
+                                                                                                            )
+                                                                                   )   
+                                                                            for c in gs
+                                                                        ] )      # Store group iterator as a list
+                                             }
+                                         )
         
-        for control in controls.order_by( '-impartir__dia_impartir' , '-impartir__horari__hora'):
+        
+        for control in tots_els_controls:
             
             filera = []
             
@@ -434,10 +451,10 @@ def elMeuInforme( request, pk = None ):
                                     )        
             camp.negreta = False if control.relacio_familia_revisada else True      
             filera.append(camp)
-            assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
-                                             'badge': control.estat.codi_estat == 'F', 
-                                             'title': escapejs( camp.contingut )
-                                            } )
+#             assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
+#                                              'badge': control.estat.codi_estat == 'F', 
+#                                              'title': escapejs( camp.contingut )
+#                                             } )
     
             #--
             taula.fileres.append( filera )
