@@ -411,12 +411,12 @@ def alumnesConvocats( request, pk , origen ):
                 #afegir
                 for alumne in nous - ante:
                     #aquest if no caldria però per algun motiu falla per clau duplicada.
-                    if not instance.alumnes_convocats.filter( alumne__id = alumne.id ).exists():
+                    if not instance.alumnes_convocats.filter( alumne__id = alumne ).exists():
                         instance.alumnes_convocats.add( alumne )
                 #treure
                 for alumne in ante - nous:
                     #aquest if no caldria. és només per seguretat.
-                    if instance.alumnes_convocats.filter( alumne__id = alumne.id ).exists():
+                    if instance.alumnes_convocats.filter( alumne__id = alumne ).exists():
                         instance.alumnes_convocats.remove( alumne )
 
                 nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)

@@ -133,12 +133,16 @@ class Sortida(models.Model):
         #condicio 2
         q_entre_hores = Q( franja_inici__hora_inici__lte = franja.hora_inici, franja_fi__hora_inici__gte = franja.hora_inici  )        
         q_c2 = q_mateix_dia & q_entre_hores
-        
+
+        #condicio 3
+        q_revisada = Q( estat = 'R' )
+        q_gestionada = Q( estat = 'G' )
+                
         l =  ( Sortida
                  .objects
                  .filter( alumnes_convocats = alumne )
                  .filter( q_c1 | q_c2)
-                 .filter( estat = 'R' )
+                 .filter( q_revisada | q_gestionada )
                  .distinct()
                  .all()
                 )
