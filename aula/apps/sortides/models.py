@@ -121,33 +121,37 @@ class Sortida(models.Model):
     def alumne_te_sortida_en_data( alumne, dia, franja ):
         Sortida = get_model('sortides','Sortida')
         
-        #tornen el mateix dia
+        #auxiliar: tornen el mateix dia?
         q_mateix_dia = Q( data_inici = dia, data_fi = dia ) 
         
-        #condicio 1
+        #condicio 1 ( no tornen el mateix dia )
         q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
         q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
         q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 
         q_c1 = ~q_mateix_dia & (  q_entre_dates | q_primer_dia |  q_darrer_dia )
 
-        #condicio 2
+        #condicio 2 ( tornen el mateix dia )
         q_entre_hores = Q( franja_inici__hora_inici__lte = franja.hora_inici, franja_fi__hora_inici__gte = franja.hora_inici  )        
         q_c2 = q_mateix_dia & q_entre_hores
 
-        #condicio 3
+        #condicio 3 ( estat de la sortida revisada o gestionada )
         q_revisada = Q( estat = 'R' )
         q_gestionada = Q( estat = 'G' )
+        
+        sortides_de_laulumne = set( alumne.sortides_confirmades.values_list( 'id', flat=True) )
+        sortides_de_laulumne_no_hi_va = set( alumne.sortides_on_ha_faltat.values_list( 'id', flat=True) )
+        sortides =  sortides_de_laulumne - sortides_de_laulumne_no_hi_va
                 
         l =  ( Sortida
                  .objects
-                 .filter( alumnes_convocats = alumne )
+                 .filter( id__in = sortides )
                  .filter( q_c1 | q_c2)
                  .filter( q_revisada | q_gestionada )
-                 .distinct()
                  .all()
                 )
         
-        #TODO: revisar condicio franges per sortides que son en un mateix dia
+        print 'revisant {0} {1} {2} sortides: {3}'.format( alumne, dia, franja, l)
+        
         return l
 
 class NotificaSortida( models.Model):
