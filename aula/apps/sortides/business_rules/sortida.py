@@ -156,7 +156,7 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         #es fa save controlAssistència per marcar com a no ha de ser present
         alumnes_fora_aula = ( ( alumnesQueVenen  - alumnesQueNoVenen ) | alumnesJustificats ) 
         NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
-        NoHaDeSerALAula.objects.filter( sortida = instance  ).filter( alumne__in =  pk_set ).delete()
+        NoHaDeSerALAula.objects.filter( sortida = instance  ).filter( control__alumne__in =  pk_set ).delete()
         ControlAssistencia = get_model(  'presencia.ControlAssistencia' )
         dia_iterador = instance.data_inici
         totes_les_franges = list( get_model(  'horaris.FranjaHoraria' ).objects.all() )
