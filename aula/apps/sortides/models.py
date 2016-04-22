@@ -37,9 +37,21 @@ class Sortida(models.Model):
                      ('R', u'Revisada pel Coordinador',),
                      ('G', u"Gestionada pel Cap d'estudis",),                     
                      )
+
+    
+    NO_SINCRONITZADA = 'N'
+    SINCRONITZANT_SE = 'x'
+    YES_SINCRONITZADA = 'Y'
+    ESTAT_SYNC_CHOICES = (
+                     ( NO_SINCRONITZADA,u'No sincronitzada'),
+                     ( SINCRONITZANT_SE,u''),
+                     ( YES_SINCRONITZADA,u''),
+                         )
     
 
     estat = models.CharField(max_length=1, default = 'E', choices=ESTAT_CHOICES,help_text=u"Estat de l'activitat. No es considera proposta d'activitat fins que no passa a estat 'Proposada'") 
+
+    estat_sincronitzacio = models.CharField(max_length=1, default = NO_SINCRONITZADA, choices=ESTAT_SYNC_CHOICES, editable = False, help_text=u"Per passar els alumnes a 'no han de ser a l'aula' ") 
     
     tipus = models.CharField(max_length=1, default = 'E', choices=TIPUS_ACTIVITAT_CHOICES,help_text=u"Tipus d'activitat") 
     
@@ -54,6 +66,7 @@ class Sortida(models.Model):
     departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza l'activitat", blank=True, null=True)
     comentari_organitza = models.CharField(max_length=50,help_text=u"En cas de no ser organitzat per un departament cal informar qui organitza l'activitat.", blank = True )
     
+    alumnes_a_l_aula_amb_professor_titular =  models.BooleanField(u"Passar llista com normalment?", default=False, help_text = u"Els alumnes seran a l'aula i el professor de l'hora corresponent passarà llista com fa habitualment.")
     data_inici = models.DateField( u"Presencia: Des de", help_text=u"Primer dia lectiu de l'activitat", blank=True, null=True)
     franja_inici = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Des de", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva de l'activitat", blank=True, null=True)
     data_fi = models.DateField(  u"Presencia: Fins a",help_text=u"Darrer dia  lectiu de l'activitat", blank=True, null=True)
