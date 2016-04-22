@@ -37,6 +37,7 @@ from django.template import loader
 from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
+from django.db.utils import IntegrityError
 
 
 @login_required
@@ -411,13 +412,18 @@ def alumnesConvocats( request, pk , origen ):
                 #afegir
                 for alumne in nous - ante:
                     #aquest if no caldria però per algun motiu falla per clau duplicada.
-                    if not instance.alumnes_convocats.filter( id = alumne ).exists():
+                    try:
                         instance.alumnes_convocats.add( alumne )
+                    except IntegrityError:
+                        pass
+                    
                 #treure
                 for alumne in ante - nous:
                     #aquest if no caldria. és només per seguretat.
-                    if instance.alumnes_convocats.filter( id = alumne ).exists():
+                    try:
                         instance.alumnes_convocats.remove( alumne )
+                    except IntegrityError:
+                        pass
 
                 nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
                 return HttpResponseRedirect( nexturl )
