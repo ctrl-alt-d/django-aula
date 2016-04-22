@@ -346,6 +346,7 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
     widgetBootStrapButtonSelect.choices = form.fields['estat'].widget.choices 
     form.fields['estat'].widget = widgetBootStrapButtonSelect    
     
+    form.fields["alumnes_a_l_aula_amb_professor_titular"].widget.attrs['style'] = u"width: 3%"
     form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 

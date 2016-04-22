@@ -153,27 +153,9 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         tutors = Tutor.objects.filter( grup__id__in = instance.alumnes_convocats.values_list( 'grup', flat=True ).distinct() )
         instance.tutors_alumnes_convocats = [ t.professor for t in tutors ]
         
-        #es fa save controlAssistència per marcar com a no ha de ser present
-        alumnes_fora_aula = ( ( alumnesQueVenen  - alumnesQueNoVenen ) | alumnesJustificats ) 
-        NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')        
-        NoHaDeSerALAula.objects.filter( sortida = instance  ).filter( control__alumne__in =  ( pk_set or [] ) ).delete()
-        ControlAssistencia = get_model(  'presencia.ControlAssistencia' )
-        dia_iterador = instance.data_inici
-        totes_les_franges = list( get_model(  'horaris.FranjaHoraria' ).objects.all() )
-        un_dia = timedelta(days=1)
-        alumnes_fora_aula_restricted = alumnes_fora_aula.intersection( pk_set ) 
-        while ( action == "post_add" and 
-                bool( dia_iterador ) and 
-                dia_iterador <= instance.data_fi):
-            for franja in totes_les_franges:
-                
-                #for control in ControlAssistencia.objects.filter( alumne__in = alumnes_fora_aula,
-                for control in ControlAssistencia.objects.filter( alumne__in = alumnes_fora_aula_restricted,
-                                           impartir__dia_impartir = dia_iterador,
-                                           impartir__horari__hora = franja ):
-                    control.save()
-        
-            dia_iterador += un_dia        
+        #marco que cal sincronitzar ( posar alumnes que no han de ser a classe )
+        instance.__class__.objects.filter( id = instance.id ).update( estat_sincronitzacio = instance.NO_SINCRONITZADA  )
+           
     
     
     
