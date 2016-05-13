@@ -11,6 +11,8 @@ def clean_sortida( instance ):
 
     errors = []
     
+    instance.estat_sincronitzacio = instance.__class__.NO_SINCRONITZADA
+    
     if hasattr(instance, 'flag_clean_nomes_toco_alumnes'):
         return
         

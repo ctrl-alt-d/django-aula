@@ -172,7 +172,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                )
       
     instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).delete()
-    for x in sortida:
+    for x in [ s for s in sortida if not s.alumnes_a_l_aula_amb_professor_titular ]:
         NoHaDeSerALAula.objects.get_or_create( control = instance, 
                                                motiu = NoHaDeSerALAula.SORTIDA,
                                                sortida=x )

@@ -288,15 +288,23 @@ def passaLlista( request, pk ):
         formset.append( form0 )
         for control_a in impartir.controlassistencia_set.order_by( 'alumne__grup', 'alumne' ):
             control_a.currentUser = user
-            if control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).exists():
+            q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
+            q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )                
+            if q_no_al_centre_expulsat.exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + ( u" ( Sanció )" )
-                                              )                
-            elif control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).exists():
+                                               + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
+                                                                                                x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
+                                                                                               ) 
+                                                               for x in  q_no_al_centre_expulsat.all() ] 
+                                                            )
+                                              )
+            elif q_no_al_centre_sortida.exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + ( u" ( Sortida )" )
+                                               + u", ".join( [ x.sortida.titol_de_la_sortida
+                                                               for x in  q_no_al_centre_expulsat.all() ] 
+                                                            )
                                               )                
                 
             else:
@@ -325,16 +333,24 @@ def passaLlista( request, pk ):
                 totBe = False
                 errors_formulari = form._errors
                 #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
-                if control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).exists():
+                q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
+                q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )         
+                if q_no_al_centre_expulsat.exists():
                     form=ControlAssistenciaFormFake()
                     form.fields['estat'].label = ( unicode( control_a.alumne )
-                                                   + ( u" ( Sanció )" )
-                                                  )                                    
-                elif control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).exists():
+                                                   + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
+                                                                                                    x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
+                                                                                                   ) 
+                                                                   for x in  q_no_al_centre_expulsat.all() ] 
+                                                                )
+                                                  )
+                elif q_no_al_centre_sortida.exists():
                     form=ControlAssistenciaFormFake()
                     form.fields['estat'].label = ( unicode( control_a.alumne )
-                                                   + ( u" ( Sortida )" )
-                                                  )                                    
+                                                   + u", ".join( [ x.sortida.titol_de_la_sortida
+                                                                   for x in  q_no_al_centre_expulsat.all() ] 
+                                                                )
+                                                  )                                           
                 else:
                     form=ControlAssistenciaForm(
                                          prefix=str( control_a.pk ),
@@ -379,16 +395,24 @@ def passaLlista( request, pk ):
                 
     else:
         for control_a in impartir.controlassistencia_set.order_by( 'alumne' ):
-            if control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).exists():
+            q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
+            q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )         
+            if q_no_al_centre_expulsat.exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + ( u" ( Sanció )" )
-                                              )                
-            elif control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).exists():
+                                               + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
+                                                                                                x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
+                                                                                               ) 
+                                                               for x in  q_no_al_centre_expulsat.all() ] 
+                                                            )
+                                              )
+            elif q_no_al_centre_sortida.exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + ( u" ( Sortida )" )
-                                              )                
+                                               + u", ".join( [ x.sortida.titol_de_la_sortida
+                                                               for x in  q_no_al_centre_expulsat.all() ] 
+                                                            )
+                                              )                                                          
             else:
                 form=ControlAssistenciaForm(
                                 prefix=str( control_a.pk ),
