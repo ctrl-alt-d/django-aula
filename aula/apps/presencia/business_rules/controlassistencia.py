@@ -159,7 +159,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
       
     instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE ).delete()
     for x in sancio:
-        NoHaDeSerALAula.objects.get_or_create( control = instance, 
+        NoHaDeSerALAula.objects.create( control = instance, 
                                                motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE,
                                                sancio=x )
         
@@ -173,7 +173,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
       
     instance.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA ).delete()
     for x in [ s for s in sortida if not s.alumnes_a_l_aula_amb_professor_titular ]:
-        NoHaDeSerALAula.objects.get_or_create( control = instance, 
+        NoHaDeSerALAula.objects.create( control = instance, 
                                                motiu = NoHaDeSerALAula.SORTIDA,
                                                sortida=x )
         
