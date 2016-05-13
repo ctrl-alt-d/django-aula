@@ -302,6 +302,7 @@ def passaLlista( request, pk ):
             elif q_no_al_centre_sortida.exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + u" - Activitat: "
                                                + u", ".join( [ x.sortida.titol_de_la_sortida
                                                                for x in  q_no_al_centre_sortida.all() ] 
                                                             )
@@ -347,6 +348,7 @@ def passaLlista( request, pk ):
                 elif q_no_al_centre_sortida.exists():
                     form=ControlAssistenciaFormFake()
                     form.fields['estat'].label = ( unicode( control_a.alumne )
+                                                   + u" - Activitat: "                                                   
                                                    + u", ".join( [ x.sortida.titol_de_la_sortida
                                                                    for x in  q_no_al_centre_sortida.all() ] 
                                                                 )
@@ -409,6 +411,7 @@ def passaLlista( request, pk ):
             elif q_no_al_centre_sortida.exists():
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
+                                               + u" - Activitat: "                                               
                                                + u", ".join( [ x.sortida.titol_de_la_sortida
                                                                for x in  q_no_al_centre_sortida.all() ] 
                                                             )
