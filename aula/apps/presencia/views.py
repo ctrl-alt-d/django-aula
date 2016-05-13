@@ -303,7 +303,7 @@ def passaLlista( request, pk ):
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + u", ".join( [ x.sortida.titol_de_la_sortida
-                                                               for x in  q_no_al_centre_expulsat.all() ] 
+                                                               for x in  q_no_al_centre_sortida.all() ] 
                                                             )
                                               )                
                 
@@ -348,7 +348,7 @@ def passaLlista( request, pk ):
                     form=ControlAssistenciaFormFake()
                     form.fields['estat'].label = ( unicode( control_a.alumne )
                                                    + u", ".join( [ x.sortida.titol_de_la_sortida
-                                                                   for x in  q_no_al_centre_expulsat.all() ] 
+                                                                   for x in  q_no_al_centre_sortida.all() ] 
                                                                 )
                                                   )                                           
                 else:
@@ -410,7 +410,7 @@ def passaLlista( request, pk ):
                 form=ControlAssistenciaFormFake()
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + u", ".join( [ x.sortida.titol_de_la_sortida
-                                                               for x in  q_no_al_centre_expulsat.all() ] 
+                                                               for x in  q_no_al_centre_sortida.all() ] 
                                                             )
                                               )                                                          
             else:
