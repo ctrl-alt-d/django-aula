@@ -292,6 +292,7 @@ def passaLlista( request, pk ):
             q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )                
             if q_no_al_centre_expulsat.exists():
                 form=ControlAssistenciaFormFake()
+                form.fields['estat'].label_suffix = u""                
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
                                                                                                 x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
@@ -301,6 +302,7 @@ def passaLlista( request, pk ):
                                               )
             elif q_no_al_centre_sortida.exists():
                 form=ControlAssistenciaFormFake()
+                form.fields['estat'].label_suffix = u""                
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + u" - Activitat: "
                                                + u", ".join( [ x.sortida.titol_de_la_sortida
@@ -338,6 +340,7 @@ def passaLlista( request, pk ):
                 q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )         
                 if q_no_al_centre_expulsat.exists():
                     form=ControlAssistenciaFormFake()
+                    form.fields['estat'].label_suffix = u""                    
                     form.fields['estat'].label = ( unicode( control_a.alumne )
                                                    + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
                                                                                                     x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
@@ -347,6 +350,7 @@ def passaLlista( request, pk ):
                                                   )
                 elif q_no_al_centre_sortida.exists():
                     form=ControlAssistenciaFormFake()
+                    form.fields['estat'].label_suffix = u""
                     form.fields['estat'].label = ( unicode( control_a.alumne )
                                                    + u" - Activitat: "                                                   
                                                    + u", ".join( [ x.sortida.titol_de_la_sortida
@@ -401,6 +405,7 @@ def passaLlista( request, pk ):
             q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )         
             if q_no_al_centre_expulsat.exists():
                 form=ControlAssistenciaFormFake()
+                form.fields['estat'].label_suffix = u""
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
                                                                                                 x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
@@ -410,6 +415,7 @@ def passaLlista( request, pk ):
                                               )
             elif q_no_al_centre_sortida.exists():
                 form=ControlAssistenciaFormFake()
+                form.fields['estat'].label_suffix = u""
                 form.fields['estat'].label = ( unicode( control_a.alumne )
                                                + u" - Activitat: "                                               
                                                + u", ".join( [ x.sortida.titol_de_la_sortida
