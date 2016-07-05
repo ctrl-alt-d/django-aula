@@ -1,3 +1,4 @@
+import json
 from aula.apps.tutoria.models import SeguimentTutorial
 seguiments = []
 for s in SeguimentTutorial.objects.all():
@@ -16,7 +17,7 @@ for s in SeguimentTutorial.objects.all():
         da={}
         da['professional'] = unicode( a.professional )
         da['moment_actuacio'] = a.moment_actuacio.strftime("%d/%m/%y")
-        da['amb_qui_es_actuacio'] = a.get_amb_qui_es_actuacio_display
+        da['amb_qui_es_actuacio'] = a.get_amb_qui_es_actuacio_display()
         da['assumpte'] = a.assumpte
         da['actuacio'] = a.actuacio
         d['actuacions_tutor'].append( da )
@@ -25,3 +26,5 @@ for s in SeguimentTutorial.objects.all():
 f= open('/opt/django/exportacio_tutors/dades.json', 'w')
 json.dump(seguiments, f )
 f.close()
+
+
