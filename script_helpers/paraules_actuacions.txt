@@ -1,0 +1,23 @@
+Per estadística, exportar totes les paraules de les actuacions:
+
+pip install unicodecsv
+
+
+import unicodecsv as csv
+#import nltk
+import re
+import string
+import random
+from aula.apps.tutoria.models import Actuacio
+f= open('/opt/django/exportacio_tutors/paraules2014.csv', 'w')
+w = csv.writer(f, encoding='utf-8')
+for a in Actuacio.objects.all():
+    #for p in nltk.word_tokenize( a.actuacio ):
+    l=re.split( "\n| |\.|\-|'|\"|,", a.actuacio )
+    random.shuffle(l)
+    for p in l :
+        if len(p)>2:
+            _ = w.writerow(   ( a.get_qui_fa_actuacio_display(), 
+                                                   a.get_amb_qui_es_actuacio_display(), 
+                                                   unicode( a.alumne.grup.curs.nivell) , 
+                                                   p.lower().replace('"','').strip( string.punctuation) )   )    
