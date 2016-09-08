@@ -70,7 +70,7 @@ def avaluacionsQualitatives( request ):
 
     head=u'Avaluacions qualitatives' 
     
-    formset_f = modelformset_factory(  AvaluacioQualitativa, extra=5 )
+    formset_f = modelformset_factory(  AvaluacioQualitativa, extra=5, exclude=() )
     missatge = ''
 
     if request.method == 'POST':
