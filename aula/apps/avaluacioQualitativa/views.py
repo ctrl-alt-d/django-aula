@@ -38,7 +38,7 @@ def items( request ):
 
     head=u'Items Qualitativa' 
     
-    formset_f = modelformset_factory(  ItemQualitativa, extra=20, exclude=(), )
+    formset_f = modelformset_factory(  ItemQualitativa, extra=20, exclude=[], )
     missatge = ''
 
     if request.method == 'POST':
