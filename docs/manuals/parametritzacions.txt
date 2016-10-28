@@ -48,6 +48,12 @@ CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
 	Per exemple CUSTOM_PORTAL_FAMILIES_TUTORIAL = u"Tutorial disponible a http://goo.gl/lQrkaG"
 
 
+CUSTOM_FALTES_ABSENCIA_PER_CARTA = 15
+CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 20 }
+        Número de faltes no justificades per tal de generar carta
+        Els tipus de carta els trobareu a:
+               aula/apps/tutoria/business_rules/cartaaabsentisme.py
+
 A la base de dades
 ------------------
 ParametreKronowin.assignatures amb professor
