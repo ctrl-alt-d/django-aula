@@ -7,6 +7,7 @@ from django.utils.datetime_safe import  date, datetime
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 def gestioCartesRpt(professor, l4):
     
@@ -170,7 +171,9 @@ def gestioCartesRpt(professor, l4):
             cal_imprimir_carta = False
             try:
                 carta.clean()
-                cal_imprimir_carta = carta.nfaltes >= 15
+                llindar = settings.CUSTOM_DIES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta, 
+                                                                             settings.CUSTOM_DIES_ABSENCIA_PER_CARTA )
+                cal_imprimir_carta = carta.nfaltes >= llindar
             except ValidationError, e:
                 msg = e.message
             
