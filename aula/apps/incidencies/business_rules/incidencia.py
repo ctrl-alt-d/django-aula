@@ -43,15 +43,15 @@ def incidencia_clean( instance ):
     #Només es poden posar incidències més enllà dels dies indicats per CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA    
     periode = settings.CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA
     if instance.dia_incidencia and instance.dia_incidencia < ( dt.date.today() + dt.timedelta( days = -periode ) ):
-        errors.setdefault('dia_incidencia 1',[]).append(u'''No es poden posar o modificar incidències amb més de {0} dies.'''.format(periode))
+        errors.setdefault('dia_incidencia',[]).append(u'''No es poden posar o modificar incidències amb més de {0} dies.'''.format(periode))
 
     #No incidències al futur.
     if instance.dia_incidencia and instance.franja_incidencia_id  and  instance.getDate() > datetime.now():
-        errors.setdefault('dia_incidencia 2',[]).append(u'''Encara no pots posar incidències en aquesta classe. Encara no s'ha realitzat.''')
+        errors.setdefault('dia_incidencia',[]).append(u'''Encara no pots posar incidències en aquesta classe. Encara no s'ha realitzat.''')
         
     #No incidencies alumne que és baixa:
     if instance.alumne.data_baixa is not None and instance.alumne.data_baixa < instance.dia_incidencia:
-        errors.setdefault('dia_incidencia 3',[]).append(u'''L'alumne estava de baixa en aquesta data.''')
+        errors.setdefault('dia_incidencia',[]).append(u'''L'alumne estava de baixa en aquesta data.''')
 
     if len( errors ) > 0:
         raise ValidationError(errors)
