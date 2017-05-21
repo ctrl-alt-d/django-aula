@@ -10,6 +10,6 @@ six
 django-debug-toolbar
 #python-lxml
 python-dateutil
-django-tables2>=0.15
+django-tables2==0.15
 icalendar>=3.8.4
 django-appconf
