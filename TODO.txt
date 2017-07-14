@@ -42,12 +42,14 @@ GRANT ALL PRIVILEGES ON DATABASE djau2015 to djau2015;
 #-----------------------------
 #utils:
 
-my_username = 'indh' 
+my_username = 'coo' 
 from django.contrib.auth.models import User, Group
 g1 = Group.objects.get(name= 'direcció' )
 g2 = Group.objects.get(name= 'professors' )
 g3 = Group.objects.get(name= 'professional' )
-a = User.objects.get( username = my_username  )
+#g4 = Group.objects.get(name= 'administradors' )
+#a = User.objects.get( username = my_username , email='pepe@xtec.cat', password="oletu"  )
+a = User.objects.get( username = my_username ) 
 a.groups = [ g1, g2, g3 ]
 a.save()
 quit()

@@ -22,6 +22,7 @@ def assignatura_clean( instance ):
         #si és AO, Optativa, ...    
         if  instance.codi_assignatura.startswith( 'OP' ) or \
             instance.codi_assignatura.startswith( 'OE' ) or \
+            instance.codi_assignatura.startswith( 'MO' ) or \
             instance.codi_assignatura.startswith( 'AO' ):
         
             try:
