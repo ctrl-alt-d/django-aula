@@ -106,6 +106,7 @@ class AbstractAlumne(models.Model):
                 (True,'Notificar-les totes.'),
             )
         
+    ralc = models.CharField(max_length=100, blank=True, db_index=True)
     grup = models.ForeignKey("alumnes.Grup")
     nom = models.CharField("Nom",max_length=240)
     cognoms = models.CharField("Cognoms",max_length=240)
