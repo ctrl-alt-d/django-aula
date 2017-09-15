@@ -72,6 +72,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
                                 u", ".join( correusFamilia )
                                                                 )
         infos.append(txtCapcelera)
+        assumpte = u"Recuperar/Obtenir accés a l'aplicatiu Djau de {0}".format( settings.NOM_CENTRE )
         missatge = [ 
                      u"La pàgina principal del portal de relació amb famílies de l'Institut és:",
                      u"{0}".format( urlDjangoAula ),
@@ -87,6 +88,8 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
                      u"i us preguntarà quina contrasenya voleu. Com a mesura suplementària de seguretat us demanarà també alguna altre dada.",
                      u"Recordeu usuari i contrasenya per futures connexions al portal de relació amb famílies.",
                      u"  ",
+                     u"Cordialment,",
+                     u"  ",
                      settings.NOM_CENTRE,
                     ]
     
@@ -94,7 +97,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
         enviatOK = True
         try:
             fromuser = settings.EMAIL_HOST_USER
-            send_mail('Accés a infomes seguiment', 
+            send_mail(assumpte, 
                       u'\n'.join( missatge ), 
                       fromuser,
                       [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
@@ -204,30 +207,41 @@ def enviaBenvingudaAlumne( alumne, force = False ):
                                 u", ".join( correusFamilia )
                                                                 )
         infos.append(txtCapcelera)
-        missatge = [ 
-                     u"Benvinguts al portal d'informació a les famílies de " + settings.NOM_CENTRE,
+        assumpte = u"Alta a l'aplicatiu Djau de {0}".format( settings.NOM_CENTRE )
+
+        missatge = [ u"Benvolgut/da,",
                      u"",
-                     u"És voluntat del centre millorar la informació que rebeu els pares del desenvolupament diari de les activitats lectives dels vostres fills.",
+                     u"El motiu d'aquest correu és el de donar-vos les instruccions d'alta de l'aplicació Djau del nostre centre.",
+                     u"Aquesta aplicació us permetrà fer un seguiment diari del rendiment acadèmic del vostre fill/a.",
+                     u"Per tant, hi trobareu les faltes d'assistència, de disciplina, les observacions del professorat , les sortides que afectaran al vostre fill/a entre altres informacions.",
                      u"",
-                     u"Heu d'entrar a {0} on podeu obtenir o recuperar les claus d'accés a l'aplicació.".format(urlDjangoAula),
+                     u"Per a donar-vos d'alta:",
                      u"",
-                     u"Cal seguir l'enllaç 'Obtenir o recuperar accés', i se us demanarà la vostra adreça de correu electrònic. Envieu la vostra adreça i rebreu un correu amb les instruccions per obtenir accés al portal de l'institut.",
+                     u" * Entreu a {0} on podeu obtenir o recuperar les claus d'accés a l'aplicació.".format(urlDjangoAula),
+                     u" * Cliqueu l'enllaç 'Obtenir o recuperar accés'. ",
+                     u" * Escriviu la vostra adreça de correu electrònic.",
+                     u" * Cliqueu el botó  Enviar.",
+                     u" * Consulteu el vostre correu electrònic on hi trobareu un missatge amb les instruccions per completar el procés d'accés al Djau.",
                      u"",
-                     u"Esperem que amb aquesta aplicació us poguem ajudar a fer un seguiment més exahustiu del treball dels vostres fills al centre.",
+                     u"Com bé sabeu és molt important que hi hagi una comunicació molt fluida entre el centre i les famílies.",
+                     u"És per això que us recomanem que us doneu d'alta a aquesta aplicació i per qualsevol dubte que tingueu al respecte, poseu-vos en contacte amb el tutor/a del vostre fill/a.",
                      u"",
-                     u"Cordialment",
+                     u"Restem a la vostra disposició per a qualsevol aclariment.",
+                     u"",
+                     u"Cordialment,",
                      u"",
                      settings.NOM_CENTRE,
                      u"",
-                     u"",
-                     u"{0}".format( textTutorial ),                     
-                    ]
+                     u"{0}".format( textTutorial ), 
+                     ]        
+        
+      
     
         from django.core.mail import send_mail
         enviatOK = True
         try:
             fromuser = settings.EMAIL_HOST_USER
-            send_mail('Accés a infomes seguiment', 
+            send_mail(assumpte, 
                       u'\n'.join( missatge ), 
                       fromuser,
                       [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 

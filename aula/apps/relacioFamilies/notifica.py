@@ -67,32 +67,31 @@ def notifica():
             enviatOK = False
             if hiHaNovetats:
                 #enviar correu i marcar novetats com a notificades:
-                missatge = [ 
-                         u"Portal d'informació a les famílies de " + settings.NOM_CENTRE,
-                         u"",
-                         u"Teniu novetats de {0} al portal de relació famílies {1}".format(alumne.nom, urlDjangoAula),
-                         u"",
-                         u"Recordeu que el vostre nom d'usuari és: {0}".format( alumne.get_user_associat().username ),
-                         u"",
-                         u"Esperem que amb aquesta aplicació us poguem ajudar a fer un seguiment més exahustiu del treball dels vostres fills al centre.",
-                         u"",
-                         u"Cordialment",
-                         u"",
-                         settings.NOM_CENTRE,
-                         u"",
-                         u"",
-                         u"{0}".format( textTutorial ),
-                        ]
+                assumpte = "Notificacions al Djau de {0}".format( settings.NOM_CENTRE )
+                missatge = [u"Benvolgut/da,",
+                            u"",
+                            u"Us comuniquem que teniu noves notificacions del vostre fill/a {0} a l'aplicació Djau del centre {1}".format(alumne.nom, urlDjangoAula),
+                            u"",
+                            u"Recordeu que el vostre nom d'usuari és: {0}".format( alumne.get_user_associat().username ),
+                            u"",
+                            u"Per qualsevol dubte que tingueu al respecte poseu-vos en contacte amb el tutor/a del vostre fill/a.",
+                            u"",
+                            u"Cordialment,",
+                            u"",
+                            settings.NOM_CENTRE,
+                            u"",
+                            u"{0}".format( textTutorial ),
+                            ]
                 
                 try:                        
                     fromuser = settings.EMAIL_HOST_USER
                     if settings.DEBUG:
                         print u'Enviant missatge a {0}'.format( alumne )
-                    send_mail(u'Novetats al portal de relació famílies', 
-                                  u'\n'.join( missatge ), 
-                                  fromuser,
-                                  alumne.get_correus_relacio_familia(), 
-                                  fail_silently=False)
+                    send_mail(assumpte, 
+                              u'\n'.join( missatge ), 
+                              fromuser,
+                              alumne.get_correus_relacio_familia(), 
+                              fail_silently=False)
                     enviatOK = True
                 except:
                     #cal enviar msg a tutor que no s'ha pogut enviar correu a un seu alumne.
