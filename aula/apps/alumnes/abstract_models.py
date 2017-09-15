@@ -146,7 +146,7 @@ class AbstractAlumne(models.Model):
         ordering = ['grup','cognoms','nom']
         verbose_name = u'Alumne'
         verbose_name_plural = u'Alumnes'
-        unique_together = (("nom", "cognoms",  "data_neixement"))
+        unique_together = [] #("nom", "cognoms",  "data_neixement", "grup__curs__nivell"),("ralc","grup__curs__nivell"))
 
     def __unicode__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom 

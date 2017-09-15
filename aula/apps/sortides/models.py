@@ -163,7 +163,7 @@ class Sortida(models.Model):
                  .all()
                 )
         
-        print 'revisant {0} {1} {2} sortides: {3}'.format( alumne, dia, franja, l)
+        #print 'revisant {0} {1} {2} sortides: {3}'.format( alumne, dia, franja, l)
         
         return l
 

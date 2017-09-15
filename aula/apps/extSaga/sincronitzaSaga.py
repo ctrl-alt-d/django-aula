@@ -30,7 +30,7 @@ def sincronitza(f, user = None):
     #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
     Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
         .update( estat_sincronitzacio = 'PRC')
-        #,"00_NOM","01_ADRE�A","02_CP","03_CENTRE PROCED�NCIA","04_CODI LOCALITAT","05_CORREU ELECTR�NIC","06_DATA NAIXEMENT","07_DOC. IDENTITAT","08_GRUPSCLASSE","09_NOM LOCALITAT","10_TEL�FONS","11_TUTOR(S)"
+        #,"00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_ADRE�A","03_CP","04_CENTRE PROCED�NCIA","05_CODI LOCALITAT","06_CORREU ELECTR�NIC","07_DATA NAIXEMENT","08_DOC. IDENTITAT","09_GRUPSCLASSE","10_NOM LOCALITAT","11_TEL�FONS","12_TUTOR(S)"
     reader = csv.DictReader(f)
     errors_nAlumnesSenseGrup=0
     info_nAlumnesLlegits=0
@@ -43,18 +43,20 @@ def sincronitza(f, user = None):
     AlumnesCanviatsDeGrup = []
     AlumnesInsertats = []
 
- #,"00_NOM","01_DATA NAIXEMENT",
- #"02_ADREÇA","03_CENTRE PROCEDÈNCIA","04_GRUPSCLASSE","05_CORREU ELECTRÒNIC","06_LOCALITAT",
- #"07_TELÈFON RESP. 1","08_TELÈFON RESP. 2","09_RESPONSABLE 2","10_RESPONSABLE 1"
+ #,"00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT",
+ #"03_ADREÇA","04_CENTRE PROCEDÈNCIA","05_GRUPSCLASSE","06_CORREU ELECTRÒNIC","07_LOCALITAT",
+ #"08_TELÈFON RESP. 1","09_TELÈFON RESP. 2","10_RESPONSABLE 2","11_RESPONSABLE 1"
     
     trobatGrupClasse = False
     trobatNom = False
     trobatDataNeixement = False
+    trobatRalc = False
     
     f.seek(0)
     for row in reader:
         info_nAlumnesLlegits+=1
         a=Alumne()
+        a.ralc = ''
         a.telefons = ''
         a.tutors = ''
         a.correu_tutors = ''
@@ -62,6 +64,9 @@ def sincronitza(f, user = None):
             columnName = unicode(columnName,'iso-8859-1')
             #columnName = unicode( rawColumnName, 'iso-8859-1'  )
             uvalue =  unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_IDENTIFICADOR DE L'ALUMNE/A"):
+                a.ralc=unicode(value,'iso-8859-1')
+                trobatRalc = True
             if columnName.endswith( u"_NOM"): 
                 a.nom =uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
                 a.cognoms = uvalue.split(',')[0]
@@ -91,36 +96,43 @@ def sincronitza(f, user = None):
                 a.adreca = unicode(value,'iso-8859-1')
                 
                 
-        if not (trobatGrupClasse and trobatNom and trobatDataNeixement):
+        if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
             return { 'errors': [ u'Falten camps al fitxer' ], 'warnings': [], 'infos': [] }
 
         
         alumneDadesAnteriors = None
         try:
-            q_mateix_cognom = Q(                             
-                            cognoms = a.cognoms )
-            q_mateix_nom = Q( 
-                            nom = a.nom,
-                              )            
-            q_mateix_neixement = Q(
-                            data_neixement = a.data_neixement
-                                )
-            q_mateixa_altres = Q(
-                            adreca = a.adreca,
-                            telefons = a.telefons,
-                            localitat = a.localitat,
-                            centre_de_procedencia = a.centre_de_procedencia,
-                            adreca__gte= u""                             
-                                )
+            q_mateix_ralc = Q( ralc = a.ralc ) & Q(  grup__curs__nivell = a.grup.curs.nivell ) 
             
-            condicio1 = q_mateix_nom & q_mateix_cognom & q_mateix_neixement
-            condicio2 = q_mateix_nom & q_mateix_cognom & q_mateixa_altres
-            condicio3 = q_mateix_nom & q_mateixa_altres & q_mateix_neixement
-            
-            
-            alumneDadesAnteriors = Alumne.objects.get(  
-                                            condicio1 | condicio2 | condicio3
-                                               )
+            # Antic mètode de cassar alumnes:
+            #
+            # q_mateix_cognom = Q(
+            #                 cognoms = a.cognoms )
+            # q_mateix_nom = Q(
+            #                 nom = a.nom,
+            #                   )
+            # q_mateix_neixement = Q(
+            #                 data_neixement = a.data_neixement
+            #                     )
+            # q_mateixa_altres = Q(
+            #                 adreca = a.adreca,
+            #                 telefons = a.telefons,
+            #                 localitat = a.localitat,
+            #                 centre_de_procedencia = a.centre_de_procedencia,
+            #                 adreca__gte= u""
+            #                     )
+            #
+            # condicio1 = q_mateix_nom & q_mateix_cognom & q_mateix_neixement
+            # condicio2 = q_mateix_nom & q_mateix_cognom & q_mateixa_altres
+            # condicio3 = q_mateix_nom & q_mateixa_altres & q_mateix_neixement
+            #
+            #
+            # alumneDadesAnteriors = Alumne.objects.get(
+            #                                 condicio1 | condicio2 | condicio3
+            #                                   )
+
+            alumneDadesAnteriors =Alumne.objects.get (q_mateix_ralc)
+
         except Alumne.DoesNotExist:
             pass
         
