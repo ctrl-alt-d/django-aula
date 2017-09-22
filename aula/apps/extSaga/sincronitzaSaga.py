@@ -102,7 +102,7 @@ def sincronitza(f, user = None):
         
         alumneDadesAnteriors = None
         try:
-            q_mateix_ralc = Q( ralc = a.ralc ) & Q(  grup__curs__nivell = a.grup.curs.nivell ) 
+            q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell ) 
             
             # Antic mètode de cassar alumnes:
             #
