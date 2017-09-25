@@ -84,7 +84,7 @@ def notifica():
                             ]
                 
                 try:                        
-                    fromuser = settings.EMAIL_HOST_USER
+                    fromuser = settings.DEFAULT_FROM_EMAIL
                     if settings.DEBUG:
                         print u'Enviant missatge a {0}'.format( alumne )
                     send_mail(assumpte, 

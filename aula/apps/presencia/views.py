@@ -286,7 +286,7 @@ def passaLlista( request, pk ):
         hiHaRetard = False
         form0 = forms.Form()
         formset.append( form0 )
-        for control_a in impartir.controlassistencia_set.order_by( 'alumne__grup', 'alumne' ):
+        for control_a in impartir.controlassistencia_set.order_by( 'alumne' ):  #.order_by( 'alumne__grup', 'alumne' )
             control_a.currentUser = user
             q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
             q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )                

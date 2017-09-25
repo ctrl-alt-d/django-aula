@@ -25,3 +25,15 @@ DEBUG = False
 ADMINS = (
     ('joan rodriguez', 'ui@mega.cracs.cat'),
 )
+
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_HOST_USER='el-meu-centre@gmail.com'
+EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
+DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+SERVER_EMAIL='el-meu-centre@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
+
