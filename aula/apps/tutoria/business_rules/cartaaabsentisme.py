@@ -14,8 +14,8 @@ def cartaabsentisme_clean( instance ):
     calcular tipus:
         tipus1 = primera carta tots
         tipus2 = segona carta tots
-        tipus3B = tercera carta ESO
-        tipus3A = tercera carta post obligatoria
+        tipus3A = tercera carta ESO
+        tipus3B = tercera carta post obligatoria
         tipus3C = cursa obligatoria i té més de 16 anys
     
     '''

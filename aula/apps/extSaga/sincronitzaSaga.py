@@ -102,7 +102,7 @@ def sincronitza(f, user = None):
         
         alumneDadesAnteriors = None
         try:
-            q_mateix_ralc = Q( ralc = a.ralc ) & Q(  grup__curs__nivell = a.grup.curs.nivell ) 
+            q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell ) 
             
             # Antic mètode de cassar alumnes:
             #
@@ -252,7 +252,7 @@ def sincronitza(f, user = None):
                 impartir__dia_impartir__gte = date.today(), 
                 alumne__in = AlumnesDonatsDeBaixa ).delete()
 
-    #Treure'ls de les classes: els canvis de grup
+    #Treure'ls de les classes: els canvis de grup   #Todo: només si l'àmbit és grup.
     ControlAssistencia.objects.filter( 
                 impartir__dia_impartir__gte = date.today(), 
                 alumne__in = AlumnesCanviatsDeGrup ).delete()

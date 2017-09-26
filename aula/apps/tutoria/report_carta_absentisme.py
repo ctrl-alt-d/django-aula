@@ -36,6 +36,7 @@ def report_cartaAbsentisme( request, carta ):
                         'grup':carta.alumne.grup,
                         'nfaltes':carta.nfaltes,
                         'year':carta.data_carta.year,
+                        'fins_a_data': carta.faltes_fins_a_data.strftime( '%d/%m/%Y' ),
                         'tipus1': carta.tipus_carta == 'tipus1',
                         'tipus2': carta.tipus_carta == 'tipus2',
                         'tipus3A': carta.tipus_carta == 'tipus3A',

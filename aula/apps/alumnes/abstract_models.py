@@ -110,7 +110,7 @@ class AbstractAlumne(models.Model):
     grup = models.ForeignKey("alumnes.Grup")
     nom = models.CharField("Nom",max_length=240)
     cognoms = models.CharField("Cognoms",max_length=240)
-    data_neixement = models.DateField(null=True)
+    data_neixement = models.DateField("Data naixement",null=True)
     estat_sincronitzacio = models.CharField(choices=ESTAT_SINCRO_CHOICES ,max_length=3, blank=True)
     correu_tutors = models.CharField(max_length=240, blank=True)
     correu_relacio_familia_pare =  models.EmailField( u'1r Correu Notifi. Tutors', help_text = u'Correu de notificacions de un tutor', blank=True)

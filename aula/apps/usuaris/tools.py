@@ -96,7 +96,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
         from django.core.mail import send_mail
         enviatOK = True
         try:
-            fromuser = settings.EMAIL_HOST_USER
+            fromuser = settings.DEFAULT_FROM_EMAIL
             send_mail(assumpte, 
                       u'\n'.join( missatge ), 
                       fromuser,
@@ -167,7 +167,7 @@ def enviaOneTimePasswdProfessor( professor, force = False ):
         from django.core.mail import send_mail
         enviatOK = True
         try:
-            fromuser = settings.EMAIL_HOST_USER
+            fromuser = settings.DEFAULT_FROM_EMAIL
             send_mail(u"Accés a l'aplicatiu de {0}".format( settings.NOM_CENTRE), 
                       u'\n'.join( missatge ), 
                       fromuser,
@@ -240,7 +240,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
         from django.core.mail import send_mail
         enviatOK = True
         try:
-            fromuser = settings.EMAIL_HOST_USER
+            fromuser = settings.DEFAULT_FROM_EMAIL
             send_mail(assumpte, 
                       u'\n'.join( missatge ), 
                       fromuser,
