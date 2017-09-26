@@ -8,11 +8,11 @@ class HorariAlumneTable(tables.Table):
                         {{ record.hora }}
                         {% if record.es_hora_actual %}</b>{% endif %}
                         """, 
-                        order_by=( 'hora' )
+                        orderable = False,
                         )
-    aula = tables.Column()
-    professor = tables.Column()
-    assignatura = tables.Column()
+    aula = tables.Column(orderable = False,)
+    professor = tables.Column(orderable = False,)
+    assignatura = tables.Column(orderable = False,)
     class Meta:
          # add class="paleblue" to <table> tag
          attrs = {"class": "paleblue table table-striped"}

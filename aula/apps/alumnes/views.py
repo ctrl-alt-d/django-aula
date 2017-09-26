@@ -554,6 +554,7 @@ def detallAlumneHorari(request, pk, detall='all'):
         novaaula={'aula': c.impartir.horari.nom_aula,
                   'professor': c.impartir.horari.professor,
                   'hora': c.impartir.horari.hora,
+                  'hora_inici': c.impartir.horari.hora.hora_inici,
                   'assignatura': c.impartir.horari.assignatura,
                   'es_hora_actual': ( c.impartir.horari.hora.hora_inici 
                                       <= datetime.now().time() 
@@ -561,8 +562,9 @@ def detallAlumneHorari(request, pk, detall='all'):
                   }
         aules.append(novaaula)
 
-    aules_sorted = sorted(aules, key= lambda x: x['hora'] )
+    aules_sorted = sorted(aules, key= lambda x: x['hora_inici'] )
     table=HorariAlumneTable(aules_sorted)
+    table.order_by = 'hora_inici' 
     RequestConfig(request).configure(table)
 
     missatge = u"Horari de l'alumne/a <b>{0}</b> del grup {1}".format(alumne,alumne.grup)
