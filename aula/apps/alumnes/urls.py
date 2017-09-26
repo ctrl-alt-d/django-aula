@@ -39,6 +39,9 @@ urlpatterns = patterns('aula.apps.alumnes.views',
        name="aula__materies__blanc"),
 
    url(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', 'detallAlumneHorari',
-        name="alumne__horari__detall"),
+        name="consergeria__usuari__cercaresultat"),
+
+   url(r'^cercaUsuari/$', 'cercaUsuari',
+        name="consergeria__usuari__cerca"),
 )
 

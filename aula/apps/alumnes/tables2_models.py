@@ -9,5 +9,5 @@ class HorariAlumneTable(tables.Table):
     class Meta:
          # add class="paleblue" to <table> tag
          attrs = {"class": "paleblue table table-striped"}
-
+         template = 'bootable2.html'
 

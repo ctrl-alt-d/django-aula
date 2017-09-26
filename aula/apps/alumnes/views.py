@@ -1,10 +1,13 @@
 # This Python file uses the following encoding: utf-8
 
 #templates
+from django.contrib import messages
 from django.template import RequestContext
 
 #tables
-from .tables import HorariAlumneTable
+from django.utils.safestring import mark_safe
+
+from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
 #from django import forms as forms
@@ -15,7 +18,7 @@ from aula.apps.presencia.models import Impartir
 
 #workflow
 from django.http import HttpResponse
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect
 
 #auth
@@ -544,7 +547,7 @@ def detallAlumneHorari(request, pk, detall='all'):
     (user, l4) = credentials
 
     qAvui = (Q(impartir__dia_impartir=datetime.today()))
-    alumne = Alumne.objects.get(pk=pk)
+    alumne = get_object_or_404( Alumne, pk=pk)
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
     aules =[]
     for c in controlOnEslAlumneAvui:
@@ -553,6 +556,9 @@ def detallAlumneHorari(request, pk, detall='all'):
 
     table=HorariAlumneTable(aules)
     RequestConfig(request).configure(table)
+
+    missatge = u"Horari de l'alumne/a <b>{0}</b> del grup {1}".format(alumne,alumne.grup)
+    messages.info(request, mark_safe( missatge)  )
 
     return render(
         request,
@@ -564,3 +570,23 @@ def detallAlumneHorari(request, pk, detall='all'):
 
 
 
+
+@login_required
+@group_required(['consergeria'])
+def cercaUsuari(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    if request.method == 'POST':
+        formUsuari = triaAlumneSelect2Form(request.POST)  # todo: multiple=True (multiples alumnes de cop)
+        if formUsuari.is_valid():
+            alumne = formUsuari.cleaned_data['alumne']
+            return HttpResponseRedirect(r'/alumnes/detallAlumneHorari/{0}/all/'.format(alumne.pk))
+    else:
+        formUsuari = triaAlumneSelect2Form()
+    return render_to_response(
+        'form.html',
+        {'form': formUsuari,
+         'head': 'Triar usuari'
+         },
+        context_instance=RequestContext(request))
