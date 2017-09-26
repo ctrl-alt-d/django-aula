@@ -556,7 +556,7 @@ def detallAlumneHorari(request, pk, detall='all'):
                   'hora': c.impartir.horari.hora,
                   'assignatura': c.impartir.horari.assignatura,
                   'es_hora_actual': ( c.impartir.horari.hora.hora_inici 
-                                      <= datetime.now() 
+                                      <= datetime.now().time() 
                                       <= c.impartir.horari.hora.hora_fi ),
                   }
         aules.append(novaaula)
