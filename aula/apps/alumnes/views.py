@@ -551,7 +551,12 @@ def detallAlumneHorari(request, pk, detall='all'):
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
     aules =[]
     for c in controlOnEslAlumneAvui:
-        novaaula={'aula': c.impartir.horari.nom_aula,'professor': c.impartir.horari.professor,'hora': c.impartir.horari.hora,'assignatura': c.impartir.horari.assignatura}
+        novaaula={'aula': c.impartir.horari.nom_aula,
+                  'professor': c.impartir.horari.professor,
+                  'hora': c.impartir.horari.hora,
+                  'assignatura': c.impartir.horari.assignatura,
+                  'es_hora_actual': ( c.impartir.horari.hora_inici <= datetime.now() <= c.impartir.horari.hora_fi ),
+                  }
         aules.append(novaaula)
 
     table=HorariAlumneTable(aules)
@@ -566,10 +571,6 @@ def detallAlumneHorari(request, pk, detall='all'):
         {'table': table,
          },
         context_instance=RequestContext(request))
-
-
-
-
 
 @login_required
 @group_required(['consergeria'])
