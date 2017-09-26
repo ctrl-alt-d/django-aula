@@ -220,6 +220,7 @@ def calcula_menu( user , path ):
                ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
                   (
                       ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
+                      ("Cerca Alumne", 'usuari__cerca', co, None, None),
                    )
                ),
 

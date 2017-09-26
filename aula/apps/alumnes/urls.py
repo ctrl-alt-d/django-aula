@@ -37,7 +37,8 @@ urlpatterns = patterns('aula.apps.alumnes.views',
    
    url(r'^blanc/$', 'blanc',
        name="aula__materies__blanc"),
-   
-   
+
+   url(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', 'detallAlumneHorari',
+        name="alumne__horari__detall"),
 )
 

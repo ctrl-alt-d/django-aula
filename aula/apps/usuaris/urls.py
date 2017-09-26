@@ -28,6 +28,9 @@ urlpatterns = patterns('aula.apps.usuaris.views',
               
     url(r'^sendPasswdByEmail/$', 'sendPasswdByEmail', 
      name="nologin__usuari__send_pass_by_email"),
+
+    url(r'^cercaUsuari/$', 'cercaUsuari',
+     name="usuari__cerca"),
               
     
 )

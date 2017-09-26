@@ -3,14 +3,19 @@
 #templates
 from django.template import RequestContext
 
+#tables
+from .tables import HorariAlumneTable
+from django_tables2 import RequestConfig
+
 #from django import forms as forms
 from aula.apps.alumnes.models import Alumne,  Curs, Grup
 from aula.apps.usuaris.models import Professor
 from aula.apps.assignatures.models import Assignatura
+from aula.apps.presencia.models import Impartir
 
 #workflow
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render, render_to_response
 from django.http import HttpResponseRedirect
 
 #auth
@@ -529,4 +534,33 @@ def mostraGrupPromocionar(request, grup=""):
     formset = PromoFormset(queryset=alumnes)
 
     return render_to_response('mostraGrupPromocionar.html', {"grup_actual" : grup_actual, "formset" : formset, "grups":grups}, context_instance=RequestContext(request))
+
+
+
+@login_required
+@group_required(['consergeria'])
+def detallAlumneHorari(request, pk, detall='all'):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    qAvui = (Q(impartir__dia_impartir=datetime.today()))
+    alumne = Alumne.objects.get(pk=pk)
+    controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
+    aules =[]
+    for c in controlOnEslAlumneAvui:
+        novaaula={'aula': c.impartir.horari.nom_aula,'professor': c.impartir.horari.professor,'hora': c.impartir.horari.hora,'assignatura': c.impartir.horari.assignatura}
+        aules.append(novaaula)
+
+    table=HorariAlumneTable(aules)
+    RequestConfig(request).configure(table)
+
+    return render(
+        request,
+        'table2.html',
+        {'table': table,
+         },
+        context_instance=RequestContext(request))
+
+
+
 

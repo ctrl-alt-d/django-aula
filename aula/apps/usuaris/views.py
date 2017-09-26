@@ -5,6 +5,7 @@ from django.template import RequestContext
 
 from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuariForm,\
     recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm
+from aula.apps.alumnes.forms import triaAlumneSelect2Form
 
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
@@ -496,6 +497,25 @@ def sendPasswdByEmail( request ):
         {'form': form,
          'head': u'Recuperació de Contrasenya' 
          },
-        context_instance=RequestContext(request))  
-            
-            
+        context_instance=RequestContext(request))
+
+
+@login_required
+@group_required(['consergeria'])
+def cercaUsuari(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    if request.method == 'POST':
+        formUsuari = triaAlumneSelect2Form(request.POST)  # todo: multiple=True (multiples alumnes de cop)
+        if formUsuari.is_valid():
+            alumne = formUsuari.cleaned_data['alumne']
+            return HttpResponseRedirect(r'/alumnes/detallAlumneHorari/{0}/all/'.format(alumne.pk))
+    else:
+        formUsuari = triaAlumneSelect2Form()
+    return render_to_response(
+        'form.html',
+        {'form': formUsuari,
+         'head': 'Triar usuari'
+         },
+        context_instance=RequestContext(request))

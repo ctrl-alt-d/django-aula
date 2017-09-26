@@ -1,11 +1,10 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils.widgets import DateTextImput
-
 from django.forms import ModelForm
 from django import forms
 from django.contrib.auth.models import User
 from aula.apps.usuaris.models import Professor
-#from aula.utils.captcha import ReCaptchaField 
+#from aula.utils.captcha import ReCaptchaField
 
 class CanviDadesUsuari(ModelForm):
     first_name = forms.CharField( required = True )  
@@ -27,7 +26,8 @@ class triaUsuariForm(forms.Form):
                         required= True,
                         help_text=u'Tria en quin usuari et vols convertir.',   
                     )
-    
+
+
 class loginUsuariForm(forms.Form):
     usuari = forms.CharField(  required = True,
                                help_text= u"Nom d'usuari" )
@@ -84,3 +84,4 @@ class sendPasswdByEmailForm(forms.Form):
     email = forms.EmailField(label=u"El teu correu electrònic" , required = True,
                                help_text= u"Entra el teu correu electrònic." )   
     #captcha = ReCaptchaField()
+
