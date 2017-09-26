@@ -561,7 +561,8 @@ def detallAlumneHorari(request, pk, detall='all'):
                   }
         aules.append(novaaula)
 
-    table=HorariAlumneTable(aules)
+    aules_sorted = sorted(aules, key= lambda x: x['hora'] )
+    table=HorariAlumneTable(aules_sorted)
     RequestConfig(request).configure(table)
 
     missatge = u"Horari de l'alumne/a <b>{0}</b> del grup {1}".format(alumne,alumne.grup)
