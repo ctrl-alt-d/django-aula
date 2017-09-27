@@ -111,13 +111,14 @@ class afegeixThread(Thread):
 
 class treuThread(Thread):
     
-    def __init__ (self,expandir=None, alumnes=None, impartir=None, matmulla = False):
+    def __init__ (self,expandir=None, alumnes=None, impartir=None, matmulla = False, usuari = None):
         Thread.__init__(self)
         self.expandir = expandir
         self.alumnes = alumnes
         self.impartir = impartir
         self.flagPrimerDiaFet = False
         self.matmulla = matmulla
+        self.usuari = usuari
       
     def run(self):        
         errors = []

@@ -253,9 +253,15 @@ def sincronitza(f, user = None):
                 alumne__in = AlumnesDonatsDeBaixa ).delete()
 
     #Treure'ls de les classes: els canvis de grup   #Todo: només si l'àmbit és grup.
-    ControlAssistencia.objects.filter( 
-                impartir__dia_impartir__gte = date.today(), 
-                alumne__in = AlumnesCanviatsDeGrup ).delete()
+    
+    ambit_no_es_el_grup = Q( impartir__horari__assignatura__tipus_assignatura__ambit_on_prendre_alumnes__in = [ 'C', 'N', 'I' ] )
+    ( ControlAssistencia
+      .objects
+      .filter( ambit_no_es_el_grup ) 
+      .filter( impartir__dia_impartir__gte = date.today() )
+      .filter( alumne__in = AlumnesCanviatsDeGrup )
+      .delete()
+     )
 
     
     #Altes: posar-ho als controls d'assistència de les classes (?????????)
