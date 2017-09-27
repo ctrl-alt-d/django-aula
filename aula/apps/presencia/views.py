@@ -782,7 +782,7 @@ def treuAlumnesLlista(request, pk):
             matmulla = formExpandir.cleaned_data['matmulla']            
         
             from aula.apps.presencia.afegeixTreuAlumnesLlista import treuThread
-            treu=treuThread(expandir = expandir, alumnes=alumnes, impartir=impartir, matmulla=matmulla)
+            treu=treuThread(expandir = expandir, alumnes=alumnes, impartir=impartir, matmulla=matmulla,usuari=user)
             treu.start()
 
             #LOGGING
@@ -1134,7 +1134,8 @@ def copiarAlumnesLlista(request, pk):
                 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread, treuThread
                 #Eliminem alumnes abans de copiar.
                 if eliminarAlumnes:
-                    treu = treuThread(expandir=None, alumnes=alumnesDesti.values(), impartir=horaDesti, matmulla = False)
+                    treu = treuThread(expandir=None, alumnes=alumnesDesti.values(), impartir=horaDesti, matmulla = False
+                                      ,usuari=user)
                     treu.usuari = user
                     treu.start()
 
