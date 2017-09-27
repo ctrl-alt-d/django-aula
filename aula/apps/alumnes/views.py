@@ -549,6 +549,13 @@ def detallAlumneHorari(request, pk, detall='all'):
     qAvui = (Q(impartir__dia_impartir=datetime.today()))
     alumne = get_object_or_404( Alumne, pk=pk)
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
+    grup = alumne.grup
+    horesDelGrupAvui = { x for x in grup.horari_set.filter(qAvui)
+                                                  .filter(es_actiu=True) }
+
+    horesDeAlumneAvui = {c.impartir.horari for c in controlOnEslAlumneAvui}
+    horesRestants = horesDelGrupAvui - horesDeAlumneAvui
+
     aules =[]
     for c in controlOnEslAlumneAvui:
         novaaula={'aula': c.impartir.horari.nom_aula,
@@ -556,10 +563,24 @@ def detallAlumneHorari(request, pk, detall='all'):
                   'hora': c.impartir.horari.hora,
                   'hora_inici': c.impartir.horari.hora.hora_inici,
                   'assignatura': c.impartir.horari.assignatura,
+                  'es_horari_grup': False,
                   'es_hora_actual': ( c.impartir.horari.hora.hora_inici 
                                       <= datetime.now().time() 
                                       <= c.impartir.horari.hora.hora_fi ),
                   }
+        aules.append(novaaula)
+
+    for horari in horesRestants:
+        novaaula = {'aula': horari.nom_aula,
+                    'professor': horari.professor,
+                    'hora': horari.hora,
+                    'hora_inici': horari.hora.hora_inici,
+                    'assignatura': horari.assignatura,
+                    'es_horari_grup': True,
+                    'es_hora_actual': (horari.hora.hora_inici
+                                       <= datetime.now().time()
+                                       <= horari.hora.hora_fi),
+                    }
         aules.append(novaaula)
 
     aules_sorted = sorted(aules, key= lambda x: x['hora_inici'] )
