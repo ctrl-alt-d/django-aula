@@ -1,5 +1,5 @@
 # Development
-appy==0.8.4
+appy==0.9.9 #==0.8.4
 Django>=1.8.3,<1.9
 #django-debug-toolbar
 django_extensions
@@ -13,3 +13,6 @@ python-dateutil
 django-tables2==0.15
 icalendar>=3.8.4
 django-appconf
+Pillow==4.2.1
+viivakoodi==0.8.0
+

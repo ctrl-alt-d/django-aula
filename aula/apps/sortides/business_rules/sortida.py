@@ -79,6 +79,16 @@ def clean_sortida( instance ):
        ):
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot marcar com aprovada pel Consell Escolar." )
+
+    #només direcció o grup sortides pot marcar com aprovada pel CE
+    if ( (not bool(instance.pk) and instance.codi_de_barres != '')
+          or 
+         ( bool(instance.instanceDB) and  
+           instance.instanceDB.codi_de_barres  != instance.codi_de_barres)
+       ):
+        if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
+            errors.append( u"Només Direcció o el coordinador de sortides pot posar el codi de barres." )
+    
     
     dades_presencia = [ bool(instance.data_inici),
                         bool(instance.franja_inici),

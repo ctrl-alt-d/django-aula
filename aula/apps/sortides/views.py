@@ -60,6 +60,16 @@ def imprimir( request, pk ):
 
     if not potEntrar:
         raise Http404 
+
+    #Preparo el codi de barres
+    import time
+    import barcode
+    from barcode.writer import ImageWriter
+    CodiBarres = barcode.get_barcode_class(u'code128')
+    codi_barres = CodiBarres(instance.codi_de_barres or "x", writer=ImageWriter())
+    barres = codi_barres.save("/tmp/barcode-{0}-{1}".format( time.time(), request.session.session_key ))
+        
+
         
     alumnes_que_hi_van = set( instance.alumnes_convocats.all() ) 
     alumnes_que_no_hi_van = set( instance.alumnes_que_no_vindran.all() )
@@ -83,13 +93,14 @@ def imprimir( request, pk ):
         o.condicions_generals = instance.condicions_generals.split("\n") or ['-',]
         o.terminipagament = u"" if not bool( instance.termini_pagament ) else u"abans del {0}".format( instance.termini_pagament.strftime( '%d/%m/%Y' ) ) 
         report.append(o)
-        
+        o.barres = barres
+        o.te_codi_barres = bool(instance.codi_de_barres)
+
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
     import cgi
     import os
     from django import http
-    import time
     
     excepcio = None
 
@@ -108,6 +119,9 @@ def imprimir( request, pk ):
     contingut = docFile.read()
     docFile.close()
     os.remove(resultat)
+    
+    #barcode
+    os.remove(barres)
         
 #     except Exception, e:
 #         excepcio = unicode( e )
@@ -357,6 +371,7 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
     
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
+        form.fields["codi_barres"].widget.attrs['disabled'] = u"disabled"
         
     #si no és propietari tot a disabled
     deshabilitat = ( instance.id and 
