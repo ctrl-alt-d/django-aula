@@ -597,7 +597,7 @@ def detallAlumneHorari(request, pk, detall='all'):
             if horari.hora == aula['hora']:
                 aula['horari_grup'] = ( aula['horari_grup'] 
                                         + u'\n' + horari.nom_aula 
-                                        + u' ' + horari.professor  
+                                        + u' ' + unicode( horari.professor )  
                                         + u' ' + horari.assignatura
                                       )
                 horanova = False
