@@ -598,7 +598,7 @@ def detallAlumneHorari(request, pk, detall='all'):
                 aula['horari_grup'] = ( aula['horari_grup'] 
                                         + u'\n' + horari.nom_aula 
                                         + u' ' + unicode( horari.professor )  
-                                        + u' ' + horari.assignatura
+                                        + u' ' + unicode( horari.assignatura )
                                       )
                 horanova = False
         if horanova:
@@ -611,8 +611,8 @@ def detallAlumneHorari(request, pk, detall='all'):
                                            <= horari.hora.hora_fi),
                         'no_ha_de_ser_a_laula': '',
                         'horari_grup': ( horari.nom_aula + u' ' 
-                                         + horari.professor.get_full_name() 
-                                         + u' ' + horari.assignatura.nom_assignatura
+                                         + unicode( horari.professor )
+                                         + u' ' + unicode( horari.assignatura )
                                        ),
                         }
             aules.append(novaaula)
