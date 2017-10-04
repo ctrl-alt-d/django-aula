@@ -1,46 +1,38 @@
 import django_tables2 as tables
 
 class HorariAlumneTable(tables.Table):
-    hora = tables.TemplateColumn(
+    Ara = tables.TemplateColumn(
+                        verbose_name='#',
+                        template_code=u"""
+                        {% if record.es_hora_actual %}
+                        ->
+                        {% endif %}
+                        """,
+                        orderable=False,
+                        )
+    Hora = tables.TemplateColumn(
                         template_code = u"""
-                        {% if record.es_horari_grup %}<span style ="color:#999999">{% endif %}
-                        {% if record.es_hora_actual %}<b>{% endif %}
                         {{ record.hora }}
-                        {% if record.es_hora_actual %}</b>{% endif %}
-                        {% if record.es_horari_grup %}</span>{% endif %}
-                        """, 
-                        orderable = False,
-                        )
-    aula = tables.TemplateColumn(
-                        template_code=u"""
-                        {% if record.es_horari_grup %} <span style ="color:#999999">{% endif %}
-                        {% if record.es_hora_actual %} <b> {% endif %}
-                        {{ record.aula }}
-                        {% if record.es_hora_actual %} </b> {% endif %}
-                        {% if record.es_horari_grup %} </span>{% endif %}
                         """,
                         orderable = False,
                         )
-    professor = tables.TemplateColumn(
-                        template_code=u"""
-                        {% if record.es_horari_grup %} <span style ="color:#999999">{% endif %}
-                        {% if record.es_hora_actual %} <b> {% endif %}
-                        {{ record.professor }}
-                        {% if record.es_hora_actual %} </b> {% endif %}
-                        {% if record.es_horari_grup %} </span>{% endif %}
+    Horari_Alumne = tables.TemplateColumn(
+                        template_code = u"""
+                        {% if record.no_ha_de_ser_a_laula %}
+                        {{ record.missatge_no_ha_de_ser_a_laula }}
+                        {% else %}
+                        {{ record.horari_alumne | linebreaksbr}} 
+                        {% endif %}
                         """,
                         orderable = False,
                         )
-    assignatura = tables.TemplateColumn(
+    Horari_Grup = tables.TemplateColumn(
                         template_code=u"""
-                        {% if record.es_horari_grup %} <span style ="color:#999999">{% endif %}
-                        {% if record.es_hora_actual %} <b> {% endif %}
-                        {{ record.assignatura }}
-                        {% if record.es_hora_actual %} </b> {% endif %}
-                        {% if record.es_horari_grup %} </span>{% endif %}
+                        {{ record.horari_grup | linebreaksbr}} 
                         """,
-                        orderable = False,
+                        orderable=False,
                         )
+
     class Meta:
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}

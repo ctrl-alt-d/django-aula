@@ -14,7 +14,7 @@ from django_tables2 import RequestConfig
 from aula.apps.alumnes.models import Alumne,  Curs, Grup
 from aula.apps.usuaris.models import Professor
 from aula.apps.assignatures.models import Assignatura
-from aula.apps.presencia.models import Impartir
+from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
 #workflow
 from django.http import HttpResponse
@@ -35,6 +35,7 @@ from aula.apps.alumnes.forms import triaAlumneForm
 from aula.utils import tools
 from aula.apps.presencia.models import Impartir
 from django.utils.datetime_safe import  date, datetime
+from datetime import timedelta
 from django.db.models import Q
 from django.forms.models import modelformset_factory
 from aula.apps.alumnes.reports import reportLlistaTutorsIndividualitzats
@@ -549,46 +550,78 @@ def detallAlumneHorari(request, pk, detall='all'):
     qAvui = (Q(impartir__dia_impartir=datetime.today()))
     alumne = get_object_or_404( Alumne, pk=pk)
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
+
     grup = alumne.grup
     horesDelGrupAvui = { x for x in grup.horari_set.filter(qAvui)
                                                   .filter(es_actiu=True) }
-
     horesDeAlumneAvui = {c.impartir.horari for c in controlOnEslAlumneAvui}
     horesRestants = horesDelGrupAvui - horesDeAlumneAvui
 
     aules =[]
     for c in controlOnEslAlumneAvui:
-        novaaula={'aula': c.impartir.horari.nom_aula,
-                  'professor': c.impartir.horari.professor,
-                  'hora': c.impartir.horari.hora,
-                  'hora_inici': c.impartir.horari.hora.hora_inici,
-                  'assignatura': c.impartir.horari.assignatura,
-                  'es_horari_grup': False,
-                  'es_hora_actual': ( c.impartir.horari.hora.hora_inici 
-                                      <= datetime.now().time() 
-                                      <= c.impartir.horari.hora.hora_fi ),
-                  }
-        aules.append(novaaula)
+        noHaDeSerAlAula = c.nohadeseralaula_set.all()
+        missatgeNoHaDeSerAlAula = ", ".join([n.get_motiu_display() for n in noHaDeSerAlAula])
+
+        estat = c.estat.nom_estat if hasattr(c.estat,'nom_estat') else ''
+
+        horanova = True
+        for aula in aules:
+            if c.impartir.horari.hora == aula['hora']:
+                aula['horari_alumne']= aula['horari_alumne'] + '\n' + \
+                                       c.impartir.horari.nom_aula + ' ' + \
+                                       c.impartir.horari.professor.get_full_name() + ' ' + \
+                                       c.impartir.horari.assignatura.nom_assignatura + \
+                                       ' (' + estat + ')'
+                horanova = False
+        if horanova:
+            novaaula = {'horari_alumne': c.impartir.horari.nom_aula + ' ' +
+                                         c.impartir.horari.professor.get_full_name() + ' ' +
+                                         c.impartir.horari.assignatura.nom_assignatura +
+                                         ' (' + estat + ')',
+                        'hora': c.impartir.horari.hora,
+                        'hora_inici': c.impartir.horari.hora.hora_inici,
+                        'es_horari_grup': False,
+                        'es_hora_actual': (c.impartir.horari.hora.hora_inici
+                                           <= datetime.now().time()
+                                           <= c.impartir.horari.hora.hora_fi),
+                        'missatge_no_ha_de_ser_a_laula': missatgeNoHaDeSerAlAula,
+                        'no_ha_de_ser_a_laula': True if noHaDeSerAlAula else False,
+                        'horari_grup': ''
+                        }
+            aules.append(novaaula)
 
     for horari in horesRestants:
-        novaaula = {'aula': horari.nom_aula,
-                    'professor': horari.professor,
-                    'hora': horari.hora,
-                    'hora_inici': horari.hora.hora_inici,
-                    'assignatura': horari.assignatura,
-                    'es_horari_grup': True,
-                    'es_hora_actual': (horari.hora.hora_inici
-                                       <= datetime.now().time()
-                                       <= horari.hora.hora_fi),
-                    }
-        aules.append(novaaula)
+        horanova=True
+
+        for aula in aules:
+            if horari.hora == aula['hora']:
+                aula['horari_grup'] = aula['horari_grup'] + \
+                                      '\n' + horari.nom_aula + \
+                                      ' ' + horari.professor + \
+                                      ' ' + horari.assignatura
+                horanova = False
+        if horanova:
+            novaaula = {'horari_alumne': '',
+                        'hora': horari.hora,
+                        'hora_inici': horari.hora.hora_inici,
+                        'es_horari_grup': True,
+                        'es_hora_actual': (horari.hora.hora_inici
+                                           <= datetime.now().time()
+                                           <= horari.hora.hora_fi),
+                        'no_ha_de_ser_a_laula': '',
+                        'horari_grup': horari.nom_aula + ' ' +
+                                       horari.professor.get_full_name() +
+                                       ' ' + horari.assignatura.nom_assignatura,
+                        }
+            aules.append(novaaula)
 
     aules_sorted = sorted(aules, key= lambda x: x['hora_inici'] )
     table=HorariAlumneTable(aules_sorted)
-    table.order_by = 'hora_inici' 
+    table.order_by = 'hora_inici'
+
     RequestConfig(request).configure(table)
 
-    missatge = u"Horari de l'alumne/a <b>{0}</b> del grup {1}".format(alumne,alumne.grup)
+    missatge = u"Horari de l'alumne/a <b>{0}</b> del grup {1} <Br> Dia: {2} ".format(alumne,alumne.grup,datetime.today().date())
     messages.info(request, mark_safe( missatge)  )
 
     return render(
