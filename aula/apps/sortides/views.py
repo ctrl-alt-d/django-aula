@@ -371,7 +371,7 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
     
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
-        form.fields["codi_barres"].widget.attrs['disabled'] = u"disabled"
+        form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
         
     #si no és propietari tot a disabled
     deshabilitat = ( instance.id and 
