@@ -621,13 +621,12 @@ def detallAlumneHorari(request, pk, detall='all'):
 
     RequestConfig(request).configure(table)
 
-    missatge = u"Horari de l'alumne/a <b>{0}</b> del grup {1} <Br> Dia: {2} ".format(alumne,alumne.grup,datetime.today().date())
-    messages.info(request, mark_safe( missatge)  )
-
     return render(
         request,
-        'table2.html',
+        'mostraInfoAlumneCercat.html',
         {'table': table,
+         'alumne':alumne,
+         'dia' : datetime.today().date(),
          },
         context_instance=RequestContext(request))
 

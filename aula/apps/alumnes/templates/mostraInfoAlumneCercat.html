@@ -1,0 +1,19 @@
+{% extends "table2.html" %}
+
+{% block pretaula %}
+
+    <div class="row">
+		  <div class="col-sm-8 col-xs-12">
+	      <p class="well well-small">
+      	  <span class="glyphicon glyphicon-user"> </span> {{ alumne }}<br />
+          <span class="glyphicon glyphicon-calendar"> </span> {{ dia }} <br />
+          <span class="glyphicon glyphicon-briefcase"> </span> {{ alumne.grup }}<br />
+          <span class="glyphicon glyphicon-home"> </span> {{ alumne.adreca }} ({{ alumne.localitat }})<br />
+          <span class="glyphicon glyphicon-envelope"> </span> {{ alumne.correu_tutors }}<br />
+          <span class="glyphicon glyphicon-earphone"> </span> {{ alumne.telefons }}<br />
+          <span class="glyphicon glyphicon-info-sign"> </span> {{ alumne.tutors }}<br />
+      	</p>
+          </div>
+    </div>
+
+{% endblock %}
