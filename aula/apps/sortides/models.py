@@ -81,6 +81,8 @@ class Sortida(models.Model):
     
     preu_per_alumne = models.CharField(max_length=100,help_text=u"Preu per alumne, escriu el preu que apareixerà a l'autorització. Si és gratuita cal indicar-ho.")
 
+    codi_de_barres = models.CharField(u"Codi de barres pagament", blank=True, default=u"", max_length=100,help_text=u"Codi de barres pagament caixer ( el posa secretaria )")
+
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
     condicions_generals = models.TextField(blank=True, help_text=u"Condicions generals. (mètode de pagament, entrepans, entrades, comentaris...")

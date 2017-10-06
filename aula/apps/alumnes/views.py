@@ -567,17 +567,17 @@ def detallAlumneHorari(request, pk, detall='all'):
         horanova = True
         for aula in aules:
             if c.impartir.horari.hora == aula['hora']:
-                aula['horari_alumne']= aula['horari_alumne'] + '\n' + \
-                                       c.impartir.horari.nom_aula + ' ' + \
-                                       c.impartir.horari.professor.get_full_name() + ' ' + \
+                aula['horari_alumne']= aula['horari_alumne'] + u'\n' + \
+                                       c.impartir.horari.nom_aula + u' ' + \
+                                       c.impartir.horari.professor.get_full_name() + u' ' + \
                                        c.impartir.horari.assignatura.nom_assignatura + \
-                                       ' (' + estat + ')'
+                                       u' (' + estat + u')'
                 horanova = False
         if horanova:
             novaaula = {'horari_alumne': c.impartir.horari.nom_aula + ' ' +
-                                         c.impartir.horari.professor.get_full_name() + ' ' +
+                                         c.impartir.horari.professor.get_full_name() + u' ' +
                                          c.impartir.horari.assignatura.nom_assignatura +
-                                         ' (' + estat + ')',
+                                         u' (' + estat + u')',
                         'hora': c.impartir.horari.hora,
                         'hora_inici': c.impartir.horari.hora.hora_inici,
                         'es_horari_grup': False,
@@ -595,10 +595,11 @@ def detallAlumneHorari(request, pk, detall='all'):
 
         for aula in aules:
             if horari.hora == aula['hora']:
-                aula['horari_grup'] = aula['horari_grup'] + \
-                                      '\n' + horari.nom_aula + \
-                                      ' ' + horari.professor + \
-                                      ' ' + horari.assignatura
+                aula['horari_grup'] = ( aula['horari_grup'] 
+                                        + u'\n' + horari.nom_aula 
+                                        + u' ' + unicode( horari.professor )  
+                                        + u' ' + unicode( horari.assignatura )
+                                      )
                 horanova = False
         if horanova:
             novaaula = {'horari_alumne': '',
@@ -609,9 +610,10 @@ def detallAlumneHorari(request, pk, detall='all'):
                                            <= datetime.now().time()
                                            <= horari.hora.hora_fi),
                         'no_ha_de_ser_a_laula': '',
-                        'horari_grup': horari.nom_aula + ' ' +
-                                       horari.professor.get_full_name() +
-                                       ' ' + horari.assignatura.nom_assignatura,
+                        'horari_grup': ( horari.nom_aula + u' ' 
+                                         + unicode( horari.professor )
+                                         + u' ' + unicode( horari.assignatura )
+                                       ),
                         }
             aules.append(novaaula)
 
