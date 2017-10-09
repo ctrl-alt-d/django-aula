@@ -72,7 +72,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
                                 u", ".join( correusFamilia )
                                                                 )
         infos.append(txtCapcelera)
-        assumpte = u"Recuperar/Obtenir accés a l'aplicatiu Djau de {0}".format( settings.NOM_CENTRE )
+        assumpte = u"{0} - Recuperar/Obtenir accés a l'aplicatiu Djau de {1}".format(alumne.nom, settings.NOM_CENTRE )
         missatge = [ 
                      u"La pàgina principal del portal de relació amb famílies de l'Institut és:",
                      u"{0}".format( urlDjangoAula ),
