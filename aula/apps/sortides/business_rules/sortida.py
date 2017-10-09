@@ -75,19 +75,28 @@ def clean_sortida( instance ):
     if ( (not bool(instance.pk) and instance.esta_aprovada_pel_consell_escolar != 'P')
           or 
          ( bool(instance.instanceDB) and  
-           instance.instanceDB.esta_aprovada_pel_consell_escolar  != instance.esta_aprovada_pel_consell_escolar)
+           instance.instanceDB.esta_aprovada_pel_consell_escolar != instance.esta_aprovada_pel_consell_escolar)
        ):
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot marcar com aprovada pel Consell Escolar." )
 
-    #només direcció o grup sortides pot marcar com aprovada pel CE
+    #només direcció o grup sortides pot tocar
     if ( (not bool(instance.pk) and instance.codi_de_barres != '')
           or 
          ( bool(instance.instanceDB) and  
-           instance.instanceDB.codi_de_barres  != instance.codi_de_barres)
+           instance.instanceDB.codi_de_barres != instance.codi_de_barres)
        ):
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot posar el codi de barres." )
+    
+    #només direcció o grup sortides pot tocar
+    if ( (not bool(instance.pk) and instance.informacio_pagament != '')
+          or 
+         ( bool(instance.instanceDB) and  
+           instance.instanceDB.informacio_pagament != instance.informacio_pagament)
+       ):
+        if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
+            errors.append( u"Només Direcció o el coordinador de sortides pot posar informació de pagament." )
     
     
     dades_presencia = [ bool(instance.data_inici),

@@ -40,7 +40,7 @@ class recuperacioDePasswdForm(forms.Form):
                                help_text= u"Paraula de pas, més de 6 caracters.", widget = forms.PasswordInput() )
     p2 = forms.CharField(label="Repeteix Paraula de Pas" , required = True,
                                help_text= u"Paraula de pas, més de 6 caracters.", widget = forms.PasswordInput() )
-    data_neixement = forms.DateField( help_text=u"Data de naixement de l'alumne (Format dd/mm/yyyy)", widget=  DateTextImput( ) )
+    data_neixement = forms.DateField(label="Data naixement", help_text=u"Data de naixement de l'alumne (Format dd/mm/yyyy)", widget=  DateTextImput( ) )
     
     def clean_p1(self):
         p1 = self.cleaned_data.get('p1')
