@@ -81,11 +81,13 @@ class Sortida(models.Model):
     
     preu_per_alumne = models.CharField(max_length=100,help_text=u"Preu per alumne, escriu el preu que apareixerà a l'autorització. Si és gratuita cal indicar-ho.")
 
-    codi_de_barres = models.CharField(u"Codi de barres pagament", blank=True, default=u"", max_length=100,help_text=u"Codi de barres pagament caixer ( el posa secretaria )")
+    codi_de_barres = models.CharField(u"Codi de barres pagament", blank=True, default=u"", max_length=100,help_text=u"Codi de barres pagament caixer ( el posa secretaria / coordinador(a) activitats )")
+
+    informacio_pagament = models.TextField(u"Informació pagament", blank=True, default=u"", help_text=u"Instruccions de pagament: entitat, concepte, import, ... ( el posa secretaria / coordinador(a) activitats )")
 
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
-    condicions_generals = models.TextField(blank=True, help_text=u"Condicions generals. (mètode de pagament, entrepans, entrades, comentaris...")
+    condicions_generals = models.TextField(blank=True, help_text=u"Aquesta informació arriba a les famílies. Condicions generals. (mètode de pagament, entrepans, entrades, comentaris...")
 
     participacio = models.CharField(u"Participació", editable=False, default=u"N/A", max_length=100,help_text=u"Nombre d’alumnes participants sobre el total possible. Per exemple: 46 de 60")
     
@@ -99,7 +101,7 @@ class Sortida(models.Model):
     
     feina_per_als_alumnes_aula = models.TextField(help_text=u"Descriu o comenta on els professors trobaran la feina que han de fer els alumnes que es quedin a l'aula. Si no queden alumnes a l'aula indica-ho.")
     
-    programa_de_la_sortida = models.TextField(verbose_name=u"Descripció de l'activitat",help_text=u"Descriu per als pares el programa de l'activitat: horaris, objectius, pagaments a empreses, recomanacions (crema solar, gorra, insecticida, ...), cal portar (boli, llibreta), altres informacions d'interès per a la família. Si no cal portar res cal indicar-ho.")
+    programa_de_la_sortida = models.TextField(verbose_name=u"Descripció de l'activitat",help_text=u"Aquesta informació arriba a les famílies. Descriu per als pares el programa de l'activitat: horaris, objectius, pagaments a empreses, recomanacions (crema solar, gorra, insecticida, ...), cal portar (boli, llibreta), altres informacions d'interès per a la família. Si no cal portar res cal indicar-ho.")
     
     comentaris_interns = models.TextField(blank=True, help_text=u"Espai per anotar allò que sigui rellevant de cares a l'activitat. Si no hi ha comentaris rellevants indica-ho.")
     
