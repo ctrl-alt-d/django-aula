@@ -542,7 +542,7 @@ def mostraGrupPromocionar(request, grup=""):
 
 
 @login_required
-@group_required(['consergeria'])
+@group_required(['consergeria','professors'])
 def detallAlumneHorari(request, pk, detall='all'):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
@@ -632,9 +632,18 @@ def detallAlumneHorari(request, pk, detall='all'):
          },
         context_instance=RequestContext(request))
 
+
 @login_required
 @group_required(['consergeria'])
-def cercaUsuari(request):
+def cercaUsuari_fromConsergeria(request, from_request="consergeria"):
+    return cercaUsuari(request, from_request)
+
+@login_required
+@group_required(['professors'])
+def cercaUsuari_fromAula(request, from_request="professors"):
+    return cercaUsuari(request, from_request)
+
+def cercaUsuari(request, from_request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
@@ -642,7 +651,13 @@ def cercaUsuari(request):
         formUsuari = triaAlumneSelect2Form(request.POST)  # todo: multiple=True (multiples alumnes de cop)
         if formUsuari.is_valid():
             alumne = formUsuari.cleaned_data['alumne']
-            return HttpResponseRedirect(r'/alumnes/detallAlumneHorari/{0}/all/'.format(alumne.pk))
+            next_url = r""
+            if from_request == "consergeria":
+                next_url = r'/alumnes/detallAlumneHorari/{0}/all/'
+            else:
+                next_url = r'/alumnes/detallAlumneHorariProfessors/{0}/all/'
+            return HttpResponseRedirect(next_url.format(alumne.pk))
+            
     else:
         formUsuari = triaAlumneSelect2Form()
     return render_to_response(
@@ -651,3 +666,8 @@ def cercaUsuari(request):
          'head': 'Triar usuari'
          },
         context_instance=RequestContext(request))
+
+
+
+
+    
