@@ -18,6 +18,8 @@ class AbstractAvaluacioQualitativa(models.Model):
     data_obrir_avaluacio = models.DateField( u'Primer dia per entrar Qualitativa',unique=True, null=False, help_text=u"Data a partir de la qual els professors podran entrar l'avaluació.")
     data_tancar_avaluacio = models.DateField( u'Darrer dia per entrar Qualitativa',unique=True, null=False, help_text=u"Darrer dia que tenen els professors per entrar la Qualitativa.")
     grups = models.ManyToManyField( 'alumnes.Grup', help_text = u"Tria els grups a avaluar." )    
+    data_obrir_portal_families = models.DateField( u'Primer dia per veure els resultats al portal famílies', null=True, blank=True, help_text=u"Els pares podran veure els resultats al portal famílies a partir de la data aquí introduïda.")
+    data_tancar_tancar_portal_families = models.DateField( u'Darrer dia per veure els resultats al portal famílies', null=True, blank=True, help_text=u"Els pares podran veure els resultats al portal famílies fins a la data aquí introduïda.")
     class Meta:
         abstract = True        
         ordering = ['data_obrir_avaluacio']  
@@ -33,6 +35,10 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
     assignatura = models.ForeignKey('assignatures.Assignatura')
     item = models.ForeignKey( "avaluacioQualitativa.ItemQualitativa", blank=True, null=True )
     frase_oberta = models.CharField(u'Frase oberta', max_length=120,  help_text = u'Frase oberta', blank=True)
+    
+    relacio_familia_revisada = models.DateTimeField( null=True, editable=False )    
+    relacio_familia_notificada = models.DateTimeField( null=True, editable=False ) 
+        
     class Meta:
         abstract = True        
         ordering = ['qualitativa','assignatura','alumne' ]
