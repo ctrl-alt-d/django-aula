@@ -30,6 +30,7 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
                     report = tools.classebuida()
                     
                     report.alumne = alumne
+                    capceleres_materies = set()
                     report.respostes = []
                     report.data = qualitativa.data_tancar_avaluacio.strftime( '%d de %B de %Y' )
                     
@@ -41,6 +42,11 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
                                         ).distinct():
                         resposta = tools.classebuida()
                         resposta.assignatura = assignatura.getLongName()
+                        
+                        te_tipus_assignatura = hasattr(resposta.assignatura, 'tipus_assignatura') 
+                        cacelera_txt = resposta.assignatura.tipus_assignatura.capcelera if te_tipus_assignatura else u"Matèria" 
+                        capceleres_materies.add( cacelera_txt )
+                        
                         resposta.frases = []
                         for respostaQualitativa in RespostaAvaluacioQualitativa.objects.filter(
                                          alumne = alumne,
@@ -54,6 +60,8 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
                         report.respostes.append( resposta )
 
                         #endfor resposta
+                    
+                    report.materia = u" / ".join( capceleres_materies )
                     
                     if report: reports.append( report )      
                     
@@ -75,10 +83,10 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
         resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
         #context = Context( {'reports' : reports, } )
         path = None
-        try:
-            path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/qualitativa.odt' )
-        except: 
+        path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/qualitativa.odt' )
+        if not os.path.isfile(path): 
             path = os.path.join(os.path.dirname(__file__), 'templates/qualitativa.odt')
+            
         renderer = Renderer(path, {'reports' : reports, }, resultat)  
         renderer.run()
         docFile = open(resultat, 'rb')

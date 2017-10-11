@@ -13,7 +13,7 @@ class AbstractTipusDAssignatura(models.Model):
     )
     tipus_assignatura = models.CharField(max_length=45, unique=True)
     ambit_on_prendre_alumnes = models.CharField(max_length=45,choices=AMBIT_CHOICES, default='G', blank=False, null=False)
-    capcelera = models.CharField(max_length=45, default=u"Matèria")
+    capcelera = models.CharField(max_length=45, default=u"Matèria") #per a la qualitativa
     class Meta:
         abstract = True        
         verbose_name = u"Tipus d'assignatura"
