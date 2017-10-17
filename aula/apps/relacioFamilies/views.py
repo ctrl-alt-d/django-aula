@@ -881,7 +881,10 @@ def elMeuInforme( request, pk = None ):
     qualitatives_alumne= { r.qualitativa for r in alumne.respostaavaluacioqualitativa_set.all() }
     avui = datetime.now().date()
     qualitatives_en_curs = [ q for q in qualitatives_alumne
-                               if q.data_obrir_portal_families <= avui <= q.data_tancar_tancar_portal_families
+                               if ( bool(q.data_obrir_portal_families) and
+                                    bool( q.data_tancar_tancar_portal_families ) and 
+                                    q.data_obrir_portal_families <= avui <= q.data_tancar_tancar_portal_families
+                                   )
                            ]
     
     
