@@ -15,6 +15,9 @@ from django.contrib.auth.decorators import login_required
 from aula.utils import tools
 from aula.apps.alumnes.models import Alumne
 
+#qualitativa
+
+
 #dates
 from datetime import date
 
@@ -873,7 +876,89 @@ def elMeuInforme( request, pk = None ):
         if not semiImpersonat:
             sortidesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
 
+
+    #----Qualitativa -----------------------------------------------------------------------------
+    qualitatives_alumne= { r.qualitativa for r in alumne.respostaavaluacioqualitativa_set.all() }
+    avui = datetime.now().date()
+    qualitatives_en_curs = [ q for q in qualitatives_alumne
+                               if q.data_obrir_portal_families <= avui <= q.data_tancar_tancar_portal_families
+                           ]
     
+    
+    if detall in ['all', 'qualitativa'] and qualitatives_en_curs:
+        
+        respostes = alumne.respostaavaluacioqualitativa_set.filter( qualitativa__in = qualitatives_en_curs )
+        respostesNoves = respostes.filter( relacio_familia_revisada__isnull = True )
+        
+        taula = tools.classebuida()
+        taula.codi = nTaula; nTaula+=1
+        taula.tabTitle = u"Avaluació qualitativa {0}".format( u"!" if respostesNoves.exists() else "" )
+    
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+    
+        taula.capceleres = []
+        
+        capcelera = tools.classebuida()
+        capcelera.amplade = 100
+        capcelera.contingut = u'Qualitativa'
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+    
+        capcelera = tools.classebuida()
+        capcelera.amplade = 200
+        capcelera.contingut = u'Matèria' #todo Mòdul professional
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+    
+        capcelera = tools.classebuida()
+        capcelera.amplade = 900
+        capcelera.contingut = u''
+        taula.capceleres.append(capcelera)
+                
+        taula.fileres = []
+
+        respostes_pre = ( respostes
+                          .order_by( 'qualitativa__data_obrir_avaluacio','assignatura' )
+                         )
+        
+        keyf = lambda x: (x.qualitativa.nom_avaluacio + x.assignatura.nom_assignatura)
+        respostes_sort=sorted( respostes_pre, key=keyf )
+        from itertools import groupby
+             
+        for _ , respostes in groupby( respostes_sort, keyf ):
+            respostes=list(respostes)
+            filera = []
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = respostes[0].qualitativa.nom_avaluacio       
+            camp.negreta = False if bool( respostes[0].relacio_familia_revisada ) else True                
+            filera.append(camp)
+
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = respostes[0].assignatura
+            camp.negreta = False if bool( respostes[0].relacio_familia_revisada ) else True                
+            filera.append(camp)
+            
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.multipleContingut = []
+            for resposta in respostes:
+                camp.multipleContingut.append( ( u'{0}'.format( resposta.get_resposta_display() ), None, ) )        
+            camp.negreta = False if respostes[0].relacio_familia_revisada else True                
+            filera.append(camp)
+            
+            #--
+            taula.fileres.append( filera )
+    
+        report.append(taula)
+        if not semiImpersonat:
+            respostesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
+
     return render_to_response(
                 'report_detall_families.html',
                     {'report': report,

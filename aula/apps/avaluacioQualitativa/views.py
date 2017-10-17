@@ -323,12 +323,12 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     for alumne in alumnes:
         q1 = q2 = q3 = None
         qo = ""
-        respostes = (  alumne
+        respostes = list(  alumne
                       .respostaavaluacioqualitativa_set
                       .filter( aquestaQualitativa  )
                       .filter( frase_oberta = "" ) 
                     )
-        nRespostes = respostes.count()
+        nRespostes = len( respostes )
         if nRespostes > 0: q1 = respostes[0].item
         if nRespostes > 1: q2 = respostes[1].item
         if nRespostes > 2: q3 = respostes[2].item

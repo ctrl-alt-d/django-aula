@@ -46,7 +46,12 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
         verbose_name_plural = u"Respostes aval. Qualitative"
         unique_together = (("qualitativa","assignatura","alumne","professor","item",))
     
-
+    def get_resposta_display(self):
+        if hasattr(self,'item') and self.item is not None:
+            return self.item.text
+        else:
+            return self.frase_oberta
+            
     
 
     
