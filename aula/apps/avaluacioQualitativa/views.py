@@ -17,6 +17,9 @@ from django.shortcuts import render_to_response, get_object_or_404
 
 #otherfrom alumnes.forms import grupfrom alumnes.forms import grup
 
+from django.contrib import messages
+from django.utils.safestring import SafeText
+
 from django.forms.models import modelformset_factory, modelform_factory
 from aula.apps.avaluacioQualitativa.models import ItemQualitativa, AvaluacioQualitativa, RespostaAvaluacioQualitativa
 from aula.utils import tools
@@ -310,9 +313,14 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     errors.add(error)
                 
             if totBe:
-                missatge = u'Dades actualitzades correctament'
+                missatge = u'Dades actualitzades correctament'                
             else:
                 missatge = u'Hi ha hagut errors actualitzant les dades'
+    
+    for missatge in errors:
+        messages.error(request,  missatge )
+    if not bool(errors):
+        messages.success(request, u"Dades actualitzades correctament")
     
     #--- Això sempre --------------------------------------------------
     formF=modelform_factory( Assignatura, fields=[ 'nom_assignatura' ]  )
@@ -368,7 +376,22 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     
         formset.append( form )
         #TODO: cal posar en mode readonly en cas d'estat tancat el periode de qualitativa.
-            
+        
+    if assignatura.codi_assignatura == assignatura.nom_assignatura:
+        msg="""En l'avaluació qualitativa, al canviar el codi de la matèria o optatives (ESO i Batxillerat) 
+        o Mòdul Formatiu (Cicles) us demanaríem que escrigueu el nom en forma de Títol (no en majúscules) 
+        per  unificar la visualització de matèries a l'horari quan el mirin els pares des del Djau.<br><br>
+
+        Exemples:<br>
+        <ul>
+        <li>Matèria comuna: Nom de la matèria. P.ex.   Tecnologia</li>
+        <li>Optatives ESO:  OPT Nom de la matèria. Pex,  OPT Dibuix Geomètric</li>
+        <li>Modalitat BTX: Nom de la matèria P.ex Biologia</li>
+        <li>Mòduls CFGM: codi Nom del mòdul.  P. ex. MP10 Empresa i administració</li>
+        </ul>
+        """
+        messages.warning(request,  SafeText(msg ) )
+        
     return render_to_response(
                   tipusForm, 
                   { "formset": formset,
