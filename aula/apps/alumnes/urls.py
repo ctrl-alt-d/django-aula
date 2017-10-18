@@ -41,7 +41,17 @@ urlpatterns = patterns('aula.apps.alumnes.views',
    url(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', 'detallAlumneHorari',
         name="consergeria__usuari__cercaresultat"),
 
-   url(r'^cercaUsuari/$', 'cercaUsuari',
+   url(r'^cercaUsuari/$', 'cercaUsuari_fromConsergeria',
         name="consergeria__usuari__cerca"),
+
+   url(r'^detallAlumneHorariProfessors/(?P<pk>\d+)/(?P<detall>\w+)/$', 'detallAlumneHorari',
+        name="aula__alumnes__cercaresultat"),
+
+   url(r'^cercaUsuariProfessors/$', 'cercaUsuari_fromAula',
+        name="aula__alumnes__cerca"),
+
+    url(r'^blanc/$', 'blanc',
+        name="aula__alumnes__blanc"),                       
+
 )
 

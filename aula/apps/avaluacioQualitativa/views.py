@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
 #workflow
-#from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 
 #excepcions
@@ -16,6 +16,9 @@ from django.shortcuts import render_to_response, get_object_or_404
 #from django.http import Http404
 
 #otherfrom alumnes.forms import grupfrom alumnes.forms import grup
+
+from django.contrib import messages
+from django.utils.safestring import SafeText
 
 from django.forms.models import modelformset_factory, modelform_factory
 from aula.apps.avaluacioQualitativa.models import ItemQualitativa, AvaluacioQualitativa, RespostaAvaluacioQualitativa
@@ -261,7 +264,15 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     
         form = formF( request.POST, instance = assignatura , prefix = str( assignatura.pk ) )
         if form.is_valid():
-            form.save()
+            assignatura=form.save(commit=False)
+            if not bool(assignatura.nom_assignatura):
+                errors.add( u"Cal posar un nom a l'assignatura." )
+                totBe = False
+            else:             
+                assignatura=form.save()
+        else:
+            errors.add( u"Error canviant el nom de l'assignatura." )
+            totBe = False
         
         for alumne in alumnes:
             form=qualitativaItemsForm(
@@ -310,9 +321,18 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     errors.add(error)
                 
             if totBe:
-                missatge = u'Dades actualitzades correctament'
+                missatge = u'Dades actualitzades correctament'                
             else:
                 missatge = u'Hi ha hagut errors actualitzant les dades'
+    
+        for missatge in errors:
+            messages.error(request,  missatge )
+        if not bool(errors):
+            messages.success(request, u"Dades actualitzades correctament")
+        if totBe:
+            #redirect
+            url_next = r"/avaluacioQualitativa/entraQualitativa/{}/{}/{}/".format( qualitativa_pk, assignatura_pk, grup_pk  )
+            return HttpResponseRedirect( url_next )
     
     #--- Això sempre --------------------------------------------------
     formF=modelform_factory( Assignatura, fields=[ 'nom_assignatura' ]  )
@@ -323,12 +343,12 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     for alumne in alumnes:
         q1 = q2 = q3 = None
         qo = ""
-        respostes = (  alumne
+        respostes = list(  alumne
                       .respostaavaluacioqualitativa_set
                       .filter( aquestaQualitativa  )
                       .filter( frase_oberta = "" ) 
                     )
-        nRespostes = respostes.count()
+        nRespostes = len( respostes )
         if nRespostes > 0: q1 = respostes[0].item
         if nRespostes > 1: q2 = respostes[1].item
         if nRespostes > 2: q3 = respostes[2].item
@@ -368,7 +388,22 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     
         formset.append( form )
         #TODO: cal posar en mode readonly en cas d'estat tancat el periode de qualitativa.
-            
+        
+    if assignatura.codi_assignatura == assignatura.nom_assignatura:
+        msg=u"""En l'avaluació qualitativa, al canviar el codi de la matèria o optatives (ESO i Batxillerat) 
+        o Mòdul Formatiu (Cicles) us demanaríem que escrigueu el nom en forma de Títol (no en majúscules) 
+        per  unificar la visualització de matèries a l'horari quan el mirin els pares des del Djau.<br><br>
+
+        Exemples:<br>
+        <ul>
+        <li>Matèria comuna: Nom de la matèria. P.ex.   Tecnologia</li>
+        <li>Optatives ESO:  OPT Nom de la matèria. Pex,  OPT Dibuix Geomètric</li>
+        <li>Modalitat BTX: Nom de la matèria P.ex Biologia</li>
+        <li>Mòduls CFGM: codi Nom del mòdul.  P. ex. MP10 Empresa i administració</li>
+        </ul>
+        """
+        messages.warning(request,  SafeText(msg ) )
+        
     return render_to_response(
                   tipusForm, 
                   { "formset": formset,

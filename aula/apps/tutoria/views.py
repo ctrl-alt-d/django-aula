@@ -1103,7 +1103,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
     professor = User2Professor( user )     
     
-    alumne = Alumne.objects.get( pk = pk )
+    alumne = get_object_or_404(Alumne, pk = pk )
     
     esTutorat = l4 or \
                 professor in alumne.tutorsDeLAlumne() or \

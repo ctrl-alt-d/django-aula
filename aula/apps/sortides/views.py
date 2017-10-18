@@ -94,6 +94,7 @@ def imprimir( request, pk ):
         o.terminipagament = u"" if not bool( instance.termini_pagament ) else u"abans del {0}".format( instance.termini_pagament.strftime( '%d/%m/%Y' ) ) 
         report.append(o)
         o.barres = barres
+        o.informacio_pagament = instance.informacio_pagament.split("\n") or ['-',]
         o.te_codi_barres = bool(instance.codi_de_barres)
 
     #from django.template import Context                              
@@ -372,6 +373,7 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
         form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
+        form.fields["informacio_pagament"].widget.attrs['disabled'] = u"disabled"
         
     #si no és propietari tot a disabled
     deshabilitat = ( instance.id and 

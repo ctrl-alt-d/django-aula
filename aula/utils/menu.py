@@ -120,7 +120,15 @@ def calcula_menu( user , path ):
                ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
                   (
                       ("Presencia", 'aula__horari__horari', pr, None, None ),
-                      ("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None, None ),
+                      #("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None, None ),
+
+                      ("Alumnes", 'aula__alumnes__blanc', pr, None,
+                          ( 
+                            ("Els meus alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None),
+                            ("Cerca alumne", 'aula__alumnes__cerca', pr, None ),
+                          ),                        
+                      ),                                                            
+
                       ("Incidències", 'aula__incidencies__blanc', pr, ( u'!', 'info' ) if teExpulsionsSenseTramitar else None,
                           ( 
                             ("Incidències", 'aula__incidencies__les_meves_incidencies', pr, ( u'!', 'info' ) if teExpulsionsSenseTramitar else None),
