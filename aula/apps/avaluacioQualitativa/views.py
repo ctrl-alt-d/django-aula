@@ -390,7 +390,7 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
         #TODO: cal posar en mode readonly en cas d'estat tancat el periode de qualitativa.
         
     if assignatura.codi_assignatura == assignatura.nom_assignatura:
-        msg="""En l'avaluació qualitativa, al canviar el codi de la matèria o optatives (ESO i Batxillerat) 
+        msg=u"""En l'avaluació qualitativa, al canviar el codi de la matèria o optatives (ESO i Batxillerat) 
         o Mòdul Formatiu (Cicles) us demanaríem que escrigueu el nom en forma de Títol (no en majúscules) 
         per  unificar la visualització de matèries a l'horari quan el mirin els pares des del Djau.<br><br>
 
