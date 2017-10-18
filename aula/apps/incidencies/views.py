@@ -7,7 +7,9 @@ from aula.apps.incidencies.forms import posaIncidenciaAulaForm, posaExpulsioForm
 from django import forms
 from aula.utils.forms import ckbxForm
 from django.conf import settings
-from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar, Table2_AlertesAcumulacioExpulsions
+from aula.apps.incidencies.table2_models import Table2_ExpulsioTramitar, Table2_AlertesAcumulacioExpulsions, \
+    Table2_IncidenciesMostrar, Table2_ExpulsionsPendentsTramitar, Table2_ExpulsionsPendentsPerAcumulacio, \
+    Table2_ExpulsionsIIncidenciesPerAlumne
 from django_tables2   import RequestConfig
 from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
@@ -763,7 +765,7 @@ def llistaIncidenciesProfessional( request ):
 
     for expulsio in professor.expulsio_set.all():
         alumne_str = unicode ( expulsio.alumne)
-        alumnes.setdefault( alumne_str, { 'alumne': expulsio.alumne, 'inicidencies': [], 'expulsions': []}  )
+        alumnes.setdefault( alumne_str, { 'alumne': expulsio.alumne, 'incidencies': [], 'expulsions': []}  )
         alumnes[alumne_str]['expulsions'].append( expulsio  )
 
     alumnesOrdenats = []
@@ -771,12 +773,52 @@ def llistaIncidenciesProfessional( request ):
         tupla = (alumneKey, alumnes[alumneKey], )
         alumnesOrdenats.append( tupla  )
 
+    #table = Table2_IncidenciesMostrar(alumnesOrdenats)
+    hi_ha_expulsions_pendents_tramitar=True
+    table2 = Table2_ExpulsionsPendentsTramitar(expulsionsPendentsTramitar)
+    if len(expulsionsPendentsTramitar)==0:
+        hi_ha_expulsions_pendents_tramitar=False
+
+    hi_ha_expulsions_daula=False
+    for expulsio in expulsionsPendentsTramitar:
+        if expulsio.es_expulsio_d_aula():
+            hi_ha_expulsions_daula=True
+            break
+
+    if not hi_ha_expulsions_daula:
+        table2.exclude = ('Assignatura', )
+
+    hi_ha_expulsions_per_acumulacio = True
+    if len(expulsionsPendentsPerAcumulacio)==0:
+        hi_ha_expulsions_per_acumulacio=False
+
+    table3 = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
+
+    diccionariTables = dict()
+    for alumne in alumnesOrdenats:
+            expulsionsPerAlumne = alumne[1]['expulsions']
+            default=[]
+            incidenciesPerAlumne = alumne[1].setdefault('incidencies',default)
+            expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
+                                                                                     +incidenciesPerAlumne)
+            diccionariTables[alumne[0]]=expulsionsIIncidenciesPerAlumne
+
+
+
+
+    #RequestConfig(request).configure(table)
+    #RequestConfig(request).configure(table2)
+
     return render_to_response(
                 'incidenciesProfessional.html',
-                {'alumnes': alumnesOrdenats,
+                {'table': table2,
+                 'alumnes': alumnesOrdenats,
                  'expulsionsPendentsTramitar': expulsionsPendentsTramitar,
+                 'expulsionsPendentsTramitarBooelan': hi_ha_expulsions_pendents_tramitar,
                  'expulsionsPendentsPerAcumulacio': expulsionsPendentsPerAcumulacio,
-                 'head': u'Incidències recullides per '+ nomProfessional ,
+                 'expulsionsPendentsPerAcumulacioBooelan': hi_ha_expulsions_per_acumulacio,
+                 'table2': table3,
+                 'expulsionsIIncidenciesPerAlumne': diccionariTables,
                 },
                 context_instance=RequestContext(request))        
 
