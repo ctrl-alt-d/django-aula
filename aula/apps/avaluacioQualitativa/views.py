@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
 #workflow
-#from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 
 #excepcions
@@ -264,7 +264,15 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     
         form = formF( request.POST, instance = assignatura , prefix = str( assignatura.pk ) )
         if form.is_valid():
-            form.save()
+            assignatura=form.save(commit=False)
+            if not bool(assignatura.nom_assignatura):
+                errors.add( u"Cal posar un nom a l'assignatura." )
+                totBe = False
+            else:             
+                assignatura=form.save()
+        else:
+            errors.add( u"Error canviant el nom de l'assignatura." )
+            totBe = False
         
         for alumne in alumnes:
             form=qualitativaItemsForm(
@@ -317,10 +325,14 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
             else:
                 missatge = u'Hi ha hagut errors actualitzant les dades'
     
-    for missatge in errors:
-        messages.error(request,  missatge )
-    if not bool(errors):
-        messages.success(request, u"Dades actualitzades correctament")
+        for missatge in errors:
+            messages.error(request,  missatge )
+        if not bool(errors):
+            messages.success(request, u"Dades actualitzades correctament")
+        if totBe:
+            #redirect
+            url_next = r"/avaluacioQualitativa/entraQualitativa/{}/{}/{}/".format( qualitativa_pk, assignatura_pk, grup_pk  )
+            return HttpResponseRedirect( url_next )
     
     #--- Això sempre --------------------------------------------------
     formF=modelform_factory( Assignatura, fields=[ 'nom_assignatura' ]  )
