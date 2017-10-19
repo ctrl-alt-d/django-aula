@@ -227,7 +227,7 @@ class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
                                             {% endif %}
                                             {% if record.es_incidencia_d_aula %}
                                                 <a class= "gi-2x" href="/incidencies/posaIncidenciaAula/{{record.control_assistencia.impartir.pk}}"> 
-                                                        <span class="glyphicon glyphicon-info-sign"/> 
+                                                        <span class="glyphicon glyphicon-eye-open"/> 
                                                 </a>
                                                 
                                             {% endif %}

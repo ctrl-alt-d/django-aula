@@ -700,6 +700,8 @@ def posaExpulsioPerAcumulacio( request, pk ):
         
             expulsio_despres_de_posar( expulsio )
             incidencies.update( es_vigent = False, provoca_expulsio = expulsio )
+            missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0} """.format( expulsio.alumne )
+            messages.info(request, missatge)
         except ValidationError, e:
             resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                         'warnings':  [], 'infos':  [], 'url_next': url_next }
