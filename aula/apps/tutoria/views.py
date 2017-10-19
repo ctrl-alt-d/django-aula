@@ -1643,7 +1643,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = unicode(resposta.item)        
+            camp.contingut = unicode(resposta.item if resposta.item is not None else resposta.frase_oberta)
             filera.append(camp)
     
             #--
