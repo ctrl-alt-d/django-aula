@@ -183,7 +183,7 @@ class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
         attrs={'th': {'width': '15%'}},
         template_code=u"""
                                         {% if record.dia_incidencia %}
-                                            Incidència {{ record.tipus }} 
+                                            {{ record.tipus }} 
                                         {% else %}
                                             Expulsió
                                         {% endif %}
