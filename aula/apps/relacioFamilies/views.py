@@ -886,13 +886,20 @@ def elMeuInforme( request, pk = None ):
                                     q.data_obrir_portal_families <= avui <= q.data_tancar_tancar_portal_families
                                    )
                            ]
-    
-    
+
     if detall in ['all', 'qualitativa'] and qualitatives_en_curs:
         
         respostes = alumne.respostaavaluacioqualitativa_set.filter( qualitativa__in = qualitatives_en_curs )
         respostesNoves = respostes.filter( relacio_familia_revisada__isnull = True )
-        
+
+        assignatures = list(set( [r.assignatura for r in respostes] ))
+        hi_ha_tipus_assignatura = ( bool(assignatures)
+                                    and assignatures[0]
+                                    and assignatures[0].tipus_assignatura is not None
+                                    and assignatures[0].tipus_assignatura.capcelera
+                                    )
+        asignatura_label = assignatures[0].tipus_assignatura.capcelera if hi_ha_tipus_assignatura else u"Matèria"
+
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = u"Avaluació qualitativa {0}".format( u"!" if respostesNoves.exists() else "" )
@@ -911,7 +918,7 @@ def elMeuInforme( request, pk = None ):
     
         capcelera = tools.classebuida()
         capcelera.amplade = 200
-        capcelera.contingut = u'Matèria' #todo Mòdul professional
+        capcelera.contingut = asignatura_label
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
