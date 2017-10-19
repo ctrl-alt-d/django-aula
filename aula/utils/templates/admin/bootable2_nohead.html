@@ -1,0 +1,70 @@
+{% spaceless %}
+{% load django_tables2 %}
+{% load i18n %}
+{% load humanize %}
+
+{% if table.page and table.page.paginator.count > 1 %}
+<div class="table-container">
+{% endif %}
+
+{% block table %}
+<table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %}>
+    {% nospaceless %}
+    {% block table.tbody %}
+    <tbody>
+        {% for row in table.page.object_list|default:table.rows %} {# support pagination #}
+        {% block table.tbody.row %}
+        <tr class="{% cycle "odd" "even" %}">
+            {% for column, cell in row.items %}
+                <td {{ column.attrs.td.as_html }}>{% if column.localize == None %}{{ cell }}{% else %}{% if column.localize %}{{ cell|localize }}{% else %}{{ cell|unlocalize }}{% endif %}{% endif %}</td>
+            {% endfor %}
+        </tr>
+        {% endblock table.tbody.row %}
+        {% empty %}
+        {% if table.empty_text %}
+        {% block table.tbody.empty_text %}
+        <tr><td colspan="{{ table.columns|length }}">{{ table.empty_text }}</td></tr>
+        {% endblock table.tbody.empty_text %}
+        {% endif %}
+        {% endfor %}
+    </tbody>
+    {% endblock table.tbody %}
+    {% block table.tfoot %}
+    <tfoot></tfoot>
+    {% endblock table.tfoot %}
+    {% endnospaceless %}
+</table>
+{% endblock table %}
+
+{% if table.page and table.page.paginator.count > 1 %}
+{% with table.page.paginator.count as total %}
+{% with table.page.object_list|length as count %}
+{% block pagination %}
+<div >
+  <ul class="pagination">
+  	{% for num in table.page.leading_range %} <li><a href="{% querystring table.prefixed_page_field=num %}">{{ num }}</a></li> {% endfor %}
+  	{% if table.page.leading_range %} <li><a href="#">...</a></li>{% endif %}
+    {% for num in table.page.main_range %}
+    		<li>
+    			<a href="{% querystring table.prefixed_page_field=num %}">
+    			{% if  num == table.page.number %}
+    			   <strong> {{ num }}  </strong>
+    			{% else %}
+    			<small> {{ num }}  </small>
+    			{% endif %}
+    			</a>
+    		</li>
+    {% endfor %}
+  	{% if table.page.trailing_range %} <li><a href="#">...</a></li>{% endif %}
+    {% for num in table.page.trailing_range %}  <li><a href="{% querystring table.prefixed_page_field=num %}">{{ num }}</a></li> {% endfor %}
+  </ul>
+</div>
+{% endblock pagination %}
+{% endwith %}
+{% endwith %}
+</div>
+{% endif %}
+{% endspaceless %}
+
+
+
