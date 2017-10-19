@@ -3,15 +3,17 @@
 from django.db import models
 
 class AbstractItemQualitativa(models.Model):
+    codi_agrupacio = models.CharField(u'Codi agrupació', max_length=10, blank=True, null=False,
+                                      help_text = u"Codi per facilitar l'entrada de la qualitativa. No apareix a l'informe a les famílies." )
     text = models.CharField(u'Item de la Qualitativa', max_length=120, unique=True, null=False, help_text = u"Important: No canvieu mai el significat d'una frase! Canviarieu els resultats de l'avaulació." )
     nivells = models.ManyToManyField( 'alumnes.Nivell', help_text = u"Tria els nivells on aquesta frase pot aparèixer." )
     class Meta:
         abstract = True                
-        ordering = ['text'] 
+        ordering = ['codi_agrupacio','text']
         verbose_name = u"Frase aval. qualitativa"
         verbose_name_plural = u"Frases aval. qualitativa"
     def __unicode__(self):
-        return  self.text
+        return  u"{0}.-{1}".format( self.codi_agrupacio, self.text )
 
 class AbstractAvaluacioQualitativa(models.Model):
     nom_avaluacio = models.CharField(u'Avaluació Qualitativa', max_length=120, unique=True, null=False, help_text = u'Ex: Avaluació qualitativa 1ra Avaluació')
