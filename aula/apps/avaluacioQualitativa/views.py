@@ -218,13 +218,18 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     errors = set()
         
     qualitativa_pk = int(qualitativa_pk)
-    qualitativa = AvaluacioQualitativa.objects.get( pk = qualitativa_pk )
+    qualitativa = get_object_or_404( AvaluacioQualitativa, pk = qualitativa_pk )
     
     assignatura_pk = int( assignatura_pk)
-    assignatura = Assignatura.objects.get( pk = assignatura_pk ) 
-    
+    assignatura = get_object_or_404( Assignatura, pk = assignatura_pk )
+
+    hi_ha_tipus_assignatura = (assignatura.tipus_assignatura is not None
+                               and assignatura.tipus_assignatura.capcelera
+                               )
+    assignatura_label = assignatura.tipus_assignatura.capcelera if hi_ha_tipus_assignatura else u"Matèria"
+
     grup_pk = int( grup_pk )
-    grup = Grup.objects.get( pk = grup_pk )
+    grup = get_object_or_404( Grup, pk = grup_pk )
     
     itemsQualitativa = ItemQualitativa.objects.filter( nivells__in = [ grup.curs.nivell ] )
     
@@ -263,6 +268,9 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
         formF=modelform_factory( Assignatura, fields=[ 'nom_assignatura' ]  )
     
         form = formF( request.POST, instance = assignatura , prefix = str( assignatura.pk ) )
+
+        form.fields['nom_assignatura'].label = assignatura_label
+
         if form.is_valid():
             assignatura=form.save(commit=False)
             if not bool(assignatura.nom_assignatura):
@@ -339,7 +347,9 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
     
     form = formF( instance = assignatura , prefix = str( assignatura.pk ) )
     formset.append( form )
-    
+
+    form.fields['nom_assignatura'].label = assignatura_label
+
     for alumne in alumnes:
         q1 = q2 = q3 = None
         qo = ""

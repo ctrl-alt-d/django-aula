@@ -15,3 +15,5 @@ static/*
 aula/apps/demo/tmp/export*
 aula/settings_local.py
 2tot.sh
+.idea/*
+.idea
