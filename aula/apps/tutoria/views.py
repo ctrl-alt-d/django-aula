@@ -595,12 +595,10 @@ def informeSetmanalPrint(request, pk, year, month, day, suport):
     teAlumnesTutoratsIndividuals = pk == 'all' and professor.tutorindividualitzat_set.count() > 0
     tePermis = l4 or esTutorDelGrup or teAlumnesTutoratsIndividuals
     if not tePermis:
-        return Http404
-        
+        raise Http404()
+
     errorsTrobats = None
-    
-    
-    
+
     try:
         dades = informeSetmanalMKTable(request, pk, year, month, day)
  
@@ -786,7 +784,7 @@ def justificaNext(request, pk):
     esTutor = professor in  control.alumne.tutorsDeLAlumne() 
     tePermis = l4 or esTutor
     if not tePermis:
-        return Http404
+        raise Http404()
         pass
 
     justificada = EstatControlAssistencia.objects.get( codi_estat = 'J' )
