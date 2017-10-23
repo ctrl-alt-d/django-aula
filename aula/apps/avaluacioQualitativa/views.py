@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #templates
+from django.db.utils import IntegrityError
 from django.template import RequestContext
 
 #auth
@@ -300,14 +301,17 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     if form.cleaned_data['q3']: respostes.add(form.cleaned_data['q3'])
                     #if form.cleaned_data['q4']: respostes.add(form.cleaned_data['q4'])
                     for resposta in respostes:
-                        novaResposta = RespostaAvaluacioQualitativa()
-                        novaResposta.alumne = alumne
-                        novaResposta.item = resposta
-                        novaResposta.professor = professor
-                        novaResposta.qualitativa = qualitativa
-                        novaResposta.assignatura = assignatura 
-                        novaResposta.credentials = (user, l4)
-                        novaResposta.save()
+                        try:
+                            novaResposta.alumne = alumne
+                            novaResposta.item = resposta
+                            novaResposta.professor = professor
+                            novaResposta.qualitativa = qualitativa
+                            novaResposta.assignatura = assignatura
+                            novaResposta.credentials = (user, l4)
+                            novaResposta.save()
+                        except IntegrityError as e:
+                            errors.add(u"Hi ha hagut un error assignant qualitativa a {alumne}. Comprova-ho.".format(alumne))
+
                     if form.cleaned_data['qo']: 
                         novaResposta = RespostaAvaluacioQualitativa()
                         novaResposta.alumne = alumne
