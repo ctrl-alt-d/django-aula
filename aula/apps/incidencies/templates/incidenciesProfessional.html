@@ -33,9 +33,9 @@
     <div class="col-sm-8 col-xs-12">
         <span class="glyphicon glyphicon-exclamation-sign"> </span> <strong>Expulsions/Indicèndies per alumne</strong>
     </div>
-    {% for alumne,taula in expulsionsIIncidenciesPerAlumne.items %}
+    {% for alumne_grup,taula in expulsionsIIncidenciesPerAlumne.items %}
         <div class="col-sm-8 col-xs-12">
-                  <span class="glyphicon glyphicon-user"> </span> <strong> {{ alumne }}</strong>
+                  <span class="glyphicon glyphicon-user"> </span> <strong> {{ alumne_grup }} </strong>
             </div>
         {% render_table taula %}
     {% endfor %}

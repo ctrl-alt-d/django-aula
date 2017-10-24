@@ -179,8 +179,33 @@ class Table2_ExpulsionsPendentsPerAcumulacio(tables.Table):
 
 class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
 
+    Eliminar = tables.TemplateColumn(
+        verbose_name=u" ",
+        attrs={'th': {'width': '4%'}},
+        template_code=u"""
+                                                {% if not record.es_incidencia_d_aula and not record.dia_expulsio %} 
+                                                        <a style="color:red" href="/incidencies/eliminaIncidencia/{{record.pk}}"> 
+                                                            <span class="glyphicon glyphicon-remove"/> 
+                                                        </a>
+                                                {% endif %}
+                                                {% if record.dia_expulsio %}
+                                                    <a href="/incidencies/editaExpulsio/{{ record.pk }}/"> 
+                                                            <span class="glyphicon glyphicon-pencil"/> 
+                                                    </a>
+                                                {% endif %}
+                                                {% if record.es_incidencia_d_aula %}
+                                                    <a class= "gi-2x" href="/incidencies/posaIncidenciaAula/{{record.control_assistencia.impartir.pk}}"> 
+                                                            <span class="glyphicon glyphicon-eye-open"/> 
+                                                    </a>
+
+                                                {% endif %}
+                                                """,
+        orderable=False,
+    )
+
     Tipus = tables.TemplateColumn(
-        attrs={'th': {'width': '15%'}},
+        verbose_name=u" ",
+        attrs={'th': {'width': '10%'}},
         template_code=u"""
                                         {% if record.dia_incidencia %}
                                             {{ record.tipus }} 
@@ -191,51 +216,30 @@ class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
         orderable=False,
     )
     DataAsignatura = tables.TemplateColumn(
+        verbose_name=u" ",
         attrs={'th': {'width': '35%'}},
-        verbose_name=u"Data/Assignatura",
+        #verbose_name=u"Data/Assignatura",
         template_code=u"""
-
                                             {{ record.dia_expulsio }} {{ record.franja_expulsio }} {{ record.get_estat_display }}
                                             {{ record.dia_incidencia }}
                                             {{ record.franja_incidencia }}
                                             {{ record.control_assistencia.impartir.horari.assignatura}} 
-                                            
                                             """,
         orderable=False,
     )
     Motiu = tables.TemplateColumn(
-        attrs={'th': {'width': '46%'}},
+        verbose_name=u" ",
+        #attrs={'th': {'width': '46%'}},
         template_code=u"""
                                             {{record.mini_motiu}}
                                             {{record.descripcio_incidencia}}
                                             """,
         orderable=False,
     )
-    Eliminar = tables.TemplateColumn(
-        attrs={'th': {'width':'4%'}} ,
-        verbose_name=u" ",
-        template_code=u"""
-                                            {% if not record.es_incidencia_d_aula and not record.dia_expulsio %} 
-                                                    <a style="color:red" href="/incidencies/eliminaIncidencia/{{record.pk}}"> 
-                                                        <span class="glyphicon glyphicon-remove"/> 
-                                                    </a>
-                                            {% endif %}
-                                            {% if record.dia_expulsio %}
-                                                <a href="/incidencies/editaExpulsio/{{ record.pk }}/"> 
-                                                        <span class="glyphicon glyphicon-pencil"/> 
-                                                </a>
-                                            {% endif %}
-                                            {% if record.es_incidencia_d_aula %}
-                                                <a class= "gi-2x" href="/incidencies/posaIncidenciaAula/{{record.control_assistencia.impartir.pk}}"> 
-                                                        <span class="glyphicon glyphicon-eye-open"/> 
-                                                </a>
-                                                
-                                            {% endif %}
-                                            """,
-        orderable=False,
-    )
+
 
     class Meta:
         # add class="paleblue" to <table> tag
+        show_header = False
         attrs = {"class": "paleblue table table-striped"}
         template = 'bootable2.html'

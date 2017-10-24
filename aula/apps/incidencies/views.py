@@ -760,14 +760,15 @@ def llistaIncidenciesProfessional( request ):
         alumnes.setdefault( alumne_str, {
                     'calTramitarExpulsioPerAcumulacio': calTramitarExpulsioPerAcumulacio,     
                     'exempleIncidenciaPerAcumulacio': exempleIncidenciaPerAcumulacio,      
-                    'alumne': incidencia.alumne, 
+                    'alumne': incidencia.alumne,
+                    'grup': incidencia.alumne.grup,
                     'incidencies': [], 
                     'expulsions': []}  )
         alumnes[alumne_str]['incidencies'].append( incidencia  )
 
     for expulsio in professor.expulsio_set.all():
         alumne_str = unicode ( expulsio.alumne)
-        alumnes.setdefault( alumne_str, { 'alumne': expulsio.alumne, 'incidencies': [], 'expulsions': []}  )
+        alumnes.setdefault( alumne_str, { 'alumne': expulsio.alumne, 'grup': expulsio.alumne.grup, 'incidencies': [], 'expulsions': []}  )
         alumnes[alumne_str]['expulsions'].append( expulsio  )
 
     alumnesOrdenats = []
@@ -803,7 +804,7 @@ def llistaIncidenciesProfessional( request ):
             incidenciesPerAlumne = alumne[1].setdefault('incidencies',default)
             expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
                                                                                      +incidenciesPerAlumne)
-            diccionariTables[alumne[0]]=expulsionsIIncidenciesPerAlumne
+            diccionariTables[alumne[0]+' - ' + unicode (alumne[1]['grup'])]=expulsionsIIncidenciesPerAlumne
 
 
 
