@@ -302,6 +302,7 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                     #if form.cleaned_data['q4']: respostes.add(form.cleaned_data['q4'])
                     for resposta in respostes:
                         try:
+                            novaResposta = RespostaAvaluacioQualitativa()
                             novaResposta.alumne = alumne
                             novaResposta.item = resposta
                             novaResposta.professor = professor
