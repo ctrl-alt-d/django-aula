@@ -131,11 +131,11 @@ class AbstractAlumne(models.Model):
     relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
     
     periodicitat_faltes = models.IntegerField( choices = PERIODICITAT_FALTES_CHOICES, blank=False,
-                                               default = 3,
+                                               default = 1,
                                                help_text = u'Interval de temps mínim entre dues notificacions')
   
     periodicitat_incidencies = models.BooleanField( choices = PERIODICITAT_INCIDENCIES_CHOICES, blank=False,
-                                               default = 3,
+                                               default = True,
                                                help_text = u'Periodicitat en la notificació de les incidències.'
                                                 )
 
