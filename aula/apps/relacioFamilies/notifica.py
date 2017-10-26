@@ -3,6 +3,8 @@
 import os
 import sys
 from django.conf import settings
+
+from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.apps.sortides.models import NotificaSortida
 from aula.apps.sortides.utils_sortides import notifica_sortides
 
@@ -35,7 +37,16 @@ def notifica():
     q_no_informat_adreca = Q( correu_relacio_familia_pare = '' ) & Q( correu_relacio_familia_mare = '' )
     
     llista_alumnes = Alumne.objects.filter(q_no_es_baixa).exclude( q_no_informat_adreca ).values_list('pk', flat=True)
-    
+
+    avui = datetime.now().date()
+    qualitatives_en_curs = [ q for q in AvaluacioQualitativa.objects.all()
+                               if ( bool(q.data_obrir_portal_families) and
+                                    bool( q.data_tancar_tancar_portal_families ) and
+                                    q.data_obrir_portal_families <= avui <= q.data_tancar_tancar_portal_families
+                                   )
+                           ]
+
+
     for alumne_id in llista_alumnes:
         try:
             alumne = Alumne.objects.get( pk = alumne_id )
@@ -48,20 +59,28 @@ def notifica():
                                                                           impartir__dia_impartir__gte = fa_2_setmanes,
                                                                           relacio_familia_notificada__isnull = True,
                                                                           estat__pk__in = presencies_notificar )
-            hiHaNovetatsPresencia = False
-            hiHaNovetats = False
+            noves_respostes_qualitativa = ( alumne
+                                            .respostaavaluacioqualitativa_set
+                                            .filter( qualitativa__in = qualitatives_en_curs )
+                                            .filter( relacio_familia_notificada__isnull = True )
+                                            )
+
             #comprovo si hi ha novetats de presencia i incidències
             fa_dies_que_no_notifiquem = alumne.relacio_familia_darrera_notificacio is None or \
                                         alumne.relacio_familia_darrera_notificacio < fa_n_dies
             hiHaNovetatsPresencia =  alumne.periodicitat_faltes > 0 and \
                                      fa_dies_que_no_notifiquem and \
                                      noves_faltes_assistencia.exists()
+            hiHaNovetatsQualitativa = noves_respostes_qualitativa.exists()
+            hiHaNovetatsSortides = noves_sortides.exists()
+            hiHaNovetatsIncidencies = ( alumne.periodicitat_incidencies and
+                                       ( noves_incidencies.exists() or noves_expulsions.exists() or noves_sancions.exists() )
+                                      )
             hiHaNovetats =  (
-                             hiHaNovetatsPresencia or 
-                             noves_sortides.exists() or
-                                ( alumne.periodicitat_incidencies and
-                                ( noves_incidencies.exists() or noves_expulsions.exists() or noves_sancions.exists() )
-                                )
+                             hiHaNovetatsQualitativa or
+                             hiHaNovetatsPresencia or
+                             hiHaNovetatsSortides or
+                             hiHaNovetatsIncidencies
                              )                  
             #print u'Avaluant a {0}'.format( alumne )
             enviatOK = False
@@ -103,6 +122,7 @@ def notifica():
                 noves_expulsions.update( relacio_familia_notificada = ara )
                 noves_sancions.update( relacio_familia_notificada = ara )
                 noves_faltes_assistencia.update( relacio_familia_notificada = ara )
+                noves_respostes_qualitativa.update( relacio_familia_notificada = ara )
                 #if hiHaNovetatsPresencia:
                 alumne.relacio_familia_darrera_notificacio = ara
                 alumne.save()
