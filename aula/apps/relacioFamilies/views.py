@@ -949,7 +949,7 @@ def elMeuInforme( request, pk = None ):
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = respostes[0].assignatura
+            camp.contingut = respostes[0].assignatura.nom_assignatura or respostes[0].assignatura
             camp.negreta = False if bool( respostes[0].relacio_familia_revisada ) else True                
             filera.append(camp)
             
