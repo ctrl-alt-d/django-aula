@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from itertools import groupby
 
 from django.conf import settings
 
@@ -12,6 +13,10 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 #helpers
+from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
+from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
+from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
+from aula.apps.sortides.models import Sortida, NotificaSortida
 from aula.utils import tools
 from aula.apps.alumnes.models import Alumne
 
@@ -234,7 +239,7 @@ def dadesRelacioFamilies( request ):
                         
             capcelera = tools.classebuida()
             capcelera.amplade = 70
-            capcelera.contingut = u'Actiu'
+            capcelera.contingut = u'Estat'
             taula.capceleres.append(capcelera)
 
             capcelera = tools.classebuida()
@@ -247,9 +252,31 @@ def dadesRelacioFamilies( request ):
             if grup == 'Altres':
                 consulta_alumnes = Q( pk__in = [ti.alumne.pk for ti in professor.tutorindividualitzat_set.all() ]  )
             else:
-                consulta_alumnes = Q( grup =  grup )           
-            
-            for alumne in Alumne.objects.filter(consulta_alumnes ):
+                consulta_alumnes = Q( grup =  grup )
+
+            alumnes = Alumne.objects.filter(consulta_alumnes )
+
+            familia_pendent_de_mirar_models = [
+                (u'qualitativa', RespostaAvaluacioQualitativa,),
+                (u'sortida(es)', NotificaSortida,),
+                (u'incidencies o observacions', Incidencia,),
+                (u'sanció(ns)', Sancio,),
+                (u'expulsió(ns)', Expulsio,),
+                (u'faltes assistència', ControlAssistencia,),
+            ]
+
+            familia_pendent_de_mirar = {}
+
+            for codi, model in familia_pendent_de_mirar_models:
+                familia_pendent_de_mirar[codi]= ( model
+                                                    .objects
+                                                    .filter( alumne__in = alumnes )
+                                                    .filter( relacio_familia_revisada__isnull = True )
+                                                    .filter( relacio_familia_notificada__isnull = False )
+                                                    .values_list( 'alumne__pk', flat=True )
+                                                  )
+
+            for alumne in alumnes:
                 
                 filera = []
                 
@@ -271,17 +298,15 @@ def dadesRelacioFamilies( request ):
                 camp = tools.classebuida()
                 camp.codi = alumne.pk
                 camp.enllac = None
-                nConnexions = 0
-                contingut = u'{0} {1}'.format(u'Sí' if alumne.esta_relacio_familia_actiu() else u'No', 
-                                                   u'({0})'.format(alumne.motiu_bloqueig) if alumne.motiu_bloqueig else '') #TODO
-                try:
-                    nConnexions = alumne.user_associat.LoginUsuari.filter(exitos=True).count()
-                    dataDarreraConnexio = alumne.user_associat.LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment
-                except:
-                    pass                
-                camp.multipleContingut = [ ( contingut, None,), ( u'( {0} connexs. )'.format(nConnexions) , None, ), ] 
+                bloquejat_text =  [ ( alumne.motiu_bloqueig, None ), ] if  alumne.motiu_bloqueig else []
+                nConnexions = alumne.user_associat.LoginUsuari.filter(exitos=True).count()
+                camp.multipleContingut = bloquejat_text + [ ( u'( {0} connexs. )'.format(nConnexions) , None, ), ]
                 if nConnexions > 0:
+                    dataDarreraConnexio = alumne.user_associat.LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment
                     camp.multipleContingut.append( ( u'Darrera Connx: {0}'.format(  dataDarreraConnexio.strftime( '%d/%m/%Y' ) ), None, ) )
+                for ambit in familia_pendent_de_mirar:
+                    if alumne.pk in familia_pendent_de_mirar[ambit]:
+                        camp.multipleContingut.append( (u"{} x revisar".format(ambit), None,) )
                 filera.append(camp)
                 
                 #-Acció--------------------------------------------
