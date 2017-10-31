@@ -45,6 +45,7 @@ def report_cartaAbsentisme( request, carta ):
                         'tipus3D': carta.tipus_carta == 'tipus3D',
                         }
         
+        
         renderer = Renderer(path, dades_report, resultat)  
         renderer.run()
         docFile = open(resultat, 'rb')
