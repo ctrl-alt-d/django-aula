@@ -546,8 +546,10 @@ def mostraGrupPromocionar(request, grup=""):
 def detallAlumneHorari(request, pk, detall='all'):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
-    
-    es_professor = user.groups.filter(name="professors").exists()
+
+    grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
+
+    mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
 
     qAvui = (Q(impartir__dia_impartir=datetime.today()))
     alumne = get_object_or_404( Alumne, pk=pk)
@@ -631,7 +633,7 @@ def detallAlumneHorari(request, pk, detall='all'):
         {'table': table,
          'alumne':alumne,
          'dia' : datetime.today().date(),
-         'es_professor': es_professor,
+         'mostra_detalls': mostra_detalls,
          },
         context_instance=RequestContext(request))
 

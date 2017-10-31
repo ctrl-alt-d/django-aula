@@ -8,7 +8,7 @@
       	  <span class="glyphicon glyphicon-user"> </span> {{ alumne }}<br />
           <span class="glyphicon glyphicon-calendar"> </span> {{ dia }} <br />
           <span class="glyphicon glyphicon-briefcase"> </span> {{ alumne.grup }}, Tutor(a): {{alumne.tutorsDeLAlumne_display}}<br />
-          {% if not es_professor %}
+          {% if mostra_detalls %}
           <span class="glyphicon glyphicon-home"> </span> {{ alumne.adreca }} ({{ alumne.localitat }})<br />
           <span class="glyphicon glyphicon-envelope"> </span> {{ alumne.correu_tutors }}<br />
           <span class="glyphicon glyphicon-earphone"> </span> {{ alumne.telefons }}<br />
