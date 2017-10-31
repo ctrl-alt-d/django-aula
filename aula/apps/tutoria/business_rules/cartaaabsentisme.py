@@ -6,7 +6,7 @@ from datetime import timedelta, date
 
 from aula.apps.alumnes.named_instances import curs_any_fi
 from django.db.models.loading import get_model
-
+from django.conf import settings
 
 def cartaabsentisme_clean( instance ):
     '''
@@ -14,10 +14,11 @@ def cartaabsentisme_clean( instance ):
     calcular tipus:
         tipus1 = primera carta tots
         tipus2 = segona carta tots
-        tipus3A = tercera carta ESO
-        tipus3B = tercera carta post obligatoria
+        tipus3A = tercera carta ESO menors 16 anys
+        tipus3B = carta Batxillerat
         tipus3C = cursa obligatoria i té més de 16 anys
-    
+        tipus3D = carta Cicles
+
     '''
     errors = []
     instance.__is_update = instance.pk is not None
@@ -83,28 +84,36 @@ def cartaabsentisme_clean( instance ):
                    .filter( estat = falta )
                    .count()
                    )
-        
-        if nfaltes < 15:
-            errors.append(u'Aquest alumne no ha acumulat 15 faltes des de la darrera carta' )
 
         
         #calculo tipus de carta    
         tipus_carta=None
-        if 1 <= carta_numero <= 2:
+        try:
+            te_mes_de_16 = (curs_any_fi() - instance.alumne.data_neixement.year) > 16
+        except:
+            te_mes_de_16 = False
+
+        if False:
+            pass
+
+        elif 1 <= carta_numero <= 2 and instance.alumne.cursa_nivell(u"ESO"):
             tipus_carta = 'tipus{0}'.format( carta_numero  )
-        elif carta_numero == 3 and instance.alumne.cursa_obligatoria():  
-            try:
-                te_mes_de_16 = (curs_any_fi() - instance.alumne.data_neixement.year) > 16
-            except:
-                te_mes_de_16 = False
-            if te_mes_de_16:
-                tipus_carta = 'tipus3C'
-            else:
-                tipus_carta = 'tipus3A'
-        elif carta_numero == 3 and not instance.alumne.cursa_obligatoria(): 
+
+        elif carta_numero == 3 and instance.alumne.cursa_nivell(u"ESO") and not te_mes_de_16:
+            tipus_carta = 'tipus3A'
+
+        elif carta_numero == 3 and instance.alumne.cursa_nivell(u"ESO") and te_mes_de_16:
+            tipus_carta = 'tipus3C'
+
+        elif 1 <= carta_numero <= 2 and not instance.alumne.curs_nivell(u"BTX"):
             tipus_carta = 'tipus3B'
+
+        elif 1 <= carta_numero <= 2 and not instance.alumne.curs_nivell(u"CICLES"):
+            tipus_carta = 'tipus3D'
+
         elif 1 <= carta_numero <= 3:
-            raise Exception("Error triant la carta a enviar a la familia")        
+            raise Exception("Error triant la carta a enviar a la familia")
+
         else:
             errors.append(u'Aquest alumne ja té tres cartes' )
 
@@ -112,8 +121,13 @@ def cartaabsentisme_clean( instance ):
         instance.tipus_carta = tipus_carta
         instance.faltes_des_de_data = faltes_des_de_data
         instance.faltes_fins_a_data = faltes_fins_a_data
-        instance.nfaltes = nfaltes    
-    
+        instance.nfaltes = nfaltes
+
+    llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get(instance.tipus_carta,
+                                                                  settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA)
+    if instance.nfaltes < llindar:
+        errors.append(u'Aquest alumne no ha acumulat {} faltes des de la darrera carta'.format(llindar))
+
     if len( errors ) > 0:
         raise ValidationError(errors)    
     

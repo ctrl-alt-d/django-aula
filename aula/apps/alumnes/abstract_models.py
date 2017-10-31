@@ -5,7 +5,7 @@ from datetime import date
 from django.utils.datetime_safe import datetime
 from aula.apps.usuaris.models import Professor, AlumneUser
 from aula.apps.tutoria.models import SeguimentTutorial
-from aula.apps.alumnes.named_instances import Nivells_no_obligatoris
+from aula.apps.alumnes.named_instances import Nivells_no_obligatoris, Cursa_nivell
 from django.utils import timezone
 
 class AbstractNivell(models.Model):
@@ -210,6 +210,8 @@ class AbstractAlumne(models.Model):
     def cursa_obligatoria(self):
         return self.grup.curs.nivell not in Nivells_no_obligatoris()
 
+    def cursa_nivell(self, nivell_txt):
+        return Cursa_nivell(nivell_txt, self)
 
 
 

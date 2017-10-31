@@ -1648,9 +1648,8 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
             taula.fileres.append( filera )
     
         report.append(taula)    
-        
 
-#----------------
+    #----------------
     
     return render_to_response(
                 'report.html',

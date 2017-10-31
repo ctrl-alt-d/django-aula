@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from django.db.models.loading import get_model
+from django.conf import settings
 
 
 def Nivells_no_obligatoris():
@@ -9,6 +10,9 @@ def Nivells_no_obligatoris():
 def Nivells_obligatoris():
     Nivell = get_model( 'alumnes','Nivell')
     return Nivell.objects.filter( nom_nivell = 'ESO' )
+
+def Cursa_nivell(nivell_txt, alumne):
+    return alumne.grup.curs.nivell.nom_nivell in settings.CUSTOM_NIVELLS[nivell_txt]
 
 def curs_any_fi():
     Curs = get_model( 'alumnes','Curs')
