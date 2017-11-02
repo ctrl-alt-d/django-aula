@@ -174,7 +174,6 @@ def gestioCartesRpt(professor, l4):
                 llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta, 
                                                                              settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA )
                 cal_imprimir_carta = carta.nfaltes >= llindar
-                print u"{} - {} - {}".format( alumne, carta.nfaltes , llindar )
             except ValidationError, e:
                 print e
                 msg = e.message
