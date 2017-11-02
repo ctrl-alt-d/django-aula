@@ -96,7 +96,7 @@ def cartaabsentisme_clean( instance ):
         if False:
             pass
 
-        elif 1 <= carta_numero <= 2 and instance.alumne.cursa_nivell(u"ESO"):
+        elif carta_numero in [1,2,] and instance.alumne.cursa_nivell(u"ESO"):
             tipus_carta = 'tipus{0}'.format( carta_numero  )
 
         elif carta_numero == 3 and instance.alumne.cursa_nivell(u"ESO") and not te_mes_de_16:
@@ -105,13 +105,13 @@ def cartaabsentisme_clean( instance ):
         elif carta_numero == 3 and instance.alumne.cursa_nivell(u"ESO") and te_mes_de_16:
             tipus_carta = 'tipus3C'
 
-        elif 1 <= carta_numero <= 2 and not instance.alumne.cursa_nivell(u"BTX"):
+        elif carta_numero in [1,2,3,] and not instance.alumne.cursa_nivell(u"BTX"):
             tipus_carta = 'tipus3B'
 
-        elif 1 <= carta_numero <= 2 and not instance.alumne.cursa_nivell(u"CICLES"):
+        elif carta_numero in [1,2,3,] and not instance.alumne.cursa_nivell(u"CICLES"):
             tipus_carta = 'tipus3D'
 
-        elif 1 <= carta_numero <= 3:
+        elif carta_numero in [1,2,3,]:
             raise Exception("Error triant la carta a enviar a la familia")
 
         else:
