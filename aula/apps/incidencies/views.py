@@ -1393,28 +1393,33 @@ def editaSancio( request, pk ):
         formSelectIncidencies = incidenciesRelacionadesForm( data=request.POST,
                                                              querysetIncidencies = sancio.incidencia_set.all(),
                                                              querysetExpulsions  = sancio.expulsio_set.all()    )
-        if formSancio.is_valid() and can_delete.is_valid() and formSelectIncidencies.is_valid():
-            if can_delete.cleaned_data['ckbx'] and l4:
-                sancio.delete()
-            else:
-                formSancio.save()
 
-                dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
-                dia_prescriu_expulsio = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_EXPULSIO )                
-                                
-                incidencies = formSelectIncidencies.cleaned_data['incidenciesRelacionades']
-                incidencies_a_desvincular = sancio.incidencia_set.exclude( pk__in = [ i.pk for i in incidencies ] )
-                incidencies_a_desvincular.filter( dia_incidencia__gte = dia_prescriu_incidencia).update( es_vigent = True  )
-                incidencies_a_desvincular.update(  provoca_sancio = None )  
+        try:
+            if formSancio.is_valid() and can_delete.is_valid() and formSelectIncidencies.is_valid():
+                if can_delete.cleaned_data['ckbx'] and l4:
+                    sancio.delete()
+                else:
+                    formSancio.save()
 
-                expulsions = formSelectIncidencies.cleaned_data['expulsionsRelacionades']
-                expulsions_a_desvincular = sancio.expulsio_set.exclude( pk__in = [ i.pk for i in expulsions ] )
-                expulsions_a_desvincular.filter( dia_expulsio__gte = dia_prescriu_expulsio).update( es_vigent = True  )
-                expulsions_a_desvincular.update(  provoca_sancio = None )  
-                
-            url = '/incidencies/sancions/'
-            return HttpResponseRedirect( url )
-        
+                    dia_prescriu_incidencia = date.today() - timedelta(days=settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
+                    dia_prescriu_expulsio = date.today() - timedelta(days=settings.CUSTOM_DIES_PRESCRIU_EXPULSIO)
+
+                    incidencies = formSelectIncidencies.cleaned_data['incidenciesRelacionades']
+                    incidencies_a_desvincular = sancio.incidencia_set.exclude(pk__in=[i.pk for i in incidencies])
+                    incidencies_a_desvincular.filter(dia_incidencia__gte=dia_prescriu_incidencia).update(es_vigent=True)
+                    incidencies_a_desvincular.update(provoca_sancio=None)
+
+                    expulsions = formSelectIncidencies.cleaned_data['expulsionsRelacionades']
+                    expulsions_a_desvincular = sancio.expulsio_set.exclude(pk__in=[i.pk for i in expulsions])
+                    expulsions_a_desvincular.filter(dia_expulsio__gte=dia_prescriu_expulsio).update(es_vigent=True)
+                    expulsions_a_desvincular.update(provoca_sancio=None)
+
+                url = '/incidencies/sancions/'
+                return HttpResponseRedirect(url)
+        except ValueError as e:
+            msg=u"S'ha produit un error intern. Potser que hagis sortit de mode L4 a mig procés?. L'error intern és {}".format(e.message)
+            formSancio.add_error(field=None, error=msg)  #rebo errors perquè penso que es barreja mode L4 i no L4
+
     else:
         formSancio = editaSancioFormF( instance = sancio )
         can_delete = ckbxForm( data=request.POST, label = 'Esborrar sanció:', 
