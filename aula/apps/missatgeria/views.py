@@ -12,6 +12,8 @@ from django.template import RequestContext
 
 from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django_tables2 import RequestConfig
+from aula.apps.missatgeria.table2_models import MissatgesTable
 from aula.utils import tools
 from django.forms.models import modelform_factory
 from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
@@ -22,6 +24,7 @@ from django.contrib.auth.models import User, Group
 from aula.utils.forms import dataForm
 from django.shortcuts import get_object_or_404
 from aula.utils.decorators import group_required
+from aula.utils.my_paginator import DiggPaginator
 
 @login_required
 def elMeuMur( request, pg ):
@@ -30,26 +33,18 @@ def elMeuMur( request, pg ):
     (user, l4) = credentials
         
     q = user.destinatari_set.order_by('-missatge__data')
-    paginator = Paginator(q.all(), 20)
-    try:
-        dests = paginator.page(pg)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        dests = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), delive#workflow
-        dests = paginator.page(paginator.num_pages)
 
     if not request.session.has_key('impersonacio'):
         request.user.destinatari_set.filter(
                     moment_lectura__isnull = True,
-                    pk__in = [ m.pk for m in dests.object_list ]
                 ).update( moment_lectura = datetime.now() )
-            
+
+    table = MissatgesTable(q)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 15}).configure(table)
+
     return render_to_response(
-                'missatges.html',
-                    {'msgs' : dests,
-                     'head': 'Missatges' ,
+                    'missatges.html',
+                    {'table': table,
                     },
                     context_instance=RequestContext(request))
     
