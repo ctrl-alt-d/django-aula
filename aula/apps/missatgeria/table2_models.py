@@ -1,3 +1,5 @@
+# This Python file uses the following encoding: utf-8
+
 import django_tables2 as tables
 from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import linebreaksbr
