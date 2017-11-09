@@ -117,4 +117,14 @@ font-size: 11px;
 
 .gi-2x{font-size: 1.2em;}
 
+.gi-1x{font-size: 0.8em;}
 
+.mybtn-green {
+   color: green;
+}
+.mybtn-red {
+   color: red;
+}
+.mybtn-orange {
+   color: orange;
+}
