@@ -34,9 +34,9 @@ class MissatgesTable(tables.Table):
     )
 
     def render_Remitent(self,record):
-        if record.missatge.remitent.username[:4] == 'almn':
-            alumne = get_object_or_404(Alumne, user_associat_id=record.missatge.remitent.id)
-            return "Alumne: " + alumne.nom + " " + alumne.cognoms
+        if record.missatge.remitent.groups.filter( name = 'alumnes' ).exists():
+            alumne = get_object_or_404(Alumne, user_associat=record.missatge.remitent)
+            return u"Alumne: {alumne} ({tutors})".format( alumne=alumne, tutors = alumne.tutorsDeLAlumne_display() )
         else:
             missatge=''
             if record.missatge.remitent.last_name:
