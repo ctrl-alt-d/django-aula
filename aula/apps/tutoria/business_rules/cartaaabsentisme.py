@@ -105,10 +105,10 @@ def cartaabsentisme_clean( instance ):
         elif carta_numero == 3 and instance.alumne.cursa_nivell(u"ESO") and te_mes_de_16:
             tipus_carta = 'tipus3C'
 
-        elif carta_numero in [1,2,3,] and not instance.alumne.cursa_nivell(u"BTX"):
+        elif carta_numero in [1,2,3,] and instance.alumne.cursa_nivell(u"BTX"):
             tipus_carta = 'tipus3B'
 
-        elif carta_numero in [1,2,3,] and not instance.alumne.cursa_nivell(u"CICLES"):
+        elif carta_numero in [1,2,3,] and instance.alumne.cursa_nivell(u"CICLES"):
             tipus_carta = 'tipus3D'
 
         elif carta_numero in [1,2,3,]:
