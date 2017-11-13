@@ -72,7 +72,7 @@ class Sortida(models.Model):
     data_fi = models.DateField(  u"Afecta classes: Fins a",help_text=u"Darrer dia  lectiu de l'activitat", blank=True, null=True)
     franja_fi = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: fins a franja", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva afectatada per l'activitat", blank=True, null=True)
     
-    calendari_desde = models.DateTimeField( u"Horari real, desde:",
+    calendari_desde = models.DateTimeField( u"Horari real, des de:",
                                             help_text=u"Horari real de l'activitat, hora de sortida, aquest horari, a més, es publicarà al calendari del Centre")
     calendari_finsa = models.DateTimeField( u"Horari real, fins a:",
                                             help_text=u"Horari real de l'activitat, hora de tornada, aquest horari, a més, es publicarà al calendari del Centre")
