@@ -67,13 +67,15 @@ class Sortida(models.Model):
     comentari_organitza = models.CharField(max_length=50,help_text=u"En cas de no ser organitzat per un departament cal informar qui organitza l'activitat.", blank = True )
     
     alumnes_a_l_aula_amb_professor_titular =  models.BooleanField(u"Passar llista com normalment?", default=False, help_text = u"Els alumnes seran a l'aula i el professor de l'hora corresponent passarà llista com fa habitualment.")
-    data_inici = models.DateField( u"Presencia: Des de", help_text=u"Primer dia lectiu de l'activitat", blank=True, null=True)
-    franja_inici = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Des de", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva de l'activitat", blank=True, null=True)
-    data_fi = models.DateField(  u"Presencia: Fins a",help_text=u"Darrer dia  lectiu de l'activitat", blank=True, null=True)
-    franja_fi = models.ForeignKey(FranjaHoraria,verbose_name="Presencia: Fins a", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva de l'activitat que afecta a les classes", blank=True, null=True)
+    data_inici = models.DateField( u"Afecta classes: Des de", help_text=u"Primer dia lectiu afectat per l'activitat", blank=True, null=True)
+    franja_inici = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: Des de franja", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva afectada per l'activitat", blank=True, null=True)
+    data_fi = models.DateField(  u"Afecta classes: Fins a",help_text=u"Darrer dia  lectiu de l'activitat", blank=True, null=True)
+    franja_fi = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: fins a franja", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva afectatada per l'activitat", blank=True, null=True)
     
-    calendari_desde = models.DateTimeField( u"Calendari: Des de",help_text=u"Es publicarà al calendari del Centre")
-    calendari_finsa = models.DateTimeField( u"Calendari: Fins a",help_text=u"Es publicarà al calendari del Centre")
+    calendari_desde = models.DateTimeField( u"Horari real, desde:",
+                                            help_text=u"Horari real de l'activitat, hora de sortida, aquest horari, a més, es publicarà al calendari del Centre")
+    calendari_finsa = models.DateTimeField( u"Horari real, fins a:",
+                                            help_text=u"Horari real de l'activitat, hora de tornada, aquest horari, a més, es publicarà al calendari del Centre")
     
     calendari_public = models.BooleanField(u"Publicar activitat", default=True, help_text = u"Ha d'apareixer al calendari públic de la web")
     
