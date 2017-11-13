@@ -71,7 +71,7 @@ find . -print | grep ".py"$ | xargs -i sed -i.bak s/x/y/g {} > {}
 find . -print | grep ".html"$ | xargs -i sed -i.bak s/x/y/g {} > {}
 find . -print | grep ".bak"$ | xargs -i rm {}
 
-#------------
+#------------ 
 
 
 Treure tots els commits del desembre:
