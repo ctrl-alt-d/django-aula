@@ -1998,7 +1998,7 @@ def justificarSortida(request):
     
     professor = User2Professor( user )     
     
-    filtre = [ 'P', 'R', ]
+    filtre = [ 'P', 'R', 'G']
     
     sortides = ( Sortida
                    .objects
