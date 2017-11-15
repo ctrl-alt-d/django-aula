@@ -2,19 +2,21 @@
 
 #templates
 from django.template import RequestContext
+from django_tables2 import RequestConfig
 
-from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuariForm,\
-    recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm
-from aula.apps.alumnes.forms import triaAlumneSelect2Form
+from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuariForm, \
+    recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form
 
 from django.contrib.auth.decorators import login_required
+
+from aula.apps.usuaris.tables2_models import HorariProfessorTable
 from aula.utils.decorators import group_required
 
 from aula.apps.extKronowin.models import ParametreKronowin
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404, render
 
 #helpers
 from aula.utils import tools
@@ -498,4 +500,68 @@ def sendPasswdByEmail( request ):
          'head': u'Recuperació de Contrasenya' 
          },
         context_instance=RequestContext(request))
+
+
+@login_required
+@group_required(['consergeria'])
+def cercaProfessor_fromConsergeria(request, from_request="consergeria"):
+    return cercaProfessor(request, from_request)
+
+
+def cercaProfessor(request, from_request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    if request.method == 'POST':
+        formUsuari = triaProfessorSelect2Form(request.POST)  # todo: multiple=True (multiples profes de cop)
+        if formUsuari.is_valid():
+            professor = formUsuari.cleaned_data['professor']
+            next_url = r""
+            if from_request == "consergeria":
+                next_url = r'/usuaris/detallProfessorHorari/{0}/all/'
+            # else:
+            #     next_url = r'/usuaris/detallProfessorHorariProfessors/{0}/all/'
+            return HttpResponseRedirect(next_url.format(professor.pk))
+
+    else:
+        formUsuari = triaProfessorSelect2Form()
+    return render_to_response(
+        'form.html',
+        {'form': formUsuari,
+         'head': 'Triar usuari'
+         },
+        context_instance=RequestContext(request))
+
+
+
+@login_required
+@group_required(['consergeria','professors'])
+def detallProfessorHorari(request, pk, detall='all'):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    #grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
+
+    #mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
+    qAvui = datetime.today()-timedelta(68)
+    professor = get_object_or_404( Professor, pk=pk)
+    tutoria = professor.tutor_set.filter( professor = professor )
+
+    qHorari = Q(horari__professor = professor, dia_impartir = qAvui)
+    qGuardies = Q(professor_guardia = professor, dia_impartir = qAvui)
+    imparticions = Impartir.objects.filter( qHorari | qGuardies ).order_by( 'horari__hora')
+
+    table=HorariProfessorTable(imparticions)
+
+    RequestConfig(request).configure(table)
+
+    return render(
+        request,
+        'mostraInfoProfessorCercat.html',
+        {'table': table,
+         'professor':professor,
+         'tutoria': tutoria,
+         'dia' : datetime.today().date(),
+         #'mostra_detalls': mostra_detalls,
+         })
 

@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
+from aula.django_select2.forms import ModelSelect2Widget
 from aula.utils.widgets import DateTextImput
-from django.forms import ModelForm
+from django.forms import ModelForm, ModelChoiceField
 from django import forms
 from django.contrib.auth.models import User
 from aula.apps.usuaris.models import Professor
@@ -85,3 +86,13 @@ class sendPasswdByEmailForm(forms.Form):
                                help_text= u"Entra el teu correu electrònic." )   
     #captcha = ReCaptchaField()
 
+
+class triaProfessorSelect2Form(forms.Form):
+    professor = ModelChoiceField(
+                   widget=ModelSelect2Widget(
+                                        queryset=Professor.objects.all(),
+                                        search_fields = ['last_name__icontains','first_name__icontains'],
+                                        attrs={'style':"'width': '100%'"}
+                                                    ),
+                   queryset=Professor.objects.all(),
+                   required=True)

@@ -1,0 +1,23 @@
+{% extends "table2.html" %}
+
+{% block pretaula %}
+
+    <div class="row">
+		  <div class="col-sm-8 col-xs-12">
+	      <p class="well well-small">
+      	  <span class="glyphicon glyphicon-user"> </span> {{ professor }}<br />
+          <span class="glyphicon glyphicon-calendar"> </span> {{ dia }} <br />
+          <span class="glyphicon glyphicon-briefcase"> </span> Tutoria:
+           {%  if tutoria %}
+            {% for tutoritzat in tutoria %}
+               {{tutoritzat.grup}}
+            {% endfor %}
+           {% else %}
+               ----
+           {% endif %}
+           <br />
+          <span class="glyphicon glyphicon-envelope"> </span> {{ professor.email }}<br />
+          </div>
+    </div>
+
+{% endblock %}

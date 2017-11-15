@@ -29,8 +29,10 @@ urlpatterns = patterns('aula.apps.usuaris.views',
     url(r'^sendPasswdByEmail/$', 'sendPasswdByEmail', 
      name="nologin__usuari__send_pass_by_email"),
 
-
+    url(r'^cercaProfessor/$', 'cercaProfessor_fromConsergeria',
+     name="consergeria__professor__cerca"),
               
-    
+    url(r'^detallProfessorHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', 'detallProfessorHorari',
+     name="consergeria__professor__cercaresultat"),
 )
 
