@@ -170,7 +170,7 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
         if instance.professor_que_proposa not in instance.professors_responsables.all():
             instance.professors_responsables.add( instance.professor_que_proposa )
             
-        #actualitzem tutors alumnes
+        #actualitzem tutors alumnes  #TODO: falten tutors individualitzats
         tutors = Tutor.objects.filter( grup__id__in = instance.alumnes_convocats.values_list( 'grup', flat=True ).distinct() )
         instance.tutors_alumnes_convocats = [ t.professor for t in tutors ]
         
