@@ -543,7 +543,7 @@ def detallProfessorHorari(request, pk, detall='all'):
     #grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
 
     #mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
-    qAvui = datetime.today()-timedelta(68)
+    qAvui = datetime.today()
     professor = get_object_or_404( Professor, pk=pk)
     tutoria = professor.tutor_set.filter( professor = professor )
 

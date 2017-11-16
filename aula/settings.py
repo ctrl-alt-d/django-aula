@@ -16,7 +16,10 @@ CUSTOM_NIVELLS = { u"ESO": [u"ESO"],
                     u"CICLES": [u'GA',u'AF',u'SMX',u'DAW',u'FCT',u"CFA",u"CFI",],
                     u"INFORMATICA": [u'SMX',u'DAW'],
                   }
-
+CUSTOM_TIMEOUT = 15*60;
+CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
+                         u"professors":    15*60, # 15'
+                         }
 
 #Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 CUSTOM_TUTORS_INFORME = False
