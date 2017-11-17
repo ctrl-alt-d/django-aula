@@ -1,6 +1,8 @@
 import datetime
 from django.contrib.auth import logout
-from django.conf import settings
+
+from aula.utils.tools import calculate_my_time_off
+
 
 class MultipleProxyMiddleware(object):
     FORWARDED_FOR_FIELDS = [
@@ -37,9 +39,8 @@ class timeOutMiddleware(object):
         if request.user.is_authenticated():
             if 'lastRequest' in request.session:            
                 elapsedTime = datetime.datetime.now() - request.session['lastRequest']
-                maxim_timeout = max( settings.CUSTOM_TIMEOUT_GROUP.get( g.name, settings.CUSTOM_TIMEOUT )
-                                     for g in request.user.groups.all()  )
-                if elapsedTime.seconds > 15*60:
+                maxim_timeout = calculate_my_time_off(request.user)
+                if elapsedTime.seconds > maxim_timeout:
                     del request.session['lastRequest'] 
                     logout(request)
 

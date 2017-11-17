@@ -4,6 +4,7 @@
 from django import http
 from django.template.loader import get_template
 from django.template import Context
+from django.conf import settings
 
 import cStringIO as StringIO
 import cgi
@@ -15,6 +16,10 @@ except:
     pass
 
 #--------------------------------------------------
+
+def calculate_my_time_off(user):
+    return max(settings.CUSTOM_TIMEOUT_GROUP.get(g.name, settings.CUSTOM_TIMEOUT)
+               for g in user.groups.all())
 
 def getClientAdress( request ):
     
