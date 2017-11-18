@@ -16,7 +16,7 @@ class MissatgesTable(tables.Table):
                             {% endif %}
                             <span class="gi-2x">
                             {% if record.importancia == "PI" %}
-                                <span class="mybtn-green glyphicon glyphicon-info-sign"/>
+                                <span class="mybtn-blue glyphicon glyphicon-info-sign"/>
                             {% elif record.importancia == "VI" %}
                                 <span class="mybtn-red glyphicon glyphicon-exclamation-sign"/>
                             {% else %}
@@ -77,6 +77,12 @@ class MissatgesTable(tables.Table):
 			                            {% endfor %}
 			                        </ul>
                                     {% endif %}
+                                    """,
+        orderable=False,
+    )
+    Seguit = tables.TemplateColumn(
+        verbose_name=" ",
+        template_code=u"""
                                     {% if record.missatge.enllac %}
                                         <a  href="/missatgeria/llegeix/{{record.pk}}"> 
                                              {% if record.followed %}
@@ -89,7 +95,6 @@ class MissatgesTable(tables.Table):
                                     """,
         orderable=False,
     )
-
 
     class Meta:
         # add class="paleblue" to <table> tag

@@ -40,7 +40,7 @@ def elMeuMur( request, pg ):
                 ).update( moment_lectura = datetime.now() )
 
     table = MissatgesTable(q)
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 15}).configure(table)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 25}).configure(table)
 
     return render_to_response(
                     'missatges.html',
