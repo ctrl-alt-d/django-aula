@@ -133,7 +133,10 @@ class Sortida(models.Model):
         return txt_acompanyants
     
     def clean(self):
-        clean_sortida( self )    
+        clean_sortida( self )
+
+    def unicode(self):
+        return self.titol_de_la_sortida
 
 
     @staticmethod
@@ -177,7 +180,10 @@ class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne )
     sortida = models.ForeignKey(Sortida )
     relacio_familia_revisada = models.DateTimeField( null=True )    
-    relacio_familia_notificada = models.DateTimeField( null=True ) 
+    relacio_familia_notificada = models.DateTimeField( null=True )
+
+    def unicode(self):
+        return u"{} {}".format( self.alumne, self.sortida )
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
 from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_delete
