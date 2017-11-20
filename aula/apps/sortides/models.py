@@ -6,7 +6,9 @@ from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne
 from django.db.models import get_model
 from django.db.models import Q
+from django.utils.encoding import python_2_unicode_compatible
 
+@python_2_unicode_compatible
 class Sortida(models.Model):
     
     TIPUS_ACTIVITAT_CHOICES = (
@@ -135,7 +137,7 @@ class Sortida(models.Model):
     def clean(self):
         clean_sortida( self )
 
-    def unicode(self):
+    def __str__(self):
         return self.titol_de_la_sortida
 
 
@@ -176,13 +178,14 @@ class Sortida(models.Model):
         
         return l
 
+@python_2_unicode_compatible
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne )
     sortida = models.ForeignKey(Sortida )
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True )
 
-    def unicode(self):
+    def __str__(self):
         return u"{} {}".format( self.alumne, self.sortida )
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
