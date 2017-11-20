@@ -54,7 +54,7 @@ a.groups = [ g1, g2, g3 ]
 a.save()
 quit()
 
-
+ 
 #-- canviar dates del curs totes de cop:
 from datetime import date
 d1 = date( day=18, month=7, year=2013)
