@@ -96,7 +96,7 @@ class triaProfessorSelect2Form(forms.Form):
     professor = ModelChoiceField(
                    widget=ModelSelect2Widget(
                                         queryset=Professor.objects.all(),
-                                        search_fields ={'last_name__icontains', 'first_name__icontains'},
+                                        search_fields =('last_name__icontains', 'first_name__icontains',),
                                         attrs={'style':"'width': '100%'"}
                                                     ),
                    queryset=Professor.objects.all(),
