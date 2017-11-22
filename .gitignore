@@ -6,6 +6,7 @@ customising/docs/*
 customising/models.py
 customising/urls.py
 customising/views.py
+customising/templates/*
 env
 aula/db.sqlite
 .project
