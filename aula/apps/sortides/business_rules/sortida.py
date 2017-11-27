@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from aula.apps.tutoria.models import Tutor
 from django.db.models import get_model
 from datetime import  timedelta
+from django.conf import settings
 
 def clean_sortida( instance ):
 
@@ -26,7 +27,10 @@ def clean_sortida( instance ):
 #     ('E', u'Esborrany',),
 #     ('P', u'Proposada',),
 #     ('R', u'Revisada pel Coordinador',),
-#     ('G', u"Gestionada pel Cap d'estudis",), 
+#     ('G', u"Gestionada pel Cap d'estudis",),
+
+    if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
+        instance.informacio_pagament = settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT
     
     #Per estats >= G només direcció pot tocar:
     if bool(instance.instanceDB) and instance.instanceDB.estat in [ 'G' ]:   
@@ -90,11 +94,7 @@ def clean_sortida( instance ):
             errors.append( u"Només Direcció o el coordinador de sortides pot posar el codi de barres." )
     
     #només direcció o grup sortides pot tocar
-    if ( (not bool(instance.pk) and instance.informacio_pagament != '')
-          or 
-         ( bool(instance.instanceDB) and  
-           instance.instanceDB.informacio_pagament != instance.informacio_pagament)
-       ):
+    if ( instance.informacio_pagament != settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT) :
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot posar informació de pagament." )
     

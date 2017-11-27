@@ -64,11 +64,16 @@ def imprimir( request, pk ):
     #Preparo el codi de barres
     import time
     import barcode
+    from PIL import Image
     from barcode.writer import ImageWriter
     CodiBarres = barcode.get_barcode_class(u'code128')
     codi_barres = CodiBarres(instance.codi_de_barres or "x", writer=ImageWriter())
     barres = codi_barres.save("/tmp/barcode-{0}-{1}".format( time.time(), request.session.session_key ))
-        
+    im = Image.open(barres)
+    im=im.crop( (20,20,385,50,) )
+    s = im.size
+    #im = im.resize((int(s[0] * 0.8), int(s[1] * 0.8)))
+    im.save(barres)
 
         
     alumnes_que_hi_van = set( instance.alumnes_convocats.all() ) 
@@ -91,7 +96,7 @@ def imprimir( request, pk ):
         o.mitja = instance.get_mitja_de_transport_display()
         o.programa_de_la_sortida = instance.programa_de_la_sortida.split("\n") or ['',]
         o.condicions_generals = instance.condicions_generals.split("\n") or ['-',]
-        o.terminipagament = u"" if not bool( instance.termini_pagament ) else u"abans del {0}".format( instance.termini_pagament.strftime( '%d/%m/%Y' ) ) 
+        o.terminipagament = u"" if not bool( instance.termini_pagament ) else u"- darrer dia pagament {0} -".format( instance.termini_pagament.strftime( '%d/%m/%Y' ) )
         report.append(o)
         o.barres = barres
         o.informacio_pagament = instance.informacio_pagament.split("\n") or ['-',]

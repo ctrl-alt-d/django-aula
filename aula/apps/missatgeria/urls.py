@@ -17,6 +17,9 @@ urlpatterns = patterns('aula.apps.missatgeria.views',
                        
     url(r'^llegeix/(?P<pk>\d+)/$', 'llegeix', 
         name ="varis__avisos__seguir_missatge" ),
-    
-)
+
+    url(r'^enviaMissatgeProfessorsPas/$', 'enviaMissatgeProfessorsPas',
+       name="varis__prof_i_pas__envia_professors_i_pas"),
+
+    )
 

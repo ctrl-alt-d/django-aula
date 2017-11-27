@@ -1,10 +1,14 @@
 # This Python file uses the following encoding: utf-8
-from aula.django_select2.forms import ModelSelect2Widget
+from django.forms.models import ModelMultipleChoiceField
+
+from aula.django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
 from aula.utils.widgets import DateTextImput
 from django.forms import ModelForm, ModelChoiceField
 from django import forms
 from django.contrib.auth.models import User
-from aula.apps.usuaris.models import Professor
+from aula.apps.usuaris.models import Professor, ProfessorConserge
+
+
 #from aula.utils.captcha import ReCaptchaField
 
 class CanviDadesUsuari(ModelForm):
@@ -100,4 +104,16 @@ class triaProfessorSelect2Form(forms.Form):
                                         attrs={'style':"'width': '100%'"}
                                                     ),
                    queryset=Professor.objects.all(),
+                   required=True)
+
+
+class triaProfessorsConsergesSelect2Form(forms.Form):
+    professors_conserges = ModelMultipleChoiceField(
+                   label="Tria professors o PAS",
+                   widget=ModelSelect2MultipleWidget(
+                                        queryset=ProfessorConserge.objects.all(),
+                                        search_fields =('last_name__icontains', 'first_name__icontains',),
+                                        attrs={'style':"'width': '100%'"}
+                                                    ),
+                   queryset=ProfessorConserge.objects.all(),
                    required=True)

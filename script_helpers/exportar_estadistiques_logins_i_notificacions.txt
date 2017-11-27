@@ -1,0 +1,36 @@
+import csv
+import hashlib
+from django.template.defaultfilters import slugify
+
+f=open("/tmp/as.csv",'wb')
+w=csv.writer(f)
+row=["moment","tipus","usuari"]
+w.writerow(row)
+for a in Accio.objects.filter(tipus = "NF"):
+   row=[]
+   row.append(a.moment.strftime("%Y-%m-%d %H:%M:%S") )
+   row.append("notificacio")
+   row.append( hashlib.sha224(slugify(a.text)).hexdigest()[:7]  )
+   w.writerow(row)
+
+f.close()
+
+
+from aula.apps.usuaris.models import LoginUsuari
+import csv
+f=open("/tmp/als.csv",'wb')
+w=csv.writer(f)
+row=["moment","origen","grup","usuari"]
+w.writerow(row)
+for a in LoginUsuari.objects.filter(exitos=True).all():
+   row=[]
+   row.append(a.moment.strftime("%Y-%m-%d %H:%M:%S") )
+   row.append("intern" if "192.168." in a.ip else "extern")
+   row.append("professor" if a.usuari.groups.filter(name="professors").exists() 
+                          else ("consergeria" if a.usuari.groups.filter(name="consergeria").exists() 
+                                              else "alumnes" ) )
+   row.append( hashlib.sha224(slugify(a.usuari.id)).hexdigest()[:7]  )
+   w.writerow(row)
+
+f.close()
+

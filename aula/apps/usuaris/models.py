@@ -37,38 +37,74 @@ class AlumneUser(User):
                         
     def __unicode__(self):
         return unicode( self.getAlumne() )
-     
 
-#----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
 
 class ProfessorManager(models.Manager):
     def get_queryset(self):
-        grupProfessors, _ = Group.objects.get_or_create( name = 'professors' )
-        return super(ProfessorManager, self).get_queryset().filter( groups = grupProfessors   )
+        grupProfessors, _ = Group.objects.get_or_create(name='professors')
+        return super(ProfessorManager, self).get_queryset().filter(groups=grupProfessors)
 
 class Professor(User):
     objects = ProfessorManager()
+
     class Meta:
         proxy = True
-        ordering = ['last_name','first_name','username']
+        ordering = ['last_name', 'first_name', 'username']
 
     def getUser(self):
-        return User.objects.get( pk = self.pk )
-    
+        return User.objects.get(pk=self.pk)
+
     def nMissatgesNoLlegits(self):
-        self.destinatari_set.filter( moment_lectura__isnull = True ).count()
-                    
+        self.destinatari_set.filter(moment_lectura__isnull=True).count()
+
     def __unicode__(self):
-        nom = self.first_name + u' ' + self.last_name if self.last_name else self.username 
-        return nom.title()  
-     
-def User2Professor( user ):
+        nom = self.first_name + u' ' + self.last_name if self.last_name else self.username
+        return nom.title()
+
+def User2Professor(user):
     professor = None
     try:
-        professor = Professor.objects.get( pk = user.pk )
+        professor = Professor.objects.get(pk=user.pk)
     except:
         pass
     return professor
+
+# ----------------  ------------------------------------------------------------------------------
+
+class ProfessorConsergeManager(models.Manager):
+    def get_queryset(self):
+        grupProfessors, _ = Group.objects.get_or_create(name='professors')
+        grupConsergeria, _ = Group.objects.get_or_create(name='consergeria')
+        return super(ProfessorConsergeManager, self).get_queryset().filter(groups__in=[grupProfessors, grupConsergeria])
+
+class ProfessorConserge(User):
+    objects = ProfessorConsergeManager()
+
+    class Meta:
+        proxy = True
+        ordering = ['last_name', 'first_name', 'username']
+
+    def getUser(self):
+        return User.objects.get(pk=self.pk)
+
+    def nMissatgesNoLlegits(self):
+        self.destinatari_set.filter(moment_lectura__isnull=True).count()
+
+    def __unicode__(self):
+        nom = u"{} {}".format( self.first_name, self.last_name ) if self.last_name else self.username
+        rol = u" (consergeria)" if self.groups.filter(name="consergeria").exists() else u" (professorat)"
+        nom += rol
+        return nom
+
+def User2ProfessorConserge(user):
+    professor = None
+    try:
+        professor = ProfessorConserge.objects.get(pk=user.pk)
+    except:
+        pass
+    return professor
+
 
 #----------------------------------------------------------------------------------------------
 

@@ -14,6 +14,7 @@ from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django_tables2 import RequestConfig
 from aula.apps.missatgeria.table2_models import MissatgesTable
+from aula.apps.usuaris.forms import triaProfessorsConsergesSelect2Form
 from aula.utils import tools
 from django.forms.models import modelform_factory
 from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
@@ -25,6 +26,7 @@ from aula.utils.forms import dataForm
 from django.shortcuts import get_object_or_404
 from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
+from django.contrib import messages
 
 @login_required
 def elMeuMur( request, pg ):
@@ -73,25 +75,27 @@ def enviaMissatgeTutors( request ):
             if len( tutors ) == 0:
                 formAlumne._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''No trobat el tutor d'aquest alumne. Cal trucar al cap d'estudis.'''  )
             else:
-                msg.save()
                 request.session['consergeria_darrera_data'] = data
-                strTutors = u''
-                separador = ''
+                txt2 = msg.text_missatge
+                txt = u'''Missatge relatiu a un teu alumne tutorat'''
+                msg.text_missatge = txt
+                msg.enllac = '/tutoria/justificaFaltes/{0}/{1}/{2}/{3}'.format(alumne.pk, data.year, data.month, data.day)
+                msg.save()
+                msg.afegeix_info(u"Alumne: {alumne}".format(alumne=alumne))
+                msg.afegeix_info(u"Data relativa a l'avís: {data}".format(data=data))
+                msg.afegeix_info(u"Avís: {txt2}".format(txt2=txt2))
                 for tutor in tutors:
-                    txt = u'''Missatge relatiu al teu alumne tutorat {0}: Amb data {1}, {2}'''.format( unicode(alumne), unicode(data), msg.text_missatge)
-                    msg.text_missatge = txt
                     msg.envia_a_usuari(tutor.getUser(), 'IN')
-                    msg.enllac = '/tutoria/justificaFaltes/{0}/{1}/{2}/{3}'.format( alumne.pk, data.year, data.month, data.day )
-                    msg.save()
-                    strTutors += separador + u'Sr(a)' + unicode(tutor )
-                    separador = u', '
-                txtMsg = msg.text_missatge
-                
+                strTutors = u", ".join(  u'Sr(a) {}'.format( tutor) for tutor in tutors )
+
                 #envio al que ho envia:
-                msg = Missatge( remitent = user, text_missatge = u'''Avís a tutors de l'alumne {0} enviat a {1}. El text de l'avís és: "{2}"'''.format( alumne, strTutors, txtMsg ) )
+                msg = Missatge( remitent = user,
+                                text_missatge = u'''Enviat avís a tutors de l'alumne {0} ({1}). El text de l'avís és: "{2}"'''.format( alumne, strTutors, msg.text_missatge ) )
                 msg.envia_a_usuari(user, 'PI')
+                msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())  #marco com a llegit
                 
-                url = '/missatgeria/elMeuMur/'  
+                url = '/missatgeria/enviaMissatgeTutors/'
+                messages.info( request, u"Avís als tutors de {} ({}) enviat correctament".format(unicode(alumne), strTutors ) )
                 return HttpResponseRedirect( url )  
     else:
         
@@ -108,7 +112,12 @@ def enviaMissatgeTutors( request ):
     formset.append( formAlumne )
     formset.append( formData )
     formset.append( msgForm )
-        
+
+    for form in formset:
+        for field in form.fields:
+            form.fields[field].widget.attrs['class'] = "form-control"
+
+
     return render_to_response(
                 'formset.html',
                     {'formset': formset,
@@ -157,15 +166,75 @@ def enviaMissatgeAdministradors( request ):
         msgForm = msgFormF(  )
     
     formset.append( msgForm )
-        
+
+    for form in formset:
+        for field in form.fields:
+            form.fields[field].widget.attrs['class'] = "form-control"
+
     return render_to_response(
                 'formset.html',
                     {'formset': formset,
                      'head': u'''Avís a administradors. En cas d'error, sisplau, detalla clarament totes les passes per reproduir l'error.''' ,
                     },
                     context_instance=RequestContext(request))
-    
-    
+
+
+@login_required
+@group_required(['professors', 'professional', 'consergeria',])
+def enviaMissatgeProfessorsPas(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    formset = []
+    msgFormF = modelform_factory(Missatge, fields=('text_missatge',))
+
+    if request.method == 'POST':
+        msg = Missatge(remitent=user)
+        msg.credentials = credentials
+        formProfessorConserge = triaProfessorsConsergesSelect2Form(data=request.POST)
+        msgForm = msgFormF(data=request.POST, instance=msg)
+
+        if formProfessorConserge.is_valid() and msgForm.is_valid():
+            msg.save()
+            professors_conserges = formProfessorConserge.cleaned_data['professors_conserges']
+            destinataris_txt = ", ".join( unicode(pc) for pc in professors_conserges)
+            for professor_conserge in professors_conserges:
+                msg.envia_a_usuari(professor_conserge.getUser(), 'IN')
+
+            # envio al que ho envia:
+            msg2 = Missatge(remitent=user,
+                           text_missatge=u'''Missatge enviat a {0}. El text del missatge és: "{1}"'''.format(
+                               destinataris_txt,
+                               msg.text_missatge))
+            msg2.envia_a_usuari(user, 'PI')
+            msg2.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
+
+            messages.info(request, u"Missatge a {destinataris} enviat correctament".format(destinataris=destinataris_txt))
+
+            if user.groups.filter(name="consergeria").exists():
+                url = '/missatgeria/enviaMissatgeProfessorsPas/'
+            else:
+                url = '/missatgeria/elMeuMur/'
+            return HttpResponseRedirect(url)
+    else:
+        formProfessorConserge = triaProfessorsConsergesSelect2Form()
+        msgForm = msgFormF()
+
+    formset.append(formProfessorConserge)
+    formset.append(msgForm)
+
+    for form in formset:
+        for field in form.fields:
+            form.fields[field].widget.attrs['class'] = "form-control"
+
+    return render_to_response(
+        'formset.html',
+        {'formset': formset,
+         'head': u"Missatge a membres del professorat o consergeria",
+         },
+        context_instance=RequestContext(request))
+
+
 @login_required
 def llegeix( request, pk ):
     credentials = tools.getImpersonateUser(request) 
