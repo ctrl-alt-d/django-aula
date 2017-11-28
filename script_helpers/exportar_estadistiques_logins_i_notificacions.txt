@@ -34,3 +34,26 @@ for a in LoginUsuari.objects.filter(exitos=True).all():
 
 f.close()
 
+#num logins cada usuari
+from aula.apps.usuaris.models import LoginUsuari
+from aula.apps.alumnes.models import Alumne
+import unicodecsv as csv
+f=open("/tmp/logins.csv",'wb')
+w=csv.writer(f)
+row = ['nivell','curs','grup','nom','cognoms', 'email1', 'email2', 'n_logins']
+w.writerow(row)
+
+for a in Alumne.objects.all():
+    n_logins=LoginUsuari.objects.filter(usuari__id=a.get_user_associat().id).filter(exitos=True).count()
+    row = [a.grup.curs.nivell,
+           a.grup.curs, a.grup,
+           a.nom, a.cognoms,
+           a.correu_relacio_familia_pare,
+           a.correu_relacio_familia_mare,
+           n_logins ]
+    w.writerow(row)
+
+f.close()
+
+
+
