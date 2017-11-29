@@ -419,8 +419,7 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, instance ):
         form = ControlAssistenciaFormFake()
         form.fields['estat'].label_suffix = u""
         form.fields['estat'].label = (unicode(control_a.alumne)
-                                      + u" - Fora: "
-                                      + u", ".join([x.get_motiu_display()
+                                      + u" - ".join([x.get_motiu_display()
                                                     for x in q_no_al_centre_altres.all()]
                                                    )
                                       )
