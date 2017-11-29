@@ -240,215 +240,128 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 
 #------------------------------------------------------------------------------------------
 
-#http://streamhacker.com/2010/03/01/django-model-formsets/    
+# http://streamhacker.com/2010/03/01/django-model-formsets/
 @login_required
 @group_required(['professors'])
-def passaLlista( request, pk ):
-    credentials = getImpersonateUser(request) 
+def passaLlista(request, pk):
+    credentials = getImpersonateUser(request)
     (user, l4) = credentials
-    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
-    
-    #prefixes:
-    #https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms    
+    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+
+    # prefixes:
+    # https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms
     formset = []
     impartir = Impartir.objects.get(pk=pk)
-    
-    #seg-------------------------------
-    pertany_al_professor = user.pk in [ impartir.horari.professor.pk,       \
-                                        impartir.professor_guardia.pk if impartir.professor_guardia else -1]
-    if not ( l4 or pertany_al_professor):
-        raise Http404() 
-    
-    head=''
-    info={}
+
+    # seg-------------------------------
+    pertany_al_professor = user.pk in [impartir.horari.professor.pk, \
+                                       impartir.professor_guardia.pk if impartir.professor_guardia else -1]
+    if not (l4 or pertany_al_professor):
+        raise Http404()
+
+    head = ''
+    info = {}
     info['old'] = unicode(impartir)
     info['professor'] = unicode(impartir.horari.professor)
     info['dia_setmana'] = unicode(impartir.horari.dia_de_la_setmana)
-    info['dia_complet'] = impartir.dia_impartir.strftime( "%d/%m/%Y")
+    info['dia_complet'] = impartir.dia_impartir.strftime("%d/%m/%Y")
     info['hora'] = unicode(impartir.horari.hora)
     info['assignatura'] = unicode(impartir.horari.assignatura)
     info['nom_aula'] = unicode(impartir.horari.nom_aula)
     info['grup'] = unicode(impartir.horari.grup)
 
-    url_next = '/presencia/mostraImpartir/%d/%d/%d/'% ( 
-                                    impartir.dia_impartir.year,
-                                    impartir.dia_impartir.month,
-                                    impartir.dia_impartir.day )    
+    url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
+        impartir.dia_impartir.year,
+        impartir.dia_impartir.month,
+        impartir.dia_impartir.day)
 
-
-    
-    
-    #---------------------------------Passar llista -------------------------------
+    # ---------------------------------Passar llista -------------------------------
     if request.method == "POST":
-        #un formulari per cada alumne de la llista
+        # un formulari per cada alumne de la llista
         totBe = True
         quelcomBe = False
         hiHaRetard = False
         form0 = forms.Form()
-        formset.append( form0 )
-        for control_a in impartir.controlassistencia_set.order_by( 'alumne' ):  #.order_by( 'alumne__grup', 'alumne' )
+        formset.append(form0)
+        for control_a in impartir.controlassistencia_set.order_by('alumne'):  # .order_by( 'alumne__grup', 'alumne' )
             control_a.currentUser = user
-            q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
-            q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )                
-            if q_no_al_centre_expulsat.exists():
-                form=ControlAssistenciaFormFake()
-                form.fields['estat'].label_suffix = u""                
-                form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
-                                                                                                x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
-                                                                                               ) 
-                                                               for x in  q_no_al_centre_expulsat.all() ] 
-                                                            )
-                                              )
-            elif q_no_al_centre_sortida.exists():
-                form=ControlAssistenciaFormFake()
-                form.fields['estat'].label_suffix = u""                
-                form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + u" - Activitat: "
-                                               + u", ".join( [ x.sortida.titol_de_la_sortida
-                                                               for x in  q_no_al_centre_sortida.all() ] 
-                                                            )
-                                              )                
-                
-            else:
-                form=ControlAssistenciaForm(
-                                        request.POST,
-                                        prefix=str( control_a.pk ),
-                                        instance=control_a )
-                form.fields['estat'].label = unicode( control_a.alumne )   
+            form = helper_tuneja_item_nohadeseralaula( request, control_a, control_a )
 
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
 
             if control_a.nohadeseralaula_set.exists():
-                    quelcomBe |= True
+                quelcomBe |= True
             elif form.is_valid():
-                try:                
+                try:
                     control_aux = form.save()
-                    hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R") 
+                    hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R")
                     quelcomBe |= True
                 except ValidationError, e:
                     totBe = False
-                    #Com que no és un formulari de model cal tractar a mà les incidències del save:
+                    # Com que no és un formulari de model cal tractar a mà les incidències del save:
                     for _, v in e.message_dict.items():
-                        form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )
+                        form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
             else:
                 totBe = False
                 errors_formulari = form._errors
-                #torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
-                q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
-                q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )         
-                if q_no_al_centre_expulsat.exists():
-                    form=ControlAssistenciaFormFake()
-                    form.fields['estat'].label_suffix = u""                    
-                    form.fields['estat'].label = ( unicode( control_a.alumne )
-                                                   + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
-                                                                                                    x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
-                                                                                                   ) 
-                                                                   for x in  q_no_al_centre_expulsat.all() ] 
-                                                                )
-                                                  )
-                elif q_no_al_centre_sortida.exists():
-                    form=ControlAssistenciaFormFake()
-                    form.fields['estat'].label_suffix = u""
-                    form.fields['estat'].label = ( unicode( control_a.alumne )
-                                                   + u" - Activitat: "                                                   
-                                                   + u", ".join( [ x.sortida.titol_de_la_sortida
-                                                                   for x in  q_no_al_centre_sortida.all() ] 
-                                                                )
-                                                  )                                           
-                else:
-                    form=ControlAssistenciaForm(
-                                         prefix=str( control_a.pk ),
-                                         instance=ControlAssistencia.objects.get( id= control_a.pk)  )
-                    form.fields['estat'].label = unicode( control_a.alumne )                        
-                form._errors =  errors_formulari
-            
-            formset.append( form )
-                            
+                # torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
+                form = helper_tuneja_item_nohadeseralaula(request, control_a, ControlAssistencia.objects.get(id=control_a.pk))
+                form._errors = errors_formulari
+
+            formset.append(form)
+
         if quelcomBe:
-            #algun control d'assistència s'ha desat. Desem també el model Impartir.
+            # algun control d'assistència s'ha desat. Desem també el model Impartir.
             impartir.dia_passa_llista = datetime.now()
-            impartir.professor_passa_llista = User2Professor( request.user )
+            impartir.professor_passa_llista = User2Professor(request.user)
             impartir.currentUser = user
-    
+
             try:
                 impartir.save()
-                
-                #si hi ha retards, recordar que un retard provoca una incidència.
+
+                # si hi ha retards, recordar que un retard provoca una incidència.
                 if hiHaRetard:
-                    url_incidencies = reverse( "aula__horari__posa_incidencia" , kwargs={'pk': pk})
-                    msg =  u"""Has posat 'Retard', recorda que els retars provoquen incidències, 
+                    url_incidencies = reverse("aula__horari__posa_incidencia", kwargs={'pk': pk})
+                    msg = u"""Has posat 'Retard', recorda que els retars provoquen incidències, 
                     s'hauran generat automàticament, valora si cal 
-                    <a href="{url_incidencies}">gestionar les faltes</a>.""".format( url_incidencies = url_incidencies) 
-                    messages.warning(request,  SafeText(msg ) )
-                #LOGGING
-                Accio.objects.create( 
-                        tipus = 'PL',
-                        usuari = user,
-                        l4 = l4,
-                        impersonated_from = request.user if request.user != user else None,
-                        text = u"""Passar llista: {0}.""".format( impartir )
-                    )                
-                 
-                impartir_despres_de_passar_llista( impartir )
+                    <a href="{url_incidencies}">gestionar les faltes</a>.""".format(url_incidencies=url_incidencies)
+                    messages.warning(request, SafeText(msg))
+                # LOGGING
+                Accio.objects.create(
+                    tipus='PL',
+                    usuari=user,
+                    l4=l4,
+                    impersonated_from=request.user if request.user != user else None,
+                    text=u"""Passar llista: {0}.""".format(impartir)
+                )
+
+                impartir_despres_de_passar_llista(impartir)
                 if totBe:
-                    return HttpResponseRedirect( url_next )
+                    return HttpResponseRedirect(url_next)
             except ValidationError, e:
-                #Com que no és un formulari de model cal tractar a mà les incidències del save:
+                # Com que no és un formulari de model cal tractar a mà les incidències del save:
                 for _, v in e.message_dict.items():
-                    form0._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )
-                
+                    form0._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
+
     else:
-        for control_a in impartir.controlassistencia_set.order_by( 'alumne' ):
-            q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.EXPULSAT_DEL_CENTRE )
-            q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter( motiu = NoHaDeSerALAula.SORTIDA )         
-            if q_no_al_centre_expulsat.exists():
-                form=ControlAssistenciaFormFake()
-                form.fields['estat'].label_suffix = u""
-                form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + u", ".join( [ u"sanció del {0} al {1}".format( x.sancio.data_inici.strftime( '%d/%m/%Y' ),
-                                                                                                x.sancio.data_fi.strftime( '%d/%m/%Y' ) 
-                                                                                               ) 
-                                                               for x in  q_no_al_centre_expulsat.all() ] 
-                                                            )
-                                              )
-            elif q_no_al_centre_sortida.exists():
-                form=ControlAssistenciaFormFake()
-                form.fields['estat'].label_suffix = u""
-                form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + u" - Activitat: "                                               
-                                               + u", ".join( [ x.sortida.titol_de_la_sortida
-                                                               for x in  q_no_al_centre_sortida.all() ] 
-                                                            )
-                                              )                                                          
-            else:
-                form=ControlAssistenciaForm(
-                                prefix=str( control_a.pk ),
-                                instance=control_a )
-                form.fields['estat'].label = unicode( control_a.alumne )               
-                avui_es_anivesari = ( control_a.alumne.data_neixement.month == impartir.dia_impartir.month and
-                                      control_a.alumne.data_neixement.day == impartir.dia_impartir.day )  
-                form.fields['estat'].label = ( unicode( control_a.alumne )
-                                               + ( '(fa anys en aquesta data)' if avui_es_anivesari else '')
-                                              )
-            
-            formset.append( form )
-    
+        for control_a in impartir.controlassistencia_set.order_by('alumne'):
+            form = helper_tuneja_item_nohadeseralaula(request, control_a,control_a)
+            formset.append(form)
 
     for form in formset:
         if hasattr(form, 'instance'):
-            
-            #0 = present #1 = Falta
-            d = dades_dissociades(  form.instance )
-            form.hora_anterior = ( 0 if d['assistenciaaHoraAnterior'] == 'Present' else 
-                                   1 if d['assistenciaaHoraAnterior'] == 'Absent' else None )
-            prediccio, pct  = predictTreeModel( d)
-            form.prediccio = ( 0 if prediccio == 'Present' else 
-                               1 if prediccio == 'Absent' else  None ) 
-            
+
+            # 0 = present #1 = Falta
+            d = dades_dissociades(form.instance)
+            form.hora_anterior = (0 if d['assistenciaaHoraAnterior'] == 'Present' else
+                                  1 if d['assistenciaaHoraAnterior'] == 'Absent' else None)
+            prediccio, pct = predictTreeModel(d)
+            form.prediccio = (0 if prediccio == 'Present' else
+                              1 if prediccio == 'Absent' else  None)
+
             form.avis = None
-            form.avis_pct = ( u"{0:.2f}%".format( pct * 100  )  ) if pct else ''
+            form.avis_pct = (u"{0:.2f}%".format(pct * 100)) if pct else ''
             if pct < 0.8:
                 form.bcolor = '#CC0000'
                 form.avis = 'danger'
@@ -457,24 +370,81 @@ def passaLlista( request, pk ):
                 form.avis = 'warning'
             else:
                 form.bcolor = '#66FFCC'
-                form.avis = 'info'             
+                form.avis = 'info'
 
-            
     return render_to_response(
-                  "passaLlista.html", 
-                  {"formset": formset,
-                   "id_impartir":  pk ,
-                   "horariUrl": url_next,
-                   "pot_marcar_sense_alumnes": not impartir.pot_no_tenir_alumnes ,
-                   "impartir": impartir,
-                   "head": head,
-                   "info": info,
-                   "feelLuckyEnabled": True,
-                   "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA
-                   },
-                  context_instance=RequestContext(request))
-    
-    
+        "passaLlista.html",
+        {"formset": formset,
+         "id_impartir": pk,
+         "horariUrl": url_next,
+         "pot_marcar_sense_alumnes": not impartir.pot_no_tenir_alumnes,
+         "impartir": impartir,
+         "head": head,
+         "info": info,
+         "feelLuckyEnabled": True,
+         "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA
+         },
+        context_instance=RequestContext(request))
+
+
+def helper_tuneja_item_nohadeseralaula( request, control_a, instance ):
+
+    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.EXPULSAT_DEL_CENTRE)
+    q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.SORTIDA)
+    q_no_al_centre_altres = control_a.nohadeseralaula_set.exclude(motiu__in=[NoHaDeSerALAula.EXPULSAT_DEL_CENTRE,
+                                                                             NoHaDeSerALAula.SORTIDA])
+    if q_no_al_centre_expulsat.exists():
+        form = ControlAssistenciaFormFake()
+        form.fields['estat'].label_suffix = u""
+        form.fields['estat'].label = (unicode(control_a.alumne)
+                                      + u", ".join(
+            [u"sanció del {0} al {1}".format(x.sancio.data_inici.strftime('%d/%m/%Y'),
+                                             x.sancio.data_fi.strftime('%d/%m/%Y')
+                                             )
+             for x in q_no_al_centre_expulsat.all()]
+        )
+                                      )
+    elif q_no_al_centre_sortida.exists():
+        form = ControlAssistenciaFormFake()
+        form.fields['estat'].label_suffix = u""
+        form.fields['estat'].label = (unicode(control_a.alumne)
+                                      + u" - Activitat: "
+                                      + u", ".join([x.sortida.titol_de_la_sortida
+                                                    for x in q_no_al_centre_sortida.all()]
+                                                   )
+                                      )
+
+    elif q_no_al_centre_altres.exists():
+        form = ControlAssistenciaFormFake()
+        form.fields['estat'].label_suffix = u""
+        form.fields['estat'].label = (unicode(control_a.alumne)
+                                      + u" - Fora: "
+                                      + u", ".join([x.get_motiu_display()
+                                                    for x in q_no_al_centre_altres.all()]
+                                                   )
+                                      )
+
+    else:
+        if request.method == "POST":
+            form = ControlAssistenciaForm(
+                request.POST,
+                prefix=str(control_a.pk),
+                instance=instance)
+        else:
+            form = ControlAssistenciaForm(
+                prefix=str(control_a.pk),
+                instance=instance)
+
+        form.fields['estat'].label = unicode(control_a.alumne)
+        avui_es_anivesari = (control_a.alumne.data_neixement.month == control_a.impartir.dia_impartir.month and
+                             control_a.alumne.data_neixement.day == control_a.impartir.dia_impartir.day)
+        form.fields['estat'].label = (unicode(control_a.alumne)
+                                      + ('(fa anys en aquesta data)' if avui_es_anivesari else '')
+                                      )
+    return form
+
+
 #------------------------------------------------------------------------------------------
 
 @login_required
@@ -1187,6 +1157,57 @@ def copiarAlumnesLlista(request, pk):
                   context_instance=RequestContext(request))
 
     
-    
-    
+#------------------------------------------------------------------------------------------
+
+@login_required
+@group_required(['direcció'])
+def anularImpartir(request, pk):
+    impartir = get_object_or_404(Impartir, pk=pk)
+    controls = impartir.controlassistencia_set
+    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    if not controls.exists():
+        messages.error(request, u"Aquesta classe no té alumnes, no es pot anul·lar." )
+        next_url = reverse( "aula__horari__passa_llista", kwargs={'pk': pk} )
+    else:
+        q_already_anulats = Q(nohadeseralaula__motiu = NoHaDeSerALAula.ANULLADA )
+        q_sense_passar_llista = Q(estat = None)
+        q_falta = Q(estat__codi_estat = "F")
+        for control in controls.exclude(q_already_anulats).filter(q_sense_passar_llista|q_falta).all():
+            control.nohadeseralaula_set.create(motiu=NoHaDeSerALAula.ANULLADA)
+            control.estat_backup = control.estat
+            control.swaped = True
+            control.estat = None
+            control.save()
+        messages.success(request, u"""Operació finalitzada. 
+        S'han marcat tots els controls d'assistència d'aquesta classe com anul·lats. 
+        Si el professor posa nous alumnes a la classe caldria repetir el procés. """)
+        next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
+    return HttpResponseRedirect(next_url)
+
+@login_required
+@group_required(['direcció'])
+def desanularImpartir(request, pk):
+    impartir = get_object_or_404(Impartir, pk=pk)
+    controls = impartir.controlassistencia_set
+    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    if not controls.exists():
+        messages.error(request, u"Aquesta classe no té alumnes, vols dir que és aquesta la que vols des-anul·lar?" )
+        next_url = reverse( "aula__horari__passa_llista", kwargs={'pk': pk} )
+    elif not NoHaDeSerALAula.objects.filter( control__impartir = impartir, motiu = NoHaDeSerALAula.ANULLADA ).exists():
+        messages.error(request, u"Aquesta classe no està anul·lada, vols dir que és aquesta la classe que vols des-anul·lar?")
+        next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
+    else:
+        #NoHaDeSerALAula.objects.filter( control__impartir = impartir, motiu = NoHaDeSerALAula.ANULLADA ).all().delete()
+        q_already_anulats = Q(nohadeseralaula__motiu=NoHaDeSerALAula.ANULLADA)
+        for control in controls.filter(q_already_anulats).all():
+            control.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.ANULLADA).delete()
+            if control.swaped:
+                control.estat = control.estat_backup
+                control.swaped = False
+            control.save()
+
+        messages.success(request, u"Operació finalitzada. Classe des-anul·lada.")
+        next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
+    return HttpResponseRedirect(next_url)
+
 

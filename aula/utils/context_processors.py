@@ -16,7 +16,8 @@ def dades_basiques(request):
             'l4': l4,
             'sessioImpersonada': sessioImpersonada,
             'menu': calcula_menu( user, request.path_info ),
-            'my_timeoff': calculate_my_time_off(request.user)
+            'my_timeoff': calculate_my_time_off(request.user),
+            'es_direccio_o_impersonat': sessioImpersonada or user.groups.filter( name=u"direcció" )
              }
     
 
