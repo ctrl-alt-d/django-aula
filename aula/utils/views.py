@@ -29,10 +29,10 @@ from aula.utils.tools import calculate_my_time_off
 
 def keepalive(request):
     if request.user.is_authenticated():
-        my_timeout = calculate_my_time_off(request.user)
-        return JsonResponse({'timeout': my_timeout ,
-                             'safetimeout': my_timeout -10 ,
-                             'authenticate': True, })
+        my_timeoff = calculate_my_time_off(request.user)
+        return JsonResponse({'my_timeoff': my_timeoff ,
+                             'my_safe_timeoff': my_timeoff -10 ,
+                             'Im_authenticate': True, })
     else:
         return JsonResponse({'timeout': 0, 'safetimeout': 0, 'authenticate': False, })
 
