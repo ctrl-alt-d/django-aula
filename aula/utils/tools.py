@@ -18,11 +18,11 @@ except:
 #--------------------------------------------------
 
 def calculate_my_time_off(user):
-    if not user.is_anonymous:
+    if user.is_anonymous():
+        return settings.CUSTOM_TIMEOUT
+    else:
         return max(settings.CUSTOM_TIMEOUT_GROUP.get(g.name, settings.CUSTOM_TIMEOUT)
                    for g in user.groups.all())
-    else:
-        return settings.CUSTOM_TIMEOUT
 
 
 def getClientAdress( request ):

@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #templates
+from django.http.response import HttpResponse, JsonResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from aula.apps.extKronowin.models import ParametreKronowin
@@ -22,6 +23,18 @@ from django.db.models import Q
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
+
+from aula.utils.tools import calculate_my_time_off
+
+
+def keepalive(request):
+    if request.user.is_authenticated():
+        my_timeoff = calculate_my_time_off(request.user)
+        return JsonResponse({'my_timeoff': my_timeoff ,
+                             'my_safe_timeoff': my_timeoff -10 ,
+                             'Im_authenticate': True, })
+    else:
+        return JsonResponse({'timeout': 0, 'safetimeout': 0, 'authenticate': False, })
 
 def logout_page(request):
     try:

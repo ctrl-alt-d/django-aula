@@ -37,7 +37,7 @@ $.fn.bootstrapDP = null;
 
 <body {%if l4%}style="background-color:#FF0000;"{%endif%}>
 
-  <div class="container"> 
+  <div class="container">
 
 	{% if messages %}
 	<ul class="messages">
@@ -45,7 +45,7 @@ $.fn.bootstrapDP = null;
 	    <div class="alert alert-{{ message.tags|valid_alert }}">{{ message }}</div>
 	{% endfor %}
 	</ul>
-	{% endif %}  	
+	{% endif %}
   
 	{% include "menu.html" %}
 

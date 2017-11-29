@@ -148,6 +148,8 @@
 			    Feina a Realitzar 
 			    {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
 			  </a></p>
+              {% if es_direccio_o_impersonat %}<p><a href="/presencia/anularImpartir/{{id_impartir}}" >Anul·lar aquesta hora de classe</a>{% endif %}
+              {% if es_direccio_o_impersonat %}<p><a href="/presencia/desanularImpartir/{{id_impartir}}">Des-anul·lar aquesta hora de classe</a>{% endif %}
 			  <p><a href="{{ horariUrl }}" > Horari</a></p>
     	</div>
   	</div>
@@ -194,7 +196,9 @@
 	                <a href="/baixes/feina/{{id_impartir}}" >Feina a Realitzar
 	                  {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
 	                </a>
-	              </li>	              
+	              </li>
+                  {% if es_direccio_o_impersonat %}<li><a href="/presencia/anularImpartir/{{id_impartir}}" >Anul·lar aquesta hora de classe</a></li>{% endif %}
+                  {% if es_direccio_o_impersonat %}<li><a href="/presencia/desanularImpartir/{{id_impartir}}">Des-anul·lar aquesta hora de classe</a></li>{% endif %}
 	          </ul>
 	        </div>
 

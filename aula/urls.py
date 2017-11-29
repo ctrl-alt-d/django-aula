@@ -9,7 +9,8 @@ site_media_site_css = os.path.join(os.path.dirname(__file__), 'site-css' )
 site_media_web_demo = os.path.join(os.path.dirname(__file__), '../demo/static-web/demo' )
 
 urlpatterns = patterns('',
-    url(r'^select2/', include('aula.django_select2.urls')),                   
+    url(r'^keepalive$', 'aula.utils.views.keepalive', name="blanc__blanc__keepalive"),
+    url(r'^select2/', include('aula.django_select2.urls')),
     (r'^menu/$', 'aula.utils.views.menu'),
     #(r'^$', 'missatgeria.views.elMeuMur'),
     #(r'^$', 'presencia.views.mostraImpartir'),       
@@ -21,7 +22,7 @@ urlpatterns = patterns('',
     url(r'^promocions/(?P<grup>\d+)/$', 'aula.apps.alumnes.views.mostraGrupPromocionar', name = 'administracio__promocions__grups'),
     url(r'^promocions/nou-alumne', 'aula.apps.alumnes.views.nouAlumnePromocionar', name = 'administracio__alumnes__noualumne'),
     url(r'^promocions/', 'aula.apps.alumnes.views.llistaGrupsPromocionar', name = 'administracio__promocions__llista'),
-    (r'^presencia/', include('aula.apps.presencia.urls')),
+    (r'^presencia/', include('aula.apps.presencia.urls', ), ),
     (r'^incidencies/', include('aula.apps.incidencies.urls')),
     (r'^missatgeria/', include('aula.apps.missatgeria.urls')),
     (r'^usuaris/', include('aula.apps.usuaris.urls')),

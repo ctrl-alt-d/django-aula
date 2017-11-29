@@ -167,10 +167,12 @@ class AbstractNoHaDeSerALAula(models.Model):
     
     EXPULSAT_DEL_CENTRE = 'E'
     SORTIDA = 'A'
+    ANULLADA= 'L'
     
     MOTIUS_CHOICE = ( 
                        (EXPULSAT_DEL_CENTRE, u"Expulsat del centre",),
                        (SORTIDA,u"Activitat",),
+                       (ANULLADA, u"Classe Anul·lada"),
                      )
     
     motiu = models.CharField(  max_length=5, choices =  MOTIUS_CHOICE )
