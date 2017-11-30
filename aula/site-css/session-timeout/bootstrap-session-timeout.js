@@ -11,8 +11,8 @@
     'use strict';
     $.sessionTimeout = function(options) {
         var defaults = {
-            title: 'La teva sessió al djAu està a punt de tancar!',
-            message: 'Mou el ratolí o pitja una tecla si vols continuar',
+            title: 'Hola?',
+            message: 'Per motius de seguretar la teva sessió es tancarà en ...',
             logoutButton: 'Sortir',
             keepAliveButton: 'Continuar',
             keepAliveUrl: '/keep-alive',
