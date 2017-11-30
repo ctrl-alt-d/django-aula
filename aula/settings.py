@@ -29,6 +29,9 @@ CACHES = {
     'select2': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'TIMEOUT': max( CUSTOM_TIMEOUT, *[ CUSTOM_TIMEOUT_GROUP[x] for x in CUSTOM_TIMEOUT_GROUP] ),
+        'OPTIONS': {
+            'MAX_ENTRIES': 200
+        }
     }
 }
 
