@@ -60,7 +60,6 @@ $.fn.bootstrapDP = null;
   </div> <!--container-->
 
 <script src="{{STATIC_URL}}jquery/jquery-2.1.4.min.js"></script>
-<script src="{{STATIC_URL}}session-timeout/bootstrap-session-timeout.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min.js"></script>
 <script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
 <script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
@@ -70,15 +69,19 @@ $.fn.bootstrapDP = null;
   $('button[data-toggle=popover]').popover();
 </script>
 
-<script>
-    $.sessionTimeout({
-        keepAliveUrl: 'keep-alive.html',
-        logoutUrl: 'login.html',
-        redirUrl: 'locked.html',
-        warnAfter: 3000,
-        redirAfter: 10000
-    });
-</script>
+  {%  if user.is_authenticated %}
+            <script src="{{STATIC_URL}}session-timeout/bootstrap-session-timeout.js"></script>
+            <script>
+                $.sessionTimeout({
+                    keepAliveUrl: '/keepalive',
+                    logoutUrl: '/logout/',
+                    redirUrl: '/logout/',
+                    warnAfter: ({{my_safe_timeoff}} - 20)*1000,
+                    redirAfter: ({{my_safe_timeoff}} *1000),
+                    countdownBar: true
+                });
+            </script>
+    {% endif %}
 
 {% block afterscripts %} {% endblock %}
 
