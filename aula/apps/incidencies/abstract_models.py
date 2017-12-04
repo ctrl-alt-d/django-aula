@@ -185,6 +185,8 @@ class AbstractIncidencia(models.Model):
     descripcio_incidencia = models.CharField(max_length=250,help_text=u"Frase curta que descriu la incidència. Aquesta informació la veuran els pares.")
     provoca_expulsio = models.ForeignKey('incidencies.Expulsio', blank=True , null=True, on_delete = models.PROTECT )
     es_vigent = models.BooleanField( default = True , db_index=True)
+    gestionada_pel_tutor = models.BooleanField(u"Incidència gestionada pel tutor", default = False,
+                                               help_text=u'''Aquesta incidència no la gestiona el professor que la posa, serà gestionada directament pel tutor.".'''  )
     provoca_sancio = models.ForeignKey('incidencies.Sancio', blank=True, null=True, on_delete = models.PROTECT  )
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
