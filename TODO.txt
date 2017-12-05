@@ -1,4 +1,4 @@
-Instal·lació:
+Instal·lació: 
 
 
 0) [Opcional] Crear virtualenv
