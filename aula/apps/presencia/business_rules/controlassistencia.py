@@ -108,17 +108,25 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
          
         TipusIncidencia = get_model('incidencies','TipusIncidencia')
         tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
-     
+
         Incidencia = get_model('incidencies','Incidencia')
-        abans_no_era_retard = created or ( hasattr(instance, 'instanceDB') and  instance.instanceDB and instance.instanceDB.estat and instance.instanceDB.estat.codi_estat != 'R' )
+        abans_no_era_retard = ( created or
+                                ( hasattr(instance, 'instanceDB') and
+                                  instance.instanceDB and instance.instanceDB.estat
+                                  and instance.instanceDB.estat.codi_estat != 'R'
+                                )
+                               )
          
         #posem incidència si arriba tard ( només si passem de res a retard )
         if instance.estat and instance.estat.codi_estat == 'R' and abans_no_era_retard:
-            ja_hi_es = Incidencia.objects.filter( 
+
+            es_primera_hora = instance.esPrimeraHora()
+            ja_hi_es = Incidencia.objects.filter(
                                                               alumne = instance.alumne,
                                                               control_assistencia = instance,
                                                               descripcio_incidencia = frase,
-                                                              tipus= tipus ,).exists()
+                                                              tipus= tipus ,
+                                                ).exists()
      
             if not ja_hi_es:
                 i = Incidencia.objects.create(    
@@ -126,8 +134,9 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                           alumne = instance.alumne,
                                           control_assistencia = instance,
                                           descripcio_incidencia = frase,
-                                          tipus = tipus ,)
-                incidencia_despres_de_posar( i )                                       #TODO: Passar-ho a post-save!!!!
+                                          tipus = tipus ,
+                                          gestionada_pel_tutor=es_primera_hora, )
+                incidencia_despres_de_posar( i )
  
          
         #treiem incidència retard si arriba a l'hora
