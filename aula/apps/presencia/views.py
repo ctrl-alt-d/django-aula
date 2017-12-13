@@ -1190,6 +1190,7 @@ def anularImpartir(request, pk):
         if user.groups.filter(name="professors").exists():
             try:
                 impartir.professor_passa_llista = User2Professor( user )
+                impartir.dia_passa_llista =  datetime.now()
                 impartir.save()
             except ValidationError, e:
                 for _, v in e.message_dict.items():
@@ -1235,6 +1236,7 @@ def desanularImpartir(request, pk):
         if all(c.estat_id is None for c in controls.all()):
             try:
                 impartir.professor_passa_llista = None
+                impartir.dia_passa_llista = None
                 impartir.save()
             except ValidationError, e:
                 for _, v in e.message_dict.items():

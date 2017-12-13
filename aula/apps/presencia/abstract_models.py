@@ -65,11 +65,11 @@ class AbstractImpartir(models.Model):
         return ( self
                  .controlassistencia_set
                  .filter( estat__isnull = True   )
-                 .exclude( nohadeseralaula__id__isnull = False )
+                 .exclude( nohadeseralaula__isnull = False )
                  .order_by( )
                  .distinct( )
                  .exists()
-                ) 
+                )
     
     def color(self):
         if self.dia_passa_llista:
@@ -84,8 +84,12 @@ class AbstractImpartir(models.Model):
         elif self.esFutur():
             return u'default' 
         else:
-            return u'danger'
-        
+            if self.hi_ha_nulls():
+                return u'danger'
+            else:
+                return u'success'
+
+
     @property
     def hi_ha_alumnes_amb_activitat_programada(self):
 
