@@ -1,11 +1,11 @@
 # This Python file uses the following encoding: utf-8
 from django.core.exceptions import ValidationError
 from datetime import timedelta, date
+from django.apps import apps
 
 
 
 from aula.apps.alumnes.named_instances import curs_any_fi
-from django.db.models.loading import get_model
 from django.conf import settings
 
 def cartaabsentisme_clean( instance ):
@@ -74,7 +74,7 @@ def cartaabsentisme_clean( instance ):
             faltes_fins_a_data = instance.data_carta - timedelta( days = 3 )
         
         #comprovo que hi ha més de 15 faltes:
-        EstatControlAssistencia = get_model('presencia', 'EstatControlAssistencia')
+        EstatControlAssistencia = apps.get_model('presencia', 'EstatControlAssistencia')
         falta = EstatControlAssistencia.objects.get( codi_estat = 'F'  )
         nfaltes = (
                    instance

@@ -2,7 +2,7 @@
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 import datetime as dt
 from aula.apps.usuaris.models import User2Professor
-from django.db.models import get_model
+from django.apps import apps
 
 def respostaAvaluacioQualitativa_clean( instance ):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)

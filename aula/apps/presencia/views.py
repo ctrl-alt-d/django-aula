@@ -21,7 +21,7 @@ from aula.apps.usuaris.models import User2Professor, Accio
 from aula.apps.presencia.regeneraImpartir import regeneraThread
 from aula.utils.tools import getImpersonateUser, getSoftColor
 from django.utils.safestring import SafeText
-from django.db.models import get_model
+from django.apps import apps
 
 #consultes
 from django.db.models import Q
@@ -246,7 +246,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 def passaLlista(request, pk):
     credentials = getImpersonateUser(request)
     (user, l4) = credentials
-    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
 
     # prefixes:
     # https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms
@@ -389,7 +389,7 @@ def passaLlista(request, pk):
 
 def helper_tuneja_item_nohadeseralaula( request, control_a, instance ):
 
-    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
     q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.EXPULSAT_DEL_CENTRE)
     q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.SORTIDA)
     q_no_al_centre_altres = control_a.nohadeseralaula_set.exclude(motiu__in=[NoHaDeSerALAula.EXPULSAT_DEL_CENTRE,
@@ -1163,7 +1163,7 @@ def copiarAlumnesLlista(request, pk):
 def anularImpartir(request, pk):
     impartir = get_object_or_404(Impartir, pk=pk)
     controls = impartir.controlassistencia_set
-    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
     if not controls.exists():
         messages.error(request, u"Aquesta classe no té alumnes, no es pot anul·lar." )
         next_url = reverse( "aula__horari__passa_llista", kwargs={'pk': pk} )
@@ -1188,7 +1188,7 @@ def anularImpartir(request, pk):
 def desanularImpartir(request, pk):
     impartir = get_object_or_404(Impartir, pk=pk)
     controls = impartir.controlassistencia_set
-    NoHaDeSerALAula = get_model('presencia', 'NoHaDeSerALAula')
+    NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
     if not controls.exists():
         messages.error(request, u"Aquesta classe no té alumnes, vols dir que és aquesta la que vols des-anul·lar?" )
         next_url = reverse( "aula__horari__passa_llista", kwargs={'pk': pk} )

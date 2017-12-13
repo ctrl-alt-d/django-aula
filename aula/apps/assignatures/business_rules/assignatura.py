@@ -2,12 +2,12 @@
 
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from aula.apps.alumnes.models import Nivell
-from django.db.models import get_model
+from django.apps import apps
 
 
 def assignatura_clean( instance ):
     
-    TipusDAssignatura = get_model('assignatures','TipusDAssignatura')
+    TipusDAssignatura = apps.get_model('assignatures','TipusDAssignatura')
         
     #
     # Pre-save

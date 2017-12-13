@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.sortides.models import Sortida
-from django.db.models.loading import get_model
+from django.apps import apps
 from datetime import  timedelta
 
 def sincronitza():
@@ -19,11 +19,11 @@ def sincronitza():
         
         #es fa save controlAssistència per marcar com a no ha de ser present
         alumnes_fora_aula = ( ( alumnesQueVenen  - alumnesQueNoVenen ) | alumnesJustificats )  or []
-        NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')        
+        NoHaDeSerALAula = apps.get_model('presencia','NoHaDeSerALAula')
         NoHaDeSerALAula.objects.filter( sortida = instance  ).filter( control__alumne__in =  alumnes_fora_aula ).delete()
-        ControlAssistencia = get_model(  'presencia.ControlAssistencia' )
+        ControlAssistencia = apps.get_model(  'presencia.ControlAssistencia' )
         dia_iterador = instance.data_inici
-        totes_les_franges = list( get_model(  'horaris.FranjaHoraria' ).objects.all() )
+        totes_les_franges = list( apps.get_model(  'horaris.FranjaHoraria' ).objects.all() )
         un_dia = timedelta(days=1)
         while ( bool( dia_iterador ) and 
                 dia_iterador <= instance.data_fi):

@@ -4,7 +4,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne
-from django.db.models import get_model
+from django.apps import apps
 from django.db.models import Q
 from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
@@ -146,7 +146,7 @@ class Sortida(models.Model):
 
     @staticmethod
     def alumne_te_sortida_en_data( alumne, dia, franja ):
-        Sortida = get_model('sortides','Sortida')
+        Sortida = apps.get_model('sortides','Sortida')
         
         #auxiliar: tornen el mateix dia?
         q_mateix_dia = Q( data_inici = dia, data_fi = dia ) 

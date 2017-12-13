@@ -4,7 +4,7 @@ import datetime as dt
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from aula.apps.tutoria.models import Tutor
-from django.db.models import get_model
+from django.apps import apps
 from datetime import  timedelta
 from django.conf import settings
 

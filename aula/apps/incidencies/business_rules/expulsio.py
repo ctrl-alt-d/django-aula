@@ -3,7 +3,7 @@
 #from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.utils.datetime_safe import datetime
-from django.db.models import get_model
+from django.apps import apps
 
 
 def expulsio_clean( instance ):
@@ -112,7 +112,7 @@ def expulsio_despres_de_posar(instance):
     professor_recull = instance.professor_recull
     professor_expulsa = instance.professor
 
-    Missatge = get_model( 'missatgeria','Missatge')
+    Missatge = apps.get_model( 'missatgeria','Missatge')
     # missatge pel professor que recull la incidència:    
     if professor_recull != professor_expulsa:
         
@@ -128,7 +128,7 @@ def expulsio_despres_de_posar(instance):
 
     # missatge pels professors que tenen aquest alumne a l'aula (exepte el professor que expulsa):
     msg = Missatge( remitent = professor_recull.getUser(), text_missatge = unicode( instance ) )           
-    Professor = get_model( 'usuaris','Professor')
+    Professor = apps.get_model( 'usuaris','Professor')
     professors_que_tenen_aquest_alumne_a_classe = Professor.objects.filter( horari__impartir__controlassistencia__alumne = instance.alumne ).exclude( pk = instance.professor.pk ).distinct()                    
     for professor in professors_que_tenen_aquest_alumne_a_classe:
         esTutor = True if professor in instance.alumne.tutorsDeLAlumne() else False

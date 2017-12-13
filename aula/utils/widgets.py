@@ -7,7 +7,7 @@ from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Radi
 from time import strftime
 from django.utils.safestring import mark_safe
 from django.utils.html import conditional_escape, escape, format_html
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django.utils.encoding import force_unicode, force_text
 from itertools import chain
 

@@ -2,7 +2,7 @@
 # This Python file uses the following encoding: utf-8
 
 from django.db import models
-from django.db.models import get_model
+from django.apps import apps
 
 
 class AbstractDiaDeLaSetmana(models.Model):
@@ -60,7 +60,7 @@ class AbstractHorari(models.Model):
     def grupsPotencials(self):
         grups_potencials = None
         codi_ambit = self.assignatura.tipus_assignatura.ambit_on_prendre_alumnes if self.assignatura.tipus_assignatura is not None else 'G'
-        Grup = get_model( 'alumnes','Grup')
+        Grup = apps.get_model( 'alumnes','Grup')
         if codi_ambit == 'I':
             grups_potencials= Grup.objects.all( )
         elif codi_ambit == 'N':

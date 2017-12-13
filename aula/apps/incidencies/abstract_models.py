@@ -3,7 +3,7 @@
 from django.db import models
 from datetime import datetime
 from django.conf import settings
-from django.db.models import get_model
+from django.apps import apps
 from django.db.models import Q
 
 class AbstractFrassesIncidenciaAula(models.Model):
@@ -54,7 +54,7 @@ class AbstractSancio(models.Model):
 
     @staticmethod
     def alumne_sancionat_en_data( alumne, dia, franja ):
-        Sancio = get_model('incidencies','Sancio')
+        Sancio = apps.get_model('incidencies','Sancio')
 #         q_entre_dates = Q( data_inici__lt = dia, data_fi__gt = dia )
 #         q_primer_dia = Q( data_inici = dia, franja_inici__hora_inici__lte = franja.hora_inici )
 #         q_darrer_dia = Q( data_fi = dia, franja_fi__hora_inici__gte = franja.hora_inici ) 

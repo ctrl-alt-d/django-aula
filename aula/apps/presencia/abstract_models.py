@@ -2,7 +2,7 @@
 
 from django.db import models
 from datetime import datetime
-from django.db.models.loading import get_model
+from django.apps import apps
 #consultes
 from django.db.models import Q
 

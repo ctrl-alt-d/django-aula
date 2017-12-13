@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from django.db.models import get_model
+from django.apps import apps
 
 #-------------Impartir-------------------------------------------------------------      
 
@@ -17,7 +17,7 @@ def impartir_post_save(sender, instance, created, **kwargs):
     #si un professor passa llista, també passa llista de 
     #totes les imparticions que no tinguin alumnes.
     if instance.professor_passa_llista is not None:
-        Impartir = get_model('presencia','Impartir')
+        Impartir = apps.get_model('presencia','Impartir')
         altresHores = Impartir.objects.filter( horari__hora = instance.horari.hora, 
                                                dia_impartir = instance.dia_impartir,
                                                controlassistencia__isnull = True,
@@ -36,7 +36,7 @@ def impartir_despres_de_passar_llista(instance):
         text_missatge = u"""Has passat llista a un grup que no és el teu: ({0}). 
                          El professor del grup {1} rebrà un missatge com aquest.
                          """.format( unicode(instance),  unicode(instance.horari.professor) )
-        Missatge = get_model( 'missatgeria','Missatge')
+        Missatge = apps.get_model( 'missatgeria','Missatge')
         msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )           
         msg.envia_a_usuari( usuari = instance.professor_passa_llista.getUser(), importancia = 'VI')
 

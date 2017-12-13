@@ -4,7 +4,7 @@
 from django.utils.datetime_safe import datetime
 from django.core.exceptions import ValidationError
 from django.forms.forms import NON_FIELD_ERRORS
-from django.db.models import get_model
+from django.apps import apps
 from django.conf import settings
 
 #-------------INCIDENCIES-------------------------------------------------------------
@@ -88,14 +88,14 @@ def Incidencia_post_save(sender, instance, created, **kwargs):
     pass
 
 def incidencia_despres_de_posar(instance):
-    Missatge = get_model( 'missatgeria','Missatge')
+    Missatge = apps.get_model( 'missatgeria','Missatge')
     #Lògica de negoci: 
     if not instance.tipus.es_informativa:
         if settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO:
             #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
             import datetime as t
             dia_prescriu_incidencia = instance.dia_incidencia - t.timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
-            Incidencia = get_model( 'incidencies','Incidencia')
+            Incidencia = apps.get_model( 'incidencies','Incidencia')
             nIncidenciesAlumneProfessor = Incidencia.objects.filter( 
                                                 es_vigent = True, 
                                                 tipus__es_informativa = False,
@@ -135,7 +135,7 @@ def incidencia_despres_de_posar(instance):
         except:
             pass
         if es_unitat_formativa: 
-            Professor = get_model( 'usuaris','Professor')
+            Professor = apps.get_model( 'usuaris','Professor')
             professors_que_tenen_aquest_alumne_a_classe = Professor.objects.filter( horari__impartir__controlassistencia__alumne = instance.alumne ).exclude( pk = instance.professional.pk ).distinct()
             for professor in professors_que_tenen_aquest_alumne_a_classe:
                 esTutor = True if professor in instance.alumne.tutorsDeLAlumne() else False
@@ -149,7 +149,7 @@ def incidencia_despres_de_posar(instance):
         
         if instance.tipus.notificar_equip_directiu:
             #es notifica aquest tipus d'incidència a tots els membres de l'equip directiu
-            Professor = get_model( 'usuaris','Professor')
+            Professor = apps.get_model( 'usuaris','Professor')
             membres_equip_directiu = Professor.objects.filter( groups__name = u"direcció" )
             for professor in membres_equip_directiu:
                 msg1.envia_a_usuari( professor.getUser(), 'VI' )

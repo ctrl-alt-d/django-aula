@@ -4,7 +4,7 @@ from django.template.defaultfilters import timesince_filter
 import datetime as dt
 from aula.apps.usuaris.models import User2Professor, User2Professional
 from aula.apps.tutoria.models import CartaAbsentisme
-from django.db.models import get_model
+from django.apps import apps
 from aula.apps.incidencies.business_rules.incidencia import incidencia_despres_de_posar
 from datetime import timedelta
 from django.conf import settings
@@ -106,10 +106,10 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
          
         frase = settings.CUSTOM_RETARD_FRASE
          
-        TipusIncidencia = get_model('incidencies','TipusIncidencia')
+        TipusIncidencia = apps.get_model('incidencies','TipusIncidencia')
         tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
      
-        Incidencia = get_model('incidencies','Incidencia')
+        Incidencia = apps.get_model('incidencies','Incidencia')
         abans_no_era_retard = created or ( hasattr(instance, 'instanceDB') and  instance.instanceDB and instance.instanceDB.estat and instance.instanceDB.estat.codi_estat != 'R' )
          
         #posem incidència si arriba tard ( només si passem de res a retard )
@@ -148,10 +148,10 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
     #
     #
 
-    NoHaDeSerALAula = get_model('presencia','NoHaDeSerALAula')
+    NoHaDeSerALAula = apps.get_model('presencia','NoHaDeSerALAula')
   
     #-- si està expulsat del centre aquell dia ho anotem:
-    Sancio = get_model('incidencies','Sancio')
+    Sancio = apps.get_model('incidencies','Sancio')
     sancio = Sancio.alumne_sancionat_en_data( instance.alumne,              #alumne
                                         instance.impartir.dia_impartir,     #dia
                                         instance.impartir.horari.hora       #franja
@@ -165,7 +165,7 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
         
          
     #-- si té una sortida aquell dia ho anotem:
-    Sortida = get_model('sortides','Sortida')
+    Sortida = apps.get_model('sortides','Sortida')
     sortida = Sortida.alumne_te_sortida_en_data( instance.alumne,                   #alumne
                                                 instance.impartir.dia_impartir,     #dia
                                                 instance.impartir.horari.hora       #franja

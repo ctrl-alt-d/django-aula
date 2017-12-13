@@ -5,7 +5,7 @@ from django.http.response import HttpResponse, JsonResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from aula.apps.extKronowin.models import ParametreKronowin
-from django.contrib.auth.models import check_password
+from django.contrib.auth.hashers import check_password
 
 from django.http import HttpResponseRedirect
 from django.contrib.auth import logout

@@ -65,8 +65,7 @@ from django.contrib import messages
 from django.template.context import Context
 from django.http.response import HttpResponse
 from django.db.models.deletion import ProtectedError
-from django.db.models import get_model
-
+from django.apps import apps
 
 
 
@@ -1472,12 +1471,12 @@ def esborrarSancio( request, pk ):
     try:
 
         #esborrar totes les expulsions i incidències relacionades:
-        _ = ( get_model('incidencies','Expulsio')
+        _ = ( apps.get_model('incidencies','Expulsio')
               .objects.filter( provoca_sancio = sancio )
               .update( provoca_sancio = None,
                        es_vigent = True ) 
               )
-        _ = ( get_model('incidencies','Incidencia')
+        _ = ( apps.get_model('incidencies','Incidencia')
               .objects.filter( provoca_sancio = sancio )
               .update( provoca_sancio = None,
                        es_vigent = True )
