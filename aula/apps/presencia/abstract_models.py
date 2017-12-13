@@ -19,10 +19,11 @@ class AbstractImpartir(models.Model):
         verbose_name = u'Impartir classe'
         verbose_name_plural = u'Impartir classes'
         unique_together = (("dia_impartir","horari"))
+
     def __unicode__(self):
         return (  self.dia_impartir.strftime( "%d/%m/%Y") +
                   ': ' + unicode( self.horari) )
-        
+
     def esFutur(self):
         data = datetime( year = self.dia_impartir.year, 
                          month = self.dia_impartir.month, 
@@ -157,7 +158,20 @@ class AbstractControlAssistencia(models.Model):
         unique_together = (("alumne", "impartir"))
         
     def __unicode__(self):
-        return unicode(self.alumne) + u' -> '+ unicode(self.estat)    
+        return unicode(self.alumne) + u' -> '+ unicode(self.estat)
+
+    def esPrimeraHora(self):
+        ControlAssistencia = self.__class__
+        return not ( ControlAssistencia
+                     .objects
+                     .filter( alumne = self.alumne,
+                              impartir__dia_impartir = self.impartir.dia_impartir,
+                              impartir__horari__hora__hora_inici__lt = self.impartir.horari.hora.hora_inici
+                            )
+                     .exists()
+                    )
+
+
 
 class AbstractNoHaDeSerALAula(models.Model):
     #cal recalcular-lo en aquesta casos:

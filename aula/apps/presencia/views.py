@@ -1163,11 +1163,15 @@ def copiarAlumnesLlista(request, pk):
 def anularImpartir(request, pk):
     impartir = get_object_or_404(Impartir, pk=pk)
     controls = impartir.controlassistencia_set
+    credentials = getImpersonateUser(request)
+    (user, l4) = credentials
+
     NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
     if not controls.exists():
         messages.error(request, u"Aquesta classe no té alumnes, no es pot anul·lar." )
         next_url = reverse( "aula__horari__passa_llista", kwargs={'pk': pk} )
     else:
+        errors = []
         q_already_anulats = Q(nohadeseralaula__motiu = NoHaDeSerALAula.ANULLADA )
         q_sense_passar_llista = Q(estat = None)
         q_falta = Q(estat__codi_estat = "F")
@@ -1176,10 +1180,28 @@ def anularImpartir(request, pk):
             control.estat_backup = control.estat
             control.swaped = True
             control.estat = None
-            control.save()
-        messages.success(request, u"""Operació finalitzada. 
-        S'han marcat tots els controls d'assistència d'aquesta classe com anul·lats. 
-        Si el professor posa nous alumnes a la classe caldria repetir el procés. """)
+            try:
+                control.save()
+            except ValidationError, e:
+                for _, v in e.message_dict.items():
+                    errors.append(v)
+
+        #marco com impartida:
+        if user.groups.filter(name="professors").exists():
+            try:
+                impartir.professor_passa_llista = User2Professor( user )
+                impartir.save()
+            except ValidationError, e:
+                for _, v in e.message_dict.items():
+                    errors.append(v)
+
+        if not bool(errors):
+            messages.success(request, u"""Operació finalitzada. 
+            S'han marcat tots els controls d'assistència d'aquesta classe com anul·lats. 
+            Si el professor posa nous alumnes a la classe caldria repetir el procés. """)
+        else:
+            messages.error(request,u"S'han trobat errors anul·lant aquesta hora de classe: {}". format (u", ".join(errors)) )
+
         next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
     return HttpResponseRedirect(next_url)
 
@@ -1196,17 +1218,32 @@ def desanularImpartir(request, pk):
         messages.error(request, u"Aquesta classe no està anul·lada, vols dir que és aquesta la classe que vols des-anul·lar?")
         next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
     else:
-        #NoHaDeSerALAula.objects.filter( control__impartir = impartir, motiu = NoHaDeSerALAula.ANULLADA ).all().delete()
+        errors = []
         q_already_anulats = Q(nohadeseralaula__motiu=NoHaDeSerALAula.ANULLADA)
         for control in controls.filter(q_already_anulats).all():
             control.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.ANULLADA).delete()
             if control.swaped:
                 control.estat = control.estat_backup
                 control.swaped = False
-            control.save()
+            try:
+                control.save()
+            except ValidationError, e:
+                for _, v in e.message_dict.items():
+                    errors.append(v)
 
-        messages.success(request, u"Operació finalitzada. Classe des-anul·lada.")
+        # si tot a null, desmarcar d'impartida:
+        if all(c.estat_id is None for c in controls.all()):
+            try:
+                impartir.professor_passa_llista = None
+                impartir.save()
+            except ValidationError, e:
+                for _, v in e.message_dict.items():
+                    errors.append(v)
+
+        if not bool(errors):
+            messages.success(request, u"Operació finalitzada. Classe des-anul·lada.")
+        else:
+            messages.error(request,
+                           u"S'han trobat errors des-anul·lant aquesta hora de classe: {}".format(u", ".join(errors)))
         next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
     return HttpResponseRedirect(next_url)
-
-
