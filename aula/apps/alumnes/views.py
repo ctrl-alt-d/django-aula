@@ -18,7 +18,7 @@ from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
 #workflow
 from django.http import HttpResponse
-from django.shortcuts import render, render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 
 #auth
@@ -52,12 +52,13 @@ from aula.apps.alumnes.forms import promoForm, newAlumne
 def duplicats(request):
     report = duplicats_rpt()
     
-    return render_to_response(
+    return render(
+            request,
             'report.html',
                 {'report': report,
                  'head': 'Alumnes' ,
                 },
-                context_instance=RequestContext(request))     
+                )
     
 
 #duplicats
@@ -73,11 +74,12 @@ def fusiona(request,pk):
         resultat = { 'errors': [ unicode(e), ], 'warnings':  [], 'infos':  []  }
         
     
-    return render_to_response(
+    return render(
+                    request,
                    'resultat.html', 
                    {'head': u'Error a l\'esborrar actuació.' ,
                     'msgs': resultat },
-                   context_instance=RequestContext(request))     
+                )
  
 
 #vistes--------------------------------------------------------------------------------------
@@ -141,12 +143,13 @@ def assignaTutors( request ):
                                              } )            
             formset.append( form )
             
-    return render_to_response(
+    return render(
+                    request,
                   "formsetgrid.html", 
                   { "formset": formset,
                     "head": "Gestió de tutors",
-                   },
-                  context_instance=RequestContext(request))
+                   }
+                )
 
 
 @login_required
@@ -163,12 +166,13 @@ def llistaTutorsIndividualitzats( request ):
     
     report = reportLlistaTutorsIndividualitzats(  )
      
-    return render_to_response(
+    return render(
+            request,
             'report.html',
                 {'report': report,
                  'head': head ,
                 },
-                context_instance=RequestContext(request)) 
+            )
 
 
 @login_required
@@ -189,12 +193,13 @@ def informePsicopedagoc( request  ):
 
         formAlumne = triaAlumneSelect2Form( )         
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': formAlumne,
                      'head': 'Triar alumne'
-                    },
-                    context_instance=RequestContext(request))    
+                    }
+                )
 
 
 @login_required
@@ -246,13 +251,14 @@ def gestionaAlumnesTutor( request , pk ):
                                     )
             formset.append( form )
         
-    return render_to_response(
+    return render(
+                request,
                   "formset.html", 
                   {"formset": formset,
                    "head": head,
                    "formSetDelimited": True,
-                   },
-                  context_instance=RequestContext(request))      
+                   }
+                )
 
 #--------------------------------------------------------------------------------------------
 
@@ -260,7 +266,7 @@ def gestionaAlumnesTutor( request , pk ):
 @group_required(['consergeria','professors','professional'])
 def triaAlumne( request ):
     if not request.user.is_authenticated():
-        return render_to_response('/login')   
+        return render('/login')
 
     if request.method == 'POST':
         
@@ -271,12 +277,13 @@ def triaAlumne( request ):
     
         form = triaAlumneForm()
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': form,
                      'head': 'Resultat importació SAGA' ,
                     },
-                    context_instance=RequestContext(request))
+                )
 
 #--------------------- AJAX per seleccionar un alumne --------------------------------------------#
 
@@ -453,12 +460,13 @@ def elsMeusAlumnesAndAssignatures( request ):
         
         report.append(taula)
         
-    return render_to_response(
+    return render(
+                request,
                 'reportTabs.html',
                     {'report': report,
                      'head': u'Informació alumnes' ,
                     },
-                    context_instance=RequestContext(request))            
+                )
         
 
 
@@ -468,10 +476,11 @@ def elsMeusAlumnesAndAssignatures( request ):
 @login_required
 @group_required(['professors'])
 def blanc( request ):
-    return render_to_response(
+    return render(
+                request,
                 'blanc.html',
                     {},
-                    context_instance=RequestContext(request)) 
+                    )
 
 
 # ---------------- PROMOCIONS ------------------------#
@@ -480,7 +489,7 @@ def blanc( request ):
 @group_required(['direcció'])
 def llistaGrupsPromocionar(request):
     grups = Grup.objects.all().order_by("descripcio_grup")
-    return render_to_response('mostraGrupsPromocionar.html', {"grups" : grups}, context_instance=RequestContext(request))
+    return render(request,'mostraGrupsPromocionar.html', {"grups" : grups})
 
 @login_required
 @group_required(['direcció'])
@@ -491,7 +500,7 @@ def nouAlumnePromocionar(request):
         # Ve per post, he de guardar l'alumne si les dades estan correctes
         pass
     form = newAlumne()
-    return render_to_response('mostraFormulariPromocionar.html', {'form': form}, context_instance=RequestContext(request))
+    return render(request,'mostraFormulariPromocionar.html', {'form': form})
 
 @login_required
 @group_required(['direcció'])
@@ -533,11 +542,11 @@ def mostraGrupPromocionar(request, grup=""):
     if (len(alumnes) == 0):
 
         msg = "Aquest grup no te alumnes actualment."
-        return render_to_response('mostraGrupsPromocionar.html', {"grups" : grups, "msg": msg}, context_instance=RequestContext(request))
+        return render(request,'mostraGrupsPromocionar.html', {"grups" : grups, "msg": msg})
 
     formset = PromoFormset(queryset=alumnes)
 
-    return render_to_response('mostraGrupPromocionar.html', {"grup_actual" : grup_actual, "formset" : formset, "grups":grups}, context_instance=RequestContext(request))
+    return render(request,'mostraGrupPromocionar.html', {"grup_actual" : grup_actual, "formset" : formset, "grups":grups})
 
 
 
@@ -665,12 +674,13 @@ def cercaUsuari(request, from_request):
             
     else:
         formUsuari = triaAlumneSelect2Form()
-    return render_to_response(
+    return render(
+        request,
         'form.html',
         {'form': formUsuari,
          'head': 'Triar usuari'
-         },
-        context_instance=RequestContext(request))
+         }
+        )
 
 
 

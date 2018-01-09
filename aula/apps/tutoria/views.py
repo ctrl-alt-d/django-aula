@@ -6,7 +6,7 @@ from django.template import RequestContext
 from django.http import HttpResponse
 
 #workflow
-from django.shortcuts import render_to_response, get_object_or_404, render
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseRedirect
 
 #auth
@@ -171,12 +171,13 @@ def lesMevesActuacions(request):
 #             
 #             report.append(taula)
 #         
-#     return render_to_response(
+#     return render(
+#                 request,
 #                 'actuacions.html',
 #                     {'report': report,
 #                      'head': 'Informació actuacions' ,
 #                     },
-#                     context_instance=RequestContext(request))            
+#                   )
 #         
 
 from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
@@ -234,12 +235,13 @@ def novaActuacio(request):
     
     
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'head': 'Actuació' ,
                     },
-                    context_instance=RequestContext(request))
+                )
 
 
 @login_required
@@ -302,13 +304,14 @@ def editaActuacio(request, pk):
 
         formset.append( formActuacio )
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'infoForm': infoForm,
                      'head': 'Actuació' ,
                     },
-                    context_instance=RequestContext(request))
+                )
 
 @login_required
 @group_required(['professors','professional'])
@@ -342,11 +345,12 @@ def esborraActuacio(request, pk):
         import itertools
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
-        return render_to_response(
+        return render(
+                       request,
                        'resultat.html', 
                        {'head': u'Error a l\'esborrar actuació.' ,
                         'msgs': resultat },
-                       context_instance=RequestContext(request))    
+                     )
             
     return HttpResponseRedirect( url_next )  
 
@@ -421,13 +425,14 @@ def justificaFaltes(request, pk, year, month, day):
 
 
         
-    return render_to_response(
+    return render(
+                  request,
                   "formset.html", 
                   {"formset": formCA,
                    "head": head,
                    "missatge": missatge,
                    },
-                  context_instance=RequestContext(request))
+                 )
 
 @login_required
 @group_required(['professors'])
@@ -609,18 +614,20 @@ def informeSetmanalPrint(request, pk, year, month, day, suport):
         url_next = 'javascript:window.close();'
         resultat = { 'errors': [ errorsTrobats ], 
                 'warnings':  [], 'infos':  [], 'url_next': url_next }
-        return render_to_response(
+        return render(
+                   request,
                    'resultat.html', 
                    {'head': u'Error preparant el llistat:' ,
                     'msgs': resultat },
-                   context_instance=RequestContext(request))         
+                   )
     else:
-        return render_to_response(
+        return render(
+              request,
               "informeSetmanal.html", 
               {"head": u'Informe setmanal grup {0}'.format( grup ),
                "dades": dades
                },
-              context_instance=RequestContext(request))
+              )
 
         
 
@@ -648,11 +655,12 @@ def informeSetmanal(request):
             url_next = 'javascript:window.close();'
             resultat = { 'errors': [ msg ], 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
-            return render_to_response(
+            return render(
+                       request,
                        'resultat.html', 
                        {'head': u'Error preparant el llistat:' ,
                         'msgs': resultat },
-                       context_instance=RequestContext(request))    
+                       )
 
 
     else:
@@ -660,22 +668,24 @@ def informeSetmanal(request):
 
         grupInicial = { 'grup': grups[0]} if grups else {}
         if not grups and professor.tutorindividualitzat_set.count()  == 0:
-            return render_to_response(
+            return render(
+                        request,
                         'resultat.html', 
                         {'head': u'Justificador de faltes' ,
                          'msgs': { 'errors': [], 'warnings':  [u'Sembla ser que no tens grups assignats'], 'infos':  [] } },
-                        context_instance=RequestContext(request)) 
+                        )
         
         form = informeSetmanalForm(  queryset = grups, initial = grupInicial )
         
         
-    return render_to_response(
+    return render(
+                  request,
                   "form.html", 
                   {"form": form,
                    "head": head,
                    "target":"blank_"
                    },
-                  context_instance=RequestContext(request))
+                  )
     
 
 @login_required
@@ -851,13 +861,14 @@ def justificador(request, year, month, day):
            [ professor.username, 'mes vinent >>'      , data + t.timedelta( days = +30 ) ],
         ]        
                                               
-    return render_to_response(
+    return render(
+              request,
               "justificator.html", 
               {"head": u'Justificar faltes de tutorats de {0}'.format( professor ),
                "dades": dades,
                "altres_moments": altres_moments
                },
-              context_instance=RequestContext(request))
+              )
     
 @login_required
 @group_required(['professors'])
@@ -895,12 +906,13 @@ def justificaFaltesPre(request):
         form=justificaFaltesW1Form( queryset = query )
         formset.append( form )
             
-    return render_to_response(
+    return render(
+                  request,
                   "formset.html", 
                   {"formset": formset,
                    "head": head,
                    },
-                  context_instance=RequestContext(request))
+                 )
     
     
 
@@ -917,12 +929,13 @@ def elsMeusAlumnesTutorats(request):
     
     report = elsMeusAlumnesTutoratsRpt( professor )
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': 'Els meus alumnes tutorats' ,
                     },
-                    context_instance=RequestContext(request))            
+                )
 
 
 @login_required
@@ -938,12 +951,13 @@ def gestioCartes(request):
     
     report = gestioCartesRpt( professor, l4 )
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': 'Els meus alumnes tutorats' ,
                     },
-                    context_instance=RequestContext(request))  
+                )
 
 @login_required
 @group_required(['professors'])
@@ -972,11 +986,12 @@ def novaCarta(request, pk_alumne ):
     
     form.fields['data_carta'].widget = DateTextImput()
     
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': u'Carta absentisme'},
-                context_instance=RequestContext(request))          
+                )
 
 @login_required
 @group_required(['professors'])        
@@ -1032,12 +1047,13 @@ def totesLesCartes(request):
     
     report = totesLesCartesRpt(  )
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': 'Els meus alumnes tutorats' ,
                     },
-                    context_instance=RequestContext(request))  
+                )
 
 
 
@@ -1072,20 +1088,22 @@ def elsMeusAlumnesTutoratsEntreDates(request):
             
             report = elsMeusAlumnesTutoratsRpt( parm_professor, parm_grup, parm_dataDesDe, parm_dataFinsA )
                 
-            return render_to_response(
+            return render(
+                        request,
                         'report.html',
                             {'report': report,
                              'head': 'Consulta Assistència Entre Dates' ,
                             },
-                            context_instance=RequestContext(request))         
+                        )
     else:
         form = elsMeusAlumnesTutoratsEntreDatesForm( grups = possibles_grups )
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': 'Consulta Assistència Entre Dates'},
-                context_instance=RequestContext(request))    
+                )
 
 
 
@@ -1651,12 +1669,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
     #----------------
     
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': u'Informació alumne {0}'.format( head ) ,
                     },
-                    context_instance=RequestContext(request))            
+                )
 
 
 
@@ -1805,13 +1824,14 @@ def informeCompletFaltesIncidencies(request):
                                          initial = { 'opcio':opcio}  )
                 formset.append( formAlumne )
         
-    return render_to_response(
+    return render(
+                  request,
                   "informeCompletFaltesIncidencies.html", 
                   {"formset": formset,
                    "head": head,
                    "formSetDelimited": True,
                    },
-                  context_instance=RequestContext(request))        
+                  )
 
 
 
@@ -1827,10 +1847,11 @@ def calendariCursEscolarTutor(request):
     
     reports = reportCalendariCursEscolarTutor( professor )
 
-    return render_to_response(
+    return render(
+                request,
                 'calendariCursEscolarTutor.html', 
                 {'reports': reports},
-                context_instance=RequestContext(request))
+                )
     
     
     
@@ -1868,13 +1889,14 @@ def seguimentTutorialPreguntes(request):
                     Un petit canvi en el redactat de la pregunta es cosidera
                     una pregunta diferent."""
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html', 
                 {'formset': formset, 
                  'head': head,
                  'missatge': missatge,
                  'formSetDelimited':True},
-                context_instance=RequestContext(request))    
+                )
 
 
 @login_required
@@ -1965,13 +1987,14 @@ def seguimentTutorialFormulari(request):
                 formset.append(form)
 
                     
-    return render_to_response(
+    return render(
+                request,
                 'formset.html', 
                 {'formset': formset, 
                  'head': head,
                  'missatge': missatge,
                  'formSetDelimited':True},
-                context_instance=RequestContext(request)) 
+                )
     
     
 @login_required
@@ -1982,10 +2005,11 @@ def calculaResumAnual(request):
     
 @login_required
 def blanc( request ):
-    return render_to_response(
+    return render(
+                request,
                 'blanc.html',
                     {},
-                    context_instance=RequestContext(request)) 
+                )
 
 # Sortides
 
@@ -2074,13 +2098,14 @@ def justificarSortidaAlumne(request, pk ):
 
     #form.fields['alumnes_que_no_vindran'].widget.attrs['style'] = "height: 500px;"
         
-    return render_to_response(
+    return render(
+                request,
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides'
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 
     

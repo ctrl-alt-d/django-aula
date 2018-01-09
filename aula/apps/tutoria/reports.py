@@ -3,7 +3,6 @@
 from aula.apps.alumnes.models import  Nivell
 from django.db.models import Q
 from aula.utils import tools
-from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from aula.apps.alumnes.models import  Grup
 from aula.apps.presencia.models import ControlAssistencia

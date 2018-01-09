@@ -42,7 +42,7 @@ from django.contrib.auth.decorators import login_required
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.utils.datetime_safe import datetime
 
 #excepcions
@@ -154,7 +154,8 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
         form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class',"") 
         
                             
-    return render_to_response(
+    return render(
+                  request,
                   "posaIncidenciaAula.html", 
                   {"form": form,
                    "incidenciesAgrupades": incidenciesAgrupades,
@@ -162,7 +163,7 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
                    "id_impartir":  pk ,
                    "head": head,
                    },
-                  context_instance=RequestContext(request))
+                )
 
 
 @login_required
@@ -184,11 +185,12 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
         es_consultable = False
     
     if not es_consultable:
-        return render_to_response(
+        return render(
+                        request,
                         'resultat.html', 
                         {'head': u'Error eliminant incidència.' ,
                          'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
-                        context_instance=RequestContext(request)) 
+                    )
 
     url_next = '/incidencies/posaIncidenciaAula/%s/'% ( pk_impartir )
     try:
@@ -207,11 +209,12 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
     except ValidationError, e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
-        return render_to_response(
+        return render(
+                        request,
                        'resultat.html', 
                        {'head': u'Error a l\'esborrar incidència d \'aula' ,
                         'msgs': resultat },
-                       context_instance=RequestContext(request))    
+                    )
     
     
     return HttpResponseRedirect( url_next )    
@@ -227,11 +230,12 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
     try:
         incidencia = Incidencia.objects.get(pk =pk)
     except:
-        return render_to_response(
+        return render(
+                        request,
                         'resultat.html', 
                         {'head': u'Error al crear expulsió per acumulació' ,
                          'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
-                        context_instance=RequestContext(request)) 
+                    )
     
     incidencia.credentials = credentials
     
@@ -249,11 +253,12 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
     except ValidationError, e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
-        return render_to_response(
+        return render(
+                        request,
                        'resultat.html', 
                        {'head': u'Error a l\'esborrar incidència d \'aula' ,
                         'msgs': resultat },
-                       context_instance=RequestContext(request))    
+                    )
     
     
     return HttpResponseRedirect( url_next )    
@@ -346,13 +351,14 @@ def posaIncidencia( request ):
     for f in ['descripcio_incidencia' ]: #, 'franja_incidencia', 'tipus' ]:
         formIncidencia.fields[f].widget.attrs['class'] = 'form-control ' + formIncidencia.fields[f].widget.attrs.get('class',"") 
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'head': 'Incidència' ,
                      'missatge': missatge
                     },
-                    context_instance=RequestContext(request))
+                )
 
 
 #vistes -----------------------------------------------------------------------------------
@@ -405,12 +411,13 @@ def posaExpulsio( request ):
         formset.append( formAlumne )
         formset.append( formExpulsio )
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'head': u'Recullir Expulsió (Pas 1/2)' ,
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 
 @login_required
@@ -496,13 +503,14 @@ def posaExpulsioW2( request, pk ):
         formExpulsio = posaExpulsioFormW2(instance = expulsio, initial = { 'professor':possible_professor } )
 
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': formExpulsio,
                      'infoForm': infoForm,
                      'head': u'Recullir Expulsió (Pas 2/2)' ,
                     },
-                    context_instance=RequestContext(request))   
+                )
  
 
 
@@ -612,13 +620,14 @@ def editaExpulsio( request, pk ):
     formset = [ formExpulsio ]
     formset.extend ( [  can_delete ] if l4 else []  )
 
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'infoForm': infoForm,
                      'head': 'Expulsió' ,
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 #--------------------------------------------------------------------------------------------------
 
@@ -633,11 +642,12 @@ def posaExpulsioPerAcumulacio( request, pk ):
     try:
         incidencia = Incidencia.objects.get(pk =pk)
     except:
-        return render_to_response(
+        return render(
+                        request,
                         'resultat.html', 
                         {'head': u'Error al crear expulsió per acumulació' ,
                          'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
-                        context_instance=RequestContext(request)) 
+                    )
     
     professional = incidencia.professional
     professor = User2Professor(professional.getUser() ) 
@@ -704,11 +714,12 @@ def posaExpulsioPerAcumulacio( request, pk ):
         except ValidationError, e:
             resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                         'warnings':  [], 'infos':  [], 'url_next': url_next }
-            return render_to_response(
+            return render(
+                            request,
                            'resultat.html', 
                            {'head': u'Error al crear expulsió per acumulació.' ,
                             'msgs': resultat },
-                           context_instance=RequestContext(request))  
+                        )
 
     return HttpResponseRedirect( url_next )         
 
@@ -811,7 +822,8 @@ def llistaIncidenciesProfessional( request ):
     #RequestConfig(request).configure(table)
     #RequestConfig(request).configure(table2)
 
-    return render_to_response(
+    return render(
+                request,
                 'incidenciesProfessional.html',
                 {'table': table2,
                  'alumnes': alumnesOrdenats,
@@ -822,7 +834,7 @@ def llistaIncidenciesProfessional( request ):
                  'table2': table3,
                  'expulsionsIIncidenciesPerAlumne': diccionariTables,
                 },
-                context_instance=RequestContext(request))        
+                )
 
 
 @login_required
@@ -1021,11 +1033,12 @@ def sancio( request, pk ):
     except ValidationError, e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
-        return render_to_response(
+        return render(
+                        request,
                        'resultat.html', 
                        {'head': u'Error al crear sanció per acumulació.' ,
                         'msgs': resultat },
-                       context_instance=RequestContext(request))
+                    )
     else:
         #assigno les expulsions a aquesta sancio  
         expulsions.update( es_vigent = False, provoca_sancio = sancio )
@@ -1172,12 +1185,13 @@ def sancions( request, s = 'nom' ):
 
     report.append(taula)
 
-    return render_to_response(
+    return render(
+                request,
                 'sancions.html',
                     {'report': report,
                      'head': 'Informació Sancions' ,
                     },
-                    context_instance=RequestContext(request))  
+                )
 
 
 
@@ -1430,13 +1444,14 @@ def editaSancio( request, pk ):
     formset.extend ( [  can_delete ] if l4 else []  )
     
 
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'infoForm': infoForm,
                      'head': 'Sanció' ,
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 #--------------------------------------------------------------------------------------------------
 
@@ -1456,7 +1471,8 @@ def esborrarSancio( request, pk ):
         raise Http404() 
     
     if not l4 and sancio.impres:
-        return render_to_response(
+        return render(
+                    request,
                     'resultat.html', 
                     {'head': u'Error esborrant sanció' ,
                      'msgs': { 'errors': [u'Aquesta sanció ja ha estat impresa, no es pot esborrar'], 
@@ -1464,7 +1480,7 @@ def esborrarSancio( request, pk ):
                                'infos':  [],
                                'url_next':'/incidencies/sancions/'} ,
                      },
-                    context_instance=RequestContext(request)) 
+                    )
     
     sancio.credentials = credentials
     
@@ -1533,10 +1549,11 @@ def controlTramitacioExpulsions( request ):
 @login_required
 @group_required(['professors'])
 def blanc( request ):
-    return render_to_response(
+    return render(
+                request,
                 'blanc.html',
                     {},
-                    context_instance=RequestContext(request)) 
+                )
 
 
 

@@ -129,8 +129,8 @@ class triaAlumneSelect2Form(forms.Form):
                    widget=ModelSelect2Widget(
                                         queryset=AlumneGrup.objects.all(),
                                         search_fields = ['cognoms__icontains','nom__icontains', 'grup__descripcio_grup__icontains' ],
-                                        attrs={'style':"'width': '100%'"}
-                                                    ), 
+                                        attrs={'style':"'width': '100%'"},
+                                        ),
                    queryset=AlumneGrup.objects.all(), 
                    required=True)
 

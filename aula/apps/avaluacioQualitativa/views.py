@@ -10,7 +10,7 @@ from aula.utils.decorators import group_required
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 #excepcions
 #from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
@@ -60,13 +60,14 @@ def items( request ):
     for form in formset:
         form.fields['text'].widget.attrs['size'] = 70
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html', 
                 {'formset': formset, 
                  'head': head,
                  "missatge": missatge,
                  'formSetDelimited':True},
-                context_instance=RequestContext(request))
+                )
     
 @login_required
 @group_required(['direcció'])
@@ -93,13 +94,14 @@ def avaluacionsQualitatives( request ):
         form.fields['data_obrir_avaluacio'].widget.attrs['class'] = 'datepicker'
         form.fields['data_tancar_avaluacio'].widget.attrs['class'] = 'datepicker'
         
-    return render_to_response(
+    return render(
+                request,
                 'formset.html', 
                 {'formset': formset, 
                  'head': head,
                  "missatge": missatge,
                  'formSetDelimited':True},
-                context_instance=RequestContext(request))
+                )
     
 
 #---------------------  --------------------------------------------#
@@ -194,12 +196,13 @@ def lesMevesAvaluacionsQualitatives( request ):
                 
         report.append(taula)
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': u'Avaluacions Qualitatives' ,
                     },
-                    context_instance=RequestContext(request))            
+                )
 
 
     
@@ -419,14 +422,15 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
         """
         messages.warning(request,  SafeText(msg ) )
         
-    return render_to_response(
+    return render(
+                  request,
                   tipusForm, 
                   { "formset": formset,
                     "head": u"Respostes avaluació qualitativa grup {0}".format( grup ),
                    "missatge": missatge,
                    "errors": errors
                    },
-                  context_instance=RequestContext(request))
+                )
 
 @login_required
 @group_required(['direcció'])
@@ -471,12 +475,13 @@ def resultats( request ):
 
         report.append(taula)
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': u'Avaluacions Qualitatives' ,
                     },
-                    context_instance=RequestContext(request))  
+                )
     
 @login_required
 @group_required(['direcció'])        
@@ -525,19 +530,21 @@ def report(request, pk ):
                                      )
             formset.append( form )
         
-    return render_to_response(
+    return render(
+                  request,
                   "formset.html", 
                   {"formset": formset,
                    "head": head,
                    "formSetDelimited": True,
                    },
-                  context_instance=RequestContext(request))        
+                 )
     
     
 @login_required
 def blanc( request ):
-    return render_to_response(
+    return render(
+                request,
                 'blanc.html',
                     {},
-                    context_instance=RequestContext(request)) 
+                )
 

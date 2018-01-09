@@ -7,7 +7,7 @@ from django.conf import settings
 from django.template import RequestContext
 
 #workflow
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 #auth
 from django.contrib.auth.decorators import login_required
@@ -72,12 +72,13 @@ from django.utils.html import escapejs
 #        pass  
 #        #form.base_fields['data'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )                
 #        
-#    return render_to_response(
+#    return render(
+#                request,
 #                'formsetgrid.html',
 #                    {'formset': formset,
 #                     'head': u'Gestió relació familia amb empreses' ,
 #                     'formSetDelimited':True},
-#                    context_instance=RequestContext(request))    
+#                   )
 
 
 #--------------------------------------------
@@ -109,12 +110,13 @@ def enviaBenvinguda( request , pk ):
     
     cosMissatge['url_next']=url_next
         
-    return render_to_response(
+    return render(
+                request,
                 'resultat.html',
                     {'msgs': cosMissatge ,
                      'head': u"Acció Envia Benviguda a {0}".format( alumne ) ,
                     },
-                    context_instance=RequestContext(request))        
+                )
 
 
 #--------------------------------------------
@@ -144,12 +146,13 @@ def bloquejaDesbloqueja( request , pk ):
         resultat = desbloqueja( alumne )
     resultat['url_next'] = url_next
     
-    return render_to_response(
+    return render(
+                request,
                 'resultat.html',
                     {'msgs': resultat ,
                      'head': 'Canvi configuració accés família de {0}'.format( alumne ) ,
                     },
-                    context_instance=RequestContext(request)) 
+                )
 
 @login_required
 @group_required(['professors'])
@@ -195,13 +198,14 @@ def configuraConnexio( request , pk ):
     else:
         form = AlumneFormSet(instance=alumne)                
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': form,
                      'infoForm': infoForm,
                      'head': u'Gestió relació familia amb empreses' ,
                      'formSetDelimited':True},
-                    context_instance=RequestContext(request)) 
+                )
 
     
 #--------------------------------------------------------------------------------------------------------
@@ -323,12 +327,13 @@ def dadesRelacioFamilies( request ):
                 taula.fileres.append( filera )            
             report.append(taula)
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': 'Els meus alumnes tutorats' ,
                     },
-                    context_instance=RequestContext(request))            
+                )
 
 
                 
@@ -369,13 +374,14 @@ def canviParametres( request ):
     else:
         form = AlumneFormSet(instance=alumne)                
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': form,
                      'infoForm': infoForm,
                      'head': u'Canvi de paràmetres' ,
                      'formSetDelimited':True},
-                    context_instance=RequestContext(request)) 
+                )
 
 
 @login_required
@@ -994,13 +1000,14 @@ def elMeuInforme( request, pk = None ):
         if not semiImpersonat:
             respostesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
 
-    return render_to_response(
+    return render(
+                request,
                 'report_detall_families.html',
                     {'report': report,
                      'head': u'Informació alumne {0}'.format( head ) ,
                      'assistencia_calendari': json.dumps(  assistencia_calendari ),
                     },
-                    context_instance=RequestContext(request))            
+                )
 
 
 

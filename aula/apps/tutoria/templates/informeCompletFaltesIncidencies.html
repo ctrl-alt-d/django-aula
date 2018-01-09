@@ -6,7 +6,7 @@
 
 	function norecordatoris() {	
 	  {% for f in formset %}
-	     {% if f.opcio.value = 'r' %}
+	     {% if f.opcio.value == 'r' %}
 	     	$('#id_{{f.prefix}}-opcio_1').prop("checked", true);
 	     {% endif %}
 	     {% if f.opcio.value %}

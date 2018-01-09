@@ -1,18 +1,6 @@
 {% extends "base.html" %}
 
 
-    # estructura:
-    # franges_tot: [ , , , , , ]
-    # impartir_tot =
-    #   [
-    #    impartirFranja =  
-    #  		( dia , 
-    #			[ impartir_franja = 
-    #				[ imparticions = [ imparticio, ... ] , ... ] 
-    #			]
-    #		)  , ...
-    #   ]
-    #
  
 {% block extrahead %}
   <style type="text/css">
@@ -46,12 +34,14 @@
 	  </div>
 	  {% endfor %}
 	</div>
-	
+
     {% for impartir_franja in impartir_tot %}
     <div class="row text_center" style="padding-top: 5px;{% if forloop.counter|divisibleby:2 %}background-color: #F0F0F0;{% endif %}">
+
+
         {% for imparticions, esDataActual in impartir_franja %}
             <div class="col-sm-2 col-xs-12 {% if forloop.counter != 1 and not esDataActual %}hidden-xs{% endif %}"   >
-              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia, hi_ha_sortida in imparticions %}                    
+              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia, hi_ha_sortida in imparticions %}
                 <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
                   {%if esGuardia%}
                    <div style="border: 1px solid gray;">
@@ -84,7 +74,7 @@
               {% empty %}
               <span class="hidden-xs">-----------</span>
               {% endfor %}
-              
+
             </div>                          
                
         {% endfor %}

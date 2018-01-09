@@ -1,38 +1,39 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+from aula.apps.usuaris import views as usuaris_views
 
-urlpatterns = patterns('aula.apps.usuaris.views',
+urlpatterns = [
                        
-    url(r'^canviDadesUsuari/$', 'canviDadesUsuari', 
+    url(r'^canviDadesUsuari/$', usuaris_views.canviDadesUsuari,
      name="usuari__dades__canvi"),
                        
-    url(r'^impersonacio/$', 'impersonacio', 
+    url(r'^impersonacio/$', usuaris_views.impersonacio,
      name="usuari__impersonacio__impersonacio"),
               
-    url(r'^resetPasswd/$', 'resetPasswd', 
+    url(r'^resetPasswd/$', usuaris_views.resetPasswd,
      name="administracio__professorat__reset_passwd"),
               
-    url(r'^canviDePasswd/$', 'canviDePasswd', 
+    url(r'^canviDePasswd/$', usuaris_views.canviDePasswd,
      name="usuari__dades__canvi_passwd"),
               
-    url(r'^resetImpersonacio/$', 'resetImpersonacio', 
+    url(r'^resetImpersonacio/$', usuaris_views.resetImpersonacio,
      name="usuari__impersonacio__reset"),
               
-    url(r'^elsProfessors/$', 'elsProfessors', 
+    url(r'^elsProfessors/$', usuaris_views.elsProfessors,
      name="professorat__professors__list"),
               
-    url(r'^login/$', 'loginUser', 
+    url(r'^login/$', usuaris_views.loginUser,
      name="nologin__usuari__login"),
               
-    url(r'^recoverPasswd/(?P<username>\w{1,20})/(?P<oneTimePasswd>\w{1,50})/$', 'recoverPasswd', 
+    url(r'^recoverPasswd/(?P<username>\w{1,20})/(?P<oneTimePasswd>\w{1,50})/$', usuaris_views.recoverPasswd,
      name="nologin__usuari__recover_password"),
               
-    url(r'^sendPasswdByEmail/$', 'sendPasswdByEmail', 
+    url(r'^sendPasswdByEmail/$', usuaris_views.sendPasswdByEmail,
      name="nologin__usuari__send_pass_by_email"),
 
-    url(r'^cercaProfessor/$', 'cercaProfessor_fromConsergeria',
+    url(r'^cercaProfessor/$', usuaris_views.cercaProfessor_fromConsergeria,
      name="consergeria__professor__cerca"),
               
-    url(r'^detallProfessorHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', 'detallProfessorHorari',
+    url(r'^detallProfessorHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', usuaris_views.detallProfessorHorari,
      name="consergeria__professor__cercaresultat"),
-)
+]
 

@@ -7,7 +7,7 @@ from aula.apps.usuaris.models import User2Professor, Professor
 from django.forms.models import modelform_factory, modelformset_factory
 from aula.apps.baixes.models import Feina
 from aula.apps.presencia.models import Impartir
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template.context import RequestContext
 from django.http import HttpResponseRedirect
 from aula.apps.baixes.forms import complementFormulariTriaForm,\
@@ -47,11 +47,12 @@ def feina( request, pk_imparticio  ):
     else:
         form = frmFact(  instance = feina )
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': head},
-                context_instance=RequestContext(request))    
+                )
 
 
 
@@ -74,11 +75,12 @@ def complementFormulariTria( request  ):
         form = complementFormulariTriaForm(  )
 
        
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': head},
-                context_instance=RequestContext(request))    
+                )
 
 @login_required
 @group_required(['direcció'])
@@ -136,11 +138,12 @@ def complementFormulariOmple( request, pk_professor, dia, mes, year  ):
                            ( u'Professors de Guardia', u', '.join( [ unicode(p) for p in Professor.objects.filter( horari__impartir__in = guardies ).distinct() ] )  )
                          )
 
-    return render_to_response(
+    return render(
+                request,
                 'formset.html', 
                 {'formset': formset, 
                  'head': head},
-                context_instance=RequestContext(request))    
+                )
 
 
 
@@ -163,11 +166,12 @@ def complementFormulariImpresioTria( request  ):
     else:
         form = complementFormulariImpresioTriaForm(  )
        
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': head},
-                context_instance=RequestContext(request))    
+                )
 
 
 

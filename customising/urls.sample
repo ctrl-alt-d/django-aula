@@ -1,24 +1,24 @@
-from django.conf.urls.defaults import patterns, url
-
-urlpatterns = patterns('customising.views',
+from django.conf.urls.defaults import url
+from customising import views as customising_views
+urlpatterns = [
    
-   url(r'^n0/$', 'blanc',
+   url(r'^n0/$', customising_views.blanc,
        name="usuari__dades__canvi_passwd"),
    
-   url(r'^n1/$', 'blanc',
+   url(r'^n1/$', customising_views.blanc,
        name="administracio__sincronitza__saga"),
    
-   url(r'^n2/$', 'blanc',
+   url(r'^n2/$', customising_views.blanc,
        name="administracio__sincronitza__kronowin"),
    
-   url(r'^n3/$', 'blanc',
+   url(r'^n3/$', customising_views.blanc,
        name="administracio__sincronitza__regenerar_horaris"),
    
-   url(r'^n4/$', 'blanc',
+   url(r'^n4/$', customising_views.blanc,
        name="administracio__professorat__reset_passwd"),
    
-   url(r'^n5/$', 'blanc',
+   url(r'^n5/$', customising_views.blanc,
        name="administracio__configuracio__carrega_inicial"),
    
-)
+]
 
