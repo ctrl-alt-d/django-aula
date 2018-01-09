@@ -14,7 +14,7 @@ ADMINS = (
     ('dani Herrera', 'ctrl.alt.d@gmail.com'),
 )
 
-LOGIN_URL="/usuaris/login"
+LOGIN_URL="/usuaris/login/"
 
 LICENSE_FILE = location( r'../LICENSE' )
 
