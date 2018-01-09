@@ -4,7 +4,7 @@
 from django.template import RequestContext
 
 #workflow
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
@@ -51,12 +51,13 @@ def assignaFranges( request ):
                                     instance=grup )            
             formset.append( form )
             
-    return render_to_response(
+    return render(
+                  request,
                   "formsetgrid.html", 
                   { "formset": formset,
                     "head": "Manteniment de grups Krownowin",
                    },
-                  context_instance=RequestContext(request))
+                 )
 
 #---------------------------------------------------------------------------------
 
@@ -92,12 +93,13 @@ def assignaGrups( request ):
                                     instance=grup )            
             formset.append( form )
             
-    return render_to_response(
+    return render(
+                  request,
                   "formsetgrid.html", 
                   { "formset": formset,
                     "head": "Manteniment de grups Krownowin",
                    },
-                  context_instance=RequestContext(request))
+                 )
 
 #---------------------------------------------------------------------------------
 @login_required
@@ -120,17 +122,19 @@ def sincronitzaKronowin(request):
                     text = u"""Sincronitzar horaris des d'arxiu Kronowin."""
                 )
             
-        return render_to_response(
+        return render(
+                        request,
                         'resultat.html', 
                         {'head': u'Resultat sincronització Kronowin' ,
                          'msgs': resultat },
-                        context_instance=RequestContext(request))    
+                     )
     else:
         form = sincronitzaKronowinForm()
-    return render_to_response(
+    return render(
+                        request,
                         'sincronitzaKronowin.html', 
                         {'form': form},
-                        context_instance=RequestContext(request))
+                 )
         
 
     
@@ -148,15 +152,17 @@ def creaNivellCursGrupDesDeKronowin(request):
                                                        form.cleaned_data["dia_inici_curs"], 
                                                        form.cleaned_data["dia_fi_curs"])
             
-        return render_to_response(
+        return render(
+                        request,
                         'resultat.html', 
                         {'head': u'Resultat sincronització Kronowin' ,
                          'msgs': resultat },
-                        context_instance=RequestContext(request))    
+                     )
     else:
         form = creaNivellCursGrupDesDeKronowinForm()
-    return render_to_response(
+    return render(
+                        request,
                         'sincronitzaKronowin.html', 
                         {'form': form},
-                        context_instance=RequestContext(request))
+                 )
         

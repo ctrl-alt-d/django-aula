@@ -7,7 +7,7 @@ from aula.utils.decorators import group_required
 #helpers
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
 from aula.apps.sortides.models import Sortida
@@ -391,14 +391,15 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
             form.fields[field].widget.attrs['disabled'] = u"disabled"
         form.fields['estat'].label += u": {0} ".format( instance.get_estat_display() )
     
-    return render_to_response(
+    return render(
+                request,
                 'formSortida.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
-                    context_instance=RequestContext(request))     
+                )
 
 #-------------------------------------------------------------------
     
@@ -491,14 +492,15 @@ def alumnesConvocats( request, pk , origen ):
         for field in form.fields:
             form.fields[field].widget.attrs['disabled'] = u"disabled"    
         
-    return render_to_response(
+    return render(
+                request,
                 'formSortidesAlumnes.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 
 
@@ -576,14 +578,15 @@ def alumnesFallen( request, pk , origen ):
             form.fields[field].widget.attrs['disabled'] = u"disabled" 
 
         
-    return render_to_response(
+    return render(
+                request,
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 #-------------------------------------------------------------------
     
@@ -654,14 +657,15 @@ def alumnesJustificats( request, pk , origen ):
         for field in form.fields:
             form.fields[field].widget.attrs['disabled'] = u"disabled" 
                     
-    return render_to_response(
+    return render(
+                request,
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 
 #-------------------------------------------------------------------
@@ -754,14 +758,15 @@ def professorsAcompanyants( request, pk , origen ):
         for field in form.fields:
             form.fields[field].widget.attrs['disabled'] = u"disabled" 
     
-    return render_to_response(
+    return render(
+                request,
                 'formSortidaProfessorAcompanyant.html',
                     {'form': form,
                      'head': 'Sortides' ,
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
-                    context_instance=RequestContext(request))    
+                )
 
 
 #-------------------------------------------------------------------

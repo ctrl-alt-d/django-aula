@@ -2,7 +2,6 @@
 
 from django.db.models import Q
 from aula.utils import tools
-from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from aula.utils.tools import write_pdf
 from aula.apps.baixes.models import Feina

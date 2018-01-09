@@ -96,23 +96,53 @@ STATICFILES_FINDERS = (
 SECRET_KEY = '7!=1#dqm%5f2!1@1yeopi(p3$!d)#t8%4-p-rio^%!l(*p6d4+'
 
 # List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
+# TEMPLATE_LOADERS = (
+#     'django.template.loaders.filesystem.Loader',
+#     'django.template.loaders.app_directories.Loader',
+# #     'django.template.loaders.eggs.Loader',
+# )
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    "django.contrib.auth.context_processors.auth",
-    "django.core.context_processors.debug",
-    #"django.core.context_processors.i18n",
-    "django.core.context_processors.media",
-    "django.core.context_processors.static",
-    "django.contrib.messages.context_processors.messages",
-    "django.core.context_processors.csrf",
-    'django.core.context_processors.request',
-    'aula.utils.context_processors.dades_basiques',
-    )
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+                location('../customising/templates'),
+                location('templates'),
+        ],
+        #'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                "django.contrib.auth.context_processors.auth",
+                "django.template.context_processors.debug",
+                #"django.core.context_processors.i18n",
+                "django.template.context_processors.media",
+                "django.template.context_processors.static",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.csrf",
+                'django.template.context_processors.request',
+                'aula.utils.context_processors.dades_basiques',
+            ],
+            'loaders': [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]
+        },
+    },
+]
+
+
+
+# TEMPLATE_CONTEXT_PROCESSORS = (
+#     "django.contrib.auth.context_processors.auth",
+#     "django.core.context_processors.debug",
+#     #"django.core.context_processors.i18n",
+#     "django.core.context_processors.media",
+#     "django.core.context_processors.static",
+#     "django.contrib.messages.context_processors.messages",
+#     "django.core.context_processors.csrf",
+#     'django.core.context_processors.request',
+#     'aula.utils.context_processors.dades_basiques',
+#     )
 
 
 ATOMIC_REQUESTS = True  # per quan es migri a 1.6
@@ -134,10 +164,10 @@ ROOT_URLCONF = 'aula.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'aula.wsgi.application'
 
-TEMPLATE_DIRS = [
-    location('../customising/templates'),
-    location('templates'),
-]
+# TEMPLATE_DIRS = [
+#     location('../customising/templates'),
+#     location('templates'),
+# ]
 
 INSTALLED_APPS_DJANGO = [
     'django.contrib.auth',

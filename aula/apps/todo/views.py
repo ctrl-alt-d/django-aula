@@ -9,7 +9,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.forms.models import modelform_factory
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template.context import RequestContext
 from django.http import HttpResponseRedirect
 from aula.utils.decorators import group_required
@@ -182,12 +182,13 @@ def list( request ):
 
     if taula.fileres: report.append(taula) #-----------------------------------------------------
     
-    return render_to_response(
+    return render(
+                request,
                 'reportToDo.html',
                     {'report': report,
                      'head': u'Tasques' ,
                     },
-                    context_instance=RequestContext(request))  
+                )
         
 @login_required
 @group_required(['professors','professional','consergeria'])
@@ -215,12 +216,13 @@ def edita( request, pk = None ):
            
         #form = formF(  )
         
-    return render_to_response(
+    return render(
+              request,
               "form.html", 
               {"form": form,
                "head": 'Edita tasca',
                },
-              context_instance=RequestContext(request))
+              )
     
 @login_required
 @group_required(['professors','professional','consergeria'])

@@ -3,7 +3,7 @@
 #templates
 from django.http.response import HttpResponse, JsonResponse
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from aula.apps.extKronowin.models import ParametreKronowin
 from django.contrib.auth.hashers import check_password
 
@@ -75,10 +75,11 @@ def menu(request):
             return HttpResponseRedirect( '/presencia/mostraImpartir/' )    
 
     
-    return render_to_response(
+    return render(
+            request,
             'main_page.html', 
             { },
-            context_instance=RequestContext(request))    
+            )
 
         
 
@@ -86,10 +87,11 @@ def menu(request):
 @group_required(['direcció'])
 def carregaInicial(request):
     
-    return render_to_response(
+    return render(
+            request,
             'carregaInicial.html', 
             { },
-            context_instance=RequestContext(request))
+            )
 
 @login_required    
 def about(request):
@@ -227,31 +229,34 @@ def about(request):
         
         report.append(taula)
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': 'About' ,
                     },
-                    context_instance=RequestContext(request))            
+                )
             
 @login_required    
 def calendariDevelop(request):
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
 
-    return render_to_response(
+    return render(
+                request,
                 'calendariDevelop.html',
                     {
                      'head': 'Calendari desenvolupament.' ,
                     },
-                    context_instance=RequestContext(request))         
+                )
     
 
 def blanc( request ):
-    return render_to_response(
+    return render(
+                request,
                 'blanc.html',
                     {},
-                    context_instance=RequestContext(request))
+                )
     
     
          

@@ -5,7 +5,7 @@ from aula.apps.avaluacioQualitativa.models import  RespostaAvaluacioQualitativa
 from django.db.models import Q
 from aula.utils import tools
 from aula.apps.assignatures.models import Assignatura
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template.context import RequestContext
 from aula.utils.tools import write_pdf
 from django.conf import settings 
@@ -320,12 +320,13 @@ def reportQualitativa2( qualitativa , alumnes = [], grups = [], request = None):
             'reports' : reports,
             })
     else:
-        return render_to_response(
+        return render(
+            request,
             'report.html',
                 {'report': report,
                  'head': u'Avaluacions Qualitatives' ,
                 },
-                context_instance=RequestContext(request))      
+            )
 
 
 

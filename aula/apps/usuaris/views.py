@@ -16,7 +16,7 @@ from aula.apps.extKronowin.models import ParametreKronowin
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404, render
+from django.shortcuts import  get_object_or_404, render
 
 #helpers
 from aula.utils import tools
@@ -59,13 +59,14 @@ def canviDadesUsuari( request):
     head = u'''Dades d'usuari'''
     infoForm = [ (u'Codi Usuari', user.username), ]      
           
-    resposta = render_to_response(
+    resposta = render(
+                request,
                   "form.html", 
                   {"form": form,
                    "head": head,
                    'infoForm': infoForm,
-                   },
-                  context_instance=RequestContext(request))
+                   }
+                )
     
     return resposta
 
@@ -95,11 +96,12 @@ def resetPasswd(request):
     else:
         form = triaUsuariForm()
     
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
-                 'head': head},
-                context_instance=RequestContext(request))    
+                 'head': head}
+                )
 #--------------------------------------------------------------------
 
 @login_required
@@ -135,11 +137,12 @@ def impersonacio(request):
                                          sense les restriccions habituals''' )
         formckbx.fields['ckbx' ].initial = request.session.has_key('l4') and request.session['l4'] 
     formset = [form, formckbx]
-    return render_to_response(
+    return render(
+                request,
                 'formset.html', 
                 {'formset': formset, 
-                 'head': head},
-                context_instance=RequestContext(request))
+                 'head': head}
+                )
     
 @login_required
 @group_required(['direcció'])
@@ -232,12 +235,13 @@ def elsProfessors( request ):
     
     report.append(taula)
         
-    return render_to_response(
+    return render(
+                request,
                 'report.html',
                     {'report': report,
                      'head': 'Informació professors' ,
-                    },
-                    context_instance=RequestContext(request))            
+                    }
+                )
         
 
 def loginUser( request ):
@@ -305,13 +309,14 @@ def loginUser( request ):
         form = loginUsuariForm()
 
 
-    return render_to_response(
+    return render(
+                request,
                 'loginForm.html',
                     {'form': form,
                      'head': head ,
                      'acces_restringit_a_grups': acces_restringit_a_grups,
-                    },
-                    context_instance=RequestContext(request))      
+                    }
+                    )
 
 @login_required
 def canviDePasswd( request ):     
@@ -341,13 +346,14 @@ def canviDePasswd( request ):
     else:
         form = canviDePasswdForm(   )
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': form,
                      'infoForm':infoForm,
                      'head': u'Canvi de Contrasenya' 
-                     },
-                    context_instance=RequestContext(request))   
+                     }
+                    )
 
 def recoverPasswd( request , username, oneTimePasswd ):     
     #AlumneUser.objects.get( username = username)
@@ -421,13 +427,14 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
     else:
         form = recuperacioDePasswdForm(   )
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': form,
                      'infoForm':infoForm,
                      'head': u'Recuperació de Contrasenya' 
-                     },
-                    context_instance=RequestContext(request))    
+                     }
+                )
 
 
 def professorRecoverPasswd( request , username, oneTimePasswd ):     
@@ -468,13 +475,14 @@ def professorRecoverPasswd( request , username, oneTimePasswd ):
         form = recuperacioDePasswdForm(   )
         del form.fields['data_neixement']
         
-    return render_to_response(
+    return render(
+                request,
                 'form.html',
                     {'form': form,
                      'infoForm':infoForm,
                      'head': u'Recuperació de Contrasenya' 
-                     },
-                    context_instance=RequestContext(request))  
+                     }
+                )
 
 def sendPasswdByEmail( request ):
     
@@ -484,22 +492,24 @@ def sendPasswdByEmail( request ):
             resultat = enviaOneTimePasswd( form.cleaned_data['email'] )
             resultat['url_next'] = '/'
 
-            return render_to_response(
+            return render(
+                        request,
                         'resultat.html',
                             {'msgs': resultat ,
                              'head': 'Recuperació de contrasenya',
-                            },
-                            context_instance=RequestContext(request)) 
+                            }
+                        )
                     
     else:
         form = sendPasswdByEmailForm(  )
         
-    return render_to_response(
-    'form.html',
-        {'form': form,
-         'head': u'Recuperació de Contrasenya' 
-         },
-        context_instance=RequestContext(request))
+    return render(
+        request,
+        'form.html',
+            {'form': form,
+             'head': u'Recuperació de Contrasenya'
+             }
+        )
 
 
 @login_required
@@ -525,12 +535,13 @@ def cercaProfessor(request, from_request):
 
     else:
         formUsuari = triaProfessorSelect2Form()
-    return render_to_response(
+    return render(
+        request,
         'form.html',
         {'form': formUsuari,
          'head': 'Triar usuari'
-         },
-        context_instance=RequestContext(request))
+         }
+        )
 
 
 

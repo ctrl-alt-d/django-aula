@@ -32,7 +32,7 @@ from aula.utils.decorators import group_required
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 
 #excepcions
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
@@ -77,18 +77,20 @@ def regeneraImpartir(request):
             warnings=[]
             infos=[u'Iniciat procés regeneració']
             resultat = {   'errors': errors, 'warnings':  warnings, 'infos':  infos }
-            return render_to_response(
+            return render(
+                    request,
                     'resultat.html', 
                     {'head': head ,
                      'msgs': resultat },
-                    context_instance=RequestContext(request))                                      
+            )
     else:
         form = regeneraImpartirForm()
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': head},
-                context_instance=RequestContext(request))
+                )
 
 
 #------------------------------------------------------------------------------------------
@@ -149,7 +151,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     unDia = t.timedelta( days = 1)
     primera_franja_insertada = False
     for f in FranjaHoraria.objects.all():
-        impartir_franja=[ [ [( unicode(f),'','','' )]  ] ]
+        impartir_franja=[ [ [( unicode(f),'','','','','','','','', )] , None ] ]
         te_imparticions = False
         for d in range(0,5):
             dia = data + d * unDia
@@ -217,11 +219,12 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     if alumnes_surten:
         msg =  u"""Properament hi ha activitats previstes on els teus alumnes hi participen."""  
         messages.warning(request,  SafeText(msg ) )
-        
-        
+
+
     ###fi miscelania sortides.####################################################################################
     
-    return render_to_response(
+    return render(
+                request,
                 'mostraImpartir.html', 
                 {
                  'calendari': calendari,
@@ -229,7 +232,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                  'professor': nomProfessor,
                  'altres_moments': altres_moments,
                  } ,
-                context_instance=RequestContext(request))
+                )
 
 
 
@@ -372,7 +375,8 @@ def passaLlista(request, pk):
                 form.bcolor = '#66FFCC'
                 form.avis = 'info'
 
-    return render_to_response(
+    return render(
+        request,
         "passaLlista.html",
         {"formset": formset,
          "id_impartir": pk,
@@ -384,7 +388,7 @@ def passaLlista(request, pk):
          "feelLuckyEnabled": True,
          "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA
          },
-        context_instance=RequestContext(request))
+        )
 
 
 def helper_tuneja_item_nohadeseralaula( request, control_a, instance ):
@@ -464,12 +468,13 @@ def passaLlistaGrupDataTriaGrupDia(request):
     else:
         frm = passaLlistaGrupDataForm(  )
 
-    return render_to_response(
+    return render(
+                request,
                   "form.html", 
                   {"form": frm,
                    "head": u"Passa llista a grup. Tria grup i data",
                    },
-                  context_instance=RequestContext(request))            
+                )
     
     
 
@@ -521,13 +526,14 @@ def passaLlistaGrupData(request, grup, dia, mes, year):
                 f_prev = f
                 f.formSetDelimited = True
 
-    return render_to_response(
+    return render(
+                request,
                   "passaLlistaGrup.html", 
                   {"formset": formSet,
                    "head": u"Passa llista a grup",
                    'pendents': pendents,
                    },
-                  context_instance=RequestContext(request))            
+            )
 
 
 #---
@@ -582,12 +588,13 @@ def marcarComHoraSenseAlumnes(request, pk):
     else:
         form = marcarComHoraSenseAlumnesForm( initial= { 'marcar_com_hora_sense_alumnes': True, }  )
 
-    return render_to_response(
+    return render(
+                request,
                   "form.html", 
                   {"form": form,
                    "head": head,
                    },
-                  context_instance=RequestContext(request))        
+                )
         
 
 @login_required
@@ -693,12 +700,13 @@ def afegeixAlumnesLlista(request, pk):
                                      )
             formset.append( form )
         
-    return render_to_response(
+    return render(
+                request,
                   "AfegirAlumnes.html", 
                   {"formset": formset,
                    "head": head,
                    },
-                  context_instance=RequestContext(request))
+                )
 
 #------------------------------------------------------------------------------------------
 
@@ -797,14 +805,15 @@ def treuAlumnesLlista(request, pk):
                                  )
         formset.append( form )
         
-    return render_to_response(
+    return render(
+                request,
                   "AfegirAlumnes.html", 
                   {"formset": formset,
                    "head": head,
                    "missatge":u"""Atenció, no s'esborraran els alumnes que ja s'hagi passat llista o els que tinguin
                                    alguna incidència o expulsió""",
                    },
-                  context_instance=RequestContext(request))
+                )
 
 
 @login_required
@@ -839,11 +848,12 @@ def afegeixGuardia(request, dia=None, mes=None, year=None):
                              
     else:
         form = afegeixGuardiaForm()
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'head': head},
-                context_instance=RequestContext(request))
+                )
 
     
 @login_required
@@ -921,12 +931,13 @@ def calculadoraUnitatsFormatives(request):
                              
     else:
         form = calculadoraUnitatsFormativesForm( assignatures = assignaturesProfessor , grups = grupsProfessor)
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  'infoForm': infoForm,
                  'head': head},
-                context_instance=RequestContext(request))
+                )
     
 
 #------------------------------------------------------------------------------------------
@@ -950,21 +961,23 @@ def alertaAssistencia(request):
                             ordenacio = form.cleaned_data['ordenacio']  ,                      
                                              )
             
-            return render_to_response(
+            return render(
+                        request,
                         'report.html',
                             {'report': report,
                              'head': 'Informació alumnes' ,
                             },
-                            context_instance=RequestContext(request))            
+                        )
  
     else:
         form = alertaAssistenciaForm()
         
-    return render_to_response(
+    return render(
+            request,
             'alertaAbsentisme.html', 
             {'head': head ,
              'form': form },
-            context_instance=RequestContext(request))      
+            )
 
 @login_required
 @group_required(['professors'])
@@ -997,12 +1010,13 @@ def faltesAssistenciaEntreDates(request):
                 dataFinsA = form.cleaned_data['dataFinsA'],
                 horaFinsA = form.cleaned_data['horaFinsA']                                       
                                          )                
-            return render_to_response(
+            return render(
+                    request,
                     'reportTabs.html',
                         {'report': report,
                          'head': 'Informació alumnes' ,
                         },
-                        context_instance=RequestContext(request)) 
+                    )
 #            except Exception, e:
 #                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  [e]  )  
             
@@ -1010,12 +1024,13 @@ def faltesAssistenciaEntreDates(request):
                              
     else:
         form = faltesAssistenciaEntreDatesForm( assignatures = assignaturesProfessor , grups = grupsProfessor)
-    return render_to_response(
+    return render(
+                request,
                 'form.html', 
                 {'form': form, 
                  #'infoForm': [],
                  'head': head},
-                context_instance=RequestContext(request))
+                )
     
 
 # -----------------------------------------------------------------------------
@@ -1148,12 +1163,13 @@ def copiarAlumnesLlista(request, pk):
 
     formset.append(formHores)
     
-    return render_to_response(
+    return render(
+                request,
                   "formset.html", 
                   {"formset": formset,
                    "head": head,
                    },
-                  context_instance=RequestContext(request))
+                )
 
     
 #------------------------------------------------------------------------------------------

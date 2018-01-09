@@ -19,14 +19,15 @@ Adaptar urls i vistes:
    
    * urls.py
    
-		from django.conf.urls.defaults import patterns, url
+		from django.conf.urls.defaults import url
+		from customising import views as customising_views
 		
-		urlpatterns = patterns('customising.views',
+		urlpatterns = [
 		   
-		   url(r'^canviPasswd/$', 'blanc',
+		   url(r'^canviPasswd/$', customising_views.blanc,
 		       name="usuari__dades__canvi_passwd"),
 		   
-		)
+		]
 		
 
 	* views.py:

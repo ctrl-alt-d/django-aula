@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template.context import RequestContext
 from aula.apps.extSaga.forms import sincronitzaSagaForm
 from aula.apps.extSaga.models import Grup2Aula
@@ -28,19 +28,21 @@ def sincronitzaSaga(request):
             f=request.FILES['fitxerSaga']
             resultat=sincronitza(f, user)
             
-            return render_to_response(
+            return render(
+                    request,
                     'resultat.html', 
                     {'head': 'Resultat importació SAGA' ,
                      'msgs': resultat },
-                    context_instance=RequestContext(request))
+                    )
         
     else:
         form = sincronitzaSagaForm()
         
-    return render_to_response(
+    return render(
+                    request,
                     'sincronitzaSaga.html', 
                     {'form': form },
-                    context_instance=RequestContext(request))         
+                )
     
     
     
@@ -74,10 +76,11 @@ def assignaGrups( request ):
     else:
         formset= factoria( )
             
-    return render_to_response(
+    return render(
+                  request,
                   "formsetgrid.html", 
                   { "formset": formset,
                     "head": "Manteniment de grups Saga",
                    },
-                  context_instance=RequestContext(request))    
+                 )
     

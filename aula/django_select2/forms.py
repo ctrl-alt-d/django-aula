@@ -87,10 +87,10 @@ class Select2Mixin(object):
             attrs['class'] = 'django-select2'
         return attrs
 
-    def render_options(self, choices, selected_choices):
+    def render_options(self, selected_choices):
         """Render options including an empty one, if the field is not required."""
         output = '<option></option>' if not self.is_required else ''
-        output += super(Select2Mixin, self).render_options(choices, selected_choices)
+        output += super(Select2Mixin, self).render_options(selected_choices)
         return output
 
     def _get_media(self):
@@ -190,7 +190,7 @@ class HeavySelect2Mixin(Select2Mixin):
 
     def render(self, name, value, attrs=None, choices=()):
         """Render widget and register it in Django's cache."""
-        output = super(HeavySelect2Mixin, self).render(name, value, attrs=attrs, choices=choices)
+        output = super(HeavySelect2Mixin, self).render(name, value, attrs=attrs)
         self.set_to_cache()
         return output
 
@@ -364,7 +364,7 @@ class ModelSelect2Mixin(object):
             return self.search_fields
         raise NotImplementedError('%s, must implement "search_fields".' % self.__class__.__name__)
 
-    def render_options(self, choices, selected_choices):
+    def render_options(self, selected_choices):
         """Render only selected options and set queryset from :class:`ModelChoicesIterator`."""
         output = ['<option></option>' if not self.is_required else '']
         if isinstance(self.choices, ModelChoiceIterator):

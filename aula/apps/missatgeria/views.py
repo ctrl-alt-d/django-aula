@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #workflow
-from django.shortcuts import render_to_response#workflow
+from django.shortcuts import render#workflow
 from django.http import HttpResponseRedirect
 
 #auth
@@ -44,11 +44,12 @@ def elMeuMur( request, pg ):
     table = MissatgesTable(q)
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 25}).configure(table)
 
-    return render_to_response(
+    return render(
+                    request,
                     'missatges.html',
                     {'table': table,
                     },
-                    context_instance=RequestContext(request))
+                 )
     
 @login_required
 @group_required(['professors','professional','consergeria'])
@@ -118,12 +119,13 @@ def enviaMissatgeTutors( request ):
             form.fields[field].widget.attrs['class'] = "form-control"
 
 
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'head': 'Avís a tutors.' ,
                     },
-                    context_instance=RequestContext(request))
+                )
 
 
 @login_required
@@ -171,12 +173,13 @@ def enviaMissatgeAdministradors( request ):
         for field in form.fields:
             form.fields[field].widget.attrs['class'] = "form-control"
 
-    return render_to_response(
+    return render(
+                request,
                 'formset.html',
                     {'formset': formset,
                      'head': u'''Avís a administradors. En cas d'error, sisplau, detalla clarament totes les passes per reproduir l'error.''' ,
                     },
-                    context_instance=RequestContext(request))
+                )
 
 
 @login_required
@@ -227,12 +230,13 @@ def enviaMissatgeProfessorsPas(request):
         for field in form.fields:
             form.fields[field].widget.attrs['class'] = "form-control"
 
-    return render_to_response(
+    return render(
+        request,
         'formset.html',
         {'formset': formset,
          'head': u"Missatge a membres del professorat o consergeria",
          },
-        context_instance=RequestContext(request))
+        )
 
 
 @login_required
