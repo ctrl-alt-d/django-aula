@@ -8,6 +8,9 @@ from django.apps import apps
 from django.conf import settings
 
 #-------------INCIDENCIES-------------------------------------------------------------
+from aula.apps.alumnes.named_instances import Cursa_nivell
+
+
 def incidencia_clean( instance ):
     import datetime as dt
     
@@ -15,11 +18,19 @@ def incidencia_clean( instance ):
     #
     # Pre-save
     #
-         
+
     #incidències d'aula: dia i franja copiat de impartició
     if instance.es_incidencia_d_aula():
         instance.dia_incidencia = instance.control_assistencia.impartir.dia_impartir
         instance.franja_incidencia = instance.control_assistencia.impartir.horari.hora
+        la_posa_el_professor_de_guardia = ( (instance.control_assistencia.professor is not None)
+                                            and
+                                           ( instance.control_assistencia.professor !=
+                                            instance.control_assistencia.impartir.horari.professor )
+                                          )
+        instance.gestionada_pel_tutor = la_posa_el_professor_de_guardia
+    else:
+        instance.gestionada_pel_tutor = False
 
     #
     # Regles:
@@ -92,29 +103,51 @@ def incidencia_despres_de_posar(instance):
     #Lògica de negoci: 
     if not instance.tipus.es_informativa:
         if settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO:
-            #Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
-            import datetime as t
-            dia_prescriu_incidencia = instance.dia_incidencia - t.timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
-            Incidencia = apps.get_model( 'incidencies','Incidencia')
-            nIncidenciesAlumneProfessor = Incidencia.objects.filter( 
-                                                es_vigent = True, 
-                                                tipus__es_informativa = False,
-                                                professional = instance.professional, 
-                                                alumne = instance.alumne,
-                                                dia_incidencia__gt =  dia_prescriu_incidencia
-                                            ).count()
-            if nIncidenciesAlumneProfessor > 2:                
-                txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers 30 dies. 
-                        Segons la normativa del Centre has de tramitar 
-                        una expulsió per acumulació d'incidències.""".format( instance.alumne, nIncidenciesAlumneProfessor ) 
-                
-                msg = Missatge( remitent = instance.professional.getUser(), text_missatge = txt )
-                msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str( instance.pk )
+            # Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al professor.
+            Incidencia = apps.get_model('incidencies', 'Incidencia')
+            nIncidenciesAlumneProfessor = Incidencia.objects.filter(
+                es_vigent=True,
+                tipus__es_informativa=False,
+                professional=instance.professional,
+                alumne=instance.alumne,
+            ).count()
+            if nIncidenciesAlumneProfessor > 2:
+                txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers {2} dies. 
+                        Segons la normativa del Centre hauries de tramitar 
+                        una expulsió per acumulació d'incidències.""".format(instance.alumne,
+                                                                             nIncidenciesAlumneProfessor,
+                                                                             settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
+
+                msg = Missatge(remitent=instance.professional.getUser(), text_missatge=txt)
+                msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str(instance.pk)
                 if nIncidenciesAlumneProfessor > 5:
                     msg.importancia = 'VI'
                 msg.envia_a_usuari(instance.professional)
-            
-        #Cal que els professors i tutors sàpiguen que aquest alumne ha tingut incidència --> Envio missatge 
+
+        if instance.gestionada_pel_tutor and settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO:
+            # Si aquest alumne ja té tres incidències cal expulsar-lo --> Envio missatge al tutor.
+            Incidencia = apps.get_model('incidencies', 'Incidencia')
+            nIncidenciesAlumneProfessor = Incidencia.objects.filter(
+                es_vigent=True,
+                tipus__es_informativa=False,
+                alumne=instance.alumne,
+                gestionada_pel_tutor=True,
+            ).count()
+            if nIncidenciesAlumneProfessor > 2:
+                txt = u"""A l'alumne {0} li han posat {1} incidències gestionades pel tutor en els darrers {2} dies. 
+                        Segons la normativa del Centre, com a tutor de l'alumne, hauries de tramitar 
+                        una expulsió per acumulació d'incidències.""".format(instance.alumne,
+                                                                             nIncidenciesAlumneProfessor,
+                                                                             settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
+
+                msg = Missatge(remitent=instance.professional.getUser(), text_missatge=txt)
+                msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str(instance.pk)
+                if nIncidenciesAlumneProfessor > 5:
+                    msg.importancia = 'VI'
+                for professional in instance.alumne.tutorsDeLAlumne():
+                    msg.envia_a_usuari(professional)
+
+        #Cal que els professors i tutors sàpiguen que aquest alumne ha tingut incidència --> Envio missatge
         remitent = instance.professional
         text_missatge = u"""Ha posat una incidència {0}a {1} ({2}) el dia {3}. 
                             El text de la incidència és: {4}""".format(
@@ -125,16 +158,7 @@ def incidencia_despres_de_posar(instance):
                                     instance.descripcio_incidencia)
         msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )           
         #si és una unitat formativa envio a tots:
-        es_unitat_formativa = False
-        try:
-            from aula.apps.assignatures.models import TipusDAssignatura
-            uf = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Unitat Formativa' )
-            es_unitat_formativa =                                           \
-                                    instance.control_assistencia and  \
-                                    instance.control_assistencia.impartir.horari.assignatura.tipus_assignatura == uf
-        except:
-            pass
-        if es_unitat_formativa: 
+        if Cursa_nivell( u"CICLES", instance.alumne):
             Professor = apps.get_model( 'usuaris','Professor')
             professors_que_tenen_aquest_alumne_a_classe = Professor.objects.filter( horari__impartir__controlassistencia__alumne = instance.alumne ).exclude( pk = instance.professional.pk ).distinct()
             for professor in professors_que_tenen_aquest_alumne_a_classe:
