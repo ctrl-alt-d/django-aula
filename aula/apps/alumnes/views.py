@@ -644,7 +644,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'dia' : datetime.today().date(),
          'mostra_detalls': mostra_detalls,
          },
-        context_instance=RequestContext(request))
+    )
 
 
 @login_required
