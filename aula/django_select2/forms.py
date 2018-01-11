@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Django-Select2 Widgets.
 
@@ -46,23 +45,22 @@ Light widgets are normally named, i.e. there is no
     :parts: 1
 
 """
-from __future__ import absolute_import, unicode_literals
-
 from functools import reduce
+from itertools import chain
+from pickle import PicklingError
 
 from django import forms
 from django.core import signing
-from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.forms.models import ModelChoiceIterator
-from django.utils.encoding import force_text
+from django.urls import reverse
+from django.utils.translation import get_language
 
 from .cache import cache
 from .conf import settings
 
 
 class Select2Mixin(object):
-
     """
     The base mixin of all Select2 widgets.
 
@@ -71,9 +69,9 @@ class Select2Mixin(object):
     form media.
     """
 
-    def build_attrs(self, extra_attrs=None, **kwargs):
+    def build_attrs(self, *args, **kwargs):
         """Add select2 data attributes."""
-        attrs = super(Select2Mixin, self).build_attrs(extra_attrs=extra_attrs, **kwargs)
+        attrs = super(Select2Mixin, self).build_attrs(*args, **kwargs)
         if self.is_required:
             attrs.setdefault('data-allow-clear', 'false')
         else:
@@ -87,11 +85,11 @@ class Select2Mixin(object):
             attrs['class'] = 'django-select2'
         return attrs
 
-    def render_options(self, selected_choices):
-        """Render options including an empty one, if the field is not required."""
-        output = '<option></option>' if not self.is_required else ''
-        output += super(Select2Mixin, self).render_options(selected_choices)
-        return output
+    def optgroups(self, name, value, attrs=None):
+        """Add empty option for clearable selects."""
+        if not self.is_required and not self.allow_multiple_selected:
+            self.choices = list(chain([('', '')], self.choices))
+        return super(Select2Mixin, self).optgroups(name, value, attrs=attrs)
 
     def _get_media(self):
         """
@@ -100,17 +98,32 @@ class Select2Mixin(object):
         .. Note:: For more information visit
             https://docs.djangoproject.com/en/1.8/topics/forms/media/#media-as-a-dynamic-property
         """
+        try:
+            # get_language() will always return a lower case language code, where some files are named upper case.
+            i = [x.lower() for x in settings.SELECT2_I18N_AVAILABLE_LANGUAGES].index(get_language())
+            i18n_file = ('%s/%s.js' % (settings.SELECT2_I18N_PATH, settings.SELECT2_I18N_AVAILABLE_LANGUAGES[i]), )
+        except ValueError:
+            i18n_file = ()
         return forms.Media(
-            js=('//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/js/select2.min.js',
-                'django_select2/django_select2.js'),
-            css={'screen': ('//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0/css/select2.min.css',)}
+            js=(settings.SELECT2_JS,) + i18n_file + ('django_select2/django_select2.js',),
+            css={'screen': (settings.SELECT2_CSS,)}
         )
 
     media = property(_get_media)
 
 
-class Select2Widget(Select2Mixin, forms.Select):
+class Select2TagMixin(object):
+    """Mixin to add select2 tag functionality."""
 
+    def build_attrs(self, *args, **kwargs):
+        """Add select2's tag attributes."""
+        self.attrs.setdefault('data-minimum-input-length', 1)
+        self.attrs.setdefault('data-tags', 'true')
+        self.attrs.setdefault('data-token-separators', '[",", " "]')
+        return super(Select2TagMixin, self).build_attrs(*args, **kwargs)
+
+
+class Select2Widget(Select2Mixin, forms.Select):
     """
     Select2 drop in widget.
 
@@ -135,7 +148,6 @@ class Select2Widget(Select2Mixin, forms.Select):
 
 
 class Select2MultipleWidget(Select2Mixin, forms.SelectMultiple):
-
     """
     Select2 drop in widget for multiple select.
 
@@ -145,36 +157,73 @@ class Select2MultipleWidget(Select2Mixin, forms.SelectMultiple):
     pass
 
 
-class HeavySelect2Mixin(Select2Mixin):
+class Select2TagWidget(Select2TagMixin, Select2Mixin, forms.SelectMultiple):
+    """
+    Select2 drop in widget for for tagging.
 
-    """Mixin that adds select2's ajax options and registers itself on django's cache."""
+    Example for :class:`.django.contrib.postgres.fields.ArrayField`::
 
-    def __init__(self, **kwargs):
+        class MyWidget(Select2TagWidget):
+
+            def value_from_datadict(self, data, files, name):
+                values = super(MyWidget, self).value_from_datadict(data, files, name):
+                return ",".join(values)
+
+            def optgroups(self, name, value, attrs=None):
+                values = value[0].split(',') if value[0] else []
+                selected = set(values)
+                subgroup = [self.create_option(name, v, v, selected, i) for i, v in enumerate(values)]
+                return [(None, subgroup, 0)]
+
+    """
+
+    pass
+
+
+class HeavySelect2Mixin(object):
+    """Mixin that adds select2's AJAX options and registers itself on Django's cache."""
+
+    dependent_fields = {}
+
+    def __init__(self, attrs=None, choices=(), **kwargs):
         """
         Return HeavySelect2Mixin.
 
-        :param data_view: url pattern name
-        :type data_view: str
-        :param data_url: url
-        :type data_url: str
-        :return:
+        Args:
+            data_view (str): URL pattern name
+            data_url (str): URL
+            dependent_fields (dict): Dictionary of dependent parent fields.
+                The value of the dependent field will be passed as to :func:`.filter_queryset`.
+                It can be used to further restrict the search results. For example, a city
+                widget could be dependent on a country.
+                Key is a name of a field in a form.
+                Value is a name of a field in a model (used in `queryset`).
         """
+        self.choices = choices
+        if attrs is not None:
+            self.attrs = attrs.copy()
+        else:
+            self.attrs = {}
+
         self.data_view = kwargs.pop('data_view', None)
         self.data_url = kwargs.pop('data_url', None)
+
+        dependent_fields = kwargs.pop('dependent_fields', None)
+        if dependent_fields is not None:
+            self.dependent_fields = dict(dependent_fields)
         if not (self.data_view or self.data_url):
             raise ValueError('You must ether specify "data_view" or "data_url".')
         self.userGetValTextFuncName = kwargs.pop('userGetValTextFuncName', 'null')
-        super(HeavySelect2Mixin, self).__init__(**kwargs)
 
     def get_url(self):
-        """Return url from instance or by reversing :attr:`.data_view`."""
+        """Return URL from instance or by reversing :attr:`.data_view`."""
         if self.data_url:
             return self.data_url
-        return reverse_lazy(self.data_view)
+        return reverse(self.data_view)
 
-    def build_attrs(self, extra_attrs=None, **kwargs):
-        """Set select2's ajax attributes."""
-        attrs = super(HeavySelect2Mixin, self).build_attrs(extra_attrs=extra_attrs, **kwargs)
+    def build_attrs(self, *args, **kwargs):
+        """Set select2's AJAX attributes."""
+        attrs = super(HeavySelect2Mixin, self).build_attrs(*args, **kwargs)
 
         # encrypt instance Id
         self.widget_id = signing.dumps(id(self))
@@ -184,13 +233,15 @@ class HeavySelect2Mixin(Select2Mixin):
         attrs.setdefault('data-ajax--cache', "true")
         attrs.setdefault('data-ajax--type', "GET")
         attrs.setdefault('data-minimum-input-length', 2)
+        if self.dependent_fields:
+            attrs.setdefault('data-select2-dependent-fields', " ".join(self.dependent_fields))
 
         attrs['class'] += ' django-select2-heavy'
         return attrs
 
-    def render(self, name, value, attrs=None, choices=()):
+    def render(self, *args, **kwargs):
         """Render widget and register it in Django's cache."""
-        output = super(HeavySelect2Mixin, self).render(name, value, attrs=attrs)
+        output = super(HeavySelect2Mixin, self).render(*args, **kwargs)
         self.set_to_cache()
         return output
 
@@ -198,34 +249,36 @@ class HeavySelect2Mixin(Select2Mixin):
         return "%s%s" % (settings.SELECT2_CACHE_PREFIX, id(self))
 
     def set_to_cache(self):
-        """Add widget object to Djnago's cache."""
-        cache.set(self._get_cache_key(), self)
+        """
+        Add widget object to Django's cache.
 
-    def render_options(self, choices, selected_choices):
-        """Render only selected options."""
-        output = ['<option></option>' if not self.is_required else '']
-        choices = {(k, v) for k, v in choices if k in selected_choices}
-        selected_choices = {force_text(v) for v in selected_choices}
-        for option_value, option_label in choices:
-            output.append(self.render_option(selected_choices, option_value, option_label))
-        return '\n'.join(output)
+        You may need to overwrite this method, to pickle all information
+        that is required to serve your JSON response view.
+        """
+        try:
+            cache.set(self._get_cache_key(), {
+                'widget': self,
+                'url': self.get_url(),
+            })
+        except (PicklingError, AttributeError):
+            msg = "You need to overwrite \"set_to_cache\" or ensure that %s is serialisable."
+            raise NotImplementedError(msg % self.__class__.__name__)
 
 
-class HeavySelect2Widget(HeavySelect2Mixin, forms.Select):
-
+class HeavySelect2Widget(HeavySelect2Mixin, Select2Widget):
     """
     Select2 widget with AJAX support that registers itself to Django's Cache.
 
     Usage example::
 
-        class MyWidget(HeavySelectWidget):
+        class MyWidget(HeavySelect2Widget):
             data_view = 'my_view_name'
 
     or::
 
         class MyForm(forms.Form):
             my_field = forms.ChoicesField(
-                widget=HeavySelectWidget(
+                widget=HeavySelect2Widget(
                     data_url='/url/to/json/response'
                 )
             )
@@ -235,37 +288,29 @@ class HeavySelect2Widget(HeavySelect2Mixin, forms.Select):
     pass
 
 
-class HeavySelect2MultipleWidget(HeavySelect2Mixin, forms.SelectMultiple):
-
+class HeavySelect2MultipleWidget(HeavySelect2Mixin, Select2MultipleWidget):
     """Select2 multi select widget similar to :class:`.HeavySelect2Widget`."""
 
     pass
 
 
-class HeavySelect2TagWidget(HeavySelect2MultipleWidget):
+class HeavySelect2TagWidget(HeavySelect2Mixin, Select2TagWidget):
+    """Select2 tag widget."""
 
-    """Mixin to add select2 tag functionality."""
-
-    def build_attrs(self, extra_attrs=None, **kwargs):
-        """Add select2's tag attributes."""
-        self.attrs.setdefault('data-minimum-input-length', 1)
-        self.attrs.setdefault('data-tags', 'true')
-        self.attrs.setdefault('data-token-separators', [",", " "])
-        return super(HeavySelect2TagWidget, self).build_attrs(extra_attrs, **kwargs)
+    pass
 
 
 # Auto Heavy widgets
 
 
 class ModelSelect2Mixin(object):
-
     """Widget mixin that provides attributes and methods for :class:`.AutoResponseView`."""
 
     model = None
     queryset = None
     search_fields = []
     """
-    Model lookups that are used to filter the queryset.
+    Model lookups that are used to filter the QuerySet.
 
     Example::
 
@@ -282,14 +327,12 @@ class ModelSelect2Mixin(object):
         """
         Overwrite class parameters if passed as keyword arguments.
 
-        :param model: model to select choices from
-        :type model: django.db.models.Model
-        :param queryset: queryset to select choices from
-        :type queryset: django.db.models.query.QuerySet
-        :param search_fields: list of model lookup strings
-        :type search_fields: list
-        :param max_results: max. JsonResponse view page size
-        :type max_results: int
+        Args:
+            model (django.db.models.Model): Model to select choices from.
+            queryset (django.db.models.query.QuerySet): QuerySet to select choices from.
+            search_fields (list): List of model lookup strings.
+            max_results (int): Max. JsonResponse view page size.
+
         """
         self.model = kwargs.pop('model', self.model)
         self.queryset = kwargs.pop('queryset', self.queryset)
@@ -301,9 +344,9 @@ class ModelSelect2Mixin(object):
 
     def set_to_cache(self):
         """
-        Add widget's attributes to Djnago's cache.
+        Add widget's attributes to Django's cache.
 
-        Split the queryset, to not pickle the result set.
+        Split the QuerySet, to not pickle the result set.
         """
         queryset = self.get_queryset()
         cache.set(self._get_cache_key(), {
@@ -315,18 +358,26 @@ class ModelSelect2Mixin(object):
             'cls': self.__class__,
             'search_fields': self.search_fields,
             'max_results': self.max_results,
+            'url': self.get_url(),
+            'dependent_fields': self.dependent_fields,
         })
 
-    def filter_queryset(self, term, queryset=None):
+    def filter_queryset(self, term, queryset=None, **dependent_fields):
         """
-        Return queryset filtered by search_fields matching the passed term.
+        Return QuerySet filtered by search_fields matching the passed term.
 
-        :param term: Search term
-        :type term: str
-        :return: Filtered queryset
-        :rtype: :class:`.django.db.models.QuerySet`
+        Args:
+            term (str): Search term
+            queryset (django.db.models.query.QuerySet): QuerySet to select choices from.
+            **dependent_fields: Dependent fields and their values. If you want to inherit
+            from ModelSelect2Mixin and later call to this method, be sure to pop
+            from kwargs everything if it is not a dependent field.
+
+        Returns:
+            QuerySet: Filtered QuerySet
+
         """
-        if not queryset:
+        if queryset is None:
             queryset = self.get_queryset()
         search_fields = self.get_search_fields()
         select = Q()
@@ -335,14 +386,18 @@ class ModelSelect2Mixin(object):
         for t in [t for t in term.split(' ') if not t == '']:
             select &= reduce(lambda x, y: x | Q(**{y: t}), search_fields,
                              Q(**{search_fields[0]: t}))
+        if dependent_fields:
+            select &= Q(**dependent_fields)
+
         return queryset.filter(select).distinct()
 
     def get_queryset(self):
         """
-        Return queryset based on :attr:`.queryset` or :attr:`.model`.
+        Return QuerySet based on :attr:`.queryset` or :attr:`.model`.
 
-        :return: queryset of available choices
-        :rtype: :class:`.django.db.models.QuerySet`
+        Returns:
+            QuerySet: QuerySet of available choices.
+
         """
         if self.queryset is not None:
             queryset = self.queryset
@@ -364,26 +419,59 @@ class ModelSelect2Mixin(object):
             return self.search_fields
         raise NotImplementedError('%s, must implement "search_fields".' % self.__class__.__name__)
 
-    def render_options(self, selected_choices):
-        """Render only selected options and set queryset from :class:`ModelChoicesIterator`."""
-        output = ['<option></option>' if not self.is_required else '']
-        if isinstance(self.choices, ModelChoiceIterator):
-            if not self.queryset:
-                self.queryset = self.choices.queryset
-            selected_choices = {c for c in selected_choices
-                                if c not in self.choices.field.empty_values}
-            choices = {self.choices.choice(obj)
-                       for obj in self.choices.queryset.filter(pk__in=selected_choices)}
-        else:
-            choices = {(k, v) for k, v in choices if k in selected_choices}
-        selected_choices = {force_text(v) for v in selected_choices}
+    def optgroups(self, name, value, attrs=None):
+        """Return only selected options and set QuerySet from `ModelChoicesIterator`."""
+        default = (None, [], 0)
+        groups = [default]
+        has_selected = False
+        selected_choices = {str(v) for v in value}
+        if not self.is_required and not self.allow_multiple_selected:
+            default[1].append(self.create_option(name, '', '', False, 0))
+        if not isinstance(self.choices, ModelChoiceIterator):
+            return super(ModelSelect2Mixin, self).optgroups(name, value, attrs=attrs)
+        selected_choices = {
+            c for c in selected_choices
+            if c not in self.choices.field.empty_values
+        }
+        choices = (
+            (obj.pk, self.label_from_instance(obj))
+            for obj in self.choices.queryset.filter(pk__in=selected_choices)
+        )
         for option_value, option_label in choices:
-            output.append(self.render_option(selected_choices, option_value, option_label))
-        return '\n'.join(output)
+            selected = (
+                str(option_value) in value and
+                (has_selected is False or self.allow_multiple_selected)
+            )
+            if selected is True and has_selected is False:
+                has_selected = True
+            index = len(default[1])
+            subgroup = default[1]
+            subgroup.append(self.create_option(name, option_value, option_label, selected_choices, index))
+        return groups
+
+    def label_from_instance(self, obj):
+        """
+        Return option label representation from instance.
+
+        Can be overridden to change the representation of each choice.
+
+        Example usage::
+
+            class MyWidget(ModelSelect2Widget):
+                def label_from_instance(obj):
+                    return str(obj.title).upper()
+
+        Args:
+            obj (django.db.models.Model): Instance of Django Model.
+
+        Returns:
+            str: Option label.
+
+        """
+        return str(obj)
 
 
 class ModelSelect2Widget(ModelSelect2Mixin, HeavySelect2Widget):
-
     """
     Select2 drop in model select widget.
 
@@ -391,7 +479,7 @@ class ModelSelect2Widget(ModelSelect2Mixin, HeavySelect2Widget):
 
         class MyWidget(ModelSelect2Widget):
             search_fields = [
-                'title__icontians',
+                'title__icontains',
             ]
 
         class MyModelForm(forms.ModelForm):
@@ -413,8 +501,8 @@ class ModelSelect2Widget(ModelSelect2Mixin, HeavySelect2Widget):
             )
 
     .. tip:: The ModelSelect2(Multiple)Widget will try
-        to get the queryset from the fields choices.
-        Therefore you don't need to define a queryset,
+        to get the QuerySet from the fields choices.
+        Therefore you don't need to define a QuerySet,
         if you just drop in the widget for a ForeignKey field.
     """
 
@@ -422,7 +510,6 @@ class ModelSelect2Widget(ModelSelect2Mixin, HeavySelect2Widget):
 
 
 class ModelSelect2MultipleWidget(ModelSelect2Mixin, HeavySelect2MultipleWidget):
-
     """
     Select2 drop in model multiple select widget.
 
@@ -433,13 +520,12 @@ class ModelSelect2MultipleWidget(ModelSelect2Mixin, HeavySelect2MultipleWidget):
 
 
 class ModelSelect2TagWidget(ModelSelect2Mixin, HeavySelect2TagWidget):
-
     """
-    Select2 model field with tag support.
+    Select2 model widget with tag support.
 
     This it not a simple drop in widget.
     It requires to implement you own :func:`.value_from_datadict`
-    that adds missing tags to you queryset.
+    that adds missing tags to you QuerySet.
 
     Example::
 
@@ -447,12 +533,12 @@ class ModelSelect2TagWidget(ModelSelect2Mixin, HeavySelect2TagWidget):
             queryset = MyModel.objects.all()
 
             def value_from_datadict(self, data, files, name):
-                values = super().value_from_datadict(self, data, files, name):
+                values = super().value_from_datadict(self, data, files, name)
                 qs = self.queryset.filter(**{'pk__in': list(values)})
-                pks = set(force_text(getattr(o, pk)) for o in qs)
+                pks = set(str(getattr(o, pk)) for o in qs)
                 cleaned_values = []
                 for val in value:
-                    if force_text(val) not in pks:
+                    if str(val) not in pks:
                         val = queryset.create(title=val).pk
                     cleaned_values.append(val)
                 return cleaned_values

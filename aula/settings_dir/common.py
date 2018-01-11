@@ -101,7 +101,7 @@ SECRET_KEY = '7!=1#dqm%5f2!1@1yeopi(p3$!d)#t8%4-p-rio^%!l(*p6d4+'
 #     'django.template.loaders.app_directories.Loader',
 # #     'django.template.loaders.eggs.Loader',
 # )
-
+DEBUG=True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -111,6 +111,7 @@ TEMPLATES = [
         ],
         #'APP_DIRS': True,
         'OPTIONS': {
+            'debug' : DEBUG,
             'context_processors': [
                 "django.contrib.auth.context_processors.auth",
                 "django.template.context_processors.debug",
