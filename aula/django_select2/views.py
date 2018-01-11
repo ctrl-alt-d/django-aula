@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
 """JSONResponse views for model widgets."""
-from __future__ import absolute_import, unicode_literals
-
 from django.core import signing
 from django.core.signing import BadSignature
 from django.http import Http404, JsonResponse
-from django.utils.encoding import smart_text
 from django.views.generic.list import BaseListView
 
 from .cache import cache
@@ -13,7 +9,6 @@ from .conf import settings
 
 
 class AutoResponseView(BaseListView):
-
     """
     View that handles requests from heavy model widgets.
 
@@ -44,7 +39,7 @@ class AutoResponseView(BaseListView):
         return JsonResponse({
             'results': [
                 {
-                    'text': smart_text(obj),
+                    'text': self.widget.label_from_instance(obj),
                     'id': obj.pk,
                 }
                 for obj in context['object_list']
@@ -53,8 +48,13 @@ class AutoResponseView(BaseListView):
         })
 
     def get_queryset(self):
-        """Get queryset from cached widget."""
-        return self.widget.filter_queryset(self.term, self.queryset)
+        """Get QuerySet from cached widget."""
+        kwargs = {
+            model_field_name: self.request.GET.get(form_field_name)
+            for form_field_name, model_field_name in self.widget.dependent_fields.items()
+            if form_field_name in self.request.GET and self.request.GET.get(form_field_name, '') != ''
+        }
+        return self.widget.filter_queryset(self.term, self.queryset, **kwargs)
 
     def get_paginate_by(self, queryset):
         """Paginate response by size of widget's `max_results` parameter."""
@@ -64,10 +64,12 @@ class AutoResponseView(BaseListView):
         """
         Get and return widget from cache.
 
-        Raises a 404 if the widget can not be found or no id is provided.
+        Raises:
+            Http404: If if the widget can not be found or no id is provided.
 
-        :raises: Http404
-        :return: ModelSelect2Mixin
+        Returns:
+            ModelSelect2Mixin: Widget from cache.
+
         """
         field_id = self.kwargs.get('field_id', self.request.GET.get('field_id', None))
         if not field_id:
@@ -81,6 +83,8 @@ class AutoResponseView(BaseListView):
             widget_dict = cache.get(cache_key)
             if widget_dict is None:
                 raise Http404('field_id not found')
+            if widget_dict.pop('url') != self.request.path:
+                raise Http404('field_id was issued for the view.')
         qs, qs.query = widget_dict.pop('queryset')
         self.queryset = qs.all()
         widget_dict['queryset'] = self.queryset

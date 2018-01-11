@@ -1216,10 +1216,10 @@ def sancionsExcel( request ):
     capcelera = [ u'Alumne', u'Tipus', u'Data inici', u'Data fi', u'Ha estat imprés', u'grup', u'nivell' ]
 
     template = loader.get_template("export.csv")
-    context = Context({
+    context = {
                          'capcelera':capcelera,
                          'dades':dades_sancions,
-    })
+    }
     
     response = HttpResponse()  
     filename = "sancions.csv" 
