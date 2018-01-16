@@ -30,7 +30,7 @@ def incidencia_clean( instance ):
                                           )
         instance.gestionada_pel_tutor = la_posa_el_professor_de_guardia
     else:
-        instance.gestionada_pel_tutor = False
+        instance.gestionada_pel_tutor = True
 
     #
     # Regles:

@@ -4,10 +4,7 @@
 from dev import *
 location = lambda x: os.path.join(PROJECT_DIR, x)
 
-TEMPLATE_DIRS = [
-    location('../demo/templates'),
-] + TEMPLATE_DIRS
-
+TEMPLATES[0]['DIRS'] = [location('../demo/templates')]+TEMPLATES[0]['DIRS']
 
 INSTALLED_APPS  = [
 #                   'demo',

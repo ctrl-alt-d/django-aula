@@ -40,9 +40,8 @@ class posaIncidenciaAulaForm(forms.Form):
                                               de mantenir pulsada la tecla CTRL al fer
                                               clic amb el ratolí."""  )
 
-    incidencies = TipusIncidencia.objects.all()
-    tipus = forms.ModelChoiceField( queryset = incidencies,
-                                    initial = incidencies[0] if incidencies else None,
+    tipus = forms.ModelChoiceField( queryset = None,
+                                    initial = None,
                                     widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
                                   )
 
@@ -70,7 +69,10 @@ class posaIncidenciaAulaForm(forms.Form):
         self.fields['alumnes'].label = self.etiqueta 
         self.fields['alumnes'].queryset = self.queryset
         self.totesLesFrases = FrassesIncidenciaAula.objects.all()
-    
+        incidencies = TipusIncidencia.objects.all()
+        self.fields['tipus'].queryset = incidencies
+        self.fields['tipus'].queryset = incidencies[0] if incidencies else None
+
     
     
 #-------------------------------------------------------------------------------------------------------------
