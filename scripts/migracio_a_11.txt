@@ -1,4 +1,0 @@
-comprovar
-presencia: faltes assistència entre dates query sets d'incidències (hora inici i fi)
-presencia: ControlAssistenciaForm
-incidències: query sets d'incidències (hora inici i fi) i tipus incidència i valors inicials 
