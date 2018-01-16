@@ -41,9 +41,9 @@ class posaIncidenciaAulaForm(forms.Form):
                                               clic amb el ratolí."""  )
 
     tipus = forms.ModelChoiceField( queryset = None,
-                                    initial = None,
-                                    widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
-                                  )
+                                     initial = None,
+                                      widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
+                                   )
 
     frases = forms.ModelMultipleChoiceField( label=u'Tria incidència', queryset= FrassesIncidenciaAula.objects.all(), 
                                           required = False,
@@ -69,9 +69,9 @@ class posaIncidenciaAulaForm(forms.Form):
         self.fields['alumnes'].label = self.etiqueta 
         self.fields['alumnes'].queryset = self.queryset
         self.totesLesFrases = FrassesIncidenciaAula.objects.all()
-        incidencies = TipusIncidencia.objects.all()
-        self.fields['tipus'].queryset = incidencies
-        self.fields['tipus'].queryset = incidencies[0] if incidencies else None
+        incidencies = TipusIncidencia.objects
+        self.fields['tipus'].queryset = incidencies.all()
+        self.fields['tipus'].initial = incidencies.all()[0] if incidencies.exists() else None
 
     
     
