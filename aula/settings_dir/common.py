@@ -226,13 +226,16 @@ LOGGING = {
     'disable_existing_loggers': False,
     'filters': {
         'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'stop_suspicious_operation': {
+            '()': 'aula.utils.loggingFilters.StopSuspiciousOperation',
         }
     },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
+            'filters': ['require_debug_false','stop_suspicious_operation',],
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },
