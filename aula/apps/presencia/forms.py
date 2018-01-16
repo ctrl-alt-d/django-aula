@@ -14,13 +14,20 @@ from aula.utils.widgets import bootStrapButtonSelect
 class ControlAssistenciaForm(ModelForm):
     estat = forms.ModelChoiceField( 
                         label = "x",
-                        queryset= EstatControlAssistencia.objects.all(), 
+                        #queryset= EstatControlAssistencia.objects.all(),
+                        queryset = None,
                         empty_label=None,
-                        widget = bootStrapButtonSelect( attrs={'class':'presenciaEstat'} ),
+                        widget = bootStrapButtonSelect( attrs={'class':'presenciaEstat'}, ),
                     )
     class Meta:
         model = ControlAssistencia
         fields = ('estat', )
+
+    def __init__(self, *args, **kwargs):
+        super(ControlAssistenciaForm, self).__init__(*args, **kwargs)
+        self.fields['estat'].queryset = EstatControlAssistencia.objects.all()
+        #self.fields['estat'].widget = bootStrapButtonSelect( attrs={'class':'presenciaEstat'}, ),
+
 
 class ControlAssistenciaFormFake(forms.Form):
     estat = forms.ChoiceField( required= False,  choices = [], widget = RadioSelect() )
@@ -150,12 +157,14 @@ class faltesAssistenciaEntreDatesForm(forms.Form):
                                        initial= datetime.today(),
                                        required = True,                                          
                                        widget = DateTextImput() )
-    horaDesDe = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all(), initial = [ FranjaHoraria.objects.all()[0] ] )
+    horaDesDe = forms.ModelChoiceField( queryset = None,
+                                        initial = None)
     dataFinsA = forms.DateField(help_text=u'Data on començar a comptar', 
                                        initial= datetime.today(),
                                        required = True,                                          
                                        widget = DateTextImput() )
-    horaFinsA = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all(), initial =[  FranjaHoraria.objects.reverse()[0] ])
+    horaFinsA = forms.ModelChoiceField( queryset = None,
+                                        initial = None)
 
     def __init__(self, *args, **kwargs):
         self.assignatures = kwargs.pop('assignatures', None)
@@ -163,6 +172,10 @@ class faltesAssistenciaEntreDatesForm(forms.Form):
         super(faltesAssistenciaEntreDatesForm,self).__init__(*args,**kwargs)
         self.fields['assignatura'].queryset = self.assignatures 
         self.fields['grup'].queryset = self.grups
+        self.fields['horaDesDe'].queryset = FranjaHoraria.objects.all()
+        self.fields['horaDesDe'].initial = [FranjaHoraria.objects.all()[0]]
+        self.fields['horaFinsA'].queryset = FranjaHoraria.objects.all()
+        self.fields['horaFinsA'].initial = [  FranjaHoraria.objects.reverse()[0] ]
 
 
 class alertaAssistenciaForm(forms.Form):

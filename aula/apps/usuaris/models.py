@@ -42,8 +42,12 @@ class AlumneUser(User):
 
 class ProfessorManager(models.Manager):
     def get_queryset(self):
-        grupProfessors, _ = Group.objects.get_or_create(name='professors')
-        return super(ProfessorManager, self).get_queryset().filter(groups=grupProfessors)
+        #grupProfessors, _ = Group.objects.get_or_create(name='professors')
+        #return super(ProfessorManager, self).get_queryset().filter(groups=grupProfessors)
+
+        grupProfessors = 'professors'
+        return super(ProfessorManager, self).get_queryset().filter(groups__name=grupProfessors)
+
 
 class Professor(User):
     objects = ProfessorManager()
@@ -74,9 +78,11 @@ def User2Professor(user):
 
 class ProfessorConsergeManager(models.Manager):
     def get_queryset(self):
-        grupProfessors, _ = Group.objects.get_or_create(name='professors')
-        grupConsergeria, _ = Group.objects.get_or_create(name='consergeria')
-        return super(ProfessorConsergeManager, self).get_queryset().filter(groups__in=[grupProfessors, grupConsergeria])
+        #grupProfessors, _ = Group.objects.get_or_create(name='professors')
+        #grupConsergeria, _ = Group.objects.get_or_create(name='consergeria')
+        grupProfessors = 'professors'
+        grupConsergeria = 'consergeria'
+        return super(ProfessorConsergeManager, self).get_queryset().filter(groups__name__in=[grupProfessors, grupConsergeria]).distinct()
 
 class ProfessorConserge(User):
     objects = ProfessorConsergeManager()
