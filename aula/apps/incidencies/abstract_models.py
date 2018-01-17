@@ -175,6 +175,29 @@ class AbstractTipusIncidencia(models.Model):
         return self.tipus
 
 class AbstractIncidencia(models.Model):
+
+    GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA = u"1AHora"
+    GESTIONADA_PEL_TUTOR_FORA_AULA = u"ForaAula"
+    GESTIONADA_PEL_TUTOR_GUARDIA = u"Guardia"
+    GESTIONADA_PEL_TUTOR_ALTRES = u"N/A"
+
+    INFO_GESTIONADA_PEL_TUTOR = {
+        GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA: { "display": u"Pot ser gestionada pel tutor: Retard de 1a hora",
+                                                    "help": u"Els retards provoquen incidència, les incidències per retard de primera hora poden ser gestionades pel tutor",
+                                                    "color": u"#0000FF", },
+        GESTIONADA_PEL_TUTOR_FORA_AULA: { "display": u"Pot ser gestionada pel tutor: Incidència fora d'aula",
+                                          "help": u"Les incidències fora d'aula ( patis, passadís, entrada o sortida, etc ) poden ser gestionades pel tutor de l'alumne",
+                                          "color": u"#0000FF", },
+        GESTIONADA_PEL_TUTOR_GUARDIA: { "display": u"Pot ser gestionada pel tutor: Incidència en hora de Guàrdia",
+                                        "help": u"Les incidències que posa el professor de guàrdia són gestionades pel tutor de l'alumne",
+                                        "color": u"#0000FF", },
+        GESTIONADA_PEL_TUTOR_ALTRES: { "display": u"Pot ser gestionada pel tutor",
+                                       "help": u"Aquesta incidència pot ser gestionada pel tutor",
+                                       "color": u"#0000FF", },
+    }
+
+    GESTIONADA_PEL_TUTOR_CHOICES = [ (x, y["display"]) for x,y in INFO_GESTIONADA_PEL_TUTOR.items()  ]
+
     professional = models.ForeignKey('usuaris.Professional',  db_index=True, help_text=u"Professor que tramita la incidència")
     alumne = models.ForeignKey('alumnes.Alumne',  db_index=True, help_text=u"Alumne al qual li posem la incidència" )
     tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
@@ -185,12 +208,12 @@ class AbstractIncidencia(models.Model):
     descripcio_incidencia = models.CharField(max_length=250,help_text=u"Frase curta que descriu la incidència. Aquesta informació la veuran els pares.")
     provoca_expulsio = models.ForeignKey('incidencies.Expulsio', blank=True , null=True, on_delete = models.PROTECT )
     es_vigent = models.BooleanField( default = True , db_index=True)
-    gestionada_pel_tutor = models.BooleanField(u"Incidència gestionada pel tutor", default = False,
-                                               help_text=u'''Aquesta incidència no la gestiona el professor que la posa, serà gestionada directament pel tutor.".'''  )
+    gestionada_pel_tutor = models.BooleanField(u"Incidència pot ser gestionada pel tutor", default = False, editable=False,
+                                               help_text=u'''Aquesta incidència podrà ser gestionada pel tutor.".'''  )
+    gestionada_pel_tutor_motiu = models.CharField(max_length=20, choices=GESTIONADA_PEL_TUTOR_CHOICES, default = '', editable=False,)
     provoca_sancio = models.ForeignKey('incidencies.Sancio', blank=True, null=True, on_delete = models.PROTECT  )
     relacio_familia_revisada = models.DateTimeField( null=True )    
-    relacio_familia_notificada = models.DateTimeField( null=True ) 
-    
+    relacio_familia_notificada = models.DateTimeField( null=True )
     
     def es_incidencia_d_aula(self):
         return ( self.control_assistencia is not None) 

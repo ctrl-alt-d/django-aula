@@ -103,44 +103,46 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
     #si els retards provoquen incidència la posem:
     if settings.CUSTOM_RETARD_PROVOCA_INCIDENCIA:
          
-         
         frase = settings.CUSTOM_RETARD_FRASE
          
         TipusIncidencia = apps.get_model('incidencies','TipusIncidencia')
         tipus, _ = TipusIncidencia.objects.get_or_create(  **settings.CUSTOM_RETARD_TIPUS_INCIDENCIA )
 
         Incidencia = apps.get_model('incidencies','Incidencia')
-        abans_no_era_retard = ( created or
-                                ( hasattr(instance, 'instanceDB') and
-                                  instance.instanceDB and instance.instanceDB.estat
-                                  and instance.instanceDB.estat.codi_estat != 'R'
-                                )
-                               )
-         
-        #posem incidència si arriba tard ( només si passem de res a retard )
-        if instance.estat and instance.estat.codi_estat == 'R' and abans_no_era_retard:
 
-            es_primera_hora = instance.esPrimeraHora()
+        abans_en_blanc = ( hasattr(instance, 'instanceDB') and
+                           instance.instanceDB is not None and
+                           instance.instanceDB.estat is None )
+
+        abans_era_retard = not abans_en_blanc and instance.instanceDB.estat.codi_estat == 'R'
+        ara_es_retard = instance.estat and instance.estat.codi_estat == 'R'
+
+        #posem incidència si arriba tard ( només si passem de res a retard )
+        if ara_es_retard and not abans_era_retard :
+
             ja_hi_es = Incidencia.objects.filter(
-                                                              alumne = instance.alumne,
-                                                              control_assistencia = instance,
-                                                              descripcio_incidencia = frase,
-                                                              tipus= tipus ,
+                                                      alumne = instance.alumne,
+                                                      control_assistencia = instance,
+                                                      descripcio_incidencia = frase,
+                                                      tipus= tipus ,
                                                 ).exists()
-     
+
             if not ja_hi_es:
-                i = Incidencia.objects.create(    
+                es_primera_hora = instance.esPrimeraHora()
+                es_primera_hora_txt = Incidencia.GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA if es_primera_hora else ''
+                i = Incidencia.objects.create(
                                           professional = User2Professional( instance.professor ),
                                           alumne = instance.alumne,
                                           control_assistencia = instance,
                                           descripcio_incidencia = frase,
                                           tipus = tipus ,
-                                          gestionada_pel_tutor=es_primera_hora, )
+                                          gestionada_pel_tutor=es_primera_hora,
+                                          gestionada_pel_tutor_motiu=es_primera_hora_txt,
+                                          )
                 incidencia_despres_de_posar( i )
- 
-         
+
         #treiem incidència retard si arriba a l'hora
-        elif instance.estat and instance.estat.codi_estat != 'R':
+        if not ara_es_retard:
             try:
                 Incidencia.objects.filter( 
                                                               alumne = instance.alumne,

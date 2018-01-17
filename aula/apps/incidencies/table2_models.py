@@ -223,7 +223,8 @@ class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
                                             {{ record.dia_expulsio }} {{ record.franja_expulsio }} {{ record.get_estat_display }}
                                             {{ record.dia_incidencia }}
                                             {{ record.franja_incidencia }}
-                                            {{ record.control_assistencia.impartir.horari.assignatura}} 
+                                            {{ record.control_assistencia.impartir.horari.assignatura}} <br>
+                                            {{ record.get_gestionada_pel_tutor_motiu_display }}
                                             """,
         orderable=False,
     )

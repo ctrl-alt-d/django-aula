@@ -9,35 +9,47 @@ from django.conf import settings
 
 #-------------INCIDENCIES-------------------------------------------------------------
 from aula.apps.alumnes.named_instances import Cursa_nivell
+from aula.apps.usuaris.models import User2Professor
 
 
 def incidencia_clean( instance ):
     import datetime as dt
-    
-        
+    Incidencia = instance.__class__
+
+    ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
+
     #
     # Pre-save
     #
 
-    #incidències d'aula: dia i franja copiat de impartició
+    # incidències d'aula: dia i franja copiat de impartició
     if instance.es_incidencia_d_aula():
         instance.dia_incidencia = instance.control_assistencia.impartir.dia_impartir
         instance.franja_incidencia = instance.control_assistencia.impartir.horari.hora
-        la_posa_el_professor_de_guardia = ( (instance.control_assistencia.professor is not None)
+
+    # si la posa el profe de guàrdia -> la gestiona el tutor
+    if instance.es_incidencia_d_aula() and not instance.gestionada_pel_tutor:
+        professor = instance.control_assistencia.professor
+        if user is not None and User2Professor(user) is not None:
+            professor = User2Professor(user)
+        la_posa_el_professor_de_guardia = ( (professor is not None)
                                             and
-                                           ( instance.control_assistencia.professor !=
-                                            instance.control_assistencia.impartir.horari.professor )
+                                           ( professor != instance.control_assistencia.impartir.horari.professor )
                                           )
-        instance.gestionada_pel_tutor = la_posa_el_professor_de_guardia
-    else:
+        if la_posa_el_professor_de_guardia:
+            instance.gestionada_pel_tutor = True
+            instance.gestionada_pel_tutor_motiu = Incidencia.GESTIONADA_PEL_TUTOR_GUARDIA
+
+    # si no és d'aula -> la gestiona el tutor
+    if not instance.es_incidencia_d_aula() and not instance.gestionada_pel_tutor:
         instance.gestionada_pel_tutor = True
+        instance.gestionada_pel_tutor_motiu = Incidencia.GESTIONADA_PEL_TUTOR_FORA_AULA
 
     #
     # Regles:
     #
 
-    ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,None,)
-    
+
     if l4:
         return
     
