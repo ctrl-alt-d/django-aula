@@ -12,7 +12,6 @@ from aula.apps.presencia.models import Impartir, ControlAssistencia,\
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import User2Professor
 from django.contrib.auth.models import Group
-import os, sys
 import traceback
 
 class afegeixThread(Thread):
@@ -93,7 +92,7 @@ class afegeixThread(Thread):
         importancia = 'PI'
 
         if len(errors)>0:
-            msg.afegeix_error(errors)
+            msg.afegeix_error([u"Procés finalitzat amb errors. S'ha enviat incidència als administradors.",])
             importancia = 'VI'
             msg.save()
             administradors, _ = Group.objects.get_or_create( name = 'administradors' )
