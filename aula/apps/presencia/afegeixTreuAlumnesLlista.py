@@ -12,6 +12,7 @@ from aula.apps.presencia.models import Impartir, ControlAssistencia,\
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import User2Professor
 from django.contrib.auth.models import Group
+import os, sys
 
 class afegeixThread(Thread):
     
@@ -79,9 +80,14 @@ class afegeixThread(Thread):
                     i.pot_no_tenir_alumnes = False
                     i.save()
                 self.flagPrimerDiaFet = ( i.dia_impartir >= self.impartir.dia_impartir )
-                                
-        except Exception, e:                
+
+        except Exception, e:
                 errors.append(unicode(e))
+
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            errors.append( "{} | {} | {}".format( exc_type, fname, exc_tb.tb_lineno ) )
 
         finally:
             self.flagPrimerDiaFet = True                
