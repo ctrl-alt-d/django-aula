@@ -114,7 +114,11 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                            instance.instanceDB is not None and
                            instance.instanceDB.estat is None )
 
-        abans_era_retard = not abans_en_blanc and instance.instanceDB.estat is not None and instance.instanceDB.estat.codi_estat == 'R'
+        abans_era_retard = ( not abans_en_blanc and
+                             hasattr(instance, 'instanceDB') and
+                             instance.instanceDB.estat is not None
+                             and instance.instanceDB.estat.codi_estat == 'R'
+                             )
         ara_es_retard = instance.estat and instance.estat.codi_estat == 'R'
 
         #posem incidència si arriba tard ( només si passem de res a retard )
