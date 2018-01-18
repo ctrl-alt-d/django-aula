@@ -13,6 +13,7 @@ from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import User2Professor
 from django.contrib.auth.models import Group
 import os, sys
+import traceback
 
 class afegeixThread(Thread):
     
@@ -83,9 +84,7 @@ class afegeixThread(Thread):
 
 
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            errors.append( "{} | {} | {}".format( exc_type, fname, exc_tb.tb_lineno ) )
+            errors.append( traceback.format_exc() )
 
         finally:
             self.flagPrimerDiaFet = True                
