@@ -12,6 +12,7 @@ from aula.apps.presencia.models import Impartir, ControlAssistencia,\
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import User2Professor
 from django.contrib.auth.models import Group
+import traceback
 
 class afegeixThread(Thread):
     
@@ -79,9 +80,10 @@ class afegeixThread(Thread):
                     i.pot_no_tenir_alumnes = False
                     i.save()
                 self.flagPrimerDiaFet = ( i.dia_impartir >= self.impartir.dia_impartir )
-                                
-        except Exception, e:                
-                errors.append(unicode(e))
+
+
+        except Exception as e:
+            errors.append( traceback.format_exc() )
 
         finally:
             self.flagPrimerDiaFet = True                
@@ -90,7 +92,7 @@ class afegeixThread(Thread):
         importancia = 'PI'
 
         if len(errors)>0:
-            msg.afegeix_error(errors)
+            msg.afegeix_error([u"Procés finalitzat amb errors. S'ha enviat incidència als administradors.",])
             importancia = 'VI'
             msg.save()
             administradors, _ = Group.objects.get_or_create( name = 'administradors' )
