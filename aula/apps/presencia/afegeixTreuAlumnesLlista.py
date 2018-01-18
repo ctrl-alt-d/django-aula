@@ -81,8 +81,6 @@ class afegeixThread(Thread):
                     i.save()
                 self.flagPrimerDiaFet = ( i.dia_impartir >= self.impartir.dia_impartir )
 
-        except Exception, e:
-                errors.append(unicode(e))
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
