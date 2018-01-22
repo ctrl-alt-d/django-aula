@@ -903,22 +903,67 @@ def sortidaExcel( request, pk ):
                          'capcelera':capcelera,
                          'dades':dades_sortida,
     })
-    
-    response = HttpResponse()  
-    filename = "sortida-{0}.csv".format( slugify( sortida.titol_de_la_sortida )) 
 
+    import os
+    import cgi
+    import time
+    from django import http
+    import xlsxwriter
 
-    response['Content-Disposition'] = 'attachment; filename='+filename
-    response['Content-Type'] = 'text/csv; charset=utf-8'
-    #response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
-    # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
-    # encoding is ANSI and special characters will be mangled
-    #response.write("\xEF\xBB\xBF")
-    response.write(codecs.BOM_UTF8)
-    response.write(  template.render(context)   )
+    resultat = "/tmp/DjangoAula-temp-{0}-{1}.xlsx".format(time.time(), request.session.session_key)
+    workbook = xlsxwriter.Workbook(resultat)
+    worksheet = workbook.add_worksheet()
+    worksheet.set_column(0, 0, 40)
 
+    nun_row = 0
+    for row in capcelera:
+        num_col = 0
+        for item in row:
+            worksheet.write(nun_row, num_col, unicode( item) )
+            num_col += 1
+        nun_row += 1
+
+    nun_row = 0
+    for row in dades_sortida:
+        num_col = 0
+        for item in row:
+            worksheet.write(nun_row, num_col, unicode( item) )
+            num_col += 1
+        nun_row += 1
+
+    workbook.close()
+
+    excepcio = None
+
+    docFile = open(resultat, 'rb')
+    contingut = docFile.read()
+    docFile.close()
+    os.remove(resultat)
+
+    if True:  # not excepcio:
+        response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
+        response['Content-Disposition'] = u'attachment; filename="sortida-{0}.xlsx"'.format( slugify( sortida.titol_de_la_sortida ))
+
+    else:
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
 
     return response
+
+
+    # response = HttpResponse()
+    # filename = "sortida-{0}.csv".format( slugify( sortida.titol_de_la_sortida ))
+    #
+    #
+    # response['Content-Disposition'] = 'attachment; filename='+filename
+    # response['Content-Type'] = 'text/csv; charset=utf-8'
+    # #response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
+    # # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
+    # # encoding is ANSI and special characters will be mangled
+    # #response.write("\xEF\xBB\xBF")
+    # response.write(codecs.BOM_UTF8)
+    # response.write(  template.render(context)   )
+    #
+    # return response
 
 
     
