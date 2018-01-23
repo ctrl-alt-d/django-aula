@@ -146,11 +146,19 @@ def calcula_menu( user , path ):
                    )
                ),
 
+               # --Gestió--------------------------------------------------------------------------
+               ('gestio', 'Gestió', 'gestio__reserva_aula__list', pg or di, None,
+                (
+                    ("Reserva Aula", 'gestio__reserva_aula__list', pg or di, None, None),
+                )
+                ),
+
+
                #--Tutoria--------------------------------------------------------------------------
                ('tutoria', 'Tutoria', 'tutoria__actuacions__list', tu, None,
                    arbre_tutoria
                ),
-             
+
                #--psicopedagog--------------------------------------------------------------------------
                ('psico', 'Psicopedagog', 'psico__informes_alumne__list', pg or di, None,
                   (
@@ -158,7 +166,7 @@ def calcula_menu( user , path ):
                       ("Actuacions", 'psico__actuacions__list', pg or di, None, None ),
                    )
                ),
-             
+
                #--Coord.Pedag--------------------------------------------------------------------------
                ('coordinacio_pedagogica', 'Coord.Pedag', 'coordinacio_pedagogica__qualitativa__blanc', di, None,
                   (
@@ -172,7 +180,7 @@ def calcula_menu( user , path ):
                       ("Seguiment Tutorial", "coordinacio_pedagogica__seguiment_tutorial__preguntes", di, None, None ),
                    ),
                ),
-  
+
                #--Coord.Alumnes--------------------------------------------------------------------------
                ('coordinacio_alumnes', 'Coord.Alumnes', 'coordinacio_alumnes__ranking__list', di, None,
                   (
@@ -223,7 +231,7 @@ def calcula_menu( user , path ):
 # Queda pendent acabar-la, o eliminar-la de l'aplicació.
                    )
                ),
-             
+
                #--Consergeria--------------------------------------------------------------------------
                ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
                   (
