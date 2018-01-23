@@ -41,8 +41,9 @@ class posaIncidenciaAulaForm(forms.Form):
                                               clic amb el ratolí."""  )
 
     tipus = forms.ModelChoiceField( queryset = None,
-                                     initial = None,
-                                      widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
+                                    initial = None,
+                                    empty_label=None,
+                                    widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
                                    )
 
     frases = forms.ModelMultipleChoiceField( label=u'Tria incidència', queryset= FrassesIncidenciaAula.objects.all(), 
