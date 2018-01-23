@@ -42,6 +42,7 @@ class posaIncidenciaAulaForm(forms.Form):
 
     tipus = forms.ModelChoiceField( queryset = None,
                                      initial = None,
+                                  empty_label=None,
                                       widget=forms.RadioSelect(attrs={"onChange":'getFrase()'})
                                    )
 
