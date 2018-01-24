@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
-
+from aula.apps.incidencies.table2_models import Table2_ExpulsionsPendentsTramitar, \
+    Table2_ExpulsionsPendentsPerAcumulacio, Table2_ExpulsionsIIncidenciesPerAlumne
 from aula.utils.widgets import DateTimeTextImput,DateTextImput
 #templates
 from django.template import RequestContext
@@ -11,7 +12,7 @@ from django.http import HttpResponseRedirect
 
 #auth
 from django.contrib.auth.decorators import login_required
-from aula.apps.usuaris.models import User2Professor, User2Professional, Accio, LoginUsuari
+from aula.apps.usuaris.models import User2Professor, User2Professional, Accio, LoginUsuari, Professional, Professor
 from aula.utils.decorators import group_required
 
 #forms
@@ -59,6 +60,121 @@ from aula.utils.my_paginator import DiggPaginator
 from aula.apps.tutoria.table2_models import Table2_Actuacions
 
 from django.contrib import messages
+from django.conf import settings
+
+
+@login_required
+@group_required(['professors'] )
+def incidenciesGestionadesPelTutor(request):
+
+
+    #TODO: cal no poder esborrar incidències, no veure on s'ha fet la incidència, ...
+    #TODO: cal simplificar: no expulsions pendents de tramitar, ...
+    #TODO: comprovar regles de negoci, que un tutor pot transformar incidències d'altres professors en expulsió seva.
+
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    professor = get_object_or_404(Professor, pk=user.pk)
+    tutor = get_object_or_404(Tutor, professor = professor  )
+
+    alumnes_grup = Q( grup__tutor__professor = professor )
+    alumnes_tutor_individualitzat = Q( tutorindividualitzat__professor = professor )
+
+    alumnes_tutoritzats = list( Alumne.objects.filter( alumnes_grup | alumnes_tutor_individualitzat ) )
+
+
+    if user != professor.getUser():
+        return HttpResponseRedirect('/')
+
+        # Expulsions pendents:
+    expulsionsPendentsTramitar = []
+
+    expulsionsPendentsPerAcumulacio = []
+
+    # alumne -> incidencies i expulsions
+    alumnes = {}
+    incidencies_gestionades_pel_tutor = ( Incidencia
+                                          .objects
+                                          .filter(alumne__in=alumnes_tutoritzats)
+                                          .filter(gestionada_pel_tutor=True)
+                                          .filter(tipus__es_informativa=False)
+                                          .all())
+    for incidencia in incidencies_gestionades_pel_tutor:
+        alumne_str = unicode(incidencia.alumne)
+        incidenciesAlumne = incidencia.alumne.incidencia_set.filter(
+            gestionada_pel_tutor=True,
+            es_vigent=True,
+            tipus__es_informativa=False,
+        )
+        calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
+        exempleIncidenciaPerAcumulacio = incidenciesAlumne.order_by('dia_incidencia').reverse()[0] \
+            if calTramitarExpulsioPerAcumulacio \
+            else None
+        if calTramitarExpulsioPerAcumulacio and alumne_str not in alumnes:
+            expulsionsPendentsPerAcumulacio.append(exempleIncidenciaPerAcumulacio)
+
+        alumnes.setdefault(alumne_str, {
+            'calTramitarExpulsioPerAcumulacio': calTramitarExpulsioPerAcumulacio,
+            'exempleIncidenciaPerAcumulacio': exempleIncidenciaPerAcumulacio,
+            'alumne': incidencia.alumne,
+            'grup': incidencia.alumne.grup,
+            'incidencies': [],
+            'expulsions': []})
+        alumnes[alumne_str]['incidencies'].append(incidencia)
+
+    alumnesOrdenats = []
+    for alumneKey in sorted(alumnes.iterkeys()):
+        tupla = (alumneKey, alumnes[alumneKey],)
+        alumnesOrdenats.append(tupla)
+
+    # table = Table2_IncidenciesMostrar(alumnesOrdenats)
+    hi_ha_expulsions_pendents_tramitar = True
+    table2 = Table2_ExpulsionsPendentsTramitar(expulsionsPendentsTramitar)
+    if len(expulsionsPendentsTramitar) == 0:
+        hi_ha_expulsions_pendents_tramitar = False
+
+    hi_ha_expulsions_daula = False
+    for expulsio in expulsionsPendentsTramitar:
+        if expulsio.es_expulsio_d_aula():
+            hi_ha_expulsions_daula = True
+            break
+
+    if not hi_ha_expulsions_daula:
+        table2.exclude = ('Assignatura',)
+
+    hi_ha_expulsions_per_acumulacio = True
+    if len(expulsionsPendentsPerAcumulacio) == 0:
+        hi_ha_expulsions_per_acumulacio = False
+
+    table3 = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
+
+    diccionariTables = dict()
+    for alumne in alumnesOrdenats:
+        expulsionsPerAlumne = alumne[1]['expulsions']
+        default = []
+        incidenciesPerAlumne = alumne[1].setdefault('incidencies', default)
+        expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
+                                                                                 + incidenciesPerAlumne)
+        diccionariTables[alumne[0] + ' - ' + unicode(alumne[1]['grup'])] = expulsionsIIncidenciesPerAlumne
+
+    # RequestConfig(request).configure(table)
+    # RequestConfig(request).configure(table2)
+
+    return render(
+        request,
+        'incidenciesProfessional.html',
+        {'table': table2,
+         'alumnes': alumnesOrdenats,
+         'expulsionsPendentsTramitar': expulsionsPendentsTramitar,
+         'expulsionsPendentsTramitarBooelan': hi_ha_expulsions_pendents_tramitar,
+         'expulsionsPendentsPerAcumulacio': expulsionsPendentsPerAcumulacio,
+         'expulsionsPendentsPerAcumulacioBooelan': hi_ha_expulsions_per_acumulacio,
+         'table2': table3,
+         'expulsionsIIncidenciesPerAlumne': diccionariTables,
+         },
+    )
+
 
 @login_required
 @group_required(['professors','professional'])

@@ -16,7 +16,10 @@ urlpatterns = [
                        
     url(r'^esborraActuacio/(?P<pk>\d+)/$', tutoria_views.esborraActuacio,
         name="tutoria__actuacions__esborrat"),
-                       
+
+    url(r'^incidenciesGestionadesPelTutor/$', tutoria_views.incidenciesGestionadesPelTutor,
+        name="tutoria__incidencies__list"),
+
     url(r'^justificaFaltesPre/$', tutoria_views.justificaFaltesPre,
         name="tutoria__justificar__pre_justificar"),
                        

@@ -753,12 +753,12 @@ def llistaIncidenciesProfessional( request ):
     alumnes = {}
     for incidencia in professional.incidencia_set.all():
         alumne_str = unicode ( incidencia.alumne)
-        dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
+        #dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
         incidenciesAlumne = incidencia.alumne.incidencia_set.filter(
                                                         professional = professional, 
                                                         es_vigent = True,
                                                         tipus__es_informativa = False,
-                                                        dia_incidencia__gte = dia_prescriu_incidencia
+                                                        #dia_incidencia__gte = dia_prescriu_incidencia
                                                                                    )
         calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
         exempleIncidenciaPerAcumulacio = incidenciesAlumne.order_by( 'dia_incidencia' ).reverse()[0] \

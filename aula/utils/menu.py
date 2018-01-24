@@ -82,7 +82,8 @@ def calcula_menu( user , path ):
     
     arbre_tutoria = (
                       ("Actuacions", 'tutoria__actuacions__list', tu, None, None ),
-                      ("Justificar", 'tutoria__justificar__pre_justificar', tu, None, None ),                                      
+                      ("Incidències de Tutor", 'tutoria__incidencies__list', tu, None, None ),
+                      ("Justificar", 'tutoria__justificar__pre_justificar', tu, None, None ),
                       ("Cartes", 'tutoria__cartes_assistencia__gestio_cartes', tu, None, None ),                                      
                       ("Alumnes", 'tutoria__alumnes__list', tu, None, None ),
                       ("Assistència", 'tutoria__assistencia__list_entre_dates', tu, None, None ),                                      
