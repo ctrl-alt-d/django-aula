@@ -1,4 +1,10 @@
 # This Python file uses the following encoding: utf-8
+import itertools
+
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
+
+from aula.apps.incidencies.business_rules.expulsio import expulsio_despres_de_posar
 from aula.apps.incidencies.table2_models import Table2_ExpulsionsPendentsTramitar, \
     Table2_ExpulsionsPendentsPerAcumulacio, Table2_ExpulsionsIIncidenciesPerAlumne
 from aula.utils.widgets import DateTimeTextImput,DateTextImput
@@ -174,6 +180,83 @@ def incidenciesGestionadesPelTutor(request):
          'expulsionsIIncidenciesPerAlumne': diccionariTables,
          },
     )
+
+
+@login_required
+@group_required(['professors'])
+def tutorPosaExpulsioPerAcumulacio(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    incidencia = get_object_or_404(Incidencia, pk=pk)
+
+    professional = incidencia.professional
+    professor = User2Professor(professional.getUser())
+    alumne = incidencia.alumne
+
+    # seg---------
+    te_permis = (l4 or professor in alumne.tutorsDeLAlumne() )
+    if not te_permis:
+        raise Http404()
+
+    # si l'expulsió ja ha estat generada abans l'envio a l'expulsió
+    # seria el cas que seguissin l'enllaç d'un Missatge:
+
+    if incidencia.provoca_expulsio:
+        url_next = '/incidencies/editaExpulsio/{0}/'.format(incidencia.provoca_expulsio.pk)
+        return HttpResponseRedirect(url_next)
+
+    incidencies = alumne.incidencia_set.filter(
+        es_vigent=True,
+        tipus__es_informativa=False,
+        gestionada_pel_tutor=True,
+    )
+    enTe3oMes = incidencies.count() >= 3
+    url_next = '/tutoria/incidenciesGestionadesPelTutor/'  # todo: a la pantalla d''incidencies
+
+    if enTe3oMes:
+
+        str_incidencies = u", ".join(
+            [u"{descripcio} ({dia})".format(descripcio=i.descripcio_incidencia, dia=i.dia_incidencia)
+             for i in incidencies])
+        professor_recull = User2Professor(user)
+        motiu_san = u'''Expulsió per acumulació d'incidències gestionada pel tutor Sr(a) {0}: {1}'''.format(
+            professor_recull, str_incidencies)
+
+        try:
+            expulsio = Expulsio.objects.create(
+                estat='AS',
+                professor_recull=professor_recull,
+                professor=professor,
+                alumne=alumne,
+                dia_expulsio=incidencia.dia_incidencia,
+                franja_expulsio=incidencia.franja_incidencia,
+                motiu=motiu_san,
+                es_expulsio_per_acumulacio_incidencies=True
+            )
+
+            # LOGGING
+            Accio.objects.create(
+                tipus='EE',
+                usuari=user,
+                l4=l4,
+                impersonated_from=request.user if request.user != user else None,
+                text=u"""Creada expulsió d'alumne {0} per acumulació d'incidències. Gestionada pel tutor.""".format(expulsio.alumne)
+            )
+
+            expulsio_despres_de_posar(expulsio)
+            incidencies.update(es_vigent=False, provoca_expulsio=expulsio)
+            missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0}. 
+                           Pots gestionar l'expulsió des de menú incidències""".format(expulsio.alumne)
+            url_expulsio = r"/incidencies/editaExpulsio/{0}/".format(expulsio.pk)
+            missatge = mark_safe( escape( missatge ) +
+                                  r"<a href='{url}'>o accedir-hi directament a l'expulsió</a>".format(url=url_expulsio ) )
+            messages.info(request, missatge)
+        except ValidationError, e:
+            missatge =  u"""Error en generar l'expulsió: {errors}""".format( u" - ".join(itertools.chain(*e.message_dict.values()) ) )
+            messages.error(request, missatge)
+
+    return HttpResponseRedirect(url_next)
 
 
 @login_required

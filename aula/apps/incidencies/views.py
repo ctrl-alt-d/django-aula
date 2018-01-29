@@ -638,7 +638,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
     
-    dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
+    #dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
     try:
         incidencia = Incidencia.objects.get(pk =pk)
     except:
@@ -668,7 +668,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
     incidencies = alumne.incidencia_set.filter(  
                                                es_vigent = True,
                                                tipus__es_informativa = False,
-                                               dia_incidencia__gte = dia_prescriu_incidencia,
+                                               #dia_incidencia__gte = dia_prescriu_incidencia,
                                                professional = professional
                                             ) 
     enTe3oMes = incidencies.count() >= 3

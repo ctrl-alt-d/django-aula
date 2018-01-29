@@ -1,3 +1,5 @@
+https://danielkummer.github.io/git-flow-cheatsheet/
+
 Sortides:
 
 * Es crea model sortida / altre activitats escolars.
