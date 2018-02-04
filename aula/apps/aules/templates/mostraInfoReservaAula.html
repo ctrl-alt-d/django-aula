@@ -1,0 +1,18 @@
+{% extends "table2.html" %}
+
+{% block pretaula %}
+
+    <div class="row">
+		  <div class="col-sm-8 col-xs-12">
+	      <p class="well well-small">
+      	  <span class="glyphicon glyphicon-home"> </span> {{ aula.nom_aula }}<br />
+          <span class="glyphicon glyphicon-briefcase"> </span> {{ aula.descripcio_aula }} <br />
+          <span class="glyphicon glyphicon-calendar"> </span> {{ dia }} <br />
+          {%  if not aula.reservable %}
+              <span class="blink_me text-danger"> <strong> Aula NO Reservable </strong></span>
+          {% endif %}
+          </p>
+          </div>
+    </div>
+    {% endblock %}
+

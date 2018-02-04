@@ -27,7 +27,7 @@ class ReservaAula(models.Model):
     dia_reserva = models.DateField()
     hora_inici = models.TimeField()
     hora_fi = models.TimeField()
-    hora = models.ForeignKey('horaris.FranjaHoraria',null=True, blank=True)
+    hora = models.ForeignKey('horaris.FranjaHoraria',null=True, blank=True,verbose_name='Franja Horaria')
     usuari = models.ForeignKey(User)
     motiu = models.CharField(max_length=120, blank=False, help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de famílies")
 

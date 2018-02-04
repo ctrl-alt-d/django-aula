@@ -2,25 +2,32 @@
 from __future__ import unicode_literals
 
 #workflow
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django import forms
 from django.http import HttpResponseRedirect
 
 #auth
 from django.contrib.auth.decorators import login_required
 
+#tables
+from django_tables2 import RequestConfig
+from aula.apps.aules.tables2_models import HorariAulaTable
+
 #models
+
 from aula.apps.aules.models import Aula, ReservaAula
+from aula.apps.presencia.models import Impartir
+from aula.apps.horaris.models import FranjaHoraria
 
 #forms
-from aula.apps.aules.forms import disponibilitatAulaForm, triaAulaSelect2Form
+from aula.apps.aules.forms import disponibilitatAulaForm, triaAulaSelect2Form, reservaAulaForm
 
 #helpers
 from aula.utils.decorators import group_required
 from aula.utils import tools
-from aula.utils.widgets import DateTimeTextImput,DateTextImput
+from django.contrib import messages
 from django.utils.datetime_safe import datetime
-from django.forms.models import modelform_factory
+
 
 @login_required
 @group_required(['professors', 'professional'])
@@ -36,33 +43,14 @@ def consultaAula(request):
         if formAula.is_valid() and formDisponibilitatAula.is_valid():
             aula = formAula.cleaned_data['aula']
             data = formDisponibilitatAula.cleaned_data['data']
-            print aula
-            print data
-            next_url = r'/aules/reservaAulaHorari/{0}/{1}'
-            return HttpResponseRedirect(next_url.format(aula.pk,data))
-        else:
-            print "aaaa"
+            year = data.year
+            month = data.month
+            date = data.day
+            next_url = r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}'
+            return HttpResponseRedirect(next_url.format(year, month, date, aula.pk))
 
 
-        # expulsio = Expulsio()
-        # expulsio.credentials = credentials
-        # expulsio.professor_recull = User2Professor(user)
-        #
-        # formAlumne = triaAlumneSelect2Form(request.POST)
-        # formExpulsio = posaExpulsioForm(data=request.POST, instance=expulsio)
-        #
-        # if formAlumne.is_valid():
-        #     expulsio.alumne = formAlumne.cleaned_data['alumne']
-        #     if formExpulsio.is_valid():
-        #         expulsio.save()
-        #
-        #         url = '/incidencies/posaExpulsioW2/{u}'.format(u=expulsio.pk)
-        #
-        #         return HttpResponseRedirect(url)
-        #
-        # else:
-        #     formset.append(formAlumne)
-        #     formset.append(formExpulsio)
+
 
     else:
 
@@ -78,4 +66,140 @@ def consultaAula(request):
         {'formset': formset,
          'head': u'Consultar disponibilitat aula',
          },
+    )
+
+
+@login_required
+@group_required(['professors', 'professional'])
+def detallAulaReserves (request, year, month, day, pk):
+
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    aula = get_object_or_404(Aula, pk=pk)
+
+    import datetime as t
+    if not ( year and month and day):
+        today = t.date.today()
+        year = today.year
+        month = today.month
+        day = today.day
+    else:
+        year= int( year)
+        month = int( month )
+        day = int( day)
+    data = t.date(year, month, day)
+
+    reserves = []
+
+    reserves_dun_dia = ReservaAula.objects.filter(dia_reserva=data)
+    franjes_dun_dia = [reserva.hora for reserva in reserves_dun_dia]
+    franjes_uniques_dun_dia = []
+    franja_maxima_dun_dia = franjes_dun_dia[0] if franjes_dun_dia else None
+    for franja in franjes_dun_dia:
+        if franja not in franjes_uniques_dun_dia:
+            franjes_uniques_dun_dia.append(franja)
+        if franja.hora_fi > franja_maxima_dun_dia.hora_fi:
+            franja_maxima_dun_dia = franja
+    reserves_dun_dia_un_aula = reserves_dun_dia.filter(aula__nom_aula=aula.nom_aula)
+
+    # imparticions_dun_dia = Impartir.objects.filter(dia_impartir=data)
+    # franjes_dun_dia = [imparticio.horari.hora for imparticio in imparticions_dun_dia ]
+    # franjes_uniques_dun_dia = []
+    # for franja in franjes_dun_dia:
+    #     if franja not in franjes_uniques_dun_dia:
+    #         franjes_uniques_dun_dia.append(franja)
+
+    #imparticions_dun_dia_un_aula = imparticions_dun_dia.filter(horari__nom_aula=aula.nom_aula)
+
+    #for franja in franjes_uniques_dun_dia:
+    if franja_maxima_dun_dia:
+        for franja in FranjaHoraria.objects.all():
+            if franja.hora_fi <= franja_maxima_dun_dia.hora_fi:
+                nova_franja = {}
+                nova_franja['franja'] = franja
+                hora_reservada = reserves_dun_dia_un_aula.filter(hora=franja)
+                nova_franja['reserva'] = hora_reservada[0] if hora_reservada else None
+                # hora_impartida = imparticions_dun_dia_un_aula.filter(horari__hora=franja)
+                # nova_franja['reserva'] = hora_impartida[0] if hora_impartida else None
+                reserves.append(nova_franja)
+
+
+
+
+
+    table = HorariAulaTable(reserves)
+    table.order_by = 'franja'
+    RequestConfig(request).configure(table)
+
+    return render(
+        request,
+        'mostraInfoReservaAula.html',
+        {'table': table,
+         'aula': aula,
+         'dia': data,
+         },
+    )
+
+
+
+
+@login_required
+@group_required(['professors', 'professional'])
+def tramitarReservaAula (request, pk, pk_franja , year, month, day):
+
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    aula = get_object_or_404(Aula, pk=pk)
+    franja = get_object_or_404(FranjaHoraria,pk=pk_franja)
+
+    import datetime as t
+    if not (year and month and day):
+        today = t.date.today()
+        year = today.year
+        month = today.month
+        day = today.day
+    else:
+        year = int(year)
+        month = int(month)
+        day = int(day)
+    data = t.date(year, month, day)
+
+
+    novaReserva = ReservaAula(aula=aula,
+                              hora=franja,
+                              hora_inici=franja.hora_inici,
+                              hora_fi=franja.hora_fi,
+                              dia_reserva=data,
+                              usuari=user)
+    if request.method=='POST':
+        missatge = u"Reserva realitzada"
+        messages.info(request, missatge)
+        form = reservaAulaForm(request.POST, instance=novaReserva)
+        if form.is_valid():
+            print "formulario válido"
+            form.save()
+            return HttpResponseRedirect(r'/aules/consultaAula/')
+
+
+    else:
+        form = reservaAulaForm(instance=novaReserva)
+
+
+    form.fields['aula'].widget.attrs['disabled'] = True
+    form.fields['hora'].widget.attrs['disabled'] = True
+    form.fields['hora_inici'].widget.attrs['readonly'] = True
+    form.fields['hora_fi'].widget.attrs['readonly'] = True
+    form.fields['dia_reserva'].widget.attrs['readonly'] = True
+    form.fields['usuari'].widget.attrs['disabled'] = True
+
+
+
+    return render(
+            request,
+            'form.html',
+            {'form': form,
+             'head': u'Reservar aula',
+             },
     )
