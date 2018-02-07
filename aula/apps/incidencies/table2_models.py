@@ -202,7 +202,7 @@ class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
                                                 """,
         orderable=False,
     )
-
+  
     Tipus = tables.TemplateColumn(
         verbose_name=u" ",
         attrs={'th': {'width': '10%'}},
