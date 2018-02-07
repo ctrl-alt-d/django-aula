@@ -212,6 +212,7 @@ class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
                                         {% else %}
                                             Expulsió
                                         {% endif %}
+                                        {% if record.es_vigent %} <br>(vigent) {% endif %}
                                         """,
         orderable=False,
     )

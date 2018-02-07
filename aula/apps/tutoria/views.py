@@ -93,9 +93,7 @@ def incidenciesGestionadesPelTutor(request):
     if user != professor.getUser():
         return HttpResponseRedirect('/')
 
-        # Expulsions pendents:
-    expulsionsPendentsTramitar = []
-
+    # Expulsions pendents:
     expulsionsPendentsPerAcumulacio = []
 
     # alumne -> incidencies i expulsions
@@ -113,10 +111,11 @@ def incidenciesGestionadesPelTutor(request):
             es_vigent=True,
             tipus__es_informativa=False,
         )
-        calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
-        exempleIncidenciaPerAcumulacio = incidenciesAlumne.order_by('dia_incidencia').reverse()[0] \
-            if calTramitarExpulsioPerAcumulacio \
-            else None
+        calTramitarExpulsioPerAcumulacio = ( settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and
+                                             incidenciesAlumne.count() >= 3 )
+        exempleIncidenciaPerAcumulacio = ( incidenciesAlumne.order_by('dia_incidencia').reverse()[0]
+                                           if calTramitarExpulsioPerAcumulacio
+                                           else None )
         if calTramitarExpulsioPerAcumulacio and alumne_str not in alumnes:
             expulsionsPendentsPerAcumulacio.append(exempleIncidenciaPerAcumulacio)
 
@@ -129,29 +128,9 @@ def incidenciesGestionadesPelTutor(request):
             'expulsions': []})
         alumnes[alumne_str]['incidencies'].append(incidencia)
 
-    alumnesOrdenats = []
-    for alumneKey in sorted(alumnes.iterkeys()):
-        tupla = (alumneKey, alumnes[alumneKey],)
-        alumnesOrdenats.append(tupla)
+    alumnesOrdenats = [ (alumneKey, alumnes[alumneKey],) for alumneKey in sorted(alumnes.iterkeys()) ]
 
-    # table = Table2_IncidenciesMostrar(alumnesOrdenats)
-    hi_ha_expulsions_pendents_tramitar = True
-    table2 = Table2_ExpulsionsPendentsTramitar(expulsionsPendentsTramitar)
-    if len(expulsionsPendentsTramitar) == 0:
-        hi_ha_expulsions_pendents_tramitar = False
-
-    hi_ha_expulsions_daula = False
-    for expulsio in expulsionsPendentsTramitar:
-        if expulsio.es_expulsio_d_aula():
-            hi_ha_expulsions_daula = True
-            break
-
-    if not hi_ha_expulsions_daula:
-        table2.exclude = ('Assignatura',)
-
-    hi_ha_expulsions_per_acumulacio = True
-    if len(expulsionsPendentsPerAcumulacio) == 0:
-        hi_ha_expulsions_per_acumulacio = False
+    hi_ha_expulsions_per_acumulacio = bool(len(expulsionsPendentsPerAcumulacio))
 
     table3 = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
 
@@ -162,6 +141,8 @@ def incidenciesGestionadesPelTutor(request):
         incidenciesPerAlumne = alumne[1].setdefault('incidencies', default)
         expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
                                                                                  + incidenciesPerAlumne)
+        expulsionsIIncidenciesPerAlumne.columns.hide('Eliminar')
+
         diccionariTables[alumne[0] + ' - ' + unicode(alumne[1]['grup'])] = expulsionsIIncidenciesPerAlumne
 
     # RequestConfig(request).configure(table)
@@ -170,11 +151,7 @@ def incidenciesGestionadesPelTutor(request):
     return render(
         request,
         'incidenciesProfessional.html',
-        {'table': table2,
-         'alumnes': alumnesOrdenats,
-         'expulsionsPendentsTramitar': expulsionsPendentsTramitar,
-         'expulsionsPendentsTramitarBooelan': hi_ha_expulsions_pendents_tramitar,
-         'expulsionsPendentsPerAcumulacio': expulsionsPendentsPerAcumulacio,
+        {
          'expulsionsPendentsPerAcumulacioBooelan': hi_ha_expulsions_per_acumulacio,
          'table2': table3,
          'expulsionsIIncidenciesPerAlumne': diccionariTables,
