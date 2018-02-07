@@ -638,7 +638,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
     
-    dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
+    #dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
     try:
         incidencia = Incidencia.objects.get(pk =pk)
     except:
@@ -653,9 +653,15 @@ def posaExpulsioPerAcumulacio( request, pk ):
     professor = User2Professor(professional.getUser() ) 
     
     #seg---------
-    te_permis = (l4 or user.pk == professional.pk) 
+    te_permis = (l4
+                 or user.pk == professional.pk
+                 or user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()]
+                 )
     if not te_permis :
         raise Http404()
+
+    gestionada_pel_tutor = ( user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()]
+                             and user.pk != professional.pk )
     
     #si l'expulsió ja ha estat generada abans l'envio a l'expulsió
     #seria el cas que seguissin l'enllaç d'un Missatge:
@@ -668,7 +674,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
     incidencies = alumne.incidencia_set.filter(  
                                                es_vigent = True,
                                                tipus__es_informativa = False,
-                                               dia_incidencia__gte = dia_prescriu_incidencia,
+                                               #dia_incidencia__gte = dia_prescriu_incidencia,
                                                professional = professional
                                             ) 
     enTe3oMes = incidencies.count() >= 3
@@ -679,9 +685,10 @@ def posaExpulsioPerAcumulacio( request, pk ):
     for i in incidencies:
         str_incidencies +=  ( separador  + i.descripcio_incidencia + u'('+ unicode ( i.dia_incidencia) + u')')
         separador = u', '
-  
-    
-    motiu_san = u'''Expulsió per acumulació d'incidències: {0}'''.format( str_incidencies )
+
+    gestionada_pel_tutor_txt = u"\n(Incidència gestionada pel tutor)" if gestionada_pel_tutor else u""
+    motiu_san = u'''Expulsió per acumulació d'incidències: {0} {1}'''.format( str_incidencies, gestionada_pel_tutor_txt )
+
     
     url_next = '/incidencies/llistaIncidenciesProfessional/'  #todo: a la pantalla d''incidencies
     if enTe3oMes:
@@ -690,7 +697,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
             expulsio = Expulsio.objects.create(
                         estat = 'AS',
                         professor_recull = professor_recull,
-                        professor = professor,
+                        professor = professor_recull,
                         alumne = alumne,
                         dia_expulsio = incidencia.dia_incidencia,
                         franja_expulsio = incidencia.franja_incidencia,
@@ -753,12 +760,12 @@ def llistaIncidenciesProfessional( request ):
     alumnes = {}
     for incidencia in professional.incidencia_set.all():
         alumne_str = unicode ( incidencia.alumne)
-        dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
+        #dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
         incidenciesAlumne = incidencia.alumne.incidencia_set.filter(
                                                         professional = professional, 
                                                         es_vigent = True,
                                                         tipus__es_informativa = False,
-                                                        dia_incidencia__gte = dia_prescriu_incidencia
+                                                        #dia_incidencia__gte = dia_prescriu_incidencia
                                                                                    )
         calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
         exempleIncidenciaPerAcumulacio = incidenciesAlumne.order_by( 'dia_incidencia' ).reverse()[0] \

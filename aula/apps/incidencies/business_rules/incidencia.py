@@ -45,6 +45,11 @@ def incidencia_clean( instance ):
         instance.gestionada_pel_tutor = True
         instance.gestionada_pel_tutor_motiu = Incidencia.GESTIONADA_PEL_TUTOR_FORA_AULA
 
+    if instance.gestionada_pel_tutor and  instance.tipus != None and instance.tipus.es_informativa:
+        instance.gestionada_pel_tutor = False
+        instance.gestionada_pel_tutor_motiu = ""
+
+
     #
     # Regles:
     #

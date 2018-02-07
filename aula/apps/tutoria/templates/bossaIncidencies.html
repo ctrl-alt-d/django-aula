@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load django_tables2 %}
+{% load staticfiles %}
+{% load humanize %}
+{% load render_table from django_tables2 %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="{{STATIC_URL}}BOOTABLE2/css/estil.css" />
+{% endblock %}
+
+{% block content %}
+
+    {% block pretaula %}
+
+        {% if expulsionsPendentsPerAcumulacioBooelan %}
+
+            <div class="col-sm-8 col-xs-12">
+                  <span class="glyphicon glyphicon-exclamation-sign"> </span> <strong>Expulsions pendents per acumulació d'incidències</strong>
+            </div>
+            {% render_table table2 %}
+        {%  endif %}
+    {% endblock %}
+
+
+    <div class="col-sm-8 col-xs-12">
+        <span class="glyphicon glyphicon-exclamation-sign"> </span> <strong>Expulsions/Indicèndies per alumne</strong>
+    </div>
+
+    {% for alumne_grup,taula in expulsionsIIncidenciesPerAlumne.items %}
+        <div class="col-sm-8 col-xs-12">
+                  <span class="glyphicon glyphicon-user"> </span> <strong> {{ alumne_grup }} </strong>
+            </div>
+        {% render_table taula %}
+    {% endfor %}
+
+	{% block posttaula %} {% endblock %}
+
+{% endblock %}
+
+
