@@ -17,7 +17,7 @@ from aula.apps.aules.tables2_models import HorariAulaTable
 
 from aula.apps.aules.models import Aula, ReservaAula
 from aula.apps.presencia.models import Impartir
-from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.horaris.models import FranjaHoraria, Horari
 
 #forms
 from aula.apps.aules.forms import disponibilitatAulaForm, triaAulaSelect2Form, reservaAulaForm
@@ -103,16 +103,6 @@ def detallAulaReserves (request, year, month, day, pk):
             franja_maxima_dun_dia = franja
     reserves_dun_dia_un_aula = reserves_dun_dia.filter(aula__nom_aula=aula.nom_aula)
 
-    # imparticions_dun_dia = Impartir.objects.filter(dia_impartir=data)
-    # franjes_dun_dia = [imparticio.horari.hora for imparticio in imparticions_dun_dia ]
-    # franjes_uniques_dun_dia = []
-    # for franja in franjes_dun_dia:
-    #     if franja not in franjes_uniques_dun_dia:
-    #         franjes_uniques_dun_dia.append(franja)
-
-    #imparticions_dun_dia_un_aula = imparticions_dun_dia.filter(horari__nom_aula=aula.nom_aula)
-
-    #for franja in franjes_uniques_dun_dia:
     if franja_maxima_dun_dia:
         for franja in FranjaHoraria.objects.all():
             if franja.hora_fi <= franja_maxima_dun_dia.hora_fi:
@@ -120,13 +110,14 @@ def detallAulaReserves (request, year, month, day, pk):
                 nova_franja['franja'] = franja
                 hora_reservada = reserves_dun_dia_un_aula.filter(hora=franja)
                 nova_franja['reserva'] = hora_reservada[0] if hora_reservada else None
-                # hora_impartida = imparticions_dun_dia_un_aula.filter(horari__hora=franja)
-                # nova_franja['reserva'] = hora_impartida[0] if hora_impartida else None
+                horari = Horari.objects.filter(nom_aula = aula.nom_aula, hora = franja, dia_de_la_setmana = data.weekday()+1 )
+                assignatura = horari[0].assignatura if horari else None
+                grup = horari[0].grup if horari else None
+                professor = horari[0].professor if horari else None
+                nova_franja['assignatura'] = assignatura
+                nova_franja['grup'] = grup
+                nova_franja['professor'] = professor
                 reserves.append(nova_franja)
-
-
-
-
 
     table = HorariAulaTable(reserves)
     table.order_by = 'franja'

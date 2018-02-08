@@ -17,22 +17,17 @@ class HorariAulaTable(tables.Table):
                         {% if record.reserva %}
                             {% if not aula.horari_lliure %}
                                 <div class="progress-bar progress-bar-danger" style="width: 100%">
-                                {{record.reserva.horari.professor}}-{{record.reserva.horari.assignatura}}-{{record.reserva.horari.grup}}
-                                <span class="sr-only">100% completado (peligro)</span>
+                                {{record.professor}}-{{record.assignatura}}-{{record.grup}}
                               </div>                            
                             {% else %}
                               <div class="progress-bar progress-bar-success" style="width: 35%">
-                                <span class="sr-only">35% completado (exito)</span>
                               </div>
-
                               <div class="progress-bar progress-bar-danger" style="width: 65%">
-                              {{record.reserva.horari.professor}}-{{record.reserva.horari.assignatura}}-{{record.reserva.horari.grup}}
-                                <span class="sr-only">65% completado (peligro)</span>
+                              {{record.professor}}-{{record.assignatura}}-{{record.grup}}
                               </div>  
                             {% endif %}                       
                         {% else %}
                               <div class="progress-bar progress-bar-success" style="width: 100%">
-                                <span class="sr-only">100% completado (exito)</span>
                               </div>
                         {% endif %}
                         </div>
