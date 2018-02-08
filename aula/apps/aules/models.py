@@ -33,6 +33,6 @@ class ReservaAula(models.Model):
 
     class Meta:
         ordering = ['dia_reserva', 'hora_inici']
-        unique_together = [('aula', 'dia_reserva', 'hora_inici')]
+        #unique_together = [('aula', 'dia_reserva', 'hora_inici')]
     def __unicode__(self):
         return "{aula} {hora_inici}-{hora_fi} {usuari}".format(aula=self.aula, hora_inici=self.hora_inici, hora_fi=self.hora_fi, usuari = self.usuari)
