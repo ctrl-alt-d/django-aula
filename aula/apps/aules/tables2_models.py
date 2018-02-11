@@ -11,19 +11,27 @@ class HorariAulaTable(tables.Table):
     )
 
     Reserves = tables.TemplateColumn(
-        attrs={'th': {'width': '60%'}},
+        attrs={'th': {'width': '50%'}},
         template_code=u"""
+        
                         <div class="progress">
                         {% if record.reserva %}
-                            {% if not aula.horari_lliure %}
-                                <div class="progress-bar progress-bar-danger" style="width: 100%">
-                                {{record.professor}}-{{record.assignatura}}-{{record.grup}}
-                              </div>                            
+                            {% if not aula.horari_lliure %}         
+                              <div id="popoverData" rel="popover" data-placement="top" 
+                                    data-original-title="Motiu: {{record.reserva.motiu}}" 
+                                    data-content="Materia: {{record.assignatura}} - Grup: {{record.grup}}"
+                                    data-trigger="hover" class="progress-bar progress-bar-danger" 
+                                    role="progressbar"  style="width: 100%">
+                                <span>{{record.professor}}</span>       
+                              </div>                           
                             {% else %}
-                              <div class="progress-bar progress-bar-success" style="width: 35%">
-                              </div>
-                              <div class="progress-bar progress-bar-danger" style="width: 65%">
-                              {{record.professor}}-{{record.assignatura}}-{{record.grup}}
+                              <div class="progress-bar progress-bar-success" style="width: 50%"></div>
+                              <div id="popoverData" rel="popover" data-placement="top" 
+                              data-original-title="Motiu: {{record.reserva.motiu}}" 
+                              data-content={{record.assignatura}}-{{record.grup}} 
+                              data-trigger="hover" class="progress-bar progress-bar-danger" 
+                              role="progressbar"  style="width: 50%">
+                                <span>{{record.professor}}</span>       
                               </div>  
                             {% endif %}                       
                         {% else %}
@@ -31,6 +39,7 @@ class HorariAulaTable(tables.Table):
                               </div>
                         {% endif %}
                         </div>
+        
                         """,
         orderable=False,
     )
