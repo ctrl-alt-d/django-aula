@@ -14,92 +14,24 @@ def impartir_pre_delete( sender, instance, **kwargs):
     
 def impartir_pre_save(sender, instance,  **kwargs):
 
-    #bussiness rule: una impartició afegirà una reserva d'aula
+    instance.clean()
 
-    #Determinar quina és la franja horària mínima i màxima
-    #del dia de la impartició
-    franjes = FranjaHoraria.objects.all()
-    franja_baixa = franjes.first()
-    franja_alta = franjes.last()
-    franjes_minimes = {'0': None, '1': None, '2': None, '3': None, '4': None, '5': None, '6': None, }
-    franjes_maximes = {'0': None, '1': None, '2': None, '3': None, '4': None, '5': None, '6': None, }
-    #imparticions = Impartir.objects.all()
-    #for imparticio in imparticions:
-    #    print imparticio.horari.dia_de_la_setmana, imparticio.horari.dia_de_la_setmana.n_dia_ca
-    if instance.horari.dia_de_la_setmana.n_dia_ca == 0:
-            if franjes_minimes['0'] == None or instance.horari.hora.hora_inici < franjes_minimes['0']:
-                franjes_minimes['0'] = instance.horari.hora.hora_inici
-            if franjes_maximes['0'] == None or instance.horari.hora.hora_fi > franjes_maximes['0']:
-                franjes_maximes['0'] = instance.horari.hora.hora_fi
-    elif instance.horari.dia_de_la_setmana.n_dia_ca == 1:
-            if franjes_minimes['1'] == None or instance.horari.hora.hora_inici < franjes_minimes['1']:
-                franjes_minimes['1'] = instance.horari.hora.hora_inici
-            if franjes_maximes['1'] == None or instance.horari.hora.hora_fi > franjes_maximes['1']:
-                franjes_maximes['1'] = instance.horari.hora.hora_fi
-    elif instance.horari.dia_de_la_setmana.n_dia_ca == 2:
-            if franjes_minimes['2'] == None or instance.horari.hora.hora_inici < franjes_minimes['2']:
-                franjes_minimes['2'] = instance.horari.hora.hora_inici
-            if franjes_maximes['2'] == None or instance.horari.hora.hora_fi > franjes_maximes['2']:
-                franjes_maximes['2'] = instance.horari.hora.hora_fi
-    elif instance.horari.dia_de_la_setmana.n_dia_ca == 3:
-            if franjes_minimes['3'] == None or instance.horari.hora.hora_inici < franjes_minimes['3']:
-                franjes_minimes['3'] = instance.horari.hora.hora_inici
-            if franjes_maximes['3'] == None or instance.horari.hora.hora_fi > franjes_maximes['3']:
-                franjes_maximes['3'] = instance.horari.hora.hora_fi
-    elif instance.horari.dia_de_la_setmana.n_dia_ca == 4:
-            if franjes_minimes['4'] == None or instance.horari.hora.hora_inici < franjes_minimes['4']:
-                franjes_minimes['4'] = instance.horari.hora.hora_inici
-            if franjes_maximes['4'] == None or instance.horari.hora.hora_fi > franjes_maximes['4']:
-                franjes_maximes['4'] = instance.horari.hora.hora_fi
-    elif instance.horari.dia_de_la_setmana.n_dia_ca == 5:
-            if franjes_minimes['5'] == None or instance.horari.hora.hora_inici < franjes_minimes['5']:
-                franjes_minimes['5'] = instance.horari.hora.hora_inici
-            if franjes_maximes['5'] == None or instance.horari.hora.hora_fi > franjes_maximes['5']:
-                franjes_maximes['5'] = instance.horari.hora.hora_fi
-    elif instance.horari.dia_de_la_setmana.n_dia_ca == 6:
-            if franjes_minimes['6'] == None or instance.horari.hora.hora_inici < franjes_minimes['6']:
-                franjes_minimes['6'] = instance.horari.hora.hora_inici
-            if franjes_maximes['6'] == None or instance.horari.hora.hora_fi > franjes_maximes['6']:
-                franjes_maximes['6'] = instance.horari.hora.hora_fi
-    #Assignar disponibilitats per dia a partir de franjes mínima i màxima obtingudes
-    disponibilitats = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [],6: []}  #ve donada per la franja mínima i màxima de cada dia de la setmana
-    disponibilitats['0'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['0']).exclude(
-        hora_fi__gt=franjes_maximes['0']) if franjes_minimes['0'] != None else None
-    disponibilitats['1'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['1']).exclude(
-        hora_fi__gt=franjes_maximes['1']) if franjes_minimes['1'] != None else None
-    disponibilitats['2'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['2']).exclude(
-        hora_fi__gt=franjes_maximes['2']) if franjes_minimes['2'] != None else None
-    disponibilitats['3'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['3']).exclude(
-        hora_fi__gt=franjes_maximes['3']) if franjes_minimes['3'] != None else None
-    disponibilitats['4'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['4']).exclude(
-        hora_fi__gt=franjes_maximes['4']) if franjes_minimes['4'] != None else None
-    disponibilitats['5'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['5']).exclude(
-        hora_fi__gt=franjes_maximes['5']) if franjes_minimes['5'] != None else None
-    disponibilitats['6'] = FranjaHoraria.objects.filter(hora_inici__gte=franjes_minimes['6']).exclude(
-        hora_fi__gt=franjes_maximes['6']) if franjes_minimes['6'] != None else None
-    #print "Creada disponibilitat per dies de la setmana"
-    noms_aules = []
-    #for imparticio in imparticions:
-    #si la impartició té assignada nom d'aula es crea la reserva
-    if instance.horari.aula.nom_aula:
-            nomaula = instance.horari.aula.nom_aula
-            # if nomaula not in noms_aules:
-            #     disponibilitat = disponibilitats[imparticio.horari.dia_de_la_setmana.n_dia_ca]
-            #
-            #     novaaula = Aula(nom_aula=nomaula,
-            #                     descripcio_aula="Aula : " + nomaula,
-            #                     horari_lliure=False,
-            #                     reservable=True)
-            #     novaaula.save()
-            #     novaaula.disponibilitat_horaria = disponibilitat
-            #     novaaula.save()
-            #     noms_aules.append(nomaula)
-            #     print 'Aula creada'
-            #else:
-            #print 'Aula ja existeix, afegeix reserva'
-            aula = Aula.objects.get(nom_aula=nomaula)
-            #    print novaaula.nom_aula, imparticio.dia_impartir, imparticio.horari.hora.hora_inici
-            novareserva = ReservaAula(aula=aula,
+    reserves_automatiques = instance.reserva_set.filter( impartir__isnull = False  )
+    if (reserves_automatiques.count() == 1):
+        reserves_automatiques.all().delete()
+
+
+def impartir_post_save(sender, instance, created, **kwargs):
+
+    if instance.horari.aula is not None:
+        reserves = ReservaAula.objects.filter( aula=instance.horari.aula,
+                                               dia_reserva=instance.dia_impartir,
+                                               hora=instance.horari.hora )
+        reserves_automatiques = list( reserves.filter(impartir__isnull=False) )
+        if bool(reserves_automatiques):
+            reserva = reserves_automatiques[0]
+        else:
+            novareserva = ReservaAula(aula=instance.horari.aula,
                                       dia_reserva=instance.dia_impartir,
                                       hora_inici=instance.horari.hora.hora_inici,
                                       hora_fi=instance.horari.hora.hora_fi,
@@ -107,14 +39,15 @@ def impartir_pre_save(sender, instance,  **kwargs):
                                       usuari=instance.horari.professor,
                                       motiu="Docencia habitual")
             novareserva.save()
+            reserva = novareserva
 
-    instance.clean()
+        instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva)
 
+        reserves_manuals = list( reserves.filter( impartir__isnull = True ) )
+        for reserva in reserves_manuals:
+            # TODO: enviar missatge a la victima Missatge( ,,,
+            reserva.delete()
 
-
-
-
-def impartir_post_save(sender, instance, created, **kwargs):
     #bussiness rule:
     #si un professor passa llista, també passa llista de 
     #totes les imparticions que no tinguin alumnes.
