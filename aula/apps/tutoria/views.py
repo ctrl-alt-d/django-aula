@@ -74,15 +74,10 @@ from django.conf import settings
 def incidenciesGestionadesPelTutor(request):
 
 
-    #TODO: cal no poder esborrar incidències, no veure on s'ha fet la incidència, ...
-    #TODO: cal simplificar: no expulsions pendents de tramitar, ...
-    #TODO: comprovar regles de negoci, que un tutor pot transformar incidències d'altres professors en expulsió seva.
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
     professor = get_object_or_404(Professor, pk=user.pk)
-    tutor = get_object_or_404(Tutor, professor = professor  )
 
     alumnes_grup = Q( grup__tutor__professor = professor )
     alumnes_tutor_individualitzat = Q( tutorindividualitzat__professor = professor )
