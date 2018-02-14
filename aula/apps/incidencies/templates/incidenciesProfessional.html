@@ -17,7 +17,7 @@
             <div class="col-sm-8 col-xs-12">
                   <span class="glyphicon glyphicon-exclamation-sign"> </span> <strong>Expulsions pendents de tramitació</strong>
             </div>
-            {% render_table table %}
+            {% render_table expulsionsPendentsTramitar %}
         {%  endif %}
 
         {% if expulsionsPendentsPerAcumulacioBooelan %}
@@ -25,7 +25,7 @@
             <div class="col-sm-8 col-xs-12">
                   <span class="glyphicon glyphicon-exclamation-sign"> </span> <strong>Expulsions pendents per acumulació d'incidències</strong>
             </div>
-            {% render_table table2 %}
+            {% render_table expulsionsPendentsPerAcumulacio %}
         {%  endif %}
     {% endblock %}
 
