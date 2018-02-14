@@ -375,6 +375,11 @@ def passaLlista(request, pk):
                 form.bcolor = '#66FFCC'
                 form.avis = 'info'
 
+    els_meus_tutorats = ",".join( unicode( i.pk )
+                                  for i in impartir.controlassistencia_set.order_by()
+                                  if User2Professor(user) in  i.alumne.tutorsDeLAlumne()
+                                  )
+
     return render(
         request,
         "passaLlista.html",
@@ -386,7 +391,8 @@ def passaLlista(request, pk):
          "head": head,
          "info": info,
          "feelLuckyEnabled": True,
-         "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA
+         "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA,
+         "els_meus_tutorats": els_meus_tutorats,
          },
         )
 
