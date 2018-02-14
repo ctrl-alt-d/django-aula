@@ -131,9 +131,9 @@ def calcula_menu( user , path ):
                       ),                                                            
 
                       ("Incidències", 'aula__incidencies__blanc', pr, ( u'!', 'info' ) if teExpulsionsSenseTramitar else None,
-                          ( 
+                          (
                             ("Incidències", 'aula__incidencies__les_meves_incidencies', pr, ( u'!', 'info' ) if teExpulsionsSenseTramitar else None),
-                            ("Nova Incidència", 'aula__incidencies__posa_incidencia', pr, None ),
+                            ("Nova Incidència (fora d'aula)", 'aula__incidencies__posa_incidencia', pr, None ),
                             ("Recull Expulsió", 'aula__incidencies__posa_expulsio', pr, None),
                           ),                        
                       ),                                      

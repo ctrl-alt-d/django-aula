@@ -749,11 +749,9 @@ def llistaIncidenciesProfessional( request ):
         return HttpResponseRedirect('/')   
 
     #Expulsions pendents:
-    expulsionsPendentsTramitar = []
-    for expulsio in professor.expulsio_set.exclude( tramitacio_finalitzada = True ):
-        expulsionsPendentsTramitar.append( expulsio  )
-        
-    
+    expulsionsPendentsTramitar = [ expulsio
+                                   for expulsio in professor.expulsio_set.exclude( tramitacio_finalitzada = True )]
+
     expulsionsPendentsPerAcumulacio = []
     
     #alumne -> incidencies i expulsions
@@ -785,60 +783,47 @@ def llistaIncidenciesProfessional( request ):
 
     for expulsio in professor.expulsio_set.all():
         alumne_str = unicode ( expulsio.alumne)
-        alumnes.setdefault( alumne_str, { 'alumne': expulsio.alumne, 'grup': expulsio.alumne.grup, 'incidencies': [], 'expulsions': []}  )
+        alumnes.setdefault( alumne_str, { 'alumne': expulsio.alumne,
+                                          'grup': expulsio.alumne.grup,
+                                          'incidencies': [],
+                                          'expulsions': []}  )
         alumnes[alumne_str]['expulsions'].append( expulsio  )
 
-    alumnesOrdenats = []
-    for alumneKey in sorted(alumnes.iterkeys()):
-        tupla = (alumneKey, alumnes[alumneKey], )
-        alumnesOrdenats.append( tupla  )
+    alumnesOrdenats = [(alumneKey, alumnes[alumneKey], )  for alumneKey in  sorted(alumnes.iterkeys()) ]
 
     #table = Table2_IncidenciesMostrar(alumnesOrdenats)
     hi_ha_expulsions_pendents_tramitar=True
-    table2 = Table2_ExpulsionsPendentsTramitar(expulsionsPendentsTramitar)
-    if len(expulsionsPendentsTramitar)==0:
-        hi_ha_expulsions_pendents_tramitar=False
+    table2_expulsionsPendentsTramitar = Table2_ExpulsionsPendentsTramitar(expulsionsPendentsTramitar)
+    hi_ha_expulsions_pendents_tramitar = len(expulsionsPendentsTramitar)>0
 
-    hi_ha_expulsions_daula=False
-    for expulsio in expulsionsPendentsTramitar:
-        if expulsio.es_expulsio_d_aula():
-            hi_ha_expulsions_daula=True
-            break
+    hi_ha_expulsions_daula=any( expulsio.es_expulsio_d_aula() for expulsio in expulsionsPendentsTramitar )
 
     if not hi_ha_expulsions_daula:
-        table2.exclude = ('Assignatura', )
+        table2_expulsionsPendentsTramitar.exclude = ('Assignatura', )
 
-    hi_ha_expulsions_per_acumulacio = True
-    if len(expulsionsPendentsPerAcumulacio)==0:
-        hi_ha_expulsions_per_acumulacio=False
+    hi_ha_expulsions_per_acumulacio = len(expulsionsPendentsPerAcumulacio)>0
 
-    table3 = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
+    table2_expulsionsPendentsPerAcumulacio = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
 
     diccionariTables = dict()
-    for alumne in alumnesOrdenats:
-            expulsionsPerAlumne = alumne[1]['expulsions']
-            default=[]
-            incidenciesPerAlumne = alumne[1].setdefault('incidencies',default)
+    for tupla_alumne in alumnesOrdenats:
+            expulsionsPerAlumne = tupla_alumne[1]['expulsions']
+            incidenciesPerAlumne = tupla_alumne[1]['incidencies']
             expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
                                                                                      +incidenciesPerAlumne)
-            diccionariTables[alumne[0]+' - ' + unicode (alumne[1]['grup'])]=expulsionsIIncidenciesPerAlumne
+            diccionariTables[tupla_alumne[0]+' - ' + unicode (tupla_alumne[1]['grup'])]=expulsionsIIncidenciesPerAlumne
 
 
-
-
-    #RequestConfig(request).configure(table)
-    #RequestConfig(request).configure(table2)
 
     return render(
                 request,
                 'incidenciesProfessional.html',
-                {'table': table2,
+                {
                  'alumnes': alumnesOrdenats,
-                 'expulsionsPendentsTramitar': expulsionsPendentsTramitar,
+                 'expulsionsPendentsTramitar': table2_expulsionsPendentsTramitar,
                  'expulsionsPendentsTramitarBooelan': hi_ha_expulsions_pendents_tramitar,
-                 'expulsionsPendentsPerAcumulacio': expulsionsPendentsPerAcumulacio,
                  'expulsionsPendentsPerAcumulacioBooelan': hi_ha_expulsions_per_acumulacio,
-                 'table2': table3,
+                 'expulsionsPendentsPerAcumulacio': table2_expulsionsPendentsPerAcumulacio,
                  'expulsionsIIncidenciesPerAlumne': diccionariTables,
                 },
                 )
