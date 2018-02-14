@@ -50,10 +50,7 @@ def consultaAula(request):
             return HttpResponseRedirect(next_url.format(year, month, date, aula.pk))
 
 
-
-
     else:
-
         formDisponibilitatAula = disponibilitatAulaForm()
         formAula = triaAulaSelect2Form
         formset.append(formAula)
@@ -110,10 +107,11 @@ def detallAulaReserves (request, year, month, day, pk):
                 nova_franja['franja'] = franja
                 hora_reservada = reserves_dun_dia_un_aula.filter(hora=franja)
                 nova_franja['reserva'] = hora_reservada[0] if hora_reservada else None
-                horari = Horari.objects.filter(nom_aula = aula.nom_aula, hora = franja, dia_de_la_setmana = data.weekday()+1 )
-                assignatura = horari[0].assignatura if horari else None
-                grup = horari[0].grup if horari else None
-                professor = horari[0].professor if horari else None
+                horari = Horari.objects.filter(aula__nom_aula = aula.nom_aula, hora = franja, dia_de_la_setmana = data.weekday()+1 )
+                assignatura = horari[0].assignatura if horari else ""
+                grup = horari[0].grup if horari else ""
+                reservaaula = ReservaAula.objects.filter (aula__nom_aula = aula.nom_aula, hora=franja, dia_reserva=data)
+                professor = horari[0].professor if horari else reservaaula[0].usuari.first_name+" " +reservaaula[0].usuari.last_name if reservaaula else ""
                 nova_franja['assignatura'] = assignatura
                 nova_franja['grup'] = grup
                 nova_franja['professor'] = professor
@@ -178,12 +176,12 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
         form = reservaAulaForm(instance=novaReserva)
 
 
-    form.fields['aula'].widget.attrs['disabled'] = True
-    form.fields['hora'].widget.attrs['disabled'] = True
+    form.fields['aula'].widget.attrs['readonly'] = True
+    form.fields['hora'].widget.attrs['readonly'] = True
     form.fields['hora_inici'].widget.attrs['readonly'] = True
     form.fields['hora_fi'].widget.attrs['readonly'] = True
     form.fields['dia_reserva'].widget.attrs['readonly'] = True
-    form.fields['usuari'].widget.attrs['disabled'] = True
+    form.fields['usuari'].widget.attrs['readonly'] = True
 
 
 
