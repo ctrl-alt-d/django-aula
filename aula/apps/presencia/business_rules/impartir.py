@@ -16,9 +16,9 @@ def impartir_pre_save(sender, instance,  **kwargs):
 
     instance.clean()
 
-    reserves_automatiques = instance.reserva_set.filter( impartir__isnull = False  )
-    if (reserves_automatiques.count() == 1):
-        reserves_automatiques.all().delete()
+    reserva_compartida = (instance.reserva is not None and instance.reserva.impartir_set.count() > 1 )
+    if (not reserva_compartida and instance.reserva is not None ):
+        instance.reserva.delete()
 
 
 def impartir_post_save(sender, instance, created, **kwargs):
@@ -42,7 +42,8 @@ def impartir_post_save(sender, instance, created, **kwargs):
             reserva = novareserva
 
         instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva)
-
+        instance.refresh_from_db()
+        
         reserves_manuals = list( reserves.filter( impartir__isnull = True ) )
         for reserva in reserves_manuals:
             # TODO: enviar missatge a la victima Missatge( ,,,
