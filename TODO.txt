@@ -1,6 +1,6 @@
 Instal·lació: 
 
-
+ 
 0) [Opcional] Crear virtualenv
 1) pip install -r requirements.txt
 2) Importar fixtures: ./scripts/fixtures.sh
