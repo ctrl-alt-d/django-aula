@@ -288,7 +288,7 @@ def passaLlista(request, pk):
         formset.append(form0)
         for control_a in impartir.controlassistencia_set.order_by('alumne'):  # .order_by( 'alumne__grup', 'alumne' )
             control_a.currentUser = user
-            form = helper_tuneja_item_nohadeseralaula( request, control_a, control_a )
+            form = helper_tuneja_item_nohadeseralaula( request, control_a )
 
             control_a.professor = User2Professor(user)
             control_a.credentials = credentials
@@ -303,13 +303,18 @@ def passaLlista(request, pk):
                 except ValidationError, e:
                     totBe = False
                     # Com que no és un formulari de model cal tractar a mà les incidències del save:
+                    form = helper_tuneja_item_nohadeseralaula(request, control_a,
+                                                              te_error=True)
                     for _, v in e.message_dict.items():
                         form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
+
             else:
                 totBe = False
                 errors_formulari = form._errors
                 # torno a posar el valor que hi havia ( per si el tutor l'ha justificat )
-                form = helper_tuneja_item_nohadeseralaula(request, control_a, ControlAssistencia.objects.get(id=control_a.pk))
+                form = helper_tuneja_item_nohadeseralaula(request,
+                                                          control_a,
+                                                          te_error=True)
                 form._errors = errors_formulari
 
             formset.append(form)
@@ -349,7 +354,7 @@ def passaLlista(request, pk):
 
     else:
         for control_a in impartir.controlassistencia_set.order_by('alumne'):
-            form = helper_tuneja_item_nohadeseralaula(request, control_a,control_a)
+            form = helper_tuneja_item_nohadeseralaula(request, control_a)
             formset.append(form)
 
     for form in formset:
@@ -375,9 +380,13 @@ def passaLlista(request, pk):
                 form.bcolor = '#66FFCC'
                 form.avis = 'info'
 
+
+    el_puc_justificar = lambda i: ( not settings.CUSTOM_NOMES_TUTOR_POT_JUSTIFICAR or
+                                    User2Professor(user) in  i.alumne.tutorsDeLAlumne() )
+
     els_meus_tutorats = ",".join( unicode( i.pk )
                                   for i in impartir.controlassistencia_set.order_by()
-                                  if User2Professor(user) in  i.alumne.tutorsDeLAlumne()
+                                  if el_puc_justificar(i)
                                   )
 
     return render(
@@ -397,7 +406,7 @@ def passaLlista(request, pk):
         )
 
 
-def helper_tuneja_item_nohadeseralaula( request, control_a, instance ):
+def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
 
     NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
     q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.EXPULSAT_DEL_CENTRE)
@@ -435,15 +444,19 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, instance ):
                                       )
 
     else:
-        if request.method == "POST":
+        if request.method == "POST" and not te_error:
             form = ControlAssistenciaForm(
                 request.POST,
                 prefix=str(control_a.pk),
-                instance=instance)
+                instance=control_a)
+        elif request.method == "POST" and te_error:
+            form = ControlAssistenciaForm(
+                prefix=str(control_a.pk),
+                instance=ControlAssistencia.objects.get(pk = control_a.pk))
         else:
             form = ControlAssistenciaForm(
                 prefix=str(control_a.pk),
-                instance=instance)
+                instance=control_a)
 
         form.fields['estat'].label = unicode(control_a.alumne)
         avui_es_anivesari = (control_a.alumne.data_neixement.month == control_a.impartir.dia_impartir.month and
@@ -1110,12 +1123,10 @@ def copiarAlumnesLlista(request, pk):
                     #Gravar la llista d'alumnes al destí.
                     if eliminarAlumnes:
                         #Copiem tots els alumnes perque els esborrarem tots abans.
-                        print "DEBUG: Alumne que cal copiar:" + str(ca.alumne)
                         alumnesAAfegir.append(ca.alumne)
                     else:
                         #Copiem només els alumnes que ens interessen.
                         if ca.alumne.id not in alumnesDesti:
-                            print "DEBUG: Alumne que cal copiar:" + str(ca.alumne)
                             alumnesAAfegir.append(ca.alumne)
 
                 
@@ -1129,11 +1140,9 @@ def copiarAlumnesLlista(request, pk):
                     treu.usuari = user
                     treu.start()
 
-                    print "inici join"
                     #Espera el final de l'eliminació.
                     treu.join()
-                    print "fi join"
-                    
+
                     #LOGGING
                     Accio.objects.create( 
                             tipus = 'LL',
