@@ -42,7 +42,21 @@
       }
 */
 
+      function tutor() {
+          var els_meus_tutorats = [{{ els_meus_tutorats }}];
+          {% for f in formset %}
+              if (els_meus_tutorats.indexOf({{f.prefix}}) == -1) {
+                  $("#label_id_{{f.prefix}}-estat_2").addClass("disabled");
+              }
+          {%  endfor %}
+      }
+
+      $(document).ready(function(){
+          tutor();
+        });
+
       $(document).ready(
+
       function($){
           /* Posar tot a ... */
           $("#totpresent, #totpresent2").click(function(){

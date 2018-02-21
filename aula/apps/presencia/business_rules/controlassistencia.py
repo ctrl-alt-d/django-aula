@@ -44,6 +44,8 @@ def controlAssistencia_clean( instance ):
                                     (Falta {0} per poder-ho fer )'''.format(
                                       timesince_filter( dt.datetime.now(), instance.impartir.diaHora() - dt.timedelta( days = 15) ) ) )
 
+
+
     #Una falta justificada pel tutor no pot ser matxacada per un professor
     socTutor = hasattr(instance, 'professor') and instance.professor and instance.professor in tutors    
     justificadaDB = instance.instanceDB and instance.instanceDB.estat and instance.instanceDB.estat.codi_estat.upper() == 'J'
@@ -55,7 +57,19 @@ def controlAssistencia_clean( instance ):
                                   La falta d'en {0} no es pot modificar. El tutor Sr(a) {1} ha justificat la falta.  
                                                             '''.format(
                                        instance.alumne, instance.instanceDB.professor ) )
-        
+
+
+    #Només el tutor pot justificar
+    if ( settings.CUSTOM_NOMES_TUTOR_POT_JUSTIFICAR and
+         justificadaAra and
+         not justificadaDB and
+         not socTutor):
+        errors.setdefault(NON_FIELD_ERRORS, []).append( u'''
+                                  Només el tutor pot justificar faltes.  
+                                                            '''.format(
+                                       instance.alumne, instance.instanceDB.professor ) )
+
+
     #No es poden justificar faltes si s'ha enviat una carta.
     if not justificadaDB and justificadaAra:
         data_control_mes_3 = instance.impartir.dia_impartir + timedelta( days = 3 )
