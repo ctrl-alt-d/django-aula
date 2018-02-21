@@ -127,18 +127,17 @@ def incidenciesGestionadesPelTutor(request):
 
     hi_ha_expulsions_per_acumulacio = bool(len(expulsionsPendentsPerAcumulacio))
 
-    table3 = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
+    table2_expulsionsPendentsPerAcumulacio = Table2_ExpulsionsPendentsPerAcumulacio(expulsionsPendentsPerAcumulacio)
 
     diccionariTables = dict()
-    for alumne in alumnesOrdenats:
-        expulsionsPerAlumne = alumne[1]['expulsions']
-        default = []
-        incidenciesPerAlumne = alumne[1].setdefault('incidencies', default)
+    for alumne_key, alumne_dades in alumnesOrdenats:
+        expulsionsPerAlumne = alumne_dades.get('expulsions',[])
+        incidenciesPerAlumne = alumne_dades.get('incidencies', [])
         expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
                                                                                  + incidenciesPerAlumne)
         expulsionsIIncidenciesPerAlumne.columns.hide('Eliminar')
 
-        diccionariTables[alumne[0] + ' - ' + unicode(alumne[1]['grup'])] = expulsionsIIncidenciesPerAlumne
+        diccionariTables[alumne_key + ' - ' + unicode(alumne_dades['grup'])] = expulsionsIIncidenciesPerAlumne
 
     # RequestConfig(request).configure(table)
     # RequestConfig(request).configure(table2)
@@ -148,7 +147,7 @@ def incidenciesGestionadesPelTutor(request):
         'incidenciesProfessional.html',
         {
          'expulsionsPendentsPerAcumulacioBooelan': hi_ha_expulsions_per_acumulacio,
-         'table2': table3,
+         'expulsionsPendentsPerAcumulacio': table2_expulsionsPendentsPerAcumulacio,
          'expulsionsIIncidenciesPerAlumne': diccionariTables,
          },
     )
