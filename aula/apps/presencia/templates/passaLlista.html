@@ -48,8 +48,8 @@
               {%  if f.prefix  %}
                   if (els_meus_tutorats.indexOf({{f.prefix}}) == -1) {
                       $("#label_id_{{f.prefix}}-estat_2").addClass("disabled");
-              {%  if f.prefix  %}
               }
+              {%  endif  %}
           {%  endfor %}
       }
 
