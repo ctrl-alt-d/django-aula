@@ -144,7 +144,8 @@ class bootStrapButtonSelect(Widget):
         else:
             label_selected_html = ''
             input_selected_html = ''
-        return u'<label class="btn btn-default btn%s%s" id="label_%s_%s"><input type="radio" class="rad rad%s" name="%s" value="%s" id="rad_%s_%s" %s />%s</label>' % (
+        return u"""<label class="btn btn-default btn%s%s" id="label_%s_%s">
+                   <input type="radio" class="rad rad%s" name="%s" value="%s" id="rad_%s_%s" %s />%s</label>""" % (
             conditional_escape(force_unicode(option_label)),
             label_selected_html, id_, num_id,
             conditional_escape(force_unicode(option_label)),
