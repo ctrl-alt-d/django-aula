@@ -66,7 +66,7 @@ from django.template.context import Context
 from django.http.response import HttpResponse
 from django.db.models.deletion import ProtectedError
 from django.apps import apps
-
+from django.db.models import Q
 
 
 #vistes -----------------------------------------------------------------------------------
@@ -671,12 +671,20 @@ def posaExpulsioPerAcumulacio( request, pk ):
         return HttpResponseRedirect( url_next )
     
     alumne = incidencia.alumne
-    incidencies = alumne.incidencia_set.filter(  
+
+    q_tutor_o_professional = Q()
+    if gestionada_pel_tutor:
+        q_tutor_o_professional = Q(professional = professional)
+    else:
+        q_tutor_o_professional = Q(professional = professional)
+
+    incidencies = ( alumne
+                        .incidencia_set
+                        .filter(
                                                es_vigent = True,
-                                               tipus__es_informativa = False,
-                                               #dia_incidencia__gte = dia_prescriu_incidencia,
-                                               professional = professional
-                                            ) 
+                                               tipus__es_informativa = False,)
+                        .filter(q_tutor_o_professional )
+                    )
     enTe3oMes = incidencies.count() >= 3
     professor_recull = User2Professor(user) 
     
