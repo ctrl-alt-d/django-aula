@@ -16,7 +16,6 @@ from aula.apps.aules.tables2_models import HorariAulaTable
 #models
 
 from aula.apps.aules.models import Aula, ReservaAula
-from aula.apps.presencia.models import Impartir
 from aula.apps.horaris.models import FranjaHoraria, Horari
 
 #forms
@@ -163,15 +162,14 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
                               dia_reserva=data,
                               usuari=user)
     if request.method=='POST':
-        missatge = u"Reserva realitzada"
-        messages.info(request, missatge)
         form = reservaAulaForm(request.POST, instance=novaReserva)
         if form.is_valid():
-            print "formulario válido"
             form.save()
-            return HttpResponseRedirect(r'/aules/consultaAula/')
-
-
+            missatge = u"Reserva realitzada correctament"
+            return HttpResponseRedirect(r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year,month,day,pk))
+        else:
+            missatge = u"Ho sentim, s'ha detectat un problema amb la reserva"
+        messages.info(request, missatge)
     else:
         form = reservaAulaForm(instance=novaReserva)
 

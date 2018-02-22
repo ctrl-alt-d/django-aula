@@ -37,37 +37,3 @@ class reservaAulaForm(ModelForm):
          widgets = {
              'motiu': forms.Textarea,
          }
-         #exclude = ['usuari']
-
-# class reservaAulaForm(forms.Form):
-#
-#     #aula = forms.CharField(max_length=100)
-#
-#
-#     aula = forms.ModelChoiceField(queryset=Aula.objects.all(),
-#                                    required=False,
-#                                    help_text=u"""Aula a reservar""")
-#     #
-#     # dia = forms.DateField(datetime)
-#     #
-#     # hora = forms.ModelChoiceField(queryset=None,
-#     #                               initial=None,
-#     #                               empty_label=None)
-#     #
-#     #
-#     motiu = forms.CharField(max_length=250, required=False,
-#                             widget=forms.Textarea,
-#                             help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de families")
-#
-#
-#     #def __init__(self, *args, **kwargs):
-#         #self.queryset = kwargs.pop('queryset', None)
-#         #self.etiqueta = kwargs.pop('etiqueta', None)
-#         #super(reservaAulaForm, self).__init__(*args, **kwargs)
-#         #self.fields['alumnes'].label = self.etiqueta
-#         #self.aula = self.aula
-#         #self.totesLesFrases = FrassesIncidenciaAula.objects.all()
-#         #incidencies = TipusIncidencia.objects
-#         #self.fields['tipus'].queryset = incidencies.all()
-#         #self.fields['tipus'].initial = incidencies.all()[0] if incidencies.exists() else None
-
