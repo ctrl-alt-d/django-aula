@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from django.conf import settings
 #templates
+from django.forms.utils import ErrorDict
 from django.template import RequestContext
 
 #formularis
@@ -305,6 +306,8 @@ def passaLlista(request, pk):
                     # Com que no és un formulari de model cal tractar a mà les incidències del save:
                     form = helper_tuneja_item_nohadeseralaula(request, control_a,
                                                               te_error=True)
+                    if form._errors is None:
+                        form._errors = ErrorDict()                  #en alguns casos arriba sense _errors IDNW
                     for _, v in e.message_dict.items():
                         form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
 
