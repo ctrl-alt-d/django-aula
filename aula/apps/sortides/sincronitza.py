@@ -12,18 +12,14 @@ def sincronitza():
         instance.estat_sincronitzacio = Sortida.SINCRONITZANT_SE
         instance.save()
         
-        # #a la llista 'alumnesQueNoVenen' no poden haver altres alumnes dels que apareixen a 'alumnesQueVenen'
-        # alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
-        # alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
-        # alumnesJustificats = set( [i.pk for i in instance.alumnes_justificacio.all() ] )
-        #
-        # #es fa save controlAssistència per marcar com a no ha de ser present
-        # alumnes_fora_aula = ( ( alumnesQueVenen  - alumnesQueNoVenen ) | alumnesJustificats )  or []
-        # NoHaDeSerALAula = apps.get_model('presencia','NoHaDeSerALAula')
-        # NoHaDeSerALAula.objects.filter( sortida = instance  ).filter( control__alumne__in =  alumnes_fora_aula ).delete()
+        #a la llista 'alumnesQueNoVenen' no poden haver altres alumnes dels que apareixen a 'alumnesQueVenen'
+        alumnesQueVenen = set( [i.pk for i in instance.alumnes_convocats.all() ] )
+        alumnesQueNoVenen = set( [i.pk for i in instance.alumnes_que_no_vindran.all() ] )
+        alumnesJustificats = set( [i.pk for i in instance.alumnes_justificacio.all() ] )
+        alumnes_fora_aula = ( ( alumnesQueVenen  - alumnesQueNoVenen ) | alumnesJustificats )  or []
 
-        #Esborro tots els no ha d'assistir:
-        NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
+        #es fa save controlAssistència per marcar com a no ha de ser present
+        NoHaDeSerALAula = apps.get_model('presencia','NoHaDeSerALAula')
         NoHaDeSerALAula.objects.filter( sortida = instance  ).delete()
 
         ControlAssistencia = apps.get_model(  'presencia.ControlAssistencia' )
@@ -31,10 +27,11 @@ def sincronitza():
         totes_les_franges = list( apps.get_model(  'horaris.FranjaHoraria' ).objects.all() )
         un_dia = timedelta(days=1)
         while ( bool( dia_iterador ) and 
-                dia_iterador <= instance.data_fi):
+                dia_iterador <= instance.data_fi and
+                instance.estat in ['R','G']):
             for franja in totes_les_franges:
                 
-                for control in ControlAssistencia.objects.filter( #alumne__in = alumnes_fora_aula,
+                for control in ControlAssistencia.objects.filter( alumne__in = alumnes_fora_aula,
                                                                   impartir__dia_impartir = dia_iterador,
                                                                   impartir__horari__hora = franja ):
                     control.save()
