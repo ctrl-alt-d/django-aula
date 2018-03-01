@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 #workflow
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.shortcuts import render, get_object_or_404
 from django import forms
 from django.http import HttpResponseRedirect
@@ -163,25 +164,30 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
                               usuari=user)
     if request.method=='POST':
         form = reservaAulaForm(request.POST, instance=novaReserva)
+        missatge = u"Ho sentim, s'ha detectat un problema amb la reserva"
         if form.is_valid():
-            form.save()
-            missatge = u"Reserva realitzada correctament"
-            return HttpResponseRedirect(r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year,month,day,pk))
-        else:
-            missatge = u"Ho sentim, s'ha detectat un problema amb la reserva"
+            try:
+                reserva=form.save()
+                missatge = u"Reserva realitzada correctament"
+                return HttpResponseRedirect(
+                    r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year, month, day, reserva.aula.pk))
+            except ValidationError, e:
+                for _, v in e.message_dict.items():
+                    form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
+
         messages.info(request, missatge)
     else:
         form = reservaAulaForm(instance=novaReserva)
 
-
     form.fields['aula'].widget.attrs['readonly'] = True
     form.fields['hora'].widget.attrs['readonly'] = True
-    form.fields['hora_inici'].widget.attrs['readonly'] = True
-    form.fields['hora_fi'].widget.attrs['readonly'] = True
+    form.fields['hora_inici'].widget = forms.HiddenInput()
+    form.fields['hora_fi'].widget = forms.HiddenInput()
+    #form.fields['hora_inici'].widget.attrs['readonly'] = True
+    #form.fields['hora_fi'].widget.attrs['readonly'] = True
     form.fields['dia_reserva'].widget.attrs['readonly'] = True
+    form.fields['usuari'].widget = forms.HiddenInput()
     form.fields['usuari'].widget.attrs['readonly'] = True
-
-
 
     return render(
             request,

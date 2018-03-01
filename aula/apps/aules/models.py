@@ -1,38 +1,27 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from aula.apps.aules.abstract_models import AbstractAula, AbstractReservaAula
+from aula.apps.aules.business_rules.reservaaula import reservaaula_clean, reservaaula_post_save, reservaaula_pre_save, reservaaula_pre_delete
+from aula.apps.aules.business_rules.aula import aula_clean, aula_pre_save, aula_post_save, aula_pre_delete
 
-from django.contrib.auth.models import User
-from django.db import models
+class Aula(AbstractAula):
+    def aula(self):
+        aula_clean(self)
 
+class ReservaAula(AbstractReservaAula):
+    def clean(self):
+        reservaaula_clean(self)
+        
+        
+# ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
+from django.db.models.signals import post_save, pre_save, pre_delete
 
-class Aula(models.Model):
-    nom_aula = models.CharField(max_length=45, blank=True)
-    descripcio_aula = models.CharField(max_length=240, blank=True, help_text="Exemple: Aforament màxim 30 persones. Exemple: 20 Ordinadors sobretaula")
-    disponibilitat_horaria = models.ManyToManyField('horaris.FranjaHoraria', blank=True)
-    horari_lliure = models.BooleanField(default=False)
-    reservable = models.BooleanField(default=True)
+#Aula
+pre_delete.connect(aula_pre_delete, sender= Aula)
+pre_save.connect(aula_pre_save, sender = Aula )
+post_save.connect(aula_post_save, sender = Aula )
 
-    class Meta:
-        ordering = ['nom_aula']
-        verbose_name = 'Aula'
-        verbose_name_plural = 'Aules'
-    def __unicode__(self):
-        return self.nom_aula + ' - ' + (self.descripcio_aula if self.descripcio_aula else '') if self.nom_aula  else 'Sense nom'
-
-    def getNom(self):
-        return self.nom_aula
-
-class ReservaAula(models.Model):
-    aula = models.ForeignKey(Aula, on_delete = models.PROTECT)
-    dia_reserva = models.DateField()
-    hora_inici = models.TimeField()
-    hora_fi = models.TimeField()
-    hora = models.ForeignKey('horaris.FranjaHoraria',null=True, blank=True,verbose_name='Franja Horaria')
-    usuari = models.ForeignKey(User)
-    motiu = models.CharField(max_length=120, blank=False, help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de famílies")
-
-    class Meta:
-        ordering = ['dia_reserva', 'hora_inici']
-        #unique_together = [('aula', 'dia_reserva', 'hora_inici')]
-    def __unicode__(self):
-        return "{aula} {hora_inici}-{hora_fi} {usuari}".format(aula=self.aula, hora_inici=self.hora_inici, hora_fi=self.hora_fi, usuari = self.usuari)
+#ReservaAula
+pre_delete.connect(reservaaula_pre_delete, sender= ReservaAula)
+pre_save.connect(reservaaula_pre_save, sender = ReservaAula )
+post_save.connect(reservaaula_post_save, sender = ReservaAula )
