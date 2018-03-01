@@ -29,12 +29,12 @@ def sincronitza():
         while ( bool( dia_iterador ) and 
                 dia_iterador <= instance.data_fi and
                 instance.estat in ['R','G']):
-            for franja in totes_les_franges:
-                
-                for control in ControlAssistencia.objects.filter( alumne__in = alumnes_fora_aula,
-                                                                  impartir__dia_impartir = dia_iterador,
-                                                                  impartir__horari__hora = franja ):
-                    control.save()
+            controls = list( ControlAssistencia.objects
+                             .filter( alumne__in = alumnes_fora_aula,
+                                      impartir__dia_impartir = dia_iterador,
+                                      impartir__horari__hora__in = totes_les_franges ) )
+            for control in controls:
+                control.save()
         
             dia_iterador += un_dia   
             
