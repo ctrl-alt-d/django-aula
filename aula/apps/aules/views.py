@@ -91,11 +91,8 @@ def detallAulaReserves (request, year, month, day, pk):
 
     reserves_dun_dia = ReservaAula.objects.filter(dia_reserva=data)
     franjes_dun_dia = [reserva.hora for reserva in reserves_dun_dia]
-    franjes_uniques_dun_dia = []
     franja_maxima_dun_dia = franjes_dun_dia[0] if franjes_dun_dia else None
     for franja in franjes_dun_dia:
-        if franja not in franjes_uniques_dun_dia:
-            franjes_uniques_dun_dia.append(franja)
         if franja.hora_fi > franja_maxima_dun_dia.hora_fi:
             franja_maxima_dun_dia = franja
     reserves_dun_dia_un_aula = reserves_dun_dia.filter(aula__nom_aula=aula.nom_aula)
@@ -110,8 +107,7 @@ def detallAulaReserves (request, year, month, day, pk):
                 horari = Horari.objects.filter(aula__nom_aula = aula.nom_aula, hora = franja, dia_de_la_setmana = data.weekday()+1 )
                 assignatura = horari[0].assignatura if horari else ""
                 grup = horari[0].grup if horari else ""
-                reservaaula = ReservaAula.objects.filter (aula__nom_aula = aula.nom_aula, hora=franja, dia_reserva=data)
-                professor = horari[0].professor if horari else reservaaula[0].usuari.first_name+" " +reservaaula[0].usuari.last_name if reservaaula else ""
+                professor = horari[0].professor if horari else hora_reservada[0].usuari.first_name + " " + hora_reservada[0].usuari.last_name if hora_reservada else ""
                 nova_franja['assignatura'] = assignatura
                 nova_franja['grup'] = grup
                 nova_franja['professor'] = professor
