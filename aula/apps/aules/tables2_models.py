@@ -17,22 +17,22 @@ class HorariAulaTable(tables.Table):
                         <div class="progress">
                         {% if record.reserva %}
                             {% if not aula.horari_lliure %}         
-                              <div id="popoverData" rel="popover" data-placement="top" 
+                                <span class="progress-bar progress-bar-danger popoverData" rel="popover" data-placement="top" 
                                     data-original-title="Motiu: {{record.reserva.motiu}}" 
-                                    data-content="Materia: {{record.assignatura}} - Grup: {{record.grup}}"
-                                    data-trigger="hover" class="progress-bar progress-bar-danger" 
-                                    role="progressbar"  style="width: 100%">
-                                <span>{{record.professor}}</span>       
-                              </div>                           
+                                    {% if record.assignatura %} 
+                                        data-content="Materia: {{record.assignatura}} - Grup: {{record.grup}}"
+                                    {% endif %}
+                                    data-trigger="hover" 
+                                    role="progressbar"  style="width: 100%">{{record.professor}}</span>                        
                             {% else %}
-                              <div class="progress-bar progress-bar-success" style="width: 50%"></div>
+                              <!-- <div class="progress-bar progress-bar-success" style="width: 50%"></div>
                               <div id="popoverData" rel="popover" data-placement="top" 
                               data-original-title="Motiu: {{record.reserva.motiu}}" 
                               data-content={{record.assignatura}}-{{record.grup}} 
                               data-trigger="hover" class="progress-bar progress-bar-danger" 
                               role="progressbar"  style="width: 50%">
                                 <span>{{record.professor}}</span>       
-                              </div>  
+                              </div>  -->
                             {% endif %}                       
                         {% else %}
                               <div class="progress-bar progress-bar-success" style="width: 100%">
