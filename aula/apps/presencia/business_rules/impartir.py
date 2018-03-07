@@ -27,6 +27,12 @@ def impartir_post_save(sender, instance, created, **kwargs):
         reserves = ReservaAula.objects.filter( aula=instance.horari.aula,
                                                dia_reserva=instance.dia_impartir,
                                                hora=instance.horari.hora )
+
+        reserves_manuals = list( reserves.filter( impartir__isnull = True ) )
+        for reserva in reserves_manuals:
+            # TODO: enviar missatge a la victima Missatge( ,,,
+            reserva.delete()
+
         reserves_automatiques = list( reserves.filter(impartir__isnull=False) )
         if bool(reserves_automatiques):
             reserva = reserves_automatiques[0]
@@ -43,11 +49,6 @@ def impartir_post_save(sender, instance, created, **kwargs):
 
         instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva)
         instance.refresh_from_db()
-        
-        reserves_manuals = list( reserves.filter( impartir__isnull = True ) )
-        for reserva in reserves_manuals:
-            # TODO: enviar missatge a la victima Missatge( ,,,
-            reserva.delete()
 
     #bussiness rule:
     #si un professor passa llista, també passa llista de 

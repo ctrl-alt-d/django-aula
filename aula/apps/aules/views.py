@@ -87,31 +87,36 @@ def detallAulaReserves (request, year, month, day, pk):
         day = int( day)
     data = t.date(year, month, day)
 
+    franges_del_dia = ( FranjaHoraria
+                       .objects
+                       .filter( horari__impartir__dia_impartir = data )
+                       .order_by('hora_inici')
+                      )
+    primera_franja = franges_del_dia.first()
+    darrera_franja = franges_del_dia.last()
+
+    franges_reservables = ( FranjaHoraria
+                            .objects
+                            .filter(hora_inici__gte=primera_franja.hora_inici)
+                            .filter(hora_fi__lte=darrera_franja.hora_fi)
+                            ) if primera_franja and darrera_franja else []
+
+
+    reserves_dun_dia_un_aula = ( ReservaAula
+                                .objects
+                                .filter(aula=aula)
+                                .filter(dia_reserva=data) )
+
     reserves = []
-
-    reserves_dun_dia = ReservaAula.objects.filter(dia_reserva=data)
-    franjes_dun_dia = [reserva.hora for reserva in reserves_dun_dia]
-    franja_maxima_dun_dia = franjes_dun_dia[0] if franjes_dun_dia else None
-    for franja in franjes_dun_dia:
-        if franja.hora_fi > franja_maxima_dun_dia.hora_fi:
-            franja_maxima_dun_dia = franja
-    reserves_dun_dia_un_aula = reserves_dun_dia.filter(aula__nom_aula=aula.nom_aula)
-
-    if franja_maxima_dun_dia:
-        for franja in FranjaHoraria.objects.all():
-            if franja.hora_fi <= franja_maxima_dun_dia.hora_fi:
-                nova_franja = {}
-                nova_franja['franja'] = franja
-                hora_reservada = reserves_dun_dia_un_aula.filter(hora=franja)
-                nova_franja['reserva'] = hora_reservada[0] if hora_reservada else None
-                horari = Horari.objects.filter(aula__nom_aula = aula.nom_aula, hora = franja, dia_de_la_setmana = data.weekday()+1 )
-                assignatura = horari[0].assignatura if horari else ""
-                grup = horari[0].grup if horari else ""
-                professor = horari[0].professor if horari else hora_reservada[0].usuari.first_name + " " + hora_reservada[0].usuari.last_name if hora_reservada else ""
-                nova_franja['assignatura'] = assignatura
-                nova_franja['grup'] = grup
-                nova_franja['professor'] = professor
-                reserves.append(nova_franja)
+    for franja in franges_reservables:
+        reserva = reserves_dun_dia_un_aula.filter(hora=franja).order_by().first()
+        nova_franja = {}
+        nova_franja['franja'] = franja
+        nova_franja['reserva'] = reserva
+        nova_franja['assignatura'] = u", ".join( reserva.impartir_set.values_list( 'horari__assignatura__nom_assignatura', flat=True ).distinct() ) if reserva else u""
+        nova_franja['grup'] = u", ".join( reserva.impartir_set.values_list( 'horari__grup__descripcio_grup', flat=True ).distinct() )  if reserva else u""
+        nova_franja['professor'] = u", ".join([reserva.usuari.first_name + ' ' + reserva.usuari.last_name]) if reserva else u""
+        reserves.append(nova_franja)
 
     table = HorariAulaTable(reserves)
     table.order_by = 'franja'
