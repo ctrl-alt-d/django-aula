@@ -21,12 +21,12 @@ def predictTreeModel( values ):
     
     tree = settings.PREDICTION_TREE
     root = tree.getroot()
-    TreeModel = root.find( '{http://www.dmg.org/PMML-4_1}TreeModel' ) 
+    TreeModel = root.find( '{http://www.dmg.org/PMML-4_2}TreeModel' )
 
     #TODO: check values into MiningField
     
     #Node root de TreeModel. Predicció global
-    Node = TreeModel.find( '{http://www.dmg.org/PMML-4_1}Node' )
+    Node = TreeModel.find( '{http://www.dmg.org/PMML-4_2}Node' )
     predict = Node.get("score")
     pct = 0.5
     n_tot = Node.get("recordCount")
