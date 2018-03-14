@@ -10,6 +10,9 @@ urlpatterns = [
         name="gestio__aula__detallaulareserves"),
     url(r'^tramitarReservaAula/(?P<pk>\d+)/(?P<pk_franja>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', aula_views.tramitarReservaAula,
         name="gestio__aula__tramitarreservaaula"),
+    url(r'^eliminarReservaAula/(?P<pk>\d+)/(?P<pk_aula>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', aula_views.eliminarReservaAula,
+        name="gestio__aula__eliminarreservaaula"),
+
 
 
 ]

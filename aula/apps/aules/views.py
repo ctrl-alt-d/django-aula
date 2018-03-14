@@ -97,8 +97,8 @@ def detallAulaReserves (request, year, month, day, pk):
 
     franges_reservables = ( FranjaHoraria
                             .objects
-                            .filter(hora_inici__gte=primera_franja.hora_inici)
-                            .filter(hora_fi__lte=darrera_franja.hora_fi)
+                            .filter(hora_inici__gte = primera_franja.hora_inici)
+                            .filter(hora_fi__lte = darrera_franja.hora_fi)
                             ) if primera_franja and darrera_franja else []
 
 
@@ -128,6 +128,7 @@ def detallAulaReserves (request, year, month, day, pk):
         {'table': table,
          'aula': aula,
          'dia': data,
+         'usuari': user.first_name + ' ' + user.last_name,
          },
     )
 
@@ -170,6 +171,7 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
             try:
                 reserva=form.save()
                 missatge = u"Reserva realitzada correctament"
+                messages.info(request, missatge)
                 return HttpResponseRedirect(
                     r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year, month, day, reserva.aula.pk))
             except ValidationError, e:
@@ -197,3 +199,24 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
              'head': u'Reservar aula',
              },
     )
+
+
+@login_required
+@group_required(['professors', 'professional'])
+def eliminarReservaAula (request, pk, pk_aula, year, month, day):
+
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    reserva = get_object_or_404(ReservaAula, pk=pk)
+
+    missatge = u"Reserva anul·lada correctament"
+    try:
+            reserva.delete()
+            messages.info(request, missatge)
+            return HttpResponseRedirect(
+                r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year, month, day, pk_aula))
+    except (Exception, reserva) :
+            missatge = u"Ho sentim, no s'ha pogut anul·lar la reserva: " + reserva
+            messages.info(request, missatge)
+
+

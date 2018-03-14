@@ -47,10 +47,15 @@ class HorariAulaTable(tables.Table):
         verbose_name='',
         template_code=u"""
                         <span class="gi-2x">
-                        {% if aula.reservable and not record.reserva %}
-                            <a href="/aules/tramitarReservaAula/{{aula.pk}}/{{record.franja.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}/">
-                            <span class="mybtn-green glyphicon glyphicon-plus-sign"> </span> <br />
-                            </a>
+                        {% if aula.reservable %}
+                            {% if not record.reserva %}
+                                <a href="/aules/tramitarReservaAula/{{aula.pk}}/{{record.franja.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}/">
+                                <span class="mybtn-green glyphicon glyphicon-plus-sign"> </span> <br />
+                                </a>
+                            {% elif record.professor == usuari and not record.grup and not record.assignatura  %}
+                                <a href="/aules/eliminarReservaAula/{{record.reserva.pk}}/{{aula.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}/">
+                                <span class="mybtn-red glyphicon glyphicon-plus-sign"> </span> <br />
+                            {% endif %}
                         {% endif %}
                         </span>
                         """,
