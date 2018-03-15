@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import django_tables2 as tables
 
 
@@ -53,8 +54,10 @@ class HorariAulaTable(tables.Table):
                                 <span class="mybtn-green glyphicon glyphicon-plus-sign"> </span> <br />
                                 </a>
                             {% elif record.professor == usuari and not record.grup and not record.assignatura  %}
-                                <a href="/aules/eliminarReservaAula/{{record.reserva.pk}}/{{aula.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}/">
-                                <span class="mybtn-red glyphicon glyphicon-plus-sign"> </span> <br />
+                                <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.reserva.pk}}/{{aula.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}" ,  
+                                                                  " {{ "Segur que vols anul·lar la reserva de l'aula"|escapejs}} {{record.reserva.aula.nom_aula}} {{"hora:"}} {{record.reserva.hora}}?")'>
+                                    <span class="mybtn-red glyphicon glyphicon-plus-sign"> </span> <br />           
+                                </a>
                             {% endif %}
                         {% endif %}
                         </span>

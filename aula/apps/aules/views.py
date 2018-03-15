@@ -210,13 +210,12 @@ def eliminarReservaAula (request, pk, pk_aula, year, month, day):
     reserva = get_object_or_404(ReservaAula, pk=pk)
 
     missatge = u"Reserva anul·lada correctament"
+
     try:
-            reserva.delete()
-            messages.info(request, missatge)
-            return HttpResponseRedirect(
-                r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year, month, day, pk_aula))
+        reserva.delete()
     except (Exception, reserva) :
-            missatge = u"Ho sentim, no s'ha pogut anul·lar la reserva: " + reserva
-            messages.info(request, missatge)
+        missatge = u"Ho sentim, no s'ha pogut anul·lar la reserva: " + reserva
 
-
+    messages.info(request, missatge)
+    nexturl = r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year, month, day, pk_aula)
+    return HttpResponseRedirect(nexturl)
