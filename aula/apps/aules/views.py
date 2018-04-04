@@ -23,6 +23,7 @@ from aula.apps.horaris.models import FranjaHoraria, Horari
 from aula.apps.aules.forms import disponibilitatAulaForm, triaAulaSelect2Form, reservaAulaForm
 
 #helpers
+from aula.apps.usuaris.models import User2Professor
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from django.contrib import messages
@@ -208,6 +209,14 @@ def eliminarReservaAula (request, pk, pk_aula, year, month, day):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
     reserva = get_object_or_404(ReservaAula, pk=pk)
+
+    professor = User2Professor(user)
+    mortalPotEsborrar = (reserva.usuari == professor and not reserva.impartir_set.exists())
+    potEsborrar = mortalPotEsborrar or l4
+
+    if not potEsborrar:
+        messages.warning(request, u"No pots anul·lar aquesta reserva.")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     missatge = u"Reserva anul·lada correctament"
 
