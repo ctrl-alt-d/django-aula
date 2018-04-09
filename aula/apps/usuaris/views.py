@@ -513,12 +513,8 @@ def sendPasswdByEmail( request ):
 
 
 @login_required
-@group_required(['consergeria'])
-def cercaProfessor_fromConsergeria(request, from_request="consergeria"):
-    return cercaProfessor(request, from_request)
-
-
-def cercaProfessor(request, from_request):
+@group_required(['consergeria','professors'])
+def cercaProfessor(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
@@ -526,11 +522,7 @@ def cercaProfessor(request, from_request):
         formUsuari = triaProfessorSelect2Form(request.POST)  # todo: multiple=True (multiples profes de cop)
         if formUsuari.is_valid():
             professor = formUsuari.cleaned_data['professor']
-            next_url = r""
-            if from_request == "consergeria":
-                next_url = r'/usuaris/detallProfessorHorari/{0}/all/'
-            # else:
-            #     next_url = r'/usuaris/detallProfessorHorariProfessors/{0}/all/'
+            next_url = r'/usuaris/detallProfessorHorari/{0}/all/'
             return HttpResponseRedirect(next_url.format(professor.pk))
 
     else:
@@ -576,3 +568,11 @@ def detallProfessorHorari(request, pk, detall='all'):
          #'mostra_detalls': mostra_detalls,
          })
 
+@login_required
+@group_required(['professional'])
+def blanc( request ):
+    return render(
+                request,
+                'blanc.html',
+                    {},
+                    )

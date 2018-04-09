@@ -646,18 +646,9 @@ def detallAlumneHorari(request, pk, detall='all'):
          },
     )
 
-
 @login_required
-@group_required(['consergeria'])
-def cercaUsuari_fromConsergeria(request, from_request="consergeria"):
-    return cercaUsuari(request, from_request)
-
-@login_required
-@group_required(['professors'])
-def cercaUsuari_fromAula(request, from_request="professors"):
-    return cercaUsuari(request, from_request)
-
-def cercaUsuari(request, from_request):
+@group_required(['professional',])
+def cercaUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
@@ -665,11 +656,7 @@ def cercaUsuari(request, from_request):
         formUsuari = triaAlumneSelect2Form(request.POST)  # todo: multiple=True (multiples alumnes de cop)
         if formUsuari.is_valid():
             alumne = formUsuari.cleaned_data['alumne']
-            next_url = r""
-            if from_request == "consergeria":
-                next_url = r'/alumnes/detallAlumneHorari/{0}/all/'
-            else:
-                next_url = r'/alumnes/detallAlumneHorariProfessors/{0}/all/'
+            next_url = r'/alumnes/detallAlumneHorari/{0}/all/'
             return HttpResponseRedirect(next_url.format(alumne.pk))
             
     else:

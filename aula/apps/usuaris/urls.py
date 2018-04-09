@@ -30,10 +30,12 @@ urlpatterns = [
     url(r'^sendPasswdByEmail/$', usuaris_views.sendPasswdByEmail,
      name="nologin__usuari__send_pass_by_email"),
 
-    url(r'^cercaProfessor/$', usuaris_views.cercaProfessor_fromConsergeria,
-     name="consergeria__professor__cerca"),
+    url(r'^cercaProfessor/$', usuaris_views.cercaProfessor,
+     name="professionals__professor__cerca"),
               
     url(r'^detallProfessorHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', usuaris_views.detallProfessorHorari,
-     name="consergeria__professor__cercaresultat"),
-]
+     name="professionals__professor__cercaresultat"),              
 
+    url(r'^detallProfessorHorari/$', usuaris_views.blanc,
+     name="professionals__blanc__blanc"),
+]
