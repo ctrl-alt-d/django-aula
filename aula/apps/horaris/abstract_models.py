@@ -41,7 +41,7 @@ class AbstractHorari(models.Model):
     grup = models.ForeignKey(to='alumnes.Grup', null=True,  blank=True, db_index=True)
     dia_de_la_setmana = models.ForeignKey('horaris.DiaDeLaSetmana', )
     hora = models.ForeignKey( 'horaris.FranjaHoraria', )
-    #nom_aula = models.CharField(max_length=45, blank=True)
+    nom_aula = models.CharField(max_length=45, blank=True)
     aula = models.ForeignKey('aules.Aula', null=True, blank=True)
     es_actiu = models.BooleanField()
     estat_sincronitzacio = models.CharField(max_length=3, blank=True)
