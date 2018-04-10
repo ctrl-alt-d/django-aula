@@ -31,11 +31,11 @@ urlpatterns = [
      name="nologin__usuari__send_pass_by_email"),
 
     url(r'^cercaProfessor/$', usuaris_views.cercaProfessor,
-     name="professionals__professor__cerca"),
+     name="gestio__professor__cerca"),
               
     url(r'^detallProfessorHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', usuaris_views.detallProfessorHorari,
-     name="professionals__professor__cercaresultat"),              
+     name="gestio__professor__cercaresultat"),              
 
     url(r'^detallProfessorHorari/$', usuaris_views.blanc,
-     name="professionals__blanc__blanc"),
+     name="gestio__blanc__blanc"),
 ]

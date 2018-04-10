@@ -182,17 +182,17 @@ class AbstractIncidencia(models.Model):
     GESTIONADA_PEL_TUTOR_ALTRES = u"N/A"
 
     INFO_GESTIONADA_PEL_TUTOR = {
-        GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA: { "display": u"Pot ser gestionada pel tutor: Retard de 1a hora",
-                                                    "help": u"Els retards provoquen incidència, les incidències per retard de primera hora poden ser gestionades pel tutor",
+        GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA: { "display": u"Gestionada pel tutor: Retard de 1a hora",
+                                                    "help": u"Retard de primera hora provoca incidència. Gestionada pel tutor",
                                                     "color": u"#0000FF", },
-        GESTIONADA_PEL_TUTOR_FORA_AULA: { "display": u"Pot ser gestionada pel tutor: Incidència fora d'aula",
-                                          "help": u"Les incidències fora d'aula ( patis, passadís, entrada o sortida, etc ) poden ser gestionades pel tutor de l'alumne",
+        GESTIONADA_PEL_TUTOR_FORA_AULA: { "display": u"Gestionada pel tutor: Incidència fora d'aula",
+                                          "help": u"Les incidències fora d'aula ( pati, passadís, entrada o sortida, etc ) seran gestionades pel tutor",
                                           "color": u"#0000FF", },
-        GESTIONADA_PEL_TUTOR_GUARDIA: { "display": u"Pot ser gestionada pel tutor: Incidència en hora de Guàrdia",
-                                        "help": u"Les incidències que posa el professor de guàrdia són gestionades pel tutor de l'alumne",
+        GESTIONADA_PEL_TUTOR_GUARDIA: { "display": u"Gestionada pel tutor: Incidència en hora de Guàrdia",
+                                        "help": u"Les incidències que posa el professor de guàrdia seran gestionadas pel tutor",
                                         "color": u"#0000FF", },
-        GESTIONADA_PEL_TUTOR_ALTRES: { "display": u"Pot ser gestionada pel tutor",
-                                       "help": u"Aquesta incidència pot ser gestionada pel tutor",
+        GESTIONADA_PEL_TUTOR_ALTRES: { "display": u"Gestionada pel tutor",
+                                       "help": u"Aquesta incidència serà gestionada pel tutor",
                                        "color": u"#0000FF", },
     }
 

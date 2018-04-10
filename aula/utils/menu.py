@@ -160,11 +160,11 @@ def calcula_menu( user , path ):
                ),
 
                #--professional--------------------------------------------------------------------------
-               ('professionals', 'Professionals', 'professionals__usuari__cerca', pl or co, None,
+               ('gestio', 'Gestió', 'gestio__usuari__cerca', pl or co, None,
                   (
-                      ("Cerca Alumne", 'professionals__usuari__cerca', pl or co, None, None),
-                      ("Cerca Professor", 'professionals__professor__cerca', pl or co, None, None),                      
-                      ("Incidències", 'professionals__incidencia__onbehalf', pl and not pr, None, None ),
+                      ("Cerca Alumne", 'gestio__usuari__cerca', pl or co, None, None),
+                      ("Cerca Professor", 'gestio__professor__cerca', pl or co, None, None),                      
+                      ("Incidències", 'gestio__incidencia__onbehalf', pl and not pr, None, None ),
                    )
                ),
                             

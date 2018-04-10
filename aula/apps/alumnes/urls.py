@@ -38,10 +38,10 @@ urlpatterns = [
        name="aula__materies__blanc"),
 
    url(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', alumnes_views.detallAlumneHorari,
-        name="professionals__usuari__cercaresultat"),
+        name="gestio__usuari__cercaresultat"),
 
    url(r'^cercaUsuari/$', alumnes_views.cercaUsuari,
-        name="professionals__usuari__cerca"),
+        name="gestio__usuari__cerca"),
 
     url(r'^blanc/$', alumnes_views.blanc,
         name="aula__alumnes__blanc"),                       

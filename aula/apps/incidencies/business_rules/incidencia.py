@@ -163,7 +163,37 @@ def incidencia_despres_de_posar(instance):
                     msg.importancia = 'VI'
                 for professional in instance.alumne.tutorsDeLAlumne():
                     msg.envia_a_usuari(professional)
-
+        
+        if bool(instance.professional_inicia):
+            #
+            remitent = instance.professional_inicia
+            text_missatge = u"""He posat una {0} en nom teu a {1} ({2}) el dia {3}. 
+                                El text de la incidència és: {4}""".format(
+                                        u"Incidència de Retard d'entrada al centre",
+                                        instance.alumne,
+                                        instance.alumne.grup,
+                                        instance.dia_incidencia,
+                                        instance.descripcio_incidencia)
+            msg1 = Missatge( remitent = remitent.getUser(), 
+                             text_missatge = text_missatge )
+            importancia = 'VI'
+            msg1.envia_a_usuari( instance.professional.getUser(), importancia )           
+            
+            #
+            remitent = instance.professional_inicia
+            text_missatge = u"""He posat una {0} en nom de {5} a {1} ({2}) el dia {3}. 
+                                El text de la incidència és: {4}""".format(
+                                        u"Incidència de Retard d'entrada al centre",
+                                        instance.alumne,
+                                        instance.alumne.grup,
+                                        instance.dia_incidencia,
+                                        instance.descripcio_incidencia,
+                                        instance.professional,)
+            msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )
+            importancia = 'PI'
+            msg1.envia_a_usuari( remitent.getUser(), importancia )    
+            msg1.destinatari_set.filter(destinatari = remitent.getUser()).update(moment_lectura=datetime.now())
+            
         #Cal que els professors i tutors sàpiguen que aquest alumne ha tingut incidència --> Envio missatge
         remitent = instance.professional
         text_missatge = u"""Ha posat una incidència {0}a {1} ({2}) el dia {3}. 

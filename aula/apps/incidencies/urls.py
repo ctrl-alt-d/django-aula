@@ -9,8 +9,8 @@ urlpatterns = [
     url(r'^posaIncidencia/$', incidencies_views.posaIncidencia,
         name="aula__incidencies__posa_incidencia"),
 
-    url(r'^posaIncidenciaonbehalf/$', incidencies_views.posaIncidencia,
-        name="professionals__incidencia__onbehalf"),
+    url(r'^posaIncidenciaprimerahora/$', incidencies_views.posaIncidenciaPrimeraHora,
+        name="gestio__incidencia__onbehalf"),
                        
     url(r'^posaExpulsio/$', incidencies_views.posaExpulsio,
         name="aula__incidencies__posa_expulsio"),
