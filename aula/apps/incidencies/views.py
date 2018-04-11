@@ -241,7 +241,11 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
     
     incidencia.credentials = credentials
     
-    url_next = '/incidencies/llistaIncidenciesProfessional/'
+    origen = request.GET.get('origen')
+    if origen=="tutoria":
+        url_next = '/tutoria/incidenciesGestionadesPelTutor/'
+    else:
+        url_next = '/incidencies/llistaIncidenciesProfessional/'
     try:
         incidencia.delete()
         #LOGGING
@@ -251,7 +255,8 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
                 l4 = l4,
                 impersonated_from = request.user if request.user != user else None,
                 text = u"""Eliminada incidència de l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
-            )          
+            ) 
+        messages.success(request, u"Incidència de l'alumne {alumne} esborrada correctament".format(alumne=incidencia.alumne))         
     except ValidationError, e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
@@ -916,6 +921,8 @@ def llistaIncidenciesProfessional( request ):
             incidenciesPerAlumne = tupla_alumne[1]['incidencies']
             expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
                                                                                      +incidenciesPerAlumne)
+            expulsionsIIncidenciesPerAlumne.columns.hide('Eliminar_Incidencia_Gestionada_Pel_Tutor')
+
             diccionariTables[tupla_alumne[0]+' - ' + unicode (tupla_alumne[1]['grup'])]=expulsionsIIncidenciesPerAlumne
 
 

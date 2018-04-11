@@ -97,12 +97,16 @@ def Incidencia_pre_delete(sender, instance, **kwargs):
     if l4:
         return
     
-    if instance.dia_incidencia < ( dt.date.today() + dt.timedelta( days = -7) ):
+    if instance.dia_incidencia < ( dt.date.today() + dt.timedelta( days = -30) ):
         errors[NON_FIELD_ERRORS] = [u'''Aquesta incidència és massa antiga per ser esborrada (Té més d' una setmana)''']
         
     #PRECONDICIO: Només el professor que ha posat la falta o l'equip directiu la pot treure.
-    if user and instance.professional.getUser().pk != user.pk:
-        errors[NON_FIELD_ERRORS] = [u'''Aquesta incidència no es teva.''']
+    es_meva = user and instance.professional.getUser().pk == user.pk
+    es_meva = es_meva or ( user
+                           and instance.gestionada_pel_tutor 
+                           and  instance.professional.getUser().pk in instance.alumne.tutorsDeLAlumne() )
+    if user and not es_meva:
+        errors[NON_FIELD_ERRORS] = [u'''No tens permisos per esborrar aquesta incidència.''']
     
     if len( errors ) > 0:
         raise ValidationError(errors)
