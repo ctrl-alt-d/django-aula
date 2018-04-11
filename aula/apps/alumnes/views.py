@@ -647,7 +647,7 @@ def detallAlumneHorari(request, pk, detall='all'):
     )
 
 @login_required
-@group_required(['professional',])
+@group_required(['professional','consergeria',])
 def cercaUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials

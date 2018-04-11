@@ -513,7 +513,7 @@ def sendPasswdByEmail( request ):
 
 
 @login_required
-@group_required(['consergeria','professors'])
+@group_required(['consergeria','professors','professional'])
 def cercaProfessor(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials

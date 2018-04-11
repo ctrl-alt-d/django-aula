@@ -162,10 +162,10 @@ def calcula_menu( user , path ):
                ),
 
                #--professional--------------------------------------------------------------------------
-               ('gestio', 'Gestió', 'gestio__usuari__cerca', pl or co, None,
+               ('gestio', 'Gestió', 'gestio__usuari__cerca', co, None,
                   (
-                      ("Cerca Alumne", 'gestio__usuari__cerca', pl or co, None, None),
-                      ("Cerca Professor", 'gestio__professor__cerca', pl or co, None, None),                      
+                      ("Cerca Alumne", 'gestio__usuari__cerca', co, None, None),
+                      ("Cerca Professor", 'gestio__professor__cerca', co, None, None),                      
                    )
                ),
                             
