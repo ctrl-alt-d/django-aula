@@ -26,7 +26,7 @@ from aula.apps.alumnes.models import Alumne
 from aula.apps.incidencies.models import Incidencia, Sancio
 from aula.apps.incidencies.models import TipusSancio, TipusIncidencia
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
-    Accio
+    Accio, User2ProfessorConserge
 from aula.apps.incidencies.models import Expulsio
 from aula.apps.horaris.models import DiaDeLaSetmana
 from aula.utils import tools    
@@ -390,14 +390,14 @@ def posaIncidenciaPrimeraHora( request ):
     #
     ara = datetime.now().time()
     franja = FranjaHoraria.objects.filter( hora_inici__lte = ara, hora_fi__gte = ara ).first()
-    professional_inicia = User2Professional(user)
+    conserge_inicia = User2ProfessorConserge(user)
     incidencia = Incidencia ( dia_incidencia = datetime.today(),
                                 tipus = tipus_incidencia,
                                 franja_incidencia = franja,
                                 descripcio_incidencia = u"Retard en entrar al Centre",
                                 gestionada_pel_tutor = True,
                                 gestionada_pel_tutor_motiu = Incidencia.GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA,
-                                professional_inicia = professional_inicia,
+                                professional_inicia = conserge_inicia,
                             )
 
     #
