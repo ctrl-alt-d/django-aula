@@ -202,6 +202,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.sortides',
     'aula.apps.baixes',
     'aula.apps.BI',
+    'aula.apps.aules',
     'aula.utils',
 ]
 

@@ -42,8 +42,13 @@ class AbstractHorari(models.Model):
     dia_de_la_setmana = models.ForeignKey('horaris.DiaDeLaSetmana', )
     hora = models.ForeignKey( 'horaris.FranjaHoraria', )
     nom_aula = models.CharField(max_length=45, blank=True)
+    aula = models.ForeignKey('aules.Aula', null=True, blank=True, on_delete=models.SET_NULL)
     es_actiu = models.BooleanField()
     estat_sincronitzacio = models.CharField(max_length=3, blank=True)
+
+    @property
+    def get_nom_aula(self):
+        return self.aula.nom_aula if bool(self.aula) else u""
 
     class Meta:
         abstract = True
@@ -53,7 +58,7 @@ class AbstractHorari(models.Model):
 
     def __unicode__(self):
         obsolet = u'(Obsolet:) ' if not self.es_actiu else ''
-        aula = u" a l'aula " + self.nom_aula if self.nom_aula else ''
+        aula = u" a l'aula " + self.get_nom_aula if self.get_nom_aula else ''
         grup = u' al grup ' + unicode( self.grup) if self.grup else ''
         return obsolet + u'El professor ' + unicode( self.professor) + u' imparteix ' + unicode(self.assignatura) + ' el ' + unicode( self.dia_de_la_setmana) + ' de ' +  unicode(self.hora) + aula + grup
 

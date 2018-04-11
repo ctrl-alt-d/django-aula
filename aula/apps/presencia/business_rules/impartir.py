@@ -1,7 +1,10 @@
 # This Python file uses the following encoding: utf-8
 from django.apps import apps
 
-#-------------Impartir-------------------------------------------------------------      
+#-------------Impartir-------------------------------------------------------------
+from aula.apps.aules.models import ReservaAula, Aula
+from aula.apps.horaris.models import FranjaHoraria
+
 
 def impartir_clean( instance ):
     pass
@@ -10,9 +13,43 @@ def impartir_pre_delete( sender, instance, **kwargs):
     pass
     
 def impartir_pre_save(sender, instance,  **kwargs):
+
     instance.clean()
 
+    reserva_compartida = (instance.reserva is not None and instance.reserva.impartir_set.count() > 1 )
+    if (not reserva_compartida and instance.reserva is not None ):
+        instance.reserva.delete()
+
+
 def impartir_post_save(sender, instance, created, **kwargs):
+
+    if instance.horari.aula is not None:
+        reserves = ReservaAula.objects.filter( aula=instance.horari.aula,
+                                               dia_reserva=instance.dia_impartir,
+                                               hora=instance.horari.hora )
+
+        reserves_manuals = list( reserves.filter( impartir__isnull = True ) )
+        for reserva in reserves_manuals:
+            # TODO: enviar missatge a la victima Missatge( ,,,
+            reserva.delete()
+
+        reserves_automatiques = list( reserves.filter(impartir__isnull=False) )
+        if bool(reserves_automatiques):
+            reserva = reserves_automatiques[0]
+        else:
+            novareserva = ReservaAula(aula=instance.horari.aula,
+                                      dia_reserva=instance.dia_impartir,
+                                      hora_inici=instance.horari.hora.hora_inici,
+                                      hora_fi=instance.horari.hora.hora_fi,
+                                      hora=instance.horari.hora,
+                                      usuari=instance.horari.professor,
+                                      motiu="Docencia habitual")
+            novareserva.save()
+            reserva = novareserva
+
+        instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva)
+        instance.refresh_from_db()
+
     #bussiness rule:
     #si un professor passa llista, també passa llista de 
     #totes les imparticions que no tinguin alumnes.

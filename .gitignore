@@ -8,6 +8,7 @@ customising/urls.py
 customising/views.py
 customising/templates/*
 env
+.vscode
 venv
 aula/db.sqlite
 .project

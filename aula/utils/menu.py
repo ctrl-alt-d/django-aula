@@ -161,11 +161,12 @@ def calcula_menu( user , path ):
                    arbre_tutoria
                ),
 
-               #--professional--------------------------------------------------------------------------
+               #--Gestió--------------------------------------------------------------------------
                ('gestio', 'Gestió', 'gestio__usuari__cerca', co or pl, None,
                   (
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
-                      ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),                      
+                      ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
+                      ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),                                        
                    )
                ),
                             
@@ -176,7 +177,7 @@ def calcula_menu( user , path ):
                       ("Actuacions", 'psico__actuacions__list', pg or di, None, None ),
                    )
                ),
-             
+
                #--Coord.Pedag--------------------------------------------------------------------------
                ('coordinacio_pedagogica', 'Coord.Pedag', 'coordinacio_pedagogica__qualitativa__blanc', di, None,
                   (
@@ -190,7 +191,7 @@ def calcula_menu( user , path ):
                       ("Seguiment Tutorial", "coordinacio_pedagogica__seguiment_tutorial__preguntes", di, None, None ),
                    ),
                ),
-  
+
                #--Coord.Alumnes--------------------------------------------------------------------------
                ('coordinacio_alumnes', 'Coord.Alumnes', 'coordinacio_alumnes__ranking__list', di, None,
                   (
@@ -242,6 +243,14 @@ def calcula_menu( user , path ):
                    )
                ),
              
+               #--Consergeria--------------------------------------------------------------------------
+               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
+                  (
+                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
+                      ("Cerca Alumne", 'consergeria__usuari__cerca', co, None, None),
+                      ("Cerca Professor", 'consergeria__professor__cerca', co, None, None),
+                   )
+               ),
 
 
                #--relacio_families--------------------------------------------------------------------------

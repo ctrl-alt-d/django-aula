@@ -7,6 +7,7 @@ from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import Horari, DiaDeLaSetmana
 from aula.apps.extKronowin.models import Franja2Aula, Grup2Aula, ParametreKronowin
 from aula.apps.assignatures.models import Assignatura
+from aula.apps.aules.models import Aula
 
 import csv
 from aula.apps.alumnes.models import Nivell, Grup, Curs
@@ -100,6 +101,7 @@ def sincronitza(file, usuari):
     nLiniesLlegides = 0
     nHorarisModificats = 0
     nAssignaturesCreades = 0
+    nAulesCreades = 0
     file.seek(0)
     reader = csv.DictReader(file, fieldnames=fieldnames, dialect=dialect)
     Horari.objects.update(es_actiu=False)
@@ -158,8 +160,13 @@ def sincronitza(file, usuari):
                 assignatura.save()
             horari.assignatura = assignatura
 
-            # aula
-            horari.nom_aula = unicode(row['aula'], 'iso-8859-1')
+            #aula
+            nom_aula = unicode(row['aula'], 'iso-8859-1')
+            aula, create = Aula.objects.get_or_create( nom_aula=nom_aula )
+            nAulesCreades += 1 if created else 0
+            horari.aula = aula
+
+
 
             # dia_de_la_setmana
             dia_kronowin = int(unicode(row['dia'], 'iso-8859-1').split(',')[0]) - 1
@@ -177,7 +184,7 @@ def sincronitza(file, usuari):
                 defaults={'es_actiu': True, })
 
             nouHorari.es_actiu = True
-            nouHorari.nom_aula = horari.nom_aula
+            nouHorari.aula = horari.aula
             nouHorari.save()
 
             if created:
@@ -216,6 +223,7 @@ def sincronitza(file, usuari):
     infos.append(u' ')
     infos.append(u'%d línies llegides' % (nLiniesLlegides,))
     infos.append(u'%d horaris creats o modificats' % (nHorarisModificats))
+    infos.append(u'%d aules creades' % (nAulesCreades))
     infos.append(u'%d assignatures Creades' % (nAssignaturesCreades))
     infos.append(u'Recorda reprogramar classes segons el nou horari')
 

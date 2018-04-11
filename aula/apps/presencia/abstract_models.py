@@ -14,6 +14,8 @@ class AbstractImpartir(models.Model):
     dia_passa_llista = models.DateTimeField(null=True, blank=True)
     comentariImpartir = models.TextField(null=False, blank=True, default='')
     pot_no_tenir_alumnes = models.BooleanField(default=False)
+    reserva = models.ForeignKey('aules.ReservaAula', null=True, blank=True, on_delete=models.SET_NULL)
+
     class Meta:
         abstract = True
         verbose_name = u'Impartir classe'
