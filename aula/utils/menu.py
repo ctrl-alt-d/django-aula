@@ -121,7 +121,7 @@ def calcula_menu( user , path ):
                ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
                   (
                       ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
-                      ("Incidènci per retard", 'consergeria__incidencia__onbehalf', co, None, None ),
+                      ("Incidència per retard", 'consergeria__incidencia__onbehalf', co, None, None ),
 
                    )
                ),
