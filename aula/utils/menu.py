@@ -121,6 +121,8 @@ def calcula_menu( user , path ):
                ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
                   (
                       ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
+                      ("Incidènci per retard", 'consergeria__incidencia__onbehalf', co, None, None ),
+
                    )
                ),
         
@@ -164,7 +166,6 @@ def calcula_menu( user , path ):
                   (
                       ("Cerca Alumne", 'gestio__usuari__cerca', pl or co, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', pl or co, None, None),                      
-                      ("Incidències", 'gestio__incidencia__onbehalf', pl and not pr, None, None ),
                    )
                ),
                             

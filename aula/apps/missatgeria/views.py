@@ -123,6 +123,7 @@ def enviaMissatgeTutors( request ):
                 request,
                 'formset.html',
                     {'formset': formset,
+                     'titol_formulari': u"Missatge a professors tutors de l'alumne",                    
                      'head': 'Avís a tutors.' ,
                     },
                 )
@@ -234,6 +235,7 @@ def enviaMissatgeProfessorsPas(request):
         request,
         'formset.html',
         {'formset': formset,
+         'titol_formulari': u"Missatge a professors i/o PAS",
          'head': u"Missatge a membres del professorat o consergeria",
          },
         )

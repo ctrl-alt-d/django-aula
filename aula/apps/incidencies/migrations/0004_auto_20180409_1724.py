@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='incidencia',
             name='professional_inicia',
-            field=models.ForeignKey(blank=True, help_text='Professor que inicialment posa la incid\xe8ncia per\xf2 que no la gestiona (ex: conserge)', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='incidencia_inicia_set', related_query_name='incidencia_inicia', to='usuaris.Professional'),
+            field=models.ForeignKey(blank=True, help_text='Professor que inicialment posa la incid\xe8ncia per\xf2 que no la gestiona (ex: conserge)', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='incidencia_inicia_set', related_query_name='incidencia_inicia', to='usuaris.ProfessorConserge'),
         ),
         migrations.AlterField(
             model_name='incidencia',

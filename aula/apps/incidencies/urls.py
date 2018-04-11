@@ -10,7 +10,7 @@ urlpatterns = [
         name="aula__incidencies__posa_incidencia"),
 
     url(r'^posaIncidenciaprimerahora/$', incidencies_views.posaIncidenciaPrimeraHora,
-        name="gestio__incidencia__onbehalf"),
+        name="consergeria__incidencia__onbehalf"),
                        
     url(r'^posaExpulsio/$', incidencies_views.posaExpulsio,
         name="aula__incidencies__posa_expulsio"),

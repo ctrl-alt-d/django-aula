@@ -232,7 +232,7 @@ class AbstractIncidencia(models.Model):
     gestionada_pel_tutor_motiu = models.CharField(max_length=20, choices=GESTIONADA_PEL_TUTOR_CHOICES, 
                                                   default = '', editable=False,)
 
-    professional_inicia = models.ForeignKey('usuaris.Professional',  
+    professional_inicia = models.ForeignKey('usuaris.ProfessorConserge',  
                                             blank=True, null=True,db_index=True, 
                                             related_name="incidencia_inicia_set",
                                             related_query_name="incidencia_inicia",                                            
