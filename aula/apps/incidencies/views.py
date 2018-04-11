@@ -15,6 +15,7 @@ from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
 from aula.apps.incidencies.helpers import preescriu
 from django.db.models import Count
+from django.utils.datetime_safe import datetime
 
 #templates
 from django.template import RequestContext, loader
@@ -117,6 +118,7 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
                                     text = u"""Posada incidència a l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
                                 )                             
                             incidencia_despres_de_posar( incidencia )
+
                     except ValidationError, e:
                         #Com que no és un formulari de model cal tractar a mà les incidències del save:
                         for _, v in e.message_dict.items():
@@ -360,6 +362,100 @@ def posaIncidencia( request ):
                     },
                 )
 
+
+#Incidència per primera hora:
+
+
+@login_required
+@group_required(['consergeria','professional'])
+def posaIncidenciaPrimeraHora( request ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+    
+    missatge = ""
+
+    #
+    formIncidenciaF = modelform_factory(Incidencia, fields=['dia_incidencia',
+                                                            'franja_incidencia',])
+    formIncidenciaF.base_fields['dia_incidencia'].widget =  DateTextImput()               
+
+    #
+    tipus_incidencia = TipusIncidencia.objects.filter( es_informativa=False ).first()
+    if not bool(tipus_incidencia):
+        messages.error(request,  u"Cal entrar el tipus 'Incidència' des d'admin. Crida a l'administrador del sistema." )
+        url = "/incidencies/posaIncidenciaprimerahora"
+        return HttpResponseRedirect( url )
+
+    #
+    ara = datetime.now().time()
+    franja = FranjaHoraria.objects.filter( hora_inici__lte = ara, hora_fi__gte = ara ).first()
+    professional_inicia = User2Professional(user)
+    incidencia = Incidencia ( dia_incidencia = datetime.today(),
+                                tipus = tipus_incidencia,
+                                franja_incidencia = franja,
+                                descripcio_incidencia = u"Retard en entrar al Centre",
+                                gestionada_pel_tutor = True,
+                                gestionada_pel_tutor_motiu = Incidencia.GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA,
+                                professional_inicia = professional_inicia,
+                            )
+
+    #
+    formset = []
+    if request.method == 'POST':
+        
+        formAlumne = triaAlumneSelect2Form(request.POST )
+
+        incidencia.credentials = credentials
+        formIncidencia = formIncidenciaF(request.POST, instance = incidencia )
+        if formAlumne.is_valid():            
+            alumne = formAlumne.cleaned_data['alumne']
+            incidencia.alumne = alumne            
+            incidencia.professional = alumne.tutorsIndividualitzatsDeLAlumne().first() or  alumne.tutorsDeLAlumne().first()
+
+            if not bool(incidencia.professional):
+                messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
+                url = "/incidencies/posaIncidenciaprimerahora"
+                return HttpResponseRedirect( url )   
+
+            if formIncidencia.is_valid(): 
+                    incidencia = formIncidencia.save( )
+                    
+                    #LOGGING
+                    Accio.objects.create( 
+                            tipus = 'IN',
+                            usuari = user,
+                            l4 = l4,
+                            impersonated_from = request.user if request.user != user else None,
+                            text = u"""Posar incidència a {0}. Text incidència: {1}""".format( alumne, incidencia.descripcio_incidencia )
+                        )                    
+                    
+                    incidencia_despres_de_posar( incidencia )
+                    missatge = u"Incidència anotada."
+                    messages.info(request, missatge)
+                    url = '/incidencies/posaIncidenciaprimerahora' 
+    
+                    return HttpResponseRedirect( url )                      
+
+        formset.append( formAlumne )
+        formset.append( formIncidencia )
+        
+    else:
+
+        formAlumne = triaAlumneSelect2Form()        
+        formIncidencia = formIncidenciaF( instance = incidencia)
+
+        formset.append( formAlumne )
+        formset.append( formIncidencia )
+        
+    return render(
+                request,
+                'formset.html',
+                    {'formset': formset,
+                     'head': 'Incidència' ,
+                     'missatge': missatge
+                    },
+                )
 
 #vistes -----------------------------------------------------------------------------------
 

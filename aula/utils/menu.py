@@ -116,6 +116,14 @@ def calcula_menu( user , path ):
 
     
     arbre1 = (
+
+               #--Consergeria--------------------------------------------------------------------------
+               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
+                  (
+                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
+                   )
+               ),
+        
                #--Aula--------------------------------------------------------------------------
                #  id,    nom     vista                 seg      label
                ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
@@ -126,7 +134,6 @@ def calcula_menu( user , path ):
                       ("Alumnes", 'aula__alumnes__blanc', pr, None,
                           ( 
                             ("Els meus alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None),
-                            ("Cerca alumne", 'aula__alumnes__cerca', pr, None ),
                           ),                        
                       ),                                                            
 
@@ -151,7 +158,16 @@ def calcula_menu( user , path ):
                ('tutoria', 'Tutoria', 'tutoria__actuacions__list', tu, None,
                    arbre_tutoria
                ),
-             
+
+               #--professional--------------------------------------------------------------------------
+               ('gestio', 'Gestió', 'gestio__usuari__cerca', pl or co, None,
+                  (
+                      ("Cerca Alumne", 'gestio__usuari__cerca', pl or co, None, None),
+                      ("Cerca Professor", 'gestio__professor__cerca', pl or co, None, None),                      
+                      ("Incidències", 'gestio__incidencia__onbehalf', pl and not pr, None, None ),
+                   )
+               ),
+                            
                #--psicopedagog--------------------------------------------------------------------------
                ('psico', 'Psicopedagog', 'psico__informes_alumne__list', pg or di, None,
                   (
@@ -225,14 +241,7 @@ def calcula_menu( user , path ):
                    )
                ),
              
-               #--Consergeria--------------------------------------------------------------------------
-               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
-                  (
-                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
-                      ("Cerca Alumne", 'consergeria__usuari__cerca', co, None, None),
-                      ("Cerca Professor", 'consergeria__professor__cerca', co, None, None),
-                   )
-               ),
+
 
                #--relacio_families--------------------------------------------------------------------------
                ('relacio_families', u'Famílies', 'relacio_families__informe__el_meu_informe', al, None,
