@@ -367,7 +367,7 @@ def posaIncidencia( request ):
 
 
 @login_required
-@group_required(['consergeria','professional'])
+@group_required(['consergeria'])
 def posaIncidenciaPrimeraHora( request ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -452,7 +452,8 @@ def posaIncidenciaPrimeraHora( request ):
                 request,
                 'formset.html',
                     {'formset': formset,
-                     'head': 'Incidència' ,
+                     'titol_formulari': 'Incidència per retard entrada al centre', 
+                     'head': 'Incidència primera hora' ,
                      'missatge': missatge
                     },
                 )
