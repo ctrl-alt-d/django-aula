@@ -99,5 +99,21 @@ git filter-branch -f --env-filter \
 esac
     '
     
+#--- aules
+
+from aula.apps.horaris.models import Horari
+from aula.apps.aules.models import Aula
+for h in Horari.objects.all():
+     nom_aula = h.nom_aula
+     if bool(nom_aula):
+         aula, _ = Aula.objects.get_or_create( nom_aula = nom_aula )
+         h.aula = aula
+         h.save()
+
+from aula.apps.presencia.models import Impartir as I
+for i in I.objects.all():
+     i.save()
+
+
     
  
