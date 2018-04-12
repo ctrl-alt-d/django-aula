@@ -12,7 +12,7 @@ class triaAulaSelect2Form(forms.Form):
     aula = ModelChoiceField(
                    widget=ModelSelect2Widget(
                                         queryset=Aula.objects.all(),
-                                        search_fields = ['nom_aula__icontains', ],
+                                        search_fields = ['nom_aula__icontains','descripcio_aula__icontains' ],
                                         attrs={'style':"'width': '100%'"},
                                         ),
                    queryset=Aula.objects.all(),
