@@ -170,12 +170,18 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
         missatge = u"Ho sentim, s'ha detectat un problema amb la reserva"
         if form.is_valid():
             try:
-                reserva=form.save()
-                missatge = u"Reserva realitzada correctament"
-                messages.info(request, missatge)
-                dia_reserva = form.cleaned_data['dia_reserva'] #
-                return HttpResponseRedirect(
-                    r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(dia_reserva.year, dia_reserva.month, dia_reserva.day, reserva.aula.pk))
+                es_canvi_aula = ( form.cleaned_data['mou_alumnes'] == 'C' )
+                if not es_canvi_aula:
+                    reserva=form.save()
+                    missatge = u"Reserva realitzada correctament"
+                    messages.info(request, missatge)
+                    dia_reserva = reserva.dia_reserva
+                    return HttpResponseRedirect(
+                        r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(dia_reserva.year, dia_reserva.month, dia_reserva.day, reserva.aula.pk))
+                else:
+                    messages.error(request, "Not yet implemented")
+                    return HttpResponseRedirect( r'/')
+
             except ValidationError, e:
                 for _, v in e.message_dict.items():
                     form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
@@ -184,12 +190,9 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
     else:
         form = reservaAulaForm(instance=novaReserva)
 
-    form.fields['aula'].widget.attrs['readonly'] = True
-    form.fields['hora'].widget.attrs['readonly'] = True
-    form.fields['hora_inici'].widget = forms.HiddenInput()
-    form.fields['hora_fi'].widget = forms.HiddenInput()
-    form.fields['usuari'].widget = forms.HiddenInput()
-    form.fields['usuari'].widget.attrs['readonly'] = True
+    for f in ['aula','dia_reserva','hora','motiu']:
+        form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class',"") 
+        
 
     return render(
             request,
