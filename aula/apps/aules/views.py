@@ -173,8 +173,9 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
                 reserva=form.save()
                 missatge = u"Reserva realitzada correctament"
                 messages.info(request, missatge)
+                dia_reserva = form.cleaned_data['dia_reserva'] #
                 return HttpResponseRedirect(
-                    r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(year, month, day, reserva.aula.pk))
+                    r'/aules/reservaAulaHorari/{0}/{1}/{2}/{3}/'.format(dia_reserva.year, dia_reserva.month, dia_reserva.day, reserva.aula.pk))
             except ValidationError, e:
                 for _, v in e.message_dict.items():
                     form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
@@ -187,9 +188,6 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
     form.fields['hora'].widget.attrs['readonly'] = True
     form.fields['hora_inici'].widget = forms.HiddenInput()
     form.fields['hora_fi'].widget = forms.HiddenInput()
-    #form.fields['hora_inici'].widget.attrs['readonly'] = True
-    #form.fields['hora_fi'].widget.attrs['readonly'] = True
-    form.fields['dia_reserva'].widget.attrs['readonly'] = True
     form.fields['usuari'].widget = forms.HiddenInput()
     form.fields['usuari'].widget.attrs['readonly'] = True
 

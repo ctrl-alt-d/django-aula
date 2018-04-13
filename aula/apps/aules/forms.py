@@ -36,4 +36,5 @@ class reservaAulaForm(ModelForm):
          fields = '__all__'
          widgets = {
              'motiu': forms.Textarea,
+             'dia_reserva' : DateTextImput()
          }
