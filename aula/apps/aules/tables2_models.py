@@ -12,7 +12,7 @@ class HorariAulaTable(tables.Table):
     )
 
     Reserves = tables.TemplateColumn(
-        attrs={'th': {'width': '100%'}},
+        attrs={'th': {'width': '80%'}},
         template_code=u"""
         
                         <div class="progress">
@@ -48,18 +48,17 @@ class HorariAulaTable(tables.Table):
         verbose_name='',
         template_code=u"""
                         <span class="gi-2x">
-                        {% if aula.reservable %}
-                            {% if not record.reserva %}
+                            {% if record.reservable %}
                                 <a href="/aules/tramitarReservaAula/{{aula.pk}}/{{record.franja.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}/">
                                 <span class="mybtn-green glyphicon glyphicon-plus-sign"> </span> <br />
                                 </a>
-                            {% elif record.professor == usuari and not record.grup and not record.assignatura  %}
+                            {% endif %}
+                            {% if record.eliminable %}
                                 <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.reserva.pk}}/{{aula.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}" ,  
                                                                   " {{ "Segur que vols anul·lar la reserva de l'aula"|escapejs}} {{record.reserva.aula.nom_aula}} {{"hora:"}} {{record.reserva.hora}}?")'>
-                                    <span class="mybtn-red glyphicon glyphicon-plus-sign"> </span> <br />           
+                                    <span class="mybtn-red glyphicon glyphicon-minus-sign"> </span> <br />           
                                 </a>
                             {% endif %}
-                        {% endif %}
                         </span>
                         """,
 

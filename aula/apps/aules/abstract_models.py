@@ -7,7 +7,8 @@ from django.db import models
 class AbstractAula(models.Model):
     nom_aula = models.CharField(max_length=45, blank=True)
     descripcio_aula = models.CharField(max_length=240, blank=True, help_text="Exemple: Aforament màxim 30 persones. Exemple: 20 Ordinadors sobretaula")
-    disponibilitat_horaria = models.ManyToManyField('horaris.FranjaHoraria', blank=True)
+    disponibilitat_horaria = models.ManyToManyField('horaris.FranjaHoraria', blank=True,
+                                                     help_text="Deixar en blanc per a qualsevol hora en que hi hagi docència al centre.")
     horari_lliure = models.BooleanField(default=False, help_text='Permet reserves amb temps fraccionat')
     reservable = models.BooleanField(default=True)
 
