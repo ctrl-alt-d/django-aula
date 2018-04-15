@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 import django_tables2 as tables
-
+from aula.apps.aules.models import ReservaAula
 
 class HorariAulaTable(tables.Table):
     Hora = tables.TemplateColumn(
@@ -69,3 +69,24 @@ class HorariAulaTable(tables.Table):
         attrs = {"class": "paleblue table table-striped"}
         template = 'bootable2.html'
 
+
+
+
+class Table2_ReservaAula(tables.Table):
+
+    es_del_passat =  tables.TemplateColumn(
+                                    template_code = u"""
+                                        {% if record.es_del_passat %} 
+                                                    <span class="glyphicon glyphicon-calendar"/> 
+                                        {% endif %}
+                                        """,
+                                    verbose_name = "",
+                                    orderable = False,
+                     )
+
+    class Meta:
+        model = ReservaAula
+        attrs = {"class": "paleblue table table-striped"}
+        sequence = ("es_del_passat", "dia_reserva", "hora", "aula", "motiu" )
+        fields = sequence
+        template = 'bootable2.html' 

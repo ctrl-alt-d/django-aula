@@ -102,11 +102,11 @@ esac
 #--- aules ----
 
 *** Atenció: falten proves. 
-      * Faltar provar matxacar reserva a persona per canvis d'aula als horaris.
-*** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX
-*** Atenció: Falta la part de canvi d'aula
-*** Atenció: Falten 'les meves reserves d'aula'
-*** Atenció: Falta 'fer reserva per dia i franja
+      * Faltar provar matxacar reserva a persona per canvis d'aula als horaris i veure les notificacions.
+*** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX durant la migració
+*** Atenció: Falta implementar l'opió de canvi d'aula
+*** Atenció: Falta poder esborrar a 'les meves reserves d'aula'
+*** Fanten indexos
 
 from aula.apps.horaris.models import Horari
 from aula.apps.aules.models import Aula

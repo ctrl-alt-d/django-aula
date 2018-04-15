@@ -12,16 +12,20 @@ from django.contrib.auth.decorators import login_required
 
 #tables
 from django_tables2 import RequestConfig
-from aula.apps.aules.tables2_models import HorariAulaTable
+from aula.apps.aules.tables2_models import HorariAulaTable, Table2_ReservaAula
+from aula.utils.my_paginator import DiggPaginator
+
 
 #models
-
 from aula.apps.aules.models import Aula, ReservaAula
 from aula.apps.horaris.models import FranjaHoraria, Horari
+from aula.apps.presencia.models import Impartir
 from django.db.models import Q
 
+
 #forms
-from aula.apps.aules.forms import disponibilitatAulaForm, triaAulaSelect2Form, reservaAulaForm
+from aula.apps.aules.forms import ( disponibilitatAulaPerAulaForm, AulesForm,
+                                    reservaAulaForm, disponibilitatAulaPerFranjaForm, )
 
 #helpers
 from aula.apps.usuaris.models import User2Professor
@@ -33,17 +37,40 @@ from django.utils.datetime_safe import datetime
 
 @login_required
 @group_required(['professors', 'professional','consergeria'])
+def reservaAulaList( request ):
+    (user, l4) = tools.getImpersonateUser(request)
+    professor = User2Professor( user )     
+
+    reserves = ( ReservaAula
+                 .objects
+                 .filter( es_reserva_manual = True )
+                  )
+
+    table = Table2_ReservaAula( list( reserves) ) 
+    table.order_by = ['-dia_reserva','-hora']
+    
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 30}).configure(table)
+        
+    return render(
+                  request, 
+                  'reservesAules.html', 
+                  {'table': table,
+                   }
+                 )   
+
+# -- wizard per aula 1/3
+@login_required
+@group_required(['professors', 'professional','consergeria'])
 def consultaAulaPerAula(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
     formset = []
     if request.method == 'POST':
-        formDisponibilitatAula = disponibilitatAulaForm(request.POST)
-        formAula = triaAulaSelect2Form(request.POST)
+        formDisponibilitatAula = disponibilitatAulaPerAulaForm(request.POST)
 
-        if formAula.is_valid() and formDisponibilitatAula.is_valid():
-            aula = formAula.cleaned_data['aula']
+        if formDisponibilitatAula.is_valid():
+            aula = formDisponibilitatAula.cleaned_data['aula']
             data = formDisponibilitatAula.cleaned_data['data']
             year = data.year
             month = data.month
@@ -51,23 +78,19 @@ def consultaAulaPerAula(request):
             next_url = r'/aules/detallAulaReserves/{0}/{1}/{2}/{3}'
             return HttpResponseRedirect(next_url.format(year, month, date, aula.pk))
 
-
     else:
-        formDisponibilitatAula = disponibilitatAulaForm()
-        formAula = triaAulaSelect2Form
-        formset.append(formAula)
-        formset.append(formDisponibilitatAula)
-
+        formDisponibilitatAula = disponibilitatAulaPerAulaForm()
 
     return render(
         request,
-        'formset.html',
-        {'formset': formset,
+        'form.html',
+        {'form': formDisponibilitatAula,
          'head': u'Consultar disponibilitat aula',
+         'titol_formulari': u"Assistent Reserva d'Aula (1/3)",
          },
     )
 
-
+# -- wizard per aula 2/3
 @login_required
 @group_required(['professors', 'professional','consergeria'])
 def detallAulaReserves (request, year, month, day, pk):
@@ -146,18 +169,120 @@ def detallAulaReserves (request, year, month, day, pk):
         {'table': table,
          'aula': aula,
          'dia': data,
+         'titol_formulari': u"Assistent Reserva d'Aula (2/3)",
          },
     )
 
-
+# -- wizard per franja 1/3
 @login_required
 @group_required(['professors', 'professional','consergeria'])
-def tramitarReservaAula (request, pk, pk_franja , year, month, day):
+def consultaAulaPerFranja(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+
+    if request.method == 'POST':
+        formDisponibilitatAula = disponibilitatAulaPerFranjaForm(request.POST)
+
+        if formDisponibilitatAula.is_valid():
+            franja = formDisponibilitatAula.cleaned_data['franja']
+            data = formDisponibilitatAula.cleaned_data['data']
+            year = data.year
+            month = data.month
+            date = data.day
+            next_url = r'/aules/detallFranjaReserves/{0}/{1}/{2}/{3}'
+            return HttpResponseRedirect(next_url.format(year, month, date, franja.pk))
+
+    else:
+        formDisponibilitatAula = disponibilitatAulaPerFranjaForm()
+
+    for f in formDisponibilitatAula.fields:
+        formDisponibilitatAula.fields[f].widget.attrs['class'] = 'form-control ' + formDisponibilitatAula.fields[f].widget.attrs.get('class',"") 
+        
+
+    return render(
+        request,
+        'form.html',
+        {'form': formDisponibilitatAula,
+         'head': u'Consultar disponibilitat aula per franja',
+         'titol_formulari': u"Assistent Reserva d'Aula (1/3)",
+         },
+    )
+
+# -- wizard per franja 2/3
+@login_required
+@group_required(['professors', 'professional','consergeria'])
+def detallFranjaReserves (request, year, month, day, pk):
 
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
-    aula = get_object_or_404(Aula, pk=pk)
+    franja = get_object_or_404(FranjaHoraria, pk=pk)
+
+    #
+    import datetime as t
+    try:
+        year= int( year)
+        month = int( month )
+        day = int( day)
+    except:
+        today = t.date.today()
+        year = today.year
+        month = today.month
+        day = today.day
+
+    data = t.date(year, month, day)
+
+    hi_ha_classe_al_centre_aquella_hora = ( Impartir
+                                            .objects
+                                            .filter( dia_impartir = data )
+                                            .filter( horari__hora = franja )
+                                            .exists ()
+                                            )
+    aules_lliures = Aula.objects.none()
+    if hi_ha_classe_al_centre_aquella_hora:
+        reservable_aquella_hora = Q(disponibilitat_horaria__isnull = True ) | Q(disponibilitat_horaria = franja )
+        reservada = Q( reservaaula__dia_reserva = data )&Q(reservaaula__hora=franja)
+        aules_lliures=( Aula
+                       .objects
+                       .filter( reservable_aquella_hora )
+                       .exclude( reservada )
+                       .distinct()
+                    )
+
+    if request.method == 'POST':
+        form = AulesForm(queryset=aules_lliures,
+                         data=request.POST, 
+                         )
+
+        if form.is_valid():
+            next_url = r"/aules/tramitarReservaAula/{0}/{1}/{2}/{3}/{4}/"
+            return HttpResponseRedirect(next_url.format( form.cleaned_data['aula'].pk, franja.pk, year, month, day))
+
+    else:
+        form = AulesForm(queryset=aules_lliures)
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class',"") 
+
+    return render(
+        request,
+        'form.html',
+        {'form': form,
+         'titol_formulari': u"Assistent Reserva d'Aula (2/3)",
+         },
+    )
+
+
+# -- wizard per aula ó franja 3/3
+@login_required
+@group_required(['professors', 'professional','consergeria'])
+def tramitarReservaAula (request, pk_aula, pk_franja , year, month, day):
+
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    aula = get_object_or_404(Aula, pk=pk_aula)
     franja = get_object_or_404(FranjaHoraria,pk=pk_franja)
 
     #
@@ -219,9 +344,11 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
             'form.html',
             {'form': form,
              'head': u'Reservar aula',
+             'titol_formulari': u"Assistent Reserva d'Aula (3/3)",
              },
     )
 
+# -------------------------------------------------------------------------
 
 @login_required
 @group_required(['professors', 'professional'])

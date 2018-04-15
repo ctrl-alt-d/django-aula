@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django import forms as forms
 
 from aula.apps.aules.models import Aula, ReservaAula
+from aula.apps.horaris.models import FranjaHoraria
 from django.forms.models import ModelChoiceField, ModelForm
 from aula.django_select2.forms import ModelSelect2Widget
 from django.utils.datetime_safe import datetime
@@ -10,7 +11,8 @@ from django.utils.datetime_safe import datetime
 
 from aula.utils.widgets import DateTextImput
 
-class triaAulaSelect2Form(forms.Form):
+class disponibilitatAulaPerAulaForm(forms.Form):
+
     aula = ModelChoiceField(
                    widget=ModelSelect2Widget(
                                         queryset=Aula.objects.all(),
@@ -21,20 +23,37 @@ class triaAulaSelect2Form(forms.Form):
                    required=True,
                    help_text="Aula a consultar")
 
+    data = forms.DateField(help_text="Data a consultar",
+            initial=datetime.today(),
+            required=True,
+            widget=DateTextImput())
 
 
+class disponibilitatAulaPerFranjaForm(forms.Form):
 
-class disponibilitatAulaForm(forms.Form):
+    franja = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all()  )
 
     data = forms.DateField(help_text="Data a consultar",
                                 initial=datetime.today(),
                                 required=True,
                                 widget=DateTextImput())
 
+class AulesForm(forms.Form):
+    aula = forms.ModelChoiceField( 
+                        queryset = None,
+                        empty_label=None
+                                )
+
+    def __init__(self, queryset, *args, **kwargs):
+        super(AulesForm, self).__init__(*args, **kwargs)
+        self.queryset = queryset
+        self.fields['aula'].queryset = self.queryset
+
+
 
 class reservaAulaForm(ModelForm):
     mou_alumnes= forms.ChoiceField(
-
+                                label=u"És un canvi d'aula?",
                                 help_text= """Pots fer un canvi d'aula o bé pots fer una nova reserva.
                                 Canvi d'aula vol dir que deixes lliure la teva aula i portes els alumnes a l'aula que
                                 estàs reservant.""",

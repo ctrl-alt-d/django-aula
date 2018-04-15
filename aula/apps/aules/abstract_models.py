@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
-
+from django.utils.datetime_safe import datetime
 
 class AbstractAula(models.Model):
     nom_aula = models.CharField(max_length=45, blank=True)
@@ -39,5 +39,20 @@ class AbstractReservaAula(models.Model):
     class Meta:
         abstract = True
         ordering = ['dia_reserva', 'hora_inici']
+
     def __unicode__(self):
         return "{aula} {hora_inici}-{hora_fi} {usuari}".format(aula=self.aula, hora_inici=self.hora_inici, hora_fi=self.hora_fi, usuari = self.usuari)
+
+    @property
+    def dia_hora_reserva(self):
+        return datetime(self.dia_reserva.year,
+                        self.dia_reserva.month,
+                        self.dia_reserva.day,
+                        self.hora_inici.hour,
+                        self.hora_inici.minute,
+                        self.hora_inici.second,
+                        )
+
+    @property
+    def es_del_passat(self):
+        return (self.dia_hora_reserva > datetime.now() )
