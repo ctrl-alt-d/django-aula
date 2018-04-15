@@ -106,6 +106,8 @@ esac
 *** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX durant la migració
 *** Atenció: Falta implementar l'opió de canvi d'aula
 *** Atenció: Falta poder esborrar a 'les meves reserves d'aula'
+*** Falten missatges si no hi ha franges lliures o aules lliures.
+*** Falta fer bé les redireccions cap a 'les meves reserves'
 *** Fanten indexos
 
 from aula.apps.horaris.models import Horari

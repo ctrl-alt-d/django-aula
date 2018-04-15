@@ -12,24 +12,24 @@ urlpatterns = [
         name="gestio__reserva_aula__consulta"),
     url(r'^detallAulaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$', 
         aula_views.detallAulaReserves,
-        name="gestio__aula__detallaulareserves"),
+        name="gestio__reserva_aula__detallaulareserves"),
 
     # wizard per franja
     url(r'^consultaAulaPerFranja/$', aula_views.consultaAulaPerFranja,
         name="gestio__reserva_aula__consulta"),
     url(r'^detallFranjaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$', 
         aula_views.detallFranjaReserves,
-        name="gestio__aula__detallfranjareserves"),
+        name="gestio__reserva_aula__detallfranjareserves"),
 
     # wizard last step
     url(r'^tramitarReservaAula/(?P<pk_aula>\d+)/(?P<pk_franja>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', 
         aula_views.tramitarReservaAula,
-        name="gestio__aula__tramitarreservaaula"),
+        name="gestio__reserva_aula__tramitarreservaaula"),
     
 
     url(r'^eliminarReservaAula/(?P<pk>\d+)/(?P<pk_aula>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', 
         aula_views.eliminarReservaAula,
-        name="gestio__aula__eliminarreservaaula"),
+        name="gestio__reserva_aula__eliminarreservaaula"),
 
 
 
