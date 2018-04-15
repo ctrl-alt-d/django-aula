@@ -180,7 +180,8 @@ def tramitarReservaAula (request, pk, pk_franja , year, month, day):
                               hora_inici=franja.hora_inici,
                               hora_fi=franja.hora_fi,
                               dia_reserva=data,
-                              usuari=user)
+                              usuari=user,
+                              es_reserva_manual=True)
     #
     if request.method=='POST':
         form = reservaAulaForm(request.POST, instance=novaReserva)
@@ -229,22 +230,28 @@ def eliminarReservaAula (request, pk, pk_aula, year, month, day):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
     reserva = get_object_or_404(ReservaAula, pk=pk)
+    nexturl = r'/aules/detallAulaReserves/{0}/{1}/{2}/{3}/'.format(year, month, day, pk_aula)
 
     professor = User2Professor(user)
-    mortalPotEsborrar = (reserva.usuari == professor and not reserva.impartir_set.exists())
-    potEsborrar = mortalPotEsborrar or l4
+    es_meva = reserva.usuari.pk == professor.pk
+    if not l4 and not es_meva:
+        messages.error(request, u"No pots anul·lar aquesta reserva, no l'has fet tu.")
+        return HttpResponseRedirect(nexturl)
 
-    if not potEsborrar:
-        messages.warning(request, u"No pots anul·lar aquesta reserva.")
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-    missatge = u"Reserva anul·lada correctament"
+    te_imparticio_associada = reserva.impartir_set.exists()
+    if not l4 and te_imparticio_associada:
+        messages.error(request, u"No pots anul·lar aquesta reserva, està associada a impartir classe a un grup.")
+        return HttpResponseRedirect(nexturl)
 
     try:
         reserva.delete()
-    except (Exception, reserva) :
-        missatge = u"Ho sentim, no s'ha pogut anul·lar la reserva: " + reserva
-
-    messages.info(request, missatge)
-    nexturl = r'/aules/detallAulaReserves/{0}/{1}/{2}/{3}/'.format(year, month, day, pk_aula)
+        missatge = u"Reserva anul·lada correctament"
+        messages.info(request, missatge)
+    except ValidationError, e:
+        for _,llista_errors in  e.message_dict.items():
+            missatge = u"No s'ha pogut anul·lar la reserva: {0}".format(
+                u", ".join( x for x in llista_errors ) 
+            ) 
+        messages.error(request, missatge)
+    
     return HttpResponseRedirect(nexturl)

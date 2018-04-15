@@ -99,7 +99,14 @@ git filter-branch -f --env-filter \
 esac
     '
     
-#--- aules
+#--- aules ----
+
+*** Atenció: falten proves. 
+      * Faltar provar matxacar reserva a persona per canvis d'aula als horaris.
+*** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX
+*** Atenció: Falta la part de canvi d'aula
+*** Atenció: Falten 'les meves reserves d'aula'
+*** Atenció: Falta 'fer reserva per dia i franja
 
 from aula.apps.horaris.models import Horari
 from aula.apps.aules.models import Aula
@@ -110,10 +117,12 @@ for h in Horari.objects.all():
          h.aula = aula
          h.save()
 
+
 from aula.apps.presencia.models import Impartir as I
 for i in I.objects.all():
      i.save()
 
+TODO: per totes les aules 1XX i 2XX afegir restricció horària
 
     
  

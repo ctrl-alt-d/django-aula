@@ -4,6 +4,7 @@ from django.apps import apps
 #-------------Impartir-------------------------------------------------------------
 from aula.apps.aules.models import ReservaAula, Aula
 from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.missatgeria.models import Missatge
 
 
 def impartir_clean( instance ):
@@ -16,22 +17,36 @@ def impartir_pre_save(sender, instance,  **kwargs):
 
     instance.clean()
 
-    reserva_compartida = (instance.reserva is not None and instance.reserva.impartir_set.count() > 1 )
-    if (not reserva_compartida and instance.reserva is not None ):
+    reserva_compartida = (instance.reserva is not None 
+                          and instance.reserva.impartir_set.count() > 1 )
+    if (not reserva_compartida 
+        and instance.reserva is not None 
+        and not instance.es_reserva_manual ):
         instance.reserva.delete()
 
 
 def impartir_post_save(sender, instance, created, **kwargs):
 
-    if instance.horari.aula is not None:
+    # Mantenir reserva o assignar-li una de nova
+    # Si el professor havia fet un canvi d'aula cal respectar-ho.
+    aula_informada_a_l_horari = instance.horari.aula is not None
+    te_reserva = instance.reserva is not None
+    te_reserva_manual = te_reserva and instance.reserva.es_reserva_manual
+    cal_assignar_nova_reserva = aula_informada_a_l_horari and not te_reserva_manual
+    if cal_assignar_nova_reserva:
         reserves = ReservaAula.objects.filter( aula=instance.horari.aula,
                                                dia_reserva=instance.dia_impartir,
                                                hora=instance.horari.hora )
 
         reserves_manuals = list( reserves.filter( impartir__isnull = True ) )
+        usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
         for reserva in reserves_manuals:
-            # TODO: enviar missatge a la victima Missatge( ,,,
             reserva.delete()
+            msg = Missatge(
+                remitent=usuari_notificacions,
+                text_missatge=u"El sistema ha hagut d'anul·lar la teva reserva d'aula: {0}".format(reserva),
+                )
+            msg.envia_a_usuari(reserva.usuari,'VI')            
 
         reserves_automatiques = list( reserves.filter(impartir__isnull=False) )
         if bool(reserves_automatiques):
