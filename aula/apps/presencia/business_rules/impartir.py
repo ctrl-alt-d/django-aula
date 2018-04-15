@@ -58,7 +58,8 @@ def impartir_post_save(sender, instance, created, **kwargs):
                                       hora_fi=instance.horari.hora.hora_fi,
                                       hora=instance.horari.hora,
                                       usuari=instance.horari.professor,
-                                      motiu="Docencia habitual")
+                                      motiu=u"Docència",
+                                      es_reserva_manual=False )
             novareserva.save()
             reserva = novareserva
 
