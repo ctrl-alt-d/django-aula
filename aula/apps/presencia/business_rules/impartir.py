@@ -24,9 +24,6 @@ def impartir_post_delete( sender, instance, **kwargs):
 def impartir_pre_save(sender, instance,  **kwargs):
 
     instance.clean()
-
-    print instance.pk
-
     reserva_compartida = (bool(instance.reserva)
                           and instance.reserva.impartir_set.count() > 1 )
     if (not reserva_compartida 

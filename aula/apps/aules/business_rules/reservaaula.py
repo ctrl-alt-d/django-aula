@@ -11,6 +11,10 @@ from django.conf import settings
 def reservaaula_clean(instance):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
 
+    if instance.hora:
+        instance.hora_inici = instance.hora.hora_inici
+        instance.hora_fi = instance.hora.hora_fi
+
     if l4:
         return
     
@@ -19,7 +23,7 @@ def reservaaula_clean(instance):
 
     # -- No es pot reservar una aula no reservable
     if instance.es_reserva_manual:
-        if not instance.reservable:
+        if not instance.aula.reservable:
             errors.setdefault('hora', []).append(u'''Aula exempta de reserves. No pot ser reservada.''')
 
     # -- No es pot reservar una aula ocupada
