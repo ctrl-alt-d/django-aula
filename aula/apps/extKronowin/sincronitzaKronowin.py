@@ -196,25 +196,36 @@ def sincronitza(file, usuari):
         finally:
             nLiniesLlegides += 1
 
-            # Solucionem problema de classes que es realitzen en més d'un grup.
-            # Posar les entrades anteriors dels grups B, C, etc... inactives.
-            # By Joan Rodríguez (INS Vidreres)
+    # Solucionem problema de classes que es realitzen en més d'un grup.
+    # Posar les entrades anteriors dels grups B, C, etc... inactives.
+    # By Joan Rodríguez (INS Vidreres)
     fussionar_assignatures, _ = ParametreKronowin.objects.get_or_create(nom_parametre='fusionar assignatures',
                                                                         defaults={'valor_parametre': 'N', })
     if fussionar_assignatures.valor_parametre == 'S':
-        horaris = Horari.objects.filter(es_actiu=True, grup__isnull=False).values_list('assignatura_id', 'professor_id',
-                                                                                       'dia_de_la_setmana_id',
-                                                                                       'hora_id').distinct()
+        horaris = ( Horari
+                   .objects
+                   .filter(es_actiu=True, grup__isnull=False)
+                   .values_list('assignatura_id', 'professor_id',
+                                'dia_de_la_setmana_id',
+                                'hora_id')
+                   .distinct() )
+
         for assignatura_id, professor_id, dia_de_la_setmana_id, hora_id in horaris:
-            horaris_hora = Horari.objects.filter(es_actiu=True, assignatura_id=assignatura_id,
-                                                 professor_id=professor_id, dia_de_la_setmana_id=dia_de_la_setmana_id,
-                                                 hora_id=hora_id, grup__isnull=False)
+            horaris_hora = ( Horari
+                            .objects
+                            .filter(es_actiu=True, 
+                                    assignatura_id=assignatura_id,
+                                    professor_id=professor_id, 
+                                    dia_de_la_setmana_id=dia_de_la_setmana_id,
+                                    hora_id=hora_id, 
+                                    grup__isnull=False) )
             horari_primer_grup = horaris_hora.order_by('grup')[0]
             # per a debugar:
             # horari_altres_grups = horaris_hora.exclude( pk = horari_primer_grup.pk )
             # if horari_altres_grups:
             #	print horari_primer_grup.professor, horari_primer_grup.assignatura, horari_primer_grup.dia_de_la_setmana, horari_primer_grup.hora, ",",horari_primer_grup.grup,",",horari_altres_grups.values_list('grup__nom_grup')
             horaris_hora.exclude(pk=horari_primer_grup.pk).update(es_actiu=False)
+
 
     ambErrors = ' amb errors' if errors else ''
     ambAvisos = ' amb avisos' if not errors and warnings else ''
