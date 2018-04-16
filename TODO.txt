@@ -104,7 +104,6 @@ esac
 *** Atenció: falten proves. 
       * Faltar provar matxacar reserva a persona per canvis d'aula als horaris i veure les notificacions.
 *** Falten missatges si no hi ha franges lliures o aules lliures.
-*** El missatge que s'envii des del post delete de reserva
 
 from aula.apps.horaris.models import Horari
 from aula.apps.aules.models import Aula
