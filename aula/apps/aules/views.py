@@ -93,7 +93,7 @@ def consultaAulaPerAula(request):
 
 # -- wizard per aula 2/3
 @login_required
-@group_required(['professors', 'professional','consergeria'])
+@group_required(['professors', 'professional', 'consergeria'])
 def detallAulaReserves (request, year, month, day, pk):
 
     credentials = tools.getImpersonateUser(request)
@@ -251,6 +251,7 @@ def detallFranjaReserves (request, year, month, day, pk):
                        .objects
                        .filter( reservable_aquella_hora )
                        .exclude( reservada )
+                       .exclude( reservable = False )
                        .distinct()
                     )
 
@@ -281,13 +282,13 @@ def detallFranjaReserves (request, year, month, day, pk):
 # -- wizard per aula ó franja 3/3
 @login_required
 @group_required(['professors', 'professional','consergeria'])
-def tramitarReservaAula (request, pk_aula, pk_franja , year, month, day):
+def tramitarReservaAula (request, pk_aula=None, pk_franja= None , year=None, month=None, day=None):
 
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
-    aula = get_object_or_404(Aula, pk=pk_aula)
-    franja = get_object_or_404(FranjaHoraria,pk=pk_franja)
+    aula = Aula.objects.filter(pk=pk_aula).first()
+    franja = FranjaHoraria.objects.filter(pk=pk_franja).first()
 
     #
     import datetime as t
@@ -306,8 +307,6 @@ def tramitarReservaAula (request, pk_aula, pk_franja , year, month, day):
     #
     novaReserva = ReservaAula(aula=aula,
                               hora=franja,
-                              hora_inici=franja.hora_inici,
-                              hora_fi=franja.hora_fi,
                               dia_reserva=data,
                               usuari=user,
                               es_reserva_manual=True)

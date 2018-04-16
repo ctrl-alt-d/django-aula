@@ -15,7 +15,7 @@ class disponibilitatAulaPerAulaForm(forms.Form):
 
     aula = ModelChoiceField(
                    widget=ModelSelect2Widget(
-                                        queryset=Aula.objects.all(),
+                                        queryset=Aula.objects.filter(reservable = True),
                                         search_fields = ['nom_aula__icontains','descripcio_aula__icontains' ],
                                         attrs={'style':"'width': '100%'"},
                                         ),

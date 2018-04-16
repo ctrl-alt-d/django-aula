@@ -26,6 +26,11 @@ urlpatterns = [
         aula_views.tramitarReservaAula,
         name="gestio__reserva_aula__tramitarreservaaula"),
     
+    # wizard last step
+    url(r'^tramitarReservaAula/$', 
+        aula_views.tramitarReservaAula,
+        name="gestio__reserva_aula__tramitarreservaaulal4"),
+    
 
     url(r'^eliminarReservaAula/(?P<pk>\d+)/$', 
         aula_views.eliminarReservaAula,

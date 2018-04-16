@@ -14,6 +14,11 @@ def reservaaula_clean(instance):
     errors = {}
     ReservaAula = instance.__class__
 
+    # -- No es pot reservar una aula no reservable
+    if instance.es_reserva_manual:
+        if not instance.reservable:
+            errors.setdefault('hora', []).append(u'''Aula exempta de reserves. No pot ser reservada.''')
+
     # -- No es pot reservar una aula ocupada
     if instance.es_reserva_manual:
         aulaOcupada = ( ReservaAula

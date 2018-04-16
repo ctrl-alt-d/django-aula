@@ -560,7 +560,13 @@ def detallAlumneHorari(request, pk, detall='all'):
 
     mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
 
-    qAvui = (Q(impartir__dia_impartir=datetime.today()))
+    data_txt = request.GET.get( 'data', '' )
+    try:
+        data = datetime.strptime(data_txt, r"%Y-%m-%d").date()
+    except ValueError:
+        data = datetime.today()    
+
+    qAvui = Q(impartir__dia_impartir=data)
     alumne = get_object_or_404( Alumne, pk=pk)
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
 
@@ -581,13 +587,13 @@ def detallAlumneHorari(request, pk, detall='all'):
         for aula in aules:
             if c.impartir.horari.hora == aula['hora']:
                 aula['horari_alumne']= aula['horari_alumne'] + u'\n' + \
-                                       c.impartir.horari.nom_aula + u' ' + \
+                                       c.impartir.get_nom_aula + u' ' + \
                                        c.impartir.horari.professor.get_full_name() + u' ' + \
                                        c.impartir.horari.assignatura.nom_assignatura + \
                                        u' (' + estat + u')'
                 horanova = False
         if horanova:
-            novaaula = {'horari_alumne': c.impartir.horari.nom_aula + ' ' +
+            novaaula = {'horari_alumne': c.impartir.get_nom_aula + ' ' +
                                          c.impartir.horari.professor.get_full_name() + u' ' +
                                          c.impartir.horari.assignatura.nom_assignatura +
                                          u' (' + estat + u')',
@@ -641,8 +647,11 @@ def detallAlumneHorari(request, pk, detall='all'):
         'mostraInfoAlumneCercat.html',
         {'table': table,
          'alumne':alumne,
-         'dia' : datetime.today().date(),
+         'dia' : data,
          'mostra_detalls': mostra_detalls,
+         'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
+         'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
+         'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          },
     )
 

@@ -106,7 +106,6 @@ esac
 *** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX durant la migració
 *** Falten missatges si no hi ha franges lliures o aules lliures.
 *** El missatge que s'envii des del post delete de reserva
-*** Horari professor i alumnes les aules les ha de pendre d'impartir
 
 from aula.apps.horaris.models import Horari
 from aula.apps.aules.models import Aula
@@ -122,7 +121,15 @@ from aula.apps.presencia.models import Impartir as I
 for i in I.objects.all():
      i.save()
 
-TODO: per totes les aules 1XX i 2XX afegir restricció horària
+from aula.apps.horaris.models import FranjaHoraria
+franges_matins = FranjaHoraria.objects.filter( hora_inici__lte = '14:00' )
+zona_matins = list( Aula.objects.filter( nom_aula__startswith = '1' ) )
+zona_matins += list( Aula.objects.filter( nom_aula__startswith = '2' ) )
+for aula in zona_matins:
+   aula.disponibilitat_horaria = franges_matins
+
+   
+
 
     
  
