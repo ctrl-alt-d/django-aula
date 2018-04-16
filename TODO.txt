@@ -106,6 +106,7 @@ esac
 *** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX durant la migració
 *** Falten missatges si no hi ha franges lliures o aules lliures.
 *** El missatge que s'envii des del post delete de reserva
+*** Horari professor i alumnes les aules les ha de pendre d'impartir
 
 from aula.apps.horaris.models import Horari
 from aula.apps.aules.models import Aula
