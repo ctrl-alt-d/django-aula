@@ -47,8 +47,8 @@ def reservaAulaList( request ):
                  .filter( usuari = user )
                   )
 
-    table = Table2_ReservaAula( list( reserves) ) 
-    table.order_by = ['-dia_reserva','-hora']
+    table = Table2_ReservaAula(  reserves ) 
+    table.order_by = ['-dia_reserva', ]
     
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 30}).configure(table)
         

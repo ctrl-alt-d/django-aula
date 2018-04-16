@@ -6,7 +6,6 @@ from aula.apps.aules.models import ReservaAula, Aula
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.missatgeria.models import Missatge
 
-
 def impartir_clean( instance ):
     pass
 
@@ -16,9 +15,9 @@ def impartir_pre_delete( sender, instance, **kwargs):
 
 def impartir_post_delete( sender, instance, **kwargs):
     # Esborrar la reserva
-    fake_credentials = ( None, True )
-    if not instance.reserva.impartir_set.exists():
-        instance.reserva.credentials = fake_credentials
+    if not instance.reserva.associada_a_impartir:
+        fake_l4_credentials = ( None, True )
+        instance.reserva.credentials = fake_l4_credentials
         instance.reserva.delete()
 
 def impartir_pre_save(sender, instance,  **kwargs):

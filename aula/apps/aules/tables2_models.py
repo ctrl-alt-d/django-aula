@@ -71,9 +71,17 @@ class HorariAulaTable(tables.Table):
 
 class Table2_ReservaAula(tables.Table):
 
+    dia_reserva = tables.Column(order_by=('dia_reserva', 'hora'))
+    hora = tables.Column(orderable = False)
+    get_assignatures =  tables.TemplateColumn(template_code = u"""
+                                        {{record.get_assignatures}}
+                                        """,
+                                    verbose_name = "",
+                                    orderable = False,
+                     )
     eliminar =  tables.TemplateColumn(
                                     template_code = u"""
-                                        {% if not record.es_del_passat %} 
+                                        {% if not record.es_del_passat and not record.associada_a_impartir %} 
                                             <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.pk}}" ,  
                                                                             " {{ "Segur que vols anul·lar la reserva de l'aula"|escapejs}} {{record.aula.nom_aula}} {{"hora:"}} {{record.hora}}?")'>
                                                 <span class="mybtn-red glyphicon glyphicon-minus-sign"> </span> <br />           
@@ -84,9 +92,11 @@ class Table2_ReservaAula(tables.Table):
                                     orderable = False,
                      )
 
+
+
     class Meta:
         model = ReservaAula
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("dia_reserva", "hora", "aula", "motiu", "eliminar" )
+        sequence = ("dia_reserva", "hora", "get_assignatures", "aula", "motiu", "eliminar" )
         fields = sequence
         template = 'bootable2.html' 

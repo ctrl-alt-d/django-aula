@@ -37,7 +37,11 @@ class AbstractReservaAula(models.Model):
     usuari = models.ForeignKey(User)
     motiu = models.CharField(max_length=120, 
                              blank=False, 
-                             help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de famílies")
+                             help_text="""Explica el motiu de la reserva o del canvi d'aula.
+                             (Ex: Inclemències del temps.)
+                             (Ex: Visita pares.)
+                             Important: No entreu dades sensibles en aquest camp, no entreu noms d'alumnes ni noms de famílies,
+                             la primera frase d'una reserva pot ser pública a tothom.""")
     es_reserva_manual = models.BooleanField(editable=False, 
                                             default=False, 
                                             help_text = u"la reserva s'ha fet manualment")
@@ -65,4 +69,16 @@ class AbstractReservaAula(models.Model):
 
     @property
     def es_del_passat(self):
-        return (self.dia_hora_reserva > datetime.now() )
+        return (self.dia_hora_reserva < datetime.now() )
+
+    @property
+    def associada_a_impartir(self):
+        return (self.impartir_set.exists() )
+
+    @property
+    def get_assignatures(self):
+        imparticions_associades = self.impartir_set.all()
+        resposta =  u", ".join([unicode(r.horari.assignatura) 
+                                for r 
+                                in imparticions_associades ] )
+        return resposta or u""

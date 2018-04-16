@@ -23,8 +23,15 @@ class AbstractImpartir(models.Model):
         unique_together = (("dia_impartir","horari"))
 
     def __unicode__(self):
-        return (  self.dia_impartir.strftime( "%d/%m/%Y") +
-                  ': ' + unicode( self.horari) )
+        canviaula = u""
+        if self.canvi_aula_respecte_horari:
+            canviaula = u" amb canvi d'aula a la {aula}".format(aula=self.get_nom_aula)
+        resposta = u"{dia}: {horari}{canviaula}".format(
+                                dia = self.dia_impartir.strftime( "%d/%m/%Y"),
+                                horari = self.horari,
+                                canviaula = canviaula,
+        )
+        return resposta
 
     @property
     def canvi_aula_respecte_horari(self):
