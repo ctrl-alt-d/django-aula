@@ -26,20 +26,30 @@ class AbstractAula(models.Model):
         return self.nom_aula
 
 class AbstractReservaAula(models.Model):
-    aula = models.ForeignKey('aules.Aula', on_delete = models.PROTECT)
+    aula = models.ForeignKey('aules.Aula', 
+                             on_delete = models.PROTECT)
     dia_reserva = models.DateField()
     hora_inici = models.TimeField()
     hora_fi = models.TimeField()
-    hora = models.ForeignKey('horaris.FranjaHoraria',null=True, blank=True,verbose_name='Franja Horaria')
+    hora = models.ForeignKey('horaris.FranjaHoraria',
+                             null=True, blank=True,
+                             verbose_name='Franja Horaria')
     usuari = models.ForeignKey(User)
-    motiu = models.CharField(max_length=120, blank=False, help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de famílies")
-    es_reserva_manual = models.BooleanField(editable=False, default=False, 
+    motiu = models.CharField(max_length=120, 
+                             blank=False, 
+                             help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de famílies")
+    es_reserva_manual = models.BooleanField(editable=False, 
+                                            default=False, 
                                             help_text = u"la reserva s'ha fet manualment")
 
     class Meta:
         abstract = True
-        ordering = ['dia_reserva', 'hora_inici']
-
+        ordering = ['dia_reserva', 'hora']
+        indexes = [
+            models.Index(fields=['dia_reserva', 'hora']),
+            models.Index(fields=['es_reserva_manual','usuari','dia_reserva', 'hora']),
+        ]
+        
     def __unicode__(self):
         return "{aula} {hora_inici}-{hora_fi} {usuari}".format(aula=self.aula, hora_inici=self.hora_inici, hora_fi=self.hora_fi, usuari = self.usuari)
 

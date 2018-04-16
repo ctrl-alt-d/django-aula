@@ -1,9 +1,9 @@
 # This Python file uses the following encoding: utf-8
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.utils.datetime_safe import datetime
 from datetime import timedelta
 from django.apps import apps
-
+from django.db.models import Q
 
 def reservaaula_clean(instance):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
@@ -16,9 +16,12 @@ def reservaaula_clean(instance):
 
     # -- No es pot reservar una aula ocupada
     if instance.es_reserva_manual:
-        aulaOcupada = ReservaAula.objects.filter(hora = instance.hora,
+        aulaOcupada = ( ReservaAula
+                       .objects.filter(hora = instance.hora,
                                                 aula = instance.aula,
-                                                dia_reserva = instance.dia_reserva).exclude(pk=instance.pk).exists()
+                                                dia_reserva = instance.dia_reserva)
+                       .exclude(pk=instance.pk)
+                       .exists() )
 
         if aulaOcupada:
             professorsQueOcupen = [reserva.usuari.first_name + ' ' +
@@ -43,22 +46,19 @@ def reservaaula_clean(instance):
 
     # -- No es pot reservar més aviat ni més tard de la primera i darrera docència d'aquell dia
     if instance.es_reserva_manual:
-        FranjaHoraria = apps.get_model( 'horaris','FranjaHoraria')
-        franges_del_dia = ( FranjaHoraria
-                        .objects
-                        .filter( horari__impartir__dia_impartir = instance.dia_reserva )
-                        .order_by('hora_inici')
-                        )
-        primera_franja = franges_del_dia.first()
-        darrera_franja = franges_del_dia.last()
+        Impartir = apps.get_model( 'presencia','Impartir')
 
-        franges_reservables = ( FranjaHoraria
-                                .objects
-                                .filter(hora_inici__gte = primera_franja.hora_inici)
-                                .filter(hora_fi__lte = darrera_franja.hora_fi)
-                                ) if primera_franja and darrera_franja else []
-        if instance.hora not in franges_reservables:
+        q_hi_ha_docencia_abans = Q(horari__hora__hora_inici__lte = instance.hora.hora_inici)
+        q_hi_ha_docencia_despres = Q(horari__hora__hora_fi__gte = instance.hora.hora_fi)
+        hi_ha_classe_al_centre_aquella_hora = ( Impartir
+                                                .objects
+                                                .filter( dia_impartir = instance.dia_reserva )
+                                                .filter( q_hi_ha_docencia_abans|q_hi_ha_docencia_despres  )
+                                                .exists ()
+                                                )
+        if not hi_ha_classe_al_centre_aquella_hora:
             errors.setdefault('hora', []).append(u"En aquesta hora no hi ha docència al centre")
+
 
     # -- Si l'aula té restricció horària només es pot reservar en aquelles hores
     if instance.es_reserva_manual:
@@ -78,4 +78,19 @@ def reservaaula_post_save(sender, instance, created, **kwargs):
     pass
 
 def reservaaula_pre_delete(sender, instance, **kwargs):
-    pass
+    errors = {}
+    (user, l4) = instance.credentials if hasattr(instance,"credentials") else (None, False)
+    usuari_informat = bool(user)
+    es_meva = usuari_informat and instance.usuari.pk == user.pk
+
+    if not l4 and usuari_informat and not es_meva:
+        errors.setdefault('usuari', []).append(u"Només pots anul·lar les teves reserves.")
+        raise ValidationError(errors) 
+
+    te_imparticio_associada = instance.impartir_set.exists()
+    if not l4 and te_imparticio_associada:
+        errors.setdefault(NON_FIELD_ERRORS, []).append(u"Aquesta reserva està associada a impartir classe a un grup.")
+        raise ValidationError(errors) 
+
+    if len(errors) > 0:
+        raise ValidationError(errors)    

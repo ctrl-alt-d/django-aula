@@ -49,12 +49,12 @@ class HorariAulaTable(tables.Table):
         template_code=u"""
                         <span class="gi-2x">
                             {% if record.reservable %}
-                                <a href="/aules/tramitarReservaAula/{{aula.pk}}/{{record.franja.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}/">
+                                <a href="/aules/tramitarReservaAula/{{record.aula.pk}}/{{record.franja.pk}}/{{record.dia.year}}/{{record.dia.month}}/{{record.dia.day}}/">
                                 <span class="mybtn-green glyphicon glyphicon-plus-sign"> </span> <br />
                                 </a>
                             {% endif %}
                             {% if record.eliminable %}
-                                <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.reserva.pk}}/{{aula.pk}}/{{dia.year}}/{{dia.month}}/{{dia.day}}" ,  
+                                <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.reserva.pk}}" ,  
                                                                   " {{ "Segur que vols anul·lar la reserva de l'aula"|escapejs}} {{record.reserva.aula.nom_aula}} {{"hora:"}} {{record.reserva.hora}}?")'>
                                     <span class="mybtn-red glyphicon glyphicon-minus-sign"> </span> <br />           
                                 </a>
@@ -69,15 +69,15 @@ class HorariAulaTable(tables.Table):
         attrs = {"class": "paleblue table table-striped"}
         template = 'bootable2.html'
 
-
-
-
 class Table2_ReservaAula(tables.Table):
 
-    es_del_passat =  tables.TemplateColumn(
+    eliminar =  tables.TemplateColumn(
                                     template_code = u"""
-                                        {% if record.es_del_passat %} 
-                                                    <span class="glyphicon glyphicon-calendar"/> 
+                                        {% if not record.es_del_passat %} 
+                                            <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.pk}}" ,  
+                                                                            " {{ "Segur que vols anul·lar la reserva de l'aula"|escapejs}} {{record.aula.nom_aula}} {{"hora:"}} {{record.hora}}?")'>
+                                                <span class="mybtn-red glyphicon glyphicon-minus-sign"> </span> <br />           
+                                            </a>
                                         {% endif %}
                                         """,
                                     verbose_name = "",
@@ -87,6 +87,6 @@ class Table2_ReservaAula(tables.Table):
     class Meta:
         model = ReservaAula
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("es_del_passat", "dia_reserva", "hora", "aula", "motiu" )
+        sequence = ("dia_reserva", "hora", "aula", "motiu", "eliminar" )
         fields = sequence
         template = 'bootable2.html' 

@@ -12,7 +12,15 @@ def impartir_clean( instance ):
 
 def impartir_pre_delete( sender, instance, **kwargs):
     pass
-    
+
+
+def impartir_post_delete( sender, instance, **kwargs):
+    # Esborrar la reserva
+    fake_credentials = ( None, True )
+    if not instance.reserva.impartir_set.exists():
+        instance.reserva.credentials = fake_credentials
+        instance.reserva.delete()
+
 def impartir_pre_save(sender, instance,  **kwargs):
 
     instance.clean()

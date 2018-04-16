@@ -44,6 +44,7 @@ def reservaAulaList( request ):
     reserves = ( ReservaAula
                  .objects
                  .filter( es_reserva_manual = True )
+                 .filter( usuari = user )
                   )
 
     table = Table2_ReservaAula( list( reserves) ) 
@@ -156,7 +157,8 @@ def detallAulaReserves (request, year, month, day, pk):
         nova_franja['professor'] = u", ".join([reserva.usuari.first_name + ' ' + reserva.usuari.last_name]) if reserva else u""
         nova_franja['reservable'] = not bool(reserva) and aula.reservable
         nova_franja['eliminable'] = bool(reserva) and reserva.usuari.pk == user.pk
-        
+        nova_franja['aula'] = aula
+        nova_franja['dia'] = data
         horariAula.append(nova_franja)
 
     table = HorariAulaTable(horariAula)
@@ -233,10 +235,12 @@ def detallFranjaReserves (request, year, month, day, pk):
 
     data = t.date(year, month, day)
 
+    q_hi_ha_docencia_abans = Q(horari__hora__hora_inici__lte = franja.hora_inici)
+    q_hi_ha_docencia_despres = Q(horari__hora__hora_fi__gte = franja.hora_fi)
     hi_ha_classe_al_centre_aquella_hora = ( Impartir
                                             .objects
                                             .filter( dia_impartir = data )
-                                            .filter( horari__hora = franja )
+                                            .filter( q_hi_ha_docencia_abans|q_hi_ha_docencia_despres  )
                                             .exists ()
                                             )
     aules_lliures = Aula.objects.none()
@@ -310,27 +314,42 @@ def tramitarReservaAula (request, pk_aula, pk_franja , year, month, day):
     #
     if request.method=='POST':
         form = reservaAulaForm(request.POST, instance=novaReserva)
-        missatge = u"Ho sentim, s'ha detectat un problema amb la reserva"
         if form.is_valid():
             try:
                 es_canvi_aula = ( form.cleaned_data['mou_alumnes'] == 'C' )
                 if es_canvi_aula:
-                    messages.error(request, "Not yet implemented")
-                    return HttpResponseRedirect( r'/')
+                    reserva=form.save(commit=False)
+                    q_es_meva = Q( horari__professor__pk = user.pk )|Q(professor_guardia__pk=user.pk)
+                    q_mateix_dia_i_hora = Q(dia_impartir=reserva.dia_reserva)&Q(horari__hora=reserva.hora)
+                    q_te_reserva = Q(reserva__isnull = False)
+                    impartir = ( Impartir
+                                .objects
+                                .filter( q_es_meva & q_mateix_dia_i_hora & q_te_reserva )
+                                .first()
+                                )
+                    if bool(impartir):
+                        #canvio d'aula l'antiga reserva
+                        impartir.reserva.aula = reserva.aula
+                        impartir.reserva.motiu = reserva.motiu
+                        impartir.reserva.es_reserva_manual = True
+                        impartir.reserva.save()
+                        missatge = u"Canvi d'aula realitzat correctament"
+                        messages.success(request, missatge)                        
+                    else:
+                        #creo la nova reserva
+                        reserva.save()
+                        missatge = u"No s'ha trobat docència a aquella hora, però la reserva queda feta."
+                        messages.success(request, missatge)
                 else:
                     reserva=form.save()
                     missatge = u"Reserva realitzada correctament"
-                    messages.info(request, missatge)
-                    dia_reserva = reserva.dia_reserva
-                    return HttpResponseRedirect(
-                        r'/aules/detallAulaReserves/{0}/{1}/{2}/{3}/'.format(dia_reserva.year, dia_reserva.month, 
-                                                                             dia_reserva.day, reserva.aula.pk))
+                    messages.success(request, missatge)
+                return HttpResponseRedirect(r'/aules/lesMevesReservesDAula/')
 
             except ValidationError, e:
                 for _, v in e.message_dict.items():
                     form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
 
-        messages.info(request, missatge)
     else:
         form = reservaAulaForm(instance=novaReserva)
 
@@ -351,24 +370,13 @@ def tramitarReservaAula (request, pk_aula, pk_franja , year, month, day):
 # -------------------------------------------------------------------------
 
 @login_required
-@group_required(['professors', 'professional'])
-def eliminarReservaAula (request, pk, pk_aula, year, month, day):
+@group_required(['professors', 'professional','consergeria'])
+def eliminarReservaAula (request, pk ):
 
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
     reserva = get_object_or_404(ReservaAula, pk=pk)
-    nexturl = r'/aules/detallAulaReserves/{0}/{1}/{2}/{3}/'.format(year, month, day, pk_aula)
-
-    professor = User2Professor(user)
-    es_meva = reserva.usuari.pk == professor.pk
-    if not l4 and not es_meva:
-        messages.error(request, u"No pots anul·lar aquesta reserva, no l'has fet tu.")
-        return HttpResponseRedirect(nexturl)
-
-    te_imparticio_associada = reserva.impartir_set.exists()
-    if not l4 and te_imparticio_associada:
-        messages.error(request, u"No pots anul·lar aquesta reserva, està associada a impartir classe a un grup.")
-        return HttpResponseRedirect(nexturl)
+    reserva.credentials = credentials
 
     try:
         reserva.delete()
@@ -381,4 +389,5 @@ def eliminarReservaAula (request, pk, pk_aula, year, month, day):
             ) 
         messages.error(request, missatge)
     
-    return HttpResponseRedirect(nexturl)
+    #tornem a la mateixa pantalla on erem (en mode incògnit no funciona)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/aules/lesMevesReservesDAula/'))

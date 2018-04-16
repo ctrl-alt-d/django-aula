@@ -26,6 +26,20 @@ class AbstractImpartir(models.Model):
         return (  self.dia_impartir.strftime( "%d/%m/%Y") +
                   ': ' + unicode( self.horari) )
 
+    @property
+    def canvi_aula_respecte_horari(self):
+        te_reserva =  bool(self.reserva)
+        return te_reserva and self.reserva.aula != self.horari.aula
+
+    @property
+    def get_nom_aula(self):
+        alarma = "!" if self.canvi_aula_respecte_horari else ""
+        te_reserva =  bool(self.reserva)
+        if te_reserva:
+            return u"{aula}{alarma}".format( aula= self.reserva.aula, alarma=alarma )
+        else:
+            return self.horari.aula
+
     def esFutur(self):
         data = datetime( year = self.dia_impartir.year, 
                          month = self.dia_impartir.month, 
