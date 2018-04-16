@@ -4,6 +4,9 @@ from django.utils.datetime_safe import datetime
 from datetime import timedelta
 from django.apps import apps
 from django.db.models import Q
+from django.contrib.auth.models import User
+from django.apps import apps
+from django.conf import settings
 
 def reservaaula_clean(instance):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
@@ -99,3 +102,13 @@ def reservaaula_pre_delete(sender, instance, **kwargs):
 
     if len(errors) > 0:
         raise ValidationError(errors)    
+
+def reservaaula_post_delete( sender, instance, **lwargs ):
+
+    usuari_notificacions, _ = User.objects.get_or_create( username = 'TP')
+    Missatge = apps.get_model( 'missatgeria','Missatge')
+    msg = Missatge(
+        remitent=usuari_notificacions,
+        text_missatge=u"El sistema ha hagut d'anul·lar la teva reserva: {0}".format(instance),
+        )
+    msg.envia_a_usuari(instance.usuari, 'VI')

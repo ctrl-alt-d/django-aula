@@ -103,7 +103,6 @@ esac
 
 *** Atenció: falten proves. 
       * Faltar provar matxacar reserva a persona per canvis d'aula als horaris i veure les notificacions.
-*** Atenció: Falta afegir horari disponibilitat aules 2XX i 3XX durant la migració
 *** Falten missatges si no hi ha franges lliures o aules lliures.
 *** El missatge que s'envii des del post delete de reserva
 
@@ -128,7 +127,7 @@ zona_matins += list( Aula.objects.filter( nom_aula__startswith = '2' ) )
 for aula in zona_matins:
    aula.disponibilitat_horaria = franges_matins
 
-   
+
 
 
     
