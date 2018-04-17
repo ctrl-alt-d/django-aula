@@ -8,6 +8,8 @@ from threading import Thread
 from aula.utils import tools
 from django.db.models import Q
 from aula.apps.horaris.helpers import esFestiu
+import traceback
+
 
 #http://docs.python.org/library/sets.html
 class regeneraThread(Thread):
@@ -58,7 +60,7 @@ class regeneraThread(Thread):
                 
             #per tots els dies:
             for dia in totsElsDies:
-                
+
                 #print 'processant dia: ' + unicode( dia ) #debug 
 
                 #estatus de l'actualització                
@@ -95,8 +97,9 @@ class regeneraThread(Thread):
                         #print 'fora de rang:' + unicode( horari )  #debug
 
 
-        except Exception, e:
-            errors.append(unicode(e))
+        except Exception as e:
+            errors.append( traceback.format_exc() )
+            #errors.append(unicode(e))
             self.str_status = unicode(e)
         
         self.str_status = u'Finalitzat' + unicode( errors )
@@ -109,8 +112,8 @@ class regeneraThread(Thread):
         
         msg = Missatge( 
                     remitent= self.user, 
-                    text_missatge = "Reprogramació de classes finalitzada.")    
-        msg.afegeix_errors( errors.sort() )
+                    text_missatge = "Reprogramació de classes finalitzada.") 
+        msg.afegeix_errors( errors )
         msg.afegeix_warnings(warnings)
         msg.afegeix_infos(infos)    
         importancia = 'VI' if len( errors )> 0 else 'IN'

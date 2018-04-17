@@ -36,11 +36,7 @@ class HorariProfessorTable(tables.Table):
     )
     Aula = tables.TemplateColumn(
                         template_code = u"""
-                        {% if record.horari.nom_aula %}
-                            {{ record.horari.nom_aula }}
-                        {% else %}
-                            --
-                        {% endif %}
+                            {{ record.get_nom_aula }}
                         """,
                         orderable = False,
                         )

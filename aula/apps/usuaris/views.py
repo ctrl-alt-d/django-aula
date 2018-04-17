@@ -546,12 +546,20 @@ def detallProfessorHorari(request, pk, detall='all'):
     #grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
 
     #mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
-    qAvui = datetime.today()
+
+    data_txt = request.GET.get( 'data', '' )
+
+    try:
+        data = datetime.strptime(data_txt, r"%Y-%m-%d").date()
+    except ValueError:
+        data = datetime.today()
+
+
     professor = get_object_or_404( Professor, pk=pk)
     tutoria = professor.tutor_set.filter( professor = professor )
 
-    qHorari = Q(horari__professor = professor, dia_impartir = qAvui)
-    qGuardies = Q(professor_guardia = professor, dia_impartir = qAvui)
+    qHorari = Q(horari__professor = professor, dia_impartir = data)
+    qGuardies = Q(professor_guardia = professor, dia_impartir = data)
     imparticions = Impartir.objects.filter( qHorari | qGuardies ).order_by( 'horari__hora')
 
     table=HorariProfessorTable(imparticions)
@@ -564,8 +572,10 @@ def detallProfessorHorari(request, pk, detall='all'):
         {'table': table,
          'professor':professor,
          'tutoria': tutoria,
-         'dia' : datetime.today().date(),
-         #'mostra_detalls': mostra_detalls,
+         'dia' : data,
+         'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
+         'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
+         'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          })
 
 @login_required

@@ -99,5 +99,38 @@ git filter-branch -f --env-filter \
 esac
     '
     
+#--- aules ----
+
+*** Atenció: falten proves. 
+      * Faltar provar matxacar reserva a persona per canvis d'aula als horaris i veure les notificacions.
+*** Falten missatges si no hi ha franges lliures o aules lliures.
+
+from aula.apps.horaris.models import Horari
+from aula.apps.aules.models import Aula
+
+for h in Horari.objects.all():
+     nom_aula = h.nom_aula
+     if bool(nom_aula):
+         aula, _ = Aula.objects.get_or_create( nom_aula = nom_aula )
+         h.aula = aula
+         h.save()
+
+n = I.objects.count()
+from aula.apps.presencia.models import Impartir as I
+for j,i in enumerate(I.objects.all()):
+     i.save()
+     if j % (n/50) == 0:
+         print "[" + " "*(50*j/n) + "*" + " "*(50*(n-j)/n) + "]"
+
+from aula.apps.horaris.models import FranjaHoraria
+franges_matins = FranjaHoraria.objects.filter( hora_inici__lte = '14:00' )
+zona_matins = list( Aula.objects.filter( nom_aula__startswith = '1' ) )
+zona_matins += list( Aula.objects.filter( nom_aula__startswith = '2' ) )
+for aula in zona_matins:
+   aula.disponibilitat_horaria = franges_matins
+
+
+
+
     
  

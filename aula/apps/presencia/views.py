@@ -161,12 +161,12 @@ def mostraImpartir( request, year=None, month=None, day=None ):
             dia_impartir = Q( dia_impartir = dia )
             user_impartir = Q( horari__professor = professor )
             guardia = Q( professor_guardia  = professor )
-            
+
             #TODO: Passar només la impartició i que el template faci la resta de feina.
             imparticions = [
                             (x.horari.assignatura.nom_assignatura,          #
                              x.horari.grup if  x.horari.grup else '',       #
-                             x.horari.nom_aula,                             #
+                             x.get_nom_aula,                             #
                              x.pk,                                          #
                              getSoftColor( x.horari.assignatura ),    #
                              x.color(),                             
@@ -271,7 +271,7 @@ def passaLlista(request, pk):
     info['dia_complet'] = impartir.dia_impartir.strftime("%d/%m/%Y")
     info['hora'] = unicode(impartir.horari.hora)
     info['assignatura'] = unicode(impartir.horari.assignatura)
-    info['nom_aula'] = unicode(impartir.horari.nom_aula)
+    info['nom_aula'] = unicode(impartir.get_nom_aula)
     info['grup'] = unicode(impartir.horari.grup)
 
     url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
