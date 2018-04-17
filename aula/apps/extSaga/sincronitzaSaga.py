@@ -287,7 +287,7 @@ def sincronitza(f, user = None):
     msg = Missatge( 
                 remitent= user, 
                 text_missatge = u"Importació Saga finalitzada.")    
-    msg.afegeix_errors( errors.sort() )
+    msg.afegeix_errors( errors )
     msg.afegeix_warnings(warnings)
     msg.afegeix_infos(infos)    
     importancia = 'VI' if len( errors )> 0 else 'IN'

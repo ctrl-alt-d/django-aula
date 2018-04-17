@@ -8,6 +8,7 @@ from aula.apps.horaris.models import Horari, DiaDeLaSetmana
 from aula.apps.extKronowin.models import Franja2Aula, Grup2Aula, ParametreKronowin
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.aules.models import Aula
+import traceback
 
 import csv
 from aula.apps.alumnes.models import Nivell, Grup, Curs
@@ -245,7 +246,7 @@ def sincronitza(file, usuari):
         remitent=usuari,
         text_missatge="Actualització d'horaris realitzada, recorda reprogramar les classes.",
         enllac="/presencia/regeneraImpartir")
-    msg.afegeix_errors(errors.sort())
+    msg.afegeix_errors(errors)
     msg.afegeix_warnings(warnings)
     msg.afegeix_infos(infos)
     msg.envia_a_usuari(usuari)

@@ -20,6 +20,8 @@ def impartir_post_delete( sender, instance, **kwargs):
         fake_l4_credentials = ( None, True )
         instance.reserva.credentials = fake_l4_credentials
         instance.reserva.delete()
+        instance.reserva = None
+        instance.reserva_id = None
 
 def impartir_pre_save(sender, instance,  **kwargs):
 
@@ -32,6 +34,8 @@ def impartir_pre_save(sender, instance,  **kwargs):
         fake_l4_credentials = (None, True)
         instance.reserva.credentials = fake_l4_credentials
         instance.reserva.delete()
+        instance.reserva = None
+        instance.reserva_id = None
 
 
 def impartir_post_save(sender, instance, created, **kwargs):
@@ -40,20 +44,22 @@ def impartir_post_save(sender, instance, created, **kwargs):
     # Si el professor havia fet un canvi d'aula cal respectar-ho.
     aula_informada_a_l_horari = instance.horari.aula is not None
     te_reserva = instance.reserva is not None
-    te_reserva_manual = te_reserva and instance.reserva.es_reserva_manual
-    cal_assignar_nova_reserva = aula_informada_a_l_horari and not te_reserva_manual
+    es_reserva_manual = te_reserva and instance.reserva.es_reserva_manual
+    cal_assignar_nova_reserva = aula_informada_a_l_horari and not es_reserva_manual
     if cal_assignar_nova_reserva:
         reserves = ReservaAula.objects.filter( aula=instance.horari.aula,
                                                dia_reserva=instance.dia_impartir,
                                                hora=instance.horari.hora )
 
         reserves_manuals = list( reserves.filter( es_reserva_manual = True ) )
+        reserves_automatiques = list( reserves.filter(es_reserva_manual=False) )
+        
         usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
         for reserva in reserves_manuals:
             impartir = reserva.impartir_set.first()
             if impartir:
                 msg = u"El sistema ha hagut d'anul·lar aquest reserva: {0}".format(impartir)
-                reserva.aula = impartir.horari.aula()
+                reserva.aula = impartir.horari.aula
                 reserva.es_reserva_manual = False
                 fake_l4_credentials = (None, True ) 
                 reserva.credentials = fake_l4_credentials
@@ -65,12 +71,11 @@ def impartir_post_save(sender, instance, created, **kwargs):
                 msg.envia_a_usuari(reserva.usuari,'VI')                   
             else:
                 reserva.delete()        
-
-        reserves_automatiques = list( reserves.filter(impartir__isnull=False) )
+                
         if bool(reserves_automatiques):
-            reserva = reserves_automatiques[0]
+            reserva_a_assignar = reserves_automatiques[0]
         else:
-            novareserva = ReservaAula(aula=instance.horari.aula,
+            reserva_a_assignar = ReservaAula(aula=instance.horari.aula,
                                       dia_reserva=instance.dia_impartir,
                                       hora_inici=instance.horari.hora.hora_inici,
                                       hora_fi=instance.horari.hora.hora_fi,
@@ -78,10 +83,9 @@ def impartir_post_save(sender, instance, created, **kwargs):
                                       usuari=instance.horari.professor,
                                       motiu=u"Docència",
                                       es_reserva_manual=False )
-            novareserva.save()
-            reserva = novareserva
+            reserva_a_assignar.save()
 
-        instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva)
+        instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva_a_assignar.pk)
         instance.refresh_from_db()
 
     #bussiness rule:
