@@ -242,17 +242,7 @@ def calcula_menu( user , path ):
 # Queda pendent acabar-la, o eliminar-la de l'aplicació.
                    )
                ),
-             
-               #--Consergeria--------------------------------------------------------------------------
-               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
-                  (
-                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
-                      ("Cerca Alumne", 'consergeria__usuari__cerca', co, None, None),
-                      ("Cerca Professor", 'consergeria__professor__cerca', co, None, None),
-                   )
-               ),
-
-
+        
                #--relacio_families--------------------------------------------------------------------------
                ('relacio_families', u'Famílies', 'relacio_families__informe__el_meu_informe', al, None,
                   (
