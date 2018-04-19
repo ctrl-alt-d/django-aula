@@ -1,11 +1,11 @@
-ara:
+now:
 -12 minuts
 INDH
 Dani Herrera
 1r DAW
 Base de dades
 
-despres:
+next:
 +20 minuts
 INJR
 Joaky Rubio
