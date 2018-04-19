@@ -109,10 +109,13 @@ def reservaaula_pre_delete(sender, instance, **kwargs):
 
 def reservaaula_post_delete( sender, instance, **lwargs ):
 
-    usuari_notificacions, _ = User.objects.get_or_create( username = 'TP')
-    Missatge = apps.get_model( 'missatgeria','Missatge')
-    msg = Missatge(
-        remitent=usuari_notificacions,
-        text_missatge=u"El sistema ha hagut d'anul·lar la teva reserva: {0}".format(instance),
-        )
-    msg.envia_a_usuari(instance.usuari, 'VI')
+    if instance.es_reserva_manual:
+        usuari_notificacions, _ = User.objects.get_or_create( username = 'TP')
+        Missatge = apps.get_model( 'missatgeria','Missatge')
+        msg = Missatge(
+            remitent=usuari_notificacions,
+            text_missatge=u"El sistema ha hagut d'anul·lar la teva reserva: {0}".format(instance),
+            )
+        msg.envia_a_usuari(instance.usuari, 'VI')
+        
+        
