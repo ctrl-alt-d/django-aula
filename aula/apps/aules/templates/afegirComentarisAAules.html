@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+ 
+{% block content  %}
+	<h1>Carregar el fitxer csv d'aules i comentaris</h1>
+	<form action="." method="post" enctype="multipart/form-data">{% csrf_token %}
+		 {{ form }}
+		 <input type="submit" value="Upload">
+	</form>
+	<h2>Recorda que els camps a enviar són 2</h2>
+	<ul>
+	<li>
+	<pre>
+Camps:		
+	"CODI", <---- Correspon al codi de l'aula (100, 101, ....)
+	"NOM",  <---- Correspon a la descripció de l'aula
+
+	</pre>
+	</li>
+	</ul>
+{% endblock %}

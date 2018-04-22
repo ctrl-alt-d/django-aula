@@ -41,6 +41,8 @@ urlpatterns = [
         aula_api_views.getStatus,
         name="gestio__reserva_aula__getStatus"),
 
-
+    url(r'^assignaComentaris/',
+            aula_views.assignaComentarisAAules,
+            name="gestio__aula__assignacomentari"),
 
 ]

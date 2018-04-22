@@ -25,13 +25,15 @@ from django.db.models import Q
 
 #forms
 from aula.apps.aules.forms import ( disponibilitatAulaPerAulaForm, AulesForm,
-                                    reservaAulaForm, disponibilitatAulaPerFranjaForm, )
+                                    reservaAulaForm, disponibilitatAulaPerFranjaForm,
+                                    carregaComentarisAulaForm, )
 
 #helpers
 from aula.apps.usuaris.models import User2Professor
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from django.contrib import messages
+import csv
 from django.utils.datetime_safe import datetime
 
 
@@ -390,3 +392,68 @@ def eliminarReservaAula (request, pk ):
     
     #tornem a la mateixa pantalla on erem (en mode incògnit no funciona)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/aules/lesMevesReservesDAula/'))
+
+
+@login_required
+@group_required(['direcció'])
+def assignaComentarisAAules(request):
+    (user, l4) = tools.getImpersonateUser(request)
+    professor = User2Professor(user)
+
+    errors = []
+    warnings = []
+    infos = []
+
+    if request.method == 'POST':
+        form = carregaComentarisAulaForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            f = request.FILES['fitxerComentaris']
+
+            reader = csv.DictReader(f)
+            info_nAulesLlegides = 0
+            info_nAulesCreades = 0
+            info_nComentarisAfegits = 0
+            AulesCreades = []
+            ComentarisAfegits = []
+
+            f.seek(0)
+            for row in reader:
+                info_nAulesLlegides += 1
+                nom_aula = unicode(row['CODI'],'iso-8859-1')
+                descripcio_aula = unicode(row['NOM'],'iso-8859-1')
+                if nom_aula !='':
+                    a, created = Aula.objects.get_or_create(nom_aula=nom_aula,
+                                                            defaults={
+                                                                'horari_lliure': False,
+                                                                'reservable': True})
+                    if created:
+                        info_nAulesCreades += 1
+                        AulesCreades.append(a.nom_aula)
+                        warnings.append(u'{0}: Aula creada nova'.format(a.nom_aula))
+                    a.descripcio_aula = descripcio_aula
+                    info_nComentarisAfegits += 1
+                    ComentarisAfegits.append(descripcio_aula)
+                    a.save()
+                else:
+                    errors.append('S\'han trobat aules sense nom!!!')
+            warnings.append(u'Total aules noves creades: {0}'.format(info_nAulesCreades))
+            infos.append(u'Total comentaris afegits: {0}'.format(info_nComentarisAfegits))
+            resultat = {'errors': errors, 'warnings': warnings, 'infos': infos}
+            return render(
+                request,
+                'resultat.html',
+                {'head': 'Resultat càrrega comentaris aules',
+                 'msgs': resultat},
+            )
+    else:
+        form = carregaComentarisAulaForm()
+
+    return render(
+        request,
+        'afegirComentarisAAules.html',
+        {'form': form},
+    )
+
+
+
