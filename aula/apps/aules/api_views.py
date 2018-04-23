@@ -28,7 +28,7 @@ def getStatus( request ):
     key = request.GET.get('key',None)
     if key!=settings.CUSTOM_RESERVES_API_KEY:
         return HttpResponseForbidden()
-    if key=='dfsjkjf34q9r4398reorti':
+    if key=='_default_api_aules_password_':
         content = 'Fora de Servei'
         return HttpResponse(content, content_type='text/plain; charset=utf-8')
 

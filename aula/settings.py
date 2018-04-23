@@ -22,7 +22,7 @@ CUSTOM_TIMEOUT = 15*60
 CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
                          u"professors":    15*60, # 15'
                          }
-CUSTOM_RESERVES_API_KEY = 'dfsjkjf34q9r4398reorti'
+CUSTOM_RESERVES_API_KEY = '_default_api_aules_password_'
 
 CACHES = {
     'default': {
