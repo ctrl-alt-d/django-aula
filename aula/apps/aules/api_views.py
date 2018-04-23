@@ -49,6 +49,34 @@ def getStatus( request ):
     content =''
     dateTimeAra = diahora.datetime.combine(diahora.date.today(), ara)
 
+    if outputformat == "2liniesNow":
+        franjaActual = ( FranjaHoraria
+                        .objects
+                        .filter(  hora_inici__lte = ara )
+                        .filter(  hora_fi__gte = ara )
+                        .first()
+                        )
+        reserves_ara = reservasDAulaAvui.filter( hora = franjaActual )
+        profes_ara = u",".join([ r.usuari.username for r in reserves_ara ]) or u"lliure"
+
+        content = u"""{franja}\n{profes}""".format(franja = reserves_ara, 
+                                                   profes =  profes_ara,)
+        return HttpResponse(content, content_type='text/plain; charset=utf-8')  
+
+    if outputformat == "2liniesNext":
+        seguent_franja = ( FranjaHoraria
+                        .objects
+                        .filter(  hora_inici__gte = ara )
+                        .order_by(  "hora_inici" )
+                        .first()
+                        )
+        reserves_despres = reservasDAulaAvui.filter( hora = seguent_franja )
+        profes_despres = u",".join([ r.usuari.username for r in reserves_despres ]) or u"lliure"
+
+        content = u"""{franja}\n{profes}""".format(franja = seguent_franja, 
+                                                   profes =  profes_despres,)
+        return HttpResponse(content, content_type='text/plain; charset=utf-8')     
+
     if outputformat == "2linies":
         franjaActual = ( FranjaHoraria
                         .objects
