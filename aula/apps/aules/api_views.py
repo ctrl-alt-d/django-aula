@@ -24,7 +24,7 @@ def getStatus( request ):
     #(user, l4) = tools.getImpersonateUser(request)
     #professor = User2Professor( user )
 
-    aula = request.GET.get('aula', None)
+    nom_aula = request.GET.get('aula', None)
     key = request.GET.get('key',None)
     if key!=settings.CUSTOM_RESERVES_API_KEY:
         return HttpResponseForbidden()
@@ -32,7 +32,7 @@ def getStatus( request ):
         content = 'Fora de Servei'
         return HttpResponse(content, content_type='text/plain; charset=utf-8')
 
-    aula = get_object_or_404(Aula, nom_aula = aula)
+    aula = get_object_or_404(Aula, nom_aula = nom_aula)
     ara = datetime.now().time()
     reservasDAulaAvui = ReservaAula.objects.filter(aula = aula,
                                                    dia_reserva = datetime.today(),
@@ -41,6 +41,7 @@ def getStatus( request ):
 
     content =''
     dateTimeAra = diahora.datetime.combine(diahora.date.today(), ara)
+    if not reservasDAulaAvui: content = 'Aula lliure tot el dia'
     for reserva in reservasDAulaAvui:
             if reserva.hora_inici < ara:
                 dateTimeFi = diahora.datetime.combine(diahora.date.today(), reserva.hora_fi)
