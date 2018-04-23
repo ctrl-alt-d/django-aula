@@ -82,3 +82,11 @@ class AbstractReservaAula(models.Model):
                                 for r 
                                 in imparticions_associades ] )
         return resposta or u""
+
+    @property
+    def get_grups(self):
+        imparticions_associades = self.impartir_set.all()
+        resposta = u", ".join([unicode(r.horari.grup)
+                               for r
+                               in imparticions_associades])
+        return resposta or u""

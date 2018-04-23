@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 from aula.apps.aules import views as aula_views
+from aula.apps.aules import api_views as aula_api_views
 
 urlpatterns = [
 
@@ -36,6 +37,12 @@ urlpatterns = [
         aula_views.eliminarReservaAula,
         name="gestio__reserva_aula__eliminarreservaaula"),
 
+    url(r'^getStatus',
+        aula_api_views.getStatus,
+        name="gestio__reserva_aula__getStatus"),
 
+    url(r'^assignaComentaris/',
+            aula_views.assignaComentarisAAules,
+            name="gestio__aula__assignacomentari"),
 
 ]

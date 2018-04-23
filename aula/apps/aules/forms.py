@@ -78,3 +78,7 @@ class reservaAulaForm(ModelForm):
             'motiu': forms.Textarea,
             'dia_reserva' : DateTextImput()
         }
+
+
+class carregaComentarisAulaForm(forms.Form):
+    fitxerComentaris = forms.FileField(required=True)
