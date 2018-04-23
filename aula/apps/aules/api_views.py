@@ -59,7 +59,7 @@ def getStatus( request ):
         reserves_ara = reservasDAulaAvui.filter( hora = franjaActual )
         profes_ara = u",".join([ r.usuari.username for r in reserves_ara ]) or u"lliure"
 
-        content = u"""{franja}\n{profes}""".format(franja = reserves_ara, 
+        content = u"""{franja}\n{profes}""".format(franja = franjaActual, 
                                                    profes =  profes_ara,)
         return HttpResponse(content, content_type='text/plain; charset=utf-8')  
 
