@@ -59,7 +59,7 @@ def getStatus( request ):
         reserves_ara = reservasDAulaAvui.filter( hora = franjaActual )
         profes_ara = u",".join([ r.usuari.username for r in reserves_ara ]) or u"lliure"
 
-        content = u"""{franja}\n{profes}""".format(franja = franjaActual, 
+        content = u"""{franja}\n{profes}\n""".format(franja = franjaActual, 
                                                    profes =  profes_ara,)
         return HttpResponse(content, content_type='text/plain; charset=utf-8')  
 
@@ -73,7 +73,7 @@ def getStatus( request ):
         reserves_despres = reservasDAulaAvui.filter( hora = seguent_franja )
         profes_despres = u",".join([ r.usuari.username for r in reserves_despres ]) or u"lliure"
 
-        content = u"""{franja}\n{profes}""".format(franja = seguent_franja, 
+        content = u"""{franja}\n{profes}\n""".format(franja = seguent_franja, 
                                                    profes =  profes_despres,)
         return HttpResponse(content, content_type='text/plain; charset=utf-8')     
 
@@ -96,8 +96,8 @@ def getStatus( request ):
         reserves_despres = reservasDAulaAvui.filter( hora = seguent_franja )
         profes_despres = u",".join([ r.usuari.username for r in reserves_despres ]) or u"lliure"
 
-        content = u"""{franja1} {profes1}
-{franja2} {profes2}""".format(franja1 = franjaActual, profes1 =  profes_ara,
+        content = u"""{franja1} {profes1}\n{franja2} {profes2}\n""".format(
+                              franja1 = franjaActual, profes1 =  profes_ara,
                               franja2 = seguent_franja, profes2 =  profes_despres,)
         return HttpResponse(content, content_type='text/plain; charset=utf-8')     
 
@@ -119,7 +119,7 @@ def getStatus( request ):
             motiu = reserva.get_assignatures if reserva.associada_a_impartir else reserva.motiu
             grup = reserva.get_grups if reserva.associada_a_impartir else '---'
 
-            content = content+u"\n{0}\n{1} {2}\n{3}\n{4}".format(reserva.usuari,
+            content = content+u"\n{0}\n{1} {2}\n{3}\n{4}\n".format(reserva.usuari,
                                                             reserva.usuari.first_name,
                                                             reserva.usuari.last_name,
                                                             motiu,
