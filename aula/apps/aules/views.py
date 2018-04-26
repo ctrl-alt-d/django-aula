@@ -154,8 +154,20 @@ def detallAulaReserves (request, year, month, day, pk):
         nova_franja = {}
         nova_franja['franja'] = franja
         nova_franja['reserva'] = reserva
-        nova_franja['assignatura'] = u", ".join( reserva.impartir_set.values_list( 'horari__assignatura__nom_assignatura', flat=True ).distinct() ) if reserva else u""
-        nova_franja['grup'] = u", ".join( reserva.impartir_set.values_list( 'horari__grup__descripcio_grup', flat=True ).distinct() )  if reserva else u""
+        assignatures_list = ( reserva
+                             .impartir_set
+                             .filter( horari__assignatura__nom_assignatura__isnull = False )
+                             .values_list( 'horari__assignatura__nom_assignatura', flat=True )
+                             .distinct()
+                            ) if reserva else []
+        nova_franja['assignatura'] = u", ".join( assignatures_list ) if reserva else u""
+        grup_list = ( reserva
+                     .impartir_set
+                     .filter( horari__grup__descripcio_grup__isnull = False )
+                     .values_list( 'horari__grup__descripcio_grup', flat=True )
+                     .distinct()
+                     ) if reserva else []
+        nova_franja['grup'] = u", ".join(  grup_list )  if reserva else u""
         nova_franja['professor'] = u", ".join([reserva.usuari.first_name + ' ' + reserva.usuari.last_name]) if reserva else u""
         nova_franja['reservable'] = not bool(reserva) and aula.reservable
         nova_franja['eliminable'] = bool(reserva) and reserva.usuari.pk == user.pk

@@ -68,6 +68,15 @@ class AbstractReservaAula(models.Model):
                         )
 
     @property
+    def dia_hora_reserva_fi(self):
+        return datetime(self.dia_reserva.year,
+                        self.dia_reserva.month,
+                        self.dia_reserva.day,
+                        self.hora_fi.hour,
+                        self.hora_fi.minute,
+                        self.hora_fi.second,
+                        )
+    @property
     def es_del_passat(self):
         return (self.dia_hora_reserva < datetime.now() )
 
