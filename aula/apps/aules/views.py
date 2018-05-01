@@ -11,6 +11,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 
 #tables
+from django.utils.safestring import SafeText
 from django_tables2 import RequestConfig
 from aula.apps.aules.tables2_models import HorariAulaTable, Table2_ReservaAula
 from aula.utils.my_paginator import DiggPaginator
@@ -35,6 +36,7 @@ from aula.utils import tools
 from django.contrib import messages
 import csv
 from django.utils.datetime_safe import datetime
+from datetime import timedelta
 
 
 @login_required
@@ -116,7 +118,12 @@ def detallAulaReserves (request, year, month, day, pk):
         day = today.day
 
     data = t.date(year, month, day)
-
+    tretze_dies = timedelta(days=13)
+    darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
+    if data > darrer_dia_reserva or data < datetime.today().date():
+        msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
+            darrer_dia_reserva)
+        messages.warning(request, SafeText(msg))
     #
     reserves_dun_dia_un_aula = ( ReservaAula
                                 .objects
@@ -249,6 +256,14 @@ def detallFranjaReserves (request, year, month, day, pk):
 
     data = t.date(year, month, day)
 
+    tretze_dies = timedelta(days=13)
+    darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
+    if data > darrer_dia_reserva or data < datetime.today().date():
+        msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
+            darrer_dia_reserva)
+        messages.warning(request, SafeText(msg))
+
+
     q_hi_ha_docencia_abans = Q(horari__hora__hora_inici__lte = franja.hora_inici)
     q_hi_ha_docencia_despres = Q(horari__hora__hora_fi__gte = franja.hora_fi)
     hi_ha_classe_al_centre_aquella_hora = ( Impartir
@@ -315,9 +330,14 @@ def tramitarReservaAula (request, pk_aula=None, pk_franja= None , year=None, mon
         year = today.year
         month = today.month
         day = today.day
-
     data = t.date(year, month, day)
-
+    tretze_dies = timedelta(days=13)
+    darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
+    if data > darrer_dia_reserva or data < datetime.today().date():
+        msg = u"Reserva NO realitzada. Només es pot des d'avui i fins al dia {0}".format(
+            darrer_dia_reserva)
+        messages.warning(request, SafeText(msg))
+        return HttpResponseRedirect(r'/aules/lesMevesReservesDAula/')
     #
     novaReserva = ReservaAula(aula=aula,
                               hora=franja,
