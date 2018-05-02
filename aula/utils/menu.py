@@ -231,6 +231,7 @@ def calcula_menu( user , path ):
                         (
                           ("Alumnes", 'administracio__sincronitza__saga', di , None  ),
                           ("Horaris", 'administracio__sincronitza__kronowin', di , None  ),
+                          ("Aules", 'gestio__aula__assignacomentari', di, None),
                           ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
                         ),
                       ),
