@@ -177,10 +177,13 @@ def configuraConnexio( request , pk ):
         
     infoForm = [
           ('Alumne',unicode( alumne) ),
-          ( 'Telèfon Alumne', alumne.telefons),                     
-          ( 'Nom tutors', alumne.tutors),                     
-          ( 'Correu tutors (Saga)', alumne.correu_tutors),                     
-          ( 'Edat alumne', edatAlumne ),                     
+          #( 'Telèfon Alumne', alumne.telefons),
+          ('Telèfon Alumne', alumne.rp1_telefon + u', ' + alumne.rp2_telefon + u', ' + alumne.altres_telefons),
+          #( 'Nom tutors', alumne.tutors),
+          ('Nom tutors', alumne.rp1_nom +  u', ' + alumne.rp2_nom),
+          #('Correu tutors (Saga)', alumne.correu_tutors),
+          ('Correu tutors (Saga)', alumne.rp1_correu + u', ' + alumne.rp2_correu),
+          ( 'Edat alumne', edatAlumne ),
                 ]
     
     AlumneFormSet = modelform_factory(Alumne,
@@ -350,14 +353,17 @@ def canviParametres( request ):
         edatAlumne = (date.today() - alumne.data_neixement).days / 365 
     except:
         pass
-        
+
     infoForm = [
-          ('Alumne',unicode( alumne) ),
-          ( 'Telèfon Alumne', alumne.telefons),                     
-          ( 'Nom tutors', alumne.tutors),                     
-          ( 'Correu tutors (Saga)', alumne.correu_tutors),                     
-          ( 'Edat alumne', edatAlumne ),                     
-                ]
+        ('Alumne', unicode(alumne)),
+        # ( 'Telèfon Alumne', alumne.telefons),
+        ('Telèfon Alumne', alumne.rp1_telefon + u', ' + alumne.rp2_telefon + u', ' + alumne.altres_telefons),
+        # ( 'Nom tutors', alumne.tutors),
+        ('Nom tutors', alumne.rp1_nom + u', ' + alumne.rp2_nom),
+        # ('Correu tutors (Saga)', alumne.correu_tutors),
+        ('Correu tutors (Saga)', alumne.rp1_correu + u', ' + alumne.rp2_correu),
+        ('Edat alumne', edatAlumne),
+    ]
     
     AlumneFormSet = modelform_factory(Alumne,
                                          fields = ( 'correu_relacio_familia_pare', 'correu_relacio_familia_mare' ,
