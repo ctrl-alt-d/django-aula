@@ -1,4 +1,5 @@
 #!/bin/bash
+export PYTHONIOENCODING=utf8
 cd `dirname $0`/..
 rm aula/db.sqlite
 python manage.py migrate
