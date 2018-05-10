@@ -29,16 +29,16 @@ def impartir_post_delete( sender, instance, **kwargs):
 def impartir_pre_save(sender, instance,  **kwargs):
 
     instance.clean()
-    reserva_compartida = (bool(instance.reserva)
-                          and instance.reserva.impartir_set.count() > 1 )
-    if (not reserva_compartida 
-        and instance.reserva is not None 
-        and not instance.reserva.es_reserva_manual ):
-        fake_l4_credentials = (None, True)
-        instance.reserva.credentials = fake_l4_credentials
-        instance.reserva.delete()
-        instance.reserva = None
-        instance.reserva_id = None
+    #reserva_compartida = (bool(instance.reserva)
+    #                      and instance.reserva.impartir_set.count() > 1 )
+    #if (not reserva_compartida 
+    #    and instance.reserva is not None 
+    #    and not instance.reserva.es_reserva_manual ):
+    #    fake_l4_credentials = (None, True)
+    #    instance.reserva.credentials = fake_l4_credentials
+    #    instance.reserva.delete()
+    #    instance.reserva = None
+    #    instance.reserva_id = None
 
 
 def impartir_post_save(sender, instance, created, **kwargs):
