@@ -88,8 +88,18 @@ class regeneraThread(Thread):
                     dia_festa = esFestiu( curs=curs, dia=dia, hora=horari.hora )
                     if not fora_de_rang :
                         if not dia_festa:
-                            _ , created = Impartir.objects.get_or_create( dia_impartir = dia, horari = horari ) 
-                            if created: nHorarisInsertats += 1
+                            impartir_modificat , created = Impartir.objects.get_or_create( dia_impartir = dia, 
+                                                                          horari = horari ) 
+                            if created: 
+                                nHorarisInsertats += 1
+
+                            if not created:
+                                aula_horari = horari.aula.pk if horari.aula else -1
+                                aula_impartir = impartir_modificat.reserva.aula.pk if impartir_modificat.reserva else -1
+                                canvi_aula = ( aula_horari != aula_impartir )
+                                if canvi_aula:
+                                    impartir_modificat.save()
+
                         else:
                             Impartir.objects.filter( dia_impartir = dia, horari = horari ).delete()
                     else:
