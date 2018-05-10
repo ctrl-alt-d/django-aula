@@ -16,8 +16,11 @@ def impartir_pre_delete( sender, instance, **kwargs):
 
 def impartir_post_delete( sender, instance, **kwargs):
     # Esborrar la reserva
-    if not instance.reserva.associada_a_impartir:
-        fake_l4_credentials = ( None, True )
+    reserva_compartida = (bool(instance.reserva)
+                          and instance.reserva.impartir_set.count() > 1 )
+    if (not reserva_compartida 
+        and instance.reserva is not None ):
+        fake_l4_credentials = (None, True)
         instance.reserva.credentials = fake_l4_credentials
         instance.reserva.delete()
         instance.reserva = None
