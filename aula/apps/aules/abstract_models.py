@@ -37,7 +37,7 @@ class AbstractReservaAula(models.Model):
     usuari = models.ForeignKey(User)
     motiu = models.CharField(max_length=120, 
                              blank=False, 
-                             help_text="""Explica el motiu de la reserva o del canvi d'aula.
+                             help_text="""Explica el propòsit de la reserva o del canvi d'aula.
                              (Ex: Inclemències del temps.)
                              (Ex: Visita pares.)
                              Important: No entreu dades sensibles en aquest camp, no entreu noms d'alumnes ni noms de famílies,
