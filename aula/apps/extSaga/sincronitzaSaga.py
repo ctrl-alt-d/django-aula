@@ -58,8 +58,9 @@ def sincronitza(f, user = None):
         a=Alumne()
         a.ralc = ''
         a.telefons = ''
-        a.tutors = ''
-        a.correu_tutors = ''
+        #a.tutors = ''
+        #a.correu_tutors = ''
+
         for columnName, value in row.iteritems():
             columnName = unicode(columnName,'iso-8859-1')
             #columnName = unicode( rawColumnName, 'iso-8859-1'  )
