@@ -73,11 +73,15 @@ class reservaAulaForm(ModelForm):
                                 
     class Meta:
         model = ReservaAula
+        labels = {
+            "motiu": "Propòsit"
+        }
         fields = ['aula','dia_reserva','hora','motiu']
         widgets = {
             'motiu': forms.Textarea,
             'dia_reserva' : DateTextImput()
         }
+
 
 
 class carregaComentarisAulaForm(forms.Form):
