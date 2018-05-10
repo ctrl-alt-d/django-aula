@@ -10,9 +10,9 @@
           <span class="glyphicon glyphicon-briefcase"> </span> {{ alumne.grup }}, Tutor(a): {{alumne.tutorsDeLAlumne_display}}<br />
           {% if mostra_detalls %}
           <span class="glyphicon glyphicon-home"> </span> {{ alumne.adreca }} ({{ alumne.localitat }})<br />
-          <span class="glyphicon glyphicon-envelope"> </span> {{ alumne.correu_tutors }}<br />
-          <span class="glyphicon glyphicon-earphone"> </span> {{ alumne.telefons }}<br />
-          <span class="glyphicon glyphicon-info-sign"> </span> {{ alumne.tutors }}<br />
+          <span class="glyphicon glyphicon-envelope"> </span> {{ alumne.rp1_correu }} , {{ alumne.rp2_correu }}<br />
+          <span class="glyphicon glyphicon-earphone"> </span> {{ alumne.rp1_telefon }} - {{ alumne.rp2_telefon }} - {{ alumne.rp1_mobil }} - {{ alumne.rp2_mobil }}<br />
+          <span class="glyphicon glyphicon-info-sign"> </span> {{ alumne.rp1_nom }} --- {{ alumne.rp2_nom }}<br />
           {% endif %}
       	</p>
           </div>
