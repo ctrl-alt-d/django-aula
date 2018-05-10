@@ -40,10 +40,10 @@ class AbstractImpartir(models.Model):
 
     @property
     def get_nom_aula(self):
-        alarma = "!" if self.canvi_aula_respecte_horari else ""
         te_reserva =  bool(self.reserva)
         if te_reserva:
-            return u"{aula}{alarma}".format( aula= self.reserva.aula, alarma=alarma )
+            alarma = " !" if self.reserva.es_reserva_manual else ""
+            return u"{aula}{alarma}".format( aula= self.reserva.aula.nom_aula, alarma=alarma )
         else:
             return self.horari.aula or ""
 
