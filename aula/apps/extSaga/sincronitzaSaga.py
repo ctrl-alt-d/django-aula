@@ -91,6 +91,8 @@ def sincronitza(f, user = None):
                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_LOCALITAT"): 
                 a.localitat = unicode(value,'iso-8859-1')
+            if columnName.endswith( u"MUNICIPI"):
+                a.municipi = unicode(value,'iso-8859-1')
             # if columnName.find( u"_TELÈFON RESP")>=0 or columnName.find( u"_MÒBIL RESP")>=0 or columnName.find( u"_ALTRES TELÈFONS")>=0 :
             #     a.telefons += unicode(value,'iso-8859-1') + u', '
             if columnName.endswith(u"_TELÈFON RESP. 1" ):

@@ -119,6 +119,7 @@ class AbstractAlumne(models.Model):
     tutors_volen_rebre_correu = models.BooleanField()
     centre_de_procedencia = models.CharField(max_length=250, blank=True)
     localitat = models.CharField(max_length=240, blank=True)
+    municipi = models.CharField(max_length=240, blank=True)
     telefons = models.CharField(max_length=250, blank=True, db_index=True)
     tutors = models.CharField(max_length=250, blank=True)
     adreca = models.CharField(max_length=250, blank=True)

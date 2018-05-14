@@ -31,7 +31,7 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
     with open(path, 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
 
-        spamwriter.writerow( ( "#","00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT","03_RESPONSABLE 1","04_TELÈFON RESP. 1","05_MÒBIL RESP. 1","06_ADREÇA ELECTR. RESP. 1","07_RESPONSABLE 2","08_TELÈFON RESP. 2","09_MÒBIL RESP. 2","10_ADREÇA ELECTR. RESP. 2","11_ADREÇA","12_LOCALITAT","13_CORREU ELECTRÒNIC","14_ALTRES TELÈFONS","15_CENTRE PROCEDÈNCIA","16_GRUPSCLASSE", ) )
+        spamwriter.writerow( ( "#","00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT","03_RESPONSABLE 1","04_TELÈFON RESP. 1","05_MÒBIL RESP. 1","06_ADREÇA ELECTR. RESP. 1","07_RESPONSABLE 2","08_TELÈFON RESP. 2","09_MÒBIL RESP. 2","10_ADREÇA ELECTR. RESP. 2","11_ADREÇA","12_LOCALITAT","13_MUNICIPI","14_CORREU ELECTRÒNIC","15_ALTRES TELÈFONS","16_CENTRE PROCEDÈNCIA","17_GRUPSCLASSE", ) )
         for nivell, GrupsCursos in nivellsCursosGrups:
             for curs, Grups in GrupsCursos:
                 for grup in Grups:
@@ -48,7 +48,7 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
                                 #"01_NOM",
                                 u"{cognom}, {nom}".format( cognom=cognom1, nom=nom1 ),
                                 #"02_DATA NAIXEMENT",
-                                random_date( date( year=1990, month = 1, day = 1), date( year=2000, month = 1, day = 1)  ).strftime('%d/%m/%Y') ,                            
+                                random_date( date( year=1990, month = 1, day = 1), date( year=2000, month = 1, day = 1)  ).strftime('%d/%m/%Y') ,
                                 #"03_RESPONSABLE 1",
                                 u"{cognom}, {nom}".format( cognom=cognom2, nom=nom2 ),
                                 #"04_TELÈFON RESP. 1",
@@ -56,9 +56,9 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
                                 #"05_MÒBIL RESP. 1",
                                 u"+34 XXXXXXX",
                                 #"06_ADREÇA ELECTR. RESP. 1",
-                                u"c/ del General {nom} {cognom}".format( cognom=cognom3, nom=nom3  ),                            
+                                u"{correu}@mailintaor.com".format(correu=slugify(nom1)),
                                 #"07_RESPONSABLE 2",
-                                u"+34 XXXXXYYY",
+                                u"{cognom}, {nom}".format( cognom=cognom3, nom=nom3 ),
                                 #"08_TELÈFON RESP. 2",
                                 u"+34 XXXXZZZZ",
                                 #"09_MÒBIL RESP. 2",
@@ -66,16 +66,18 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
                                 #"10_ADREÇA ELECTR. RESP. 2",
                                 u"{correu}@mailintaor.com".format( correu = slugify( nom2 ) ),
                                 #"11_ADREÇA",
-                                u"c/ de l'aviador {nom} {cognom}".format( cognom=cognom3, nom=nom3  ),                            
+                                u"c/ de l'aviador {nom} {cognom}".format( cognom=cognom3, nom=nom3  ),
                                 #"12_LOCALITAT",
-                                u"L'Armentera",    #TODO: llista de localitats
-                                #"13_CORREU ELECTRÒNIC",
+                                u"L'Armentera",  #TODO: llista de localitats
+                                # "13_MUNICIPI",
+                                u"Albanyà",  # TODO: llista de localitats
+                                #"14_CORREU ELECTRÒNIC",
                                 u"{correu}@mailintaor.com".format( correu = slugify( nom1 ) ),
-                                #"14_ALTRES TELÈFONS",
-                                u"",
-                                #"15_CENTRE PROCEDÈNCIA",
+                                #"15_ALTRES TELÈFONS",
+                                u"+34 XXXXYZZY",
+                                #"16_CENTRE PROCEDÈNCIA",
                                 u"La Salle",
-                                #"16_GRUPSCLASSE",
+                                #"17_GRUPSCLASSE",
                                 u"{nivell}{curs}{grup}".format( nivell = nivell, grup = grup, curs = curs)                           
                                )
                         utfrow = [ unicode(s).encode("iso-8859-1") for s in row ]

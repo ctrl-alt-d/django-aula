@@ -1377,7 +1377,11 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}- {1}'.format( alumne.adreca , alumne.localitat )
+        localitat_i_o_municipi = alumne.localitat if not alumne.municipi \
+                                else (alumne.municipi if not alumne.localitat
+                                else (alumne.localitat + '-' + alumne.municipi if alumne.localitat != alumne.municipi
+                                else alumne.localitat))
+        camp.contingut = u'{0} - {1}'.format( alumne.adreca , localitat_i_o_municipi )
         filera.append(camp)
     
         taula.fileres.append( filera )
