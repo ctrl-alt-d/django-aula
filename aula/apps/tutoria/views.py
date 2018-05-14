@@ -1313,13 +1313,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 30
+        capcelera.amplade = 15
         capcelera.contingut = u'Dades Alumne'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1416,13 +1416,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 30
+        capcelera.amplade = 15
         capcelera.contingut = u'Dades Responsable 1'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
 
@@ -1485,13 +1485,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 30
+        capcelera.amplade = 15
         capcelera.contingut = u'Dades Responsable 2'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
 
@@ -1552,13 +1552,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 30
+        capcelera.amplade = 15
         capcelera.contingut = u'Altres telèfons'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
 
@@ -1592,13 +1592,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Sancions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
                 
@@ -1631,18 +1631,18 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Expulsions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 40
+        capcelera.amplade = 10
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
             
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 75
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1685,13 +1685,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Incidències'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1731,13 +1731,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Observacions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1775,13 +1775,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Faltes i retards' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1825,13 +1825,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Actuacions' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1871,7 +1871,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Següiment tutorial' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
@@ -1890,7 +1890,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
         for un_any in anys_seguiment_tutorial:
             capcelera = tools.classebuida()
-            capcelera.amplade = 200
+            capcelera.amplade = 85
             capcelera.contingut = u'{0}-{1}'.format( un_any, un_any+1 )
             taula.capceleres.append(capcelera)
         
@@ -1938,7 +1938,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 600
+        capcelera.amplade = 15
         capcelera.contingut = u'Històric' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
@@ -1973,13 +1973,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Qualitativa' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         

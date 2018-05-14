@@ -35,7 +35,7 @@
 	
 		  <tr>
 		  {% for capcelera in taula.capceleres %}
-            <th {% if capcelera.amplade == 30 or capcelera.amplade == 70 %} width="{{ capcelera.amplade }}%" {% endif %}>
+            <th width="{{ capcelera.amplade }}%">
 		       {% if capcelera.enllac %}<a href="{{capcelera.enllac}}">{%endif%}
 			    {{capcelera.contingut}}
       		   {% if capcelera.enllac %}</a>{%endif%}
