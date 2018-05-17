@@ -1008,6 +1008,67 @@ def justificaNext(request, pk):
     
     return HttpResponse( simplejson.dumps(resposta, ensure_ascii=False ) ,content_type= 'application/json')
 
+
+    
+@login_required
+@group_required(['professors'])
+def faltaNext(request, pk):
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4) = credentials
+    professor = User2Professor(user)
+    
+    #--seg----
+    control = ControlAssistencia.objects.get( pk = int(pk) )
+    esTutor = professor in  control.alumne.tutorsDeLAlumne() 
+    tePermis = l4 or esTutor
+    if not tePermis:
+        raise Http404()
+        pass
+
+    justificada = EstatControlAssistencia.objects.get( codi_estat = 'J' )
+    falta = EstatControlAssistencia.objects.get( codi_estat = 'F' )
+    
+    ok = True
+    errors = []
+    jaEstaFalta = control.estat and control.estat == falta
+    if not jaEstaFalta or control.swaped:
+        if control.swaped:
+            control.estat, control.estat_backup = control.estat_backup, None
+            control.professor, control.professor_backup = control.professor_backup, None
+        else:
+            control.estat_backup, control.estat = control.estat, falta
+            control.professor_backup, control.professor = control.professor, professor
+
+        try:
+            control.swaped = not control.swaped
+            control.credentials = credentials
+            control.save()
+
+            #LOGGING
+            Accio.objects.create( 
+                    tipus = 'JF',
+                    usuari = user,
+                    l4 = l4,
+                    impersonated_from = request.user if request.user != user else None,
+                    text = u"""Correcció de presència de l'alumne {0} del dia {1}. """.format( control.alumne, control.impartir.dia_impartir )
+                )                
+        except ValidationError, e:
+            ok=False
+            import itertools
+            errors = list( itertools.chain( *e.message_dict.values() )  )        
+
+    resposta = {
+        'ok' :  ok,
+        'codi': control.estat.codi_estat if control.estat else ' ',
+        'missatge': u'{0}:{1}  Prof.: {2}'.format( control.estat, control.impartir.horari.assignatura,  control.professor ),
+        'errors':  errors,
+        'swaped' : (control.swaped)
+    }
+    
+    return HttpResponse( simplejson.dumps(resposta, ensure_ascii=False ) ,content_type= 'application/json')
+
+
+
 @login_required
 @group_required(['professors'])
 def justificador(request, year, month, day):
