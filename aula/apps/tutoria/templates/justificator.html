@@ -48,7 +48,7 @@ $(document).ready(function()
         url:url, 
         success:function(data) {
         	if ( data.ok ) {
-        	   if (data.swaped )
+        	   if (data.codi == 'J' )
         	      newcontent = '<span id="sca{{ca.pk}}" class="label label-info">'+data.codi+'</span>';
         	   else if (data.codi == 'F') 
         	      newcontent = '<span id="sca{{ca.pk}}" class="label label-danger">'+data.codi+'</span>';
