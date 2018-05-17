@@ -2253,13 +2253,13 @@ def justificarSortida(request):
     
     professor = User2Professor( user )     
     
-    filtre = [ 'P', 'R',]
+    filtre = [ 'P', 'R', 'G']
     
     sortides = ( Sortida
                    .objects
                    .exclude( estat = 'E' )
                    .filter( estat__in = filtre )
-                   .filter( data_inici__lte = datetime.now() )
+                   .filter( data_inici__gte = datetime.now() )
                    .filter( tutors_alumnes_convocats = professor )
                    .distinct()
                   )    
