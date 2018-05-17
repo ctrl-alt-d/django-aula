@@ -1171,42 +1171,42 @@ def sancions( request, s = 'nom' ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 120
+    capcelera.amplade = 10
     capcelera.contingut = u'Alumne'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()   
-    capcelera.amplade = 50
+    capcelera.amplade = 7
     capcelera.contingut = u'Tipus'
     taula.capceleres.append( capcelera )  
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 10
+    capcelera.amplade = 5
     capcelera.contingut = u'Obre Expedient'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 10
     capcelera.contingut = u'Periode sanció'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 9
     capcelera.contingut = u'Data Carta'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 9
     capcelera.contingut = u'Expulsions Relacionades'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 45
     capcelera.contingut = u'Incidències Relacionades'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 5
     capcelera.contingut = u'Accions'
     taula.capceleres.append( capcelera )
 

@@ -110,13 +110,13 @@ def about(request):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 150
+    capcelera.amplade = 20
     capcelera.contingut = u'Informació' 
     capcelera.enllac = None
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 80
     capcelera.contingut = u''
     taula.capceleres.append(capcelera)
 
@@ -177,13 +177,13 @@ def about(request):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 150
+        capcelera.amplade = 20
         capcelera.contingut = u'Estadístiques' 
         capcelera.enllac = None
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 80
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
             

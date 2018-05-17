@@ -349,19 +349,19 @@ def elsMeusAlumnesAndAssignatures( request ):
         taula.titol.contingut = ""
         
         capcelera_nom = tools.classebuida()
-        capcelera_nom.amplade = 230
+        capcelera_nom.amplade = 25
         capcelera_nom.contingut = u'{0} - {1}'.format(unicode( assignatura ) , unicode( grup ) )
 
         capcelera_nIncidencies = tools.classebuida()
-        capcelera_nIncidencies.amplade = 90
+        capcelera_nIncidencies.amplade = 10
         capcelera_nIncidencies.contingut = u'Incidències'
 
         capcelera_assistencia = tools.classebuida()
-        capcelera_assistencia.amplade = 80
+        capcelera_assistencia.amplade = 5
         capcelera_assistencia.contingut = u'Assist.'
 
         capcelera_nFaltes = tools.classebuida()
-        capcelera_nFaltes.amplade = 340
+        capcelera_nFaltes.amplade = 15
         nClasses = Impartir.objects.filter( horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup 
@@ -376,7 +376,7 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 80
+        capcelera_contacte.amplade = 45
         capcelera_contacte.contingut = u'Dades de contacte Tutors.'
         
         taula.capceleres = [capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]

@@ -28,22 +28,22 @@ def list( request ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 20
     capcelera.contingut = u'{0}'.format( u'Tasques importants pendents' )
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 25
     capcelera.contingut = u'Tasca'
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 50
     capcelera.contingut = u'Contingut'
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 5
     capcelera.contingut = u'Esborrar'
     taula.capceleres.append(capcelera)
     
@@ -82,22 +82,22 @@ def list( request ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 20
     capcelera.contingut = u'{0}'.format( u'Tasques Pendents' )
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 25
     capcelera.contingut = u'Tasca'
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 50
     capcelera.contingut = u'Contingut'
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 5
     capcelera.contingut = u'Esborrar'
     taula.capceleres.append(capcelera)
         
@@ -136,22 +136,22 @@ def list( request ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 20
     capcelera.contingut = u'{0}'.format( u'Tasques Realitzades' )
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 25
     capcelera.contingut = u'Tasca'
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 50
     capcelera.contingut = u'Contingut'
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 400
+    capcelera.amplade = 5
     capcelera.contingut = u'Esborrar'
     taula.capceleres.append(capcelera)
         

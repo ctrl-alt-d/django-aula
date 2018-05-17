@@ -234,23 +234,23 @@ def dadesRelacioFamilies( request ):
             taula.capceleres = []
             
             capcelera = tools.classebuida()
-            capcelera.amplade = 100
+            capcelera.amplade = 25
             capcelera.contingut = grup if grup == 'Altres' else u'{0} ({1})'.format(unicode( grup ) , unicode( grup.curs ) ) 
             capcelera.enllac = ""
             taula.capceleres.append(capcelera)
             
             capcelera = tools.classebuida()
-            capcelera.amplade = 70
+            capcelera.amplade = 35
             capcelera.contingut = u'Correus Contacte'
             taula.capceleres.append(capcelera)
                         
             capcelera = tools.classebuida()
-            capcelera.amplade = 70
+            capcelera.amplade = 25
             capcelera.contingut = u'Estat'
             taula.capceleres.append(capcelera)
 
             capcelera = tools.classebuida()
-            capcelera.amplade = 70
+            capcelera.amplade = 15
             capcelera.contingut = u'Acció'
             taula.capceleres.append(capcelera)
                         
@@ -440,13 +440,13 @@ def elMeuInforme( request, pk = None ):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 25
         capcelera.contingut = u'Dia' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 75
         capcelera.contingut = u'Falta, assignatura i franja horària.'
         taula.capceleres.append(capcelera)
         
@@ -521,13 +521,13 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 25
         capcelera.contingut = u'Dia'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 75
         capcelera.contingut = u'Professor i observació.'
         taula.capceleres.append(capcelera)
         
@@ -572,13 +572,13 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 30
         capcelera.contingut = u'Dia i estat'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 70
         capcelera.contingut = u'Professor i Incidència'
         taula.capceleres.append(capcelera)
         
@@ -624,18 +624,18 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 20
         capcelera.contingut = u'Dia'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 40
+        capcelera.amplade = 20
         capcelera.contingut = u'Data comunicació'
         taula.capceleres.append(capcelera)
             
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 60
         capcelera.contingut = u'Professor i motiu'
         taula.capceleres.append(capcelera)
         
@@ -689,13 +689,13 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 25
         capcelera.contingut = u'Dates'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 75
         capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
                 
@@ -735,13 +735,13 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 25
         capcelera.contingut = u'Dades Alumne'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 75
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -837,24 +837,24 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 20
         capcelera.contingut = u'Dates'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 35
         capcelera.contingut = u' '
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 800
+        capcelera.amplade = 35
         capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
                 
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 10
         capcelera.contingut = u' '
         taula.capceleres.append(capcelera)
                 
@@ -948,19 +948,19 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 100
+        capcelera.amplade = 15
         capcelera.contingut = u'Qualitativa'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 20
         capcelera.contingut = asignatura_label
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 900
+        capcelera.amplade = 65
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
                 

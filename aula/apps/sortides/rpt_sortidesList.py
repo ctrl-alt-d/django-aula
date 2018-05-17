@@ -22,13 +22,13 @@ def sortidesListRpt( user ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 100
+    capcelera.amplade = 40
     capcelera.contingut = 'Sortida'
     capcelera.enllac = ""
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 60
     capcelera.contingut = u'Dades Generals'
     taula.capceleres.append(capcelera)
     
