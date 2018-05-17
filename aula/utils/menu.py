@@ -103,7 +103,7 @@ def calcula_menu( user , path ):
                        .objects
                        .exclude( estat = 'E' )
                        .filter( estat__in = filtre )
-                       .filter( data_inici__lte = datetime.now() )
+                       .filter( data_inici__gte = datetime.now() )
                        .filter( tutors_alumnes_convocats = professor )
                        .exists()
                       )    
