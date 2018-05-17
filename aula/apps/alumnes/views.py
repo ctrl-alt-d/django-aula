@@ -452,10 +452,15 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-nom--------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0},{1}'.format( alumne.tutors, alumne.telefons )
+            camp.multipleContingut = [(u'{0} ({1}, {2}, {3})'.format( alumne.rp1_nom,
+                                                                        alumne.rp1_telefon,
+                                                                        alumne.rp1_mobil,
+                                                                        alumne.rp1_correu ), None,),
+                                      (u'{0} ({1}, {2}, {3})'.format( alumne.rp2_nom,
+                                                                        alumne.rp2_telefon,
+                                                                        alumne.rp2_mobil,
+                                                                        alumne.rp2_correu ), None,)]
             filera.append(camp)
-            
-            
             taula.fileres.append( filera )
         
         report.append(taula)

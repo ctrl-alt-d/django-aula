@@ -375,11 +375,11 @@ def canviParametres( request ):
         if form.is_valid(  ):
             form.save()
             url_next = '/open/elMeuInforme/'
-            return HttpResponseRedirect( url_next )            
+            return HttpResponseRedirect( url_next )
 
     else:
-        form = AlumneFormSet(instance=alumne)                
-        
+        form = AlumneFormSet(instance=alumne)
+
     return render(
                 request,
                 'form.html',
@@ -784,7 +784,7 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.telefons )        
+        camp.contingut = u'{0}'.format( alumne.altres_telefons )
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -798,7 +798,14 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.tutors )        
+
+        camp.multipleContingut = [(u'{0} ({1} , {2})'.format(alumne.rp1_nom,
+                                                             alumne.rp1_telefon,
+                                                             alumne.rp1_mobil), None),
+                                  (u'{0} ({1} , {2})'.format(alumne.rp2_nom,
+                                                             alumne.rp2_telefon,
+                                                             alumne.rp2_mobil),None),
+                                  ]
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -812,7 +819,11 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0} ({1})'.format( alumne.adreca, alumne.localitat )        
+        localitat_i_o_municipi = alumne.localitat if not alumne.municipi \
+            else (alumne.municipi if not alumne.localitat
+                  else (alumne.localitat + '-' + alumne.municipi if alumne.localitat != alumne.municipi
+                        else alumne.localitat))
+        camp.contingut = u'{0} - {1}'.format(alumne.adreca, localitat_i_o_municipi)
         filera.append(camp)
     
         taula.fileres.append( filera )
