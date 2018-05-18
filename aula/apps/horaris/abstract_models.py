@@ -20,7 +20,7 @@ class AbstractDiaDeLaSetmana(models.Model):
         return self.dia_de_la_setmana
 
 class AbstractFranjaHoraria(models.Model):
-    hora_inici = models.TimeField(unique=True) 
+    hora_inici = models.TimeField(unique=False) 
     hora_fi = models.TimeField(unique=True)
     nom_franja = models.CharField(max_length=45, blank=True)  
     class Meta:

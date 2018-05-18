@@ -1,0 +1,7 @@
+- Limpiar Archivos
+- Colocar mejores Samples de configuracion
+- En carpeta Apache colar samples de VirtualHost
+- Modificar Modelo Horario para que acepte franja inicial igual (UNIQUE=FALSE)=HECHO
+nota:reserva aulas disponibilidad
+
+-Cargar CSV aulas
