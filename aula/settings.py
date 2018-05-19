@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
 CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
@@ -37,8 +37,7 @@ CACHES = {
     }
 }
 
-CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT = u"""Podeu fer el pagament amb targeta de crèdit a qualsevol caixer de CaixaBank, amb el codi de barres o amb el codi entitat: XXXXXXXXXX"""
-
+CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT = u"""Podeu fer el pagament amb targeta de crèdit a qualsevol caixer de CaixaBank, amb el codi de barres o amb el codi entitat: XXXXXXX"""
 #Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 CUSTOM_TUTORS_INFORME = False
 
@@ -51,15 +50,12 @@ CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
 CUSTOM_FALTES_ABSENCIA_PER_CARTA = 1
 CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 1 }
 
+CUSTOM_FALTES_ABSENCIA_PER_CARTA = 15
+CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 15 }
+CUSTOM_DIES_PRESCRIU_EXPULSIO = 90
+CUSTOM_MODUL_SORTIDES_ACTIU = True
 
 try:
     from settings_local import *
 except ImportError:
     from settings_dir.demo import *
-
-
-    
-
-
-
-

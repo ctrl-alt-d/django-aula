@@ -3,37 +3,79 @@
 
 from settings_dir.common import *
 
-NOM_CENTRE = 'Centre de Demo'
-LOCALITAT = u"L'Escala"
-URL_DJANGO_AULA = r'http://djau.ctrlaltd.webfactional.com'
-ALLOWED_HOSTS = [ 'djau.ctrlaltd.webfactional.com', ]
-
-ACCES_RESTRINGIT_A_GRUPS = None # ó be = ['direcció','administradors']  mentre duran les proves
-
-#En cas de tenir un arbre de predicció cal posar-lo aquí:
-# from lxml import etree  
-# PREDICTION_TREE=etree.parse( r'path_fins_el_model' )
-PREDICTION_TREE = None
-
-STATIC_URL = '{domain}/site-css/'.format( domain=URL_DJANGO_AULA )
-STATIC_ROOT = '/home/ctrlaltd/webapps/djaustatic/'
-
-EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
-
+#En Producion dejar en False
 DEBUG = False
 
+#Informacion del Centro
+NOM_CENTRE = 'Institut Badia'
+LOCALITAT = u"Badia Del Valles"
+
+#URL Por donde contestara la apliacion (Cambiar schema a https si se activa el trafico TSL)
+URL_DJANGO_AULA = r'http://djau.local'
+
+#HOSTS que tendran acceso a la Aplicacion (Por defecto '*' permite a todos los equipos con acceso a la maquina,usar la aplicacion)
+#Puedes colocar direciones en formato CIDR o dominios, tambien se aceptan Wildcards
+ALLOWED_HOSTS = [ '*', ]
+
+
+ACCES_RESTRINGIT_A_GRUPS = None
+
+#Datos del usuario administrador
 ADMINS = (
-    ('joan rodriguez', 'ui@mega.cracs.cat'),
+    ('admin', 'juan.xtec.cat'),
 )
 
+#Configuracion del Correo Relay SMTP de la Aplicacion
 EMAIL_HOST='smtp.gmail.com'
-EMAIL_HOST_USER='el-meu-centre@gmail.com'
+EMAIL_HOST_USER='juan.xtec.cat'
 EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
-DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
+DEFAULT_FROM_EMAIL = 'Institut Badia <no-reply@ibadia.cat>'
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-SERVER_EMAIL='el-meu-centre@gmail.com'
+SERVER_EMAIL='ibadia@xtec.cat'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_SUBJECT_PREFIX = '[Comunicacio Institut Badia del Valles] '
+
+#Activar si se activa el trafico HTTPS
+SESSION_COOKIE_SECURE=False
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+CSRF_COOKIE_SECURE=False
+
+#Configuracion del Arbol de Prediccion (Si no eres experto no lo toques)
+location = lambda x: os.path.join(PROJECT_DIR, x)
+BI_DIR = '/opt/djau2018/aula/apps/BI/PMML'
+__PREDICTION_TREE_TMP = os.path.join( BI_DIR, 'previsioPresencia.pmml' )
+from lxml import etree
+PREDICTION_TREE = etree.parse( __PREDICTION_TREE_TMP )
+
+INSTALLED_APPS  = [] + INSTALLED_APPS
+
+#Ruta donde almacenara los assets de la aplicacion
+STATICFILES_DIRS =  STATICFILES_DIRS
+STATIC_ROOT= os.path.join(PROJECT_DIR,'static/')
 
 
+
+#Comprime los assets estaticos de la app False por defecto
+COMPRESS_ENABLED = False
+
+#Passphrase que usara la app para cifrar las credenciales
+SECRET_KEY = 'changeit'
+CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
+
+#Componente que utilizara  Django para serializar los objetos
+SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
+
+#Configuracion de la Base de datos
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', #django.db.backends.mysql *para mysql
+        'NAME': 'djau2018',
+        'USER': 'djau2018',
+        'PASSWORD': "secret",
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 

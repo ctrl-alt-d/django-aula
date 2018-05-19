@@ -25,4 +25,6 @@ On Ubuntu Server 14.04 LTS 64 bits:
 * python manage.py runserver 127.0.0.1:8000   # or your 
 * Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd 'dAju' )
 
-
+Documentation
+==============
+https://django-aula.gitbook.io/documentation/

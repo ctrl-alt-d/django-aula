@@ -1,0 +1,58 @@
+#Recuerda cambiar lo necesario en el archivo RootPathDjango_Aula/aula/settings_local.py
+#Para que la app pueda ir por SSL (TLS)
+#Tambien activa si no lo esta el modulo ssl:
+# a2enmod ssl
+
+<VirtualHost *:443>
+        ServerAdmin juan@xtec.cat
+        ServerName djau.local
+
+        #Ruta del demonio WSGI (utilizamos nuestro virtualenv)
+        WSGIDaemonProcess djaussl python-path=RootPathDjango_Aula:RootPathDjango_Aula/venv/lib/python2.7/sites-packages
+        WSGIProcessGroup djaussl
+        #Script que arrancara la aplicacion wsgi
+        WSGIScriptAlias / RootPathDjango_Aula/aula/wsgi.py
+
+        #Alias para contenido estatico de la app
+
+        Alias /site-css/admin RootPathDjango_Aula/aula/static/admin/
+        Alias /site-css RootPathDjango_Aula/aula/static/
+
+        ErrorLog /var/log/apache2/djau_ssl_error.log
+
+        #Dando acceso a apache a los directorios de la app
+        <Directory RootPathDjango_Aula/aula>
+                <Files wsgi.py>
+                        Require all granted
+                </Files>
+        </Directory>
+
+        <Directory RootPathDjango_Aula/aula/static/>
+                Require all granted
+        </Directory>
+
+
+        <Directory RootPathDjango_Aula/aula/static/admin/>
+                Require all granted
+        </Directory>
+
+        #SSL Config#########################
+
+        # Generar SelfSignedCertificate
+        # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/djau-selfsigned.key -out /etc/ssl/certs/djau-selfsigned.crt
+
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/certs/djau-selfsigned.crt
+        SSLCertificateKeyFile /etc/ssl/private/djau-selfsigned.key
+        LogLevel warn
+
+        #SSL Config#######################
+
+
+        CustomLog /var/log/apache2/djau_ssl_access.log combined
+
+        BrowserMatch ".*MSIE.*" \
+                nokeepalive ssl-unclean-shutdown \
+                downgrade-1.0 force-response-1.0
+
+</VirtualHost>
