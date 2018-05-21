@@ -873,6 +873,7 @@ def llistaIncidenciesProfessional( request ):
                                                         professional = professional, 
                                                         es_vigent = True,
                                                         tipus__es_informativa = False,
+                                                        gestionada_pel_tutor = False,
                                                         #dia_incidencia__gte = dia_prescriu_incidencia
                                                                                    )
         calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3

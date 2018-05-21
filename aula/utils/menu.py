@@ -46,7 +46,8 @@ def calcula_menu( user , path ):
                                           .objects
                                           .order_by()
                                           .filter( incidencia__professional = professional, 
-                                                   incidencia__tipus__es_informativa = False, 
+                                                   incidencia__tipus__es_informativa = False,
+                                                   gestionada_pel_tutor = False,
                                                    incidencia__es_vigent = True )
                                           .annotate( n = Count( 'incidencia' ) )
                                           .filter( n__gte = 3 )
