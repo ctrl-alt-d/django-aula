@@ -1374,13 +1374,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Dades Alumne'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
-    
+
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1418,61 +1418,231 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         filera = []
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'Data Neixement'        
+        camp.contingut = u'Data Naixement (Edat)'
         filera.append(camp)
-    
+
+        edatAlumne = (date.today() - alumne.data_neixement).days / 365
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.data_neixement.strftime( '%d/%m/%Y' ) )        
+        camp.contingut = u'{0} ({1} anys)'.format( alumne.data_neixement.strftime( '%d/%m/%Y' ) , edatAlumne)
         filera.append(camp)
-    
+
         taula.fileres.append( filera )
-    
-            #----telefons------------------------------------------
-        filera = []
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'Telèfon'        
-        filera.append(camp)
-    
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.telefons )        
-        filera.append(camp)
-    
-        taula.fileres.append( filera )
-    
-            #----Pares------------------------------------------
-        filera = []
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'Pares'        
-        filera.append(camp)
-    
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.tutors )        
-        filera.append(camp)
-    
-        taula.fileres.append( filera )
-    
+
             #----adreça------------------------------------------
         filera = []
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'Adreça'        
+        camp.contingut = u'Adreça'
         filera.append(camp)
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0} ({1})'.format( alumne.adreca, alumne.localitat )        
+        localitat_i_o_municipi = alumne.localitat if not alumne.municipi \
+                                else (alumne.municipi if not alumne.localitat
+                                else (alumne.localitat + '-' + alumne.municipi if alumne.localitat != alumne.municipi
+                                else alumne.localitat))
+        camp.contingut = u'{0} - {1}'.format( alumne.adreca , localitat_i_o_municipi )
         filera.append(camp)
     
         taula.fileres.append( filera )
-    
+
+            # ----email------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'e-mail'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format(alumne.correu)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+
+
+
+
         report.append(taula)
-    
-    #----Sancions  --------------------------------------------------------------------   
+
+        #----Resonsable 1 ---------------------------------------------
+        taula = tools.classebuida()
+
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+
+        taula.capceleres = []
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 15
+        capcelera.contingut = u'Dades Responsable 1'
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 85
+        capcelera.contingut = u''
+        taula.capceleres.append(capcelera)
+
+
+
+        taula.fileres = []
+
+            # ----nom------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Nom'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format(alumne.rp1_nom)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+            # ----Telèfons------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Telèfon/Mòbil'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        mobil = ('/ ' + alumne.rp1_mobil) if alumne.rp1_mobil != '' else ''
+        camp.contingut = u'{0} {1}'.format(alumne.rp1_telefon, mobil)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+            # ----E-mail------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'e-mail'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format(alumne.rp1_correu)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+        report.append(taula)
+
+        # ----Resonsable 2 ---------------------------------------------
+        taula = tools.classebuida()
+
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+
+        taula.capceleres = []
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 15
+        capcelera.contingut = u'Dades Responsable 2'
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 85
+        capcelera.contingut = u''
+        taula.capceleres.append(capcelera)
+
+        taula.fileres = []
+
+            # ----nom------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Nom'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format(alumne.rp2_nom)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+            # ----Telèfons------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Telèfon/Mòbil'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        mobil = ('/ ' + alumne.rp2_mobil) if alumne.rp2_mobil != '' else ''
+        camp.contingut = u'{0} {1}'.format(alumne.rp2_telefon, mobil)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+            # ----E-mail------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'e-mail'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format(alumne.rp2_correu)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+        report.append(taula)
+
+        # ----Altres Telèfons ---------------------------------------------
+        taula = tools.classebuida()
+
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+
+        taula.capceleres = []
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 15
+        capcelera.contingut = u'Altres telèfons'
+        capcelera.enllac = ""
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 85
+        capcelera.contingut = u''
+        taula.capceleres.append(capcelera)
+
+        taula.fileres = []
+
+        # ----telèfons------------------------------------------
+        filera = []
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u''
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format(alumne.altres_telefons)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+        report.append(taula)
+
+    #----Sancions  --------------------------------------------------------------------
     if detall in ['all', 'incidencies']:
         taula = tools.classebuida()
     
@@ -1483,13 +1653,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Sancions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
                 
@@ -1522,18 +1692,18 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Expulsions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 40
+        capcelera.amplade = 10
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
             
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 75
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1576,13 +1746,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Incidències'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1622,13 +1792,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Observacions'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1666,13 +1836,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Faltes i retards' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1716,13 +1886,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Actuacions' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
@@ -1762,7 +1932,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Següiment tutorial' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
@@ -1781,7 +1951,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
     
         for un_any in anys_seguiment_tutorial:
             capcelera = tools.classebuida()
-            capcelera.amplade = 200
+            capcelera.amplade = 85
             capcelera.contingut = u'{0}-{1}'.format( un_any, un_any+1 )
             taula.capceleres.append(capcelera)
         
@@ -1829,7 +1999,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.fileres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 600
+        capcelera.amplade = 15
         capcelera.contingut = u'Històric' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
@@ -1864,13 +2034,13 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 15
         capcelera.contingut = u'Qualitativa' 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 400
+        capcelera.amplade = 85
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from datetime import timedelta
 from django import forms as forms
 
 from aula.apps.aules.models import Aula, ReservaAula
@@ -7,8 +8,6 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.forms.models import ModelChoiceField, ModelForm
 from aula.django_select2.forms import ModelSelect2Widget
 from django.utils.datetime_safe import datetime
-
-
 from aula.utils.widgets import DateTextImput
 
 class disponibilitatAulaPerAulaForm(forms.Form):
@@ -37,6 +36,28 @@ class disponibilitatAulaPerFranjaForm(forms.Form):
                                 initial=datetime.today(),
                                 required=True,
                                 widget=DateTextImput())
+
+    def clean(self):
+        cleaned_data = super(disponibilitatAulaPerFranjaForm, self).clean()
+
+        data=self.cleaned_data['data']
+        tretze_dies = timedelta(days=13)
+        darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
+        if data > darrer_dia_reserva or data < datetime.today().date():
+            raise forms.ValidationError(u"Només pots reservar a partir d'avui i fins al dia {0}".format(darrer_dia_reserva))
+
+        franja = self.cleaned_data['franja']
+        franges_del_dia = (FranjaHoraria
+                           .objects
+                           .filter(horari__impartir__dia_impartir=data)
+                           .order_by('hora_inici')
+                           )
+        primera_franja = franges_del_dia.first()
+        darrera_franja = franges_del_dia.last()
+        if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
+            raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
+
+        return cleaned_data
 
 class AulesForm(forms.Form):
     aula = forms.ModelChoiceField( 
@@ -70,7 +91,23 @@ class reservaAulaForm(ModelForm):
                    queryset=Aula.objects.all(),
                    required=True,
                    help_text="Aula a reservar")
-                                
+
+    def clean_hora(self):
+
+        franja = self.cleaned_data['hora']
+        data = self.cleaned_data['dia_reserva']
+        franges_del_dia = (FranjaHoraria
+                           .objects
+                           .filter(horari__impartir__dia_impartir=data)
+                           .order_by('hora_inici')
+                           )
+        primera_franja = franges_del_dia.first()
+        darrera_franja = franges_del_dia.last()
+        if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
+            raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
+
+        return franja
+
     class Meta:
         model = ReservaAula
         labels = {

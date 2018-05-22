@@ -19,18 +19,18 @@ def totesLesCartesRpt( ):
     taula.capceleres = []
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 100
+    capcelera.amplade = 20
     capcelera.contingut = u'Data'
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 60
     capcelera.contingut = u'Alumne'
     capcelera.enllac = ""
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 100
+    capcelera.amplade = 20
     capcelera.contingut = u'Cartes nº.'
     taula.capceleres.append(capcelera)
     

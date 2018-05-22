@@ -119,10 +119,21 @@ class AbstractAlumne(models.Model):
     tutors_volen_rebre_correu = models.BooleanField()
     centre_de_procedencia = models.CharField(max_length=250, blank=True)
     localitat = models.CharField(max_length=240, blank=True)
+    municipi = models.CharField(max_length=240, blank=True)
     telefons = models.CharField(max_length=250, blank=True, db_index=True)
     tutors = models.CharField(max_length=250, blank=True)
     adreca = models.CharField(max_length=250, blank=True)
-    
+    correu = models.CharField(max_length=240, blank=True)
+    rp1_nom = models.CharField(max_length=250, blank=True) #responsable 1
+    rp1_telefon = models.CharField(max_length=250, blank=True, db_index=True)
+    rp1_mobil = models.CharField(max_length=250, blank=True, db_index=True)
+    rp1_correu = models.CharField(max_length=240, blank=True)
+    rp2_nom = models.CharField(max_length=250, blank=True) #responsable 2
+    rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
+    rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
+    rp2_correu = models.CharField(max_length=240, blank=True)
+    altres_telefons = models.CharField(max_length=250, blank=True)
+
     data_alta = models.DateField( default = timezone.now, null=False )
     data_baixa = models.DateField( null=True, blank = True )
     

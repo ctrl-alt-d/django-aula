@@ -58,8 +58,9 @@ def sincronitza(f, user = None):
         a=Alumne()
         a.ralc = ''
         a.telefons = ''
-        a.tutors = ''
-        a.correu_tutors = ''
+        #a.tutors = ''
+        #a.correu_tutors = ''
+
         for columnName, value in row.iteritems():
             columnName = unicode(columnName,'iso-8859-1')
             #columnName = unicode( rawColumnName, 'iso-8859-1'  )
@@ -78,8 +79,10 @@ def sincronitza(f, user = None):
                 except:
                     return { 'errors': [ u"error carregant {0}".format( uvalue ), ], 'warnings': [], 'infos': [] }
                 trobatGrupClasse = True
-            if columnName.endswith( u"_CORREU ELECTRÒNIC")  or columnName.find( u"_ADREÇA ELECTR. RESP.")>=0 : 
-                a.correu_tutors += unicode(value,'iso-8859-1') + u', '
+            #if columnName.endswith( u"_CORREU ELECTRÒNIC")  or columnName.find( u"_ADREÇA ELECTR. RESP.")>=0 :
+            #    a.correu_tutors += unicode(value,'iso-8859-1') + u', '
+            if columnName.endswith( u"_CORREU ELECTRÒNIC"):
+                a.correu = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_DATA NAIXEMENT"): 
                 dia=time.strptime( unicode(value,'iso-8859-1'),'%d/%m/%Y')
                 a.data_neixement = time.strftime('%Y-%m-%d', dia)
@@ -88,10 +91,31 @@ def sincronitza(f, user = None):
                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_LOCALITAT"): 
                 a.localitat = unicode(value,'iso-8859-1')
-            if columnName.find( u"_TELÈFON RESP")>=0 or columnName.find( u"_MÒBIL RESP")>=0 or columnName.find( u"_ALTRES TELÈFONS")>=0 : 
-                a.telefons += unicode(value,'iso-8859-1') + u', '
-            if columnName.find( u"_RESPONSABLE")>=0: 
-                a.tutors = unicode(value,'iso-8859-1') + u', '
+            if columnName.endswith( u"MUNICIPI"):
+                a.municipi = unicode(value,'iso-8859-1')
+            # if columnName.find( u"_TELÈFON RESP")>=0 or columnName.find( u"_MÒBIL RESP")>=0 or columnName.find( u"_ALTRES TELÈFONS")>=0 :
+            #     a.telefons += unicode(value,'iso-8859-1') + u', '
+            if columnName.endswith(u"_TELÈFON RESP. 1" ):
+                a.rp1_telefon = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_TELÈFON RESP. 2" ):
+                a.rp2_telefon = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_MÒBIL RESP. 1" ):
+                a.rp1_mobil = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_MÒBIL RESP. 2" ):
+                a.rp2_mobil = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_ADREÇA ELECTR. RESP. 1" ):
+                a.rp1_correu = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_ADREÇA ELECTR. RESP. 2" ):
+                a.rp2_correu = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_ALTRES TELÈFONS"):
+                a.altres_telefons = unicode(value, 'iso-8859-1')
+
+            # if columnName.find( u"_RESPONSABLE")>=0:
+            #     a.tutors = unicode(value,'iso-8859-1') + u', '
+            if columnName.endswith(u"_RESPONSABLE 1" ):
+                a.rp1_nom = unicode(value,'iso-8859-1')
+            if columnName.endswith(u"_RESPONSABLE 2" ):
+                a.rp2_nom = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_ADREÇA" ): 
                 a.adreca = unicode(value,'iso-8859-1')
                 

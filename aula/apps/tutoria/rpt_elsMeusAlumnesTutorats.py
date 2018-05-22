@@ -28,48 +28,48 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 100
+        capcelera.amplade = 30
         capcelera.contingut = grup if grup == u'Altres' else u'{0} ({1})'.format( grup  ,  grup.curs  ) 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 15
         capcelera.contingut = u'Faltes.'
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 10
         capcelera.contingut = u'Disciplina'
         taula.capceleres.append(capcelera)
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 5
         capcelera.contingut = u'Actuacions'
         taula.capceleres.append(capcelera)
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 15
         capcelera.contingut = u'Familia'
         taula.capceleres.append(capcelera)
                     
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 10
         capcelera.contingut = u'Seguiment'
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 10
         capcelera.contingut = u'Històric'
         taula.capceleres.append(capcelera)
                 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 15
         capcelera.contingut = u'Qualitativa'
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 5
         capcelera.contingut = u'Tot'
         taula.capceleres.append(capcelera)
         

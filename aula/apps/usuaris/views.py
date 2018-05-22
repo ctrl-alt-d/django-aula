@@ -175,12 +175,12 @@ def elsProfessors( request ):
     taula.titol.contingut = ""
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 230
+    capcelera.amplade = 40
     capcelera.contingut = u'Professor'
     taula.capceleres.append( capcelera )
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 60
     capcelera.contingut = u'%Passa llista'
     taula.capceleres.append( capcelera )
        

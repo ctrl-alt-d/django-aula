@@ -138,7 +138,7 @@ def reportQualitativa2( qualitativa , alumnes = [], grups = [], request = None):
                     taula.printIfEmpty = True
                     
                     capcelera = tools.classebuida()
-                    capcelera.amplade = 900
+                    capcelera.amplade = 100
                     capcelera.contingut = u'''Butlletí de qualificacions de l'avaluació qualitativa.'''.upper()
                     taula.capceleres.append(capcelera)
                     taula.fileres = []
@@ -167,12 +167,12 @@ def reportQualitativa2( qualitativa , alumnes = [], grups = [], request = None):
                     taula.classe = 'pijama'
                     
                     capcelera = tools.classebuida()
-                    capcelera.amplade = 300
+                    capcelera.amplade = 25
                     capcelera.contingut = u'''Matèria'''
                     taula.capceleres.append(capcelera)
 
                     capcelera = tools.classebuida()
-                    capcelera.amplade = 700
+                    capcelera.amplade = 75
                     capcelera.contingut = u'''Comentaris'''
                     taula.capceleres.append(capcelera)   
                     
@@ -213,7 +213,7 @@ def reportQualitativa2( qualitativa , alumnes = [], grups = [], request = None):
                     taula.capceleres = []
                     
                     capcelera = tools.classebuida()
-                    capcelera.amplade = 700
+                    capcelera.amplade = 80
                     capcelera.contingut = u'''Comentari del tutor/a'''
                     taula.capceleres.append(capcelera)
                     taula.fileres = []
