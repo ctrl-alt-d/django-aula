@@ -648,12 +648,12 @@ def editaExpulsio( request, pk ):
                         else (1 if expulsio.alumne.rp1_telefon or expulsio.alumne.rp1_mobil else 0)
     numTelefonsResponsable2 = 2 if expulsio.alumne.rp2_telefon and expulsio.alumne.rp2_mobil \
                         else (1 if expulsio.alumne.rp2_telefon or expulsio.alumne.rp2_mobil else 0)
-    telefonsResponsable1 = u'Responsable 1: ' + expulsio.alumne.rp1_telefon + u' , ' + expulsio.alumne.rp1_mobil if numTelefonsResponsable1 == 2 \
+    telefonsResponsable1 = u'Responsable 1: ' + (expulsio.alumne.rp1_telefon + u' , ' + expulsio.alumne.rp1_mobil if numTelefonsResponsable1 == 2 \
                         else (expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon
-                              else expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else 'No proporcionat')
-    telefonsResponsable2 = u'Responsable 2: ' + expulsio.alumne.rp2_telefon + u' , ' + expulsio.alumne.rp2_mobil if numTelefonsResponsable2 == 2 \
+                              else expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else 'No proporcionat'))
+    telefonsResponsable2 = u'Responsable 2: ' + (expulsio.alumne.rp2_telefon + u' , ' + expulsio.alumne.rp2_mobil if numTelefonsResponsable2 == 2 \
                         else (expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon
-                            else expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else 'No proporcionat')
+                            else expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else 'No proporcionat'))
     telefonsAlumne = telefonsResponsable1 + u'  ' + telefonsResponsable2 + '  ' + u'Altres: ' + (expulsio.alumne.altres_telefons if expulsio.alumne.altres_telefons else u'No Proporcionat')
 
     infoForm = [
