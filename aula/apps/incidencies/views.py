@@ -638,17 +638,34 @@ def editaExpulsio( request, pk ):
         edatAlumne = (date.today() - expulsio.alumne.data_neixement).days / 365 
     except:
         pass
-    
+
+    numResponsables = 2 if expulsio.alumne.rp1_nom and expulsio.alumne.rp2_nom \
+                        else (1 if expulsio.alumne.rp1_nom or expulsio.alumne.rp2_nom else 0)
+    nomResponsables = expulsio.alumne.rp1_nom + u' -- ' + expulsio.alumne.rp2_nom if numResponsables == 2 \
+                        else (expulsio.alumne.rp1_nom if expulsio.alumne.rp1_nom
+                              else expulsio.alumne.rp2_nom)
+    numTelefonsResponsable1 = 2 if expulsio.alumne.rp1_telefon and expulsio.alumne.rp1_mobil \
+                        else (1 if expulsio.alumne.rp1_telefon or expulsio.alumne.rp1_mobil else 0)
+    numTelefonsResponsable2 = 2 if expulsio.alumne.rp2_telefon and expulsio.alumne.rp2_mobil \
+                        else (1 if expulsio.alumne.rp2_telefon or expulsio.alumne.rp2_mobil else 0)
+    telefonsResponsable1 = u'Responsable 1: ' + expulsio.alumne.rp1_telefon + u' , ' + expulsio.alumne.rp1_mobil if numTelefonsResponsable1 == 2 \
+                        else (expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon
+                              else expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else 'No proporcionat')
+    telefonsResponsable2 = u'Responsable 2: ' + expulsio.alumne.rp2_telefon + u' , ' + expulsio.alumne.rp2_mobil if numTelefonsResponsable2 == 2 \
+                        else (expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon
+                            else expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else 'No proporcionat')
+    telefonsAlumne = telefonsResponsable1 + u'  ' + telefonsResponsable2 + '  ' + u'Altres: ' + (expulsio.alumne.altres_telefons if expulsio.alumne.altres_telefons else u'No Proporcionat')
+
     infoForm = [
-          ('Alumne',unicode( expulsio.alumne) ),
-          ('Dia', expulsio.dia_expulsio ) ,
-          ('Hora', expulsio.franja_expulsio ) ,
-          ( 'Telèfon Alumne', expulsio.alumne.telefons),                     
-          ( 'Nom tutors', expulsio.alumne.tutors),                     
-          ( 'Edat alumne', edatAlumne ),
-          ( 'Professor que expulsa',   expulsio.professor if expulsio.professor else 'N/A' ),
-          ( 'Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),                     
-                ]
+        ('Alumne', unicode(expulsio.alumne)),
+        ('Dia', expulsio.dia_expulsio),
+        ('Hora', expulsio.franja_expulsio),
+        ('Telèfon Alumne', telefonsAlumne),
+        ('Nom tutors', nomResponsables),
+        ('Edat alumne', edatAlumne),
+        ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
+        ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
+    ]
     
     fields = [ 'motiu', 
               'tutor_contactat_per_l_expulsio', 
