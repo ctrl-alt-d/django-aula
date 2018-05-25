@@ -639,29 +639,22 @@ def editaExpulsio( request, pk ):
     except:
         pass
 
-    numResponsables = 2 if expulsio.alumne.rp1_nom and expulsio.alumne.rp2_nom \
-                        else (1 if expulsio.alumne.rp1_nom or expulsio.alumne.rp2_nom else 0)
-    nomResponsables = expulsio.alumne.rp1_nom + u' -- ' + expulsio.alumne.rp2_nom if numResponsables == 2 \
-                        else (expulsio.alumne.rp1_nom if expulsio.alumne.rp1_nom
-                              else expulsio.alumne.rp2_nom)
-    numTelefonsResponsable1 = 2 if expulsio.alumne.rp1_telefon and expulsio.alumne.rp1_mobil \
-                        else (1 if expulsio.alumne.rp1_telefon or expulsio.alumne.rp1_mobil else 0)
-    numTelefonsResponsable2 = 2 if expulsio.alumne.rp2_telefon and expulsio.alumne.rp2_mobil \
-                        else (1 if expulsio.alumne.rp2_telefon or expulsio.alumne.rp2_mobil else 0)
-    telefonsResponsable1 = u'Responsable 1: ' + (expulsio.alumne.rp1_telefon + u' , ' + expulsio.alumne.rp1_mobil if numTelefonsResponsable1 == 2 \
-                        else (expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon
-                              else expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else 'No proporcionat'))
-    telefonsResponsable2 = u'Responsable 2: ' + (expulsio.alumne.rp2_telefon + u' , ' + expulsio.alumne.rp2_mobil if numTelefonsResponsable2 == 2 \
-                        else (expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon
-                            else expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else 'No proporcionat'))
-    telefonsAlumne = telefonsResponsable1 + u'  ' + telefonsResponsable2 + '  ' + u'Altres: ' + (expulsio.alumne.altres_telefons if expulsio.alumne.altres_telefons else u'No Proporcionat')
+    nomResponsable1 = expulsio.alumne.rp1_nom if expulsio.alumne.rp1_nom else ''
+    nomResponsable2 = expulsio.alumne.rp2_nom if expulsio.alumne.rp2_nom else ''
+    telefonResponsable1 = expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon else ''
+    telefonResponsable2 = expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon else ''
+    mobilResponsable1 = expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else ''
+    mobilResponsable2 = expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else ''
+    responsable1 = nomResponsable1 + (u' (' + telefonResponsable1 + u' , ' + mobilResponsable1 + u')')
+    responsable2 = nomResponsable2 + (u' (' + telefonResponsable2 + u' , ' + mobilResponsable2 + u')')
 
     infoForm = [
         ('Alumne', unicode(expulsio.alumne)),
         ('Dia', expulsio.dia_expulsio),
         ('Hora', expulsio.franja_expulsio),
-        ('Telèfon Alumne', telefonsAlumne),
-        ('Nom tutors', nomResponsables),
+        ('Responsable 1', responsable1),
+        ('Responsable 2', responsable2),
+        ('Altres telèfons', expulsio.alumne.altres_telefons),
         ('Edat alumne', edatAlumne),
         ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
         ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
