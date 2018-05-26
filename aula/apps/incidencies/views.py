@@ -732,6 +732,13 @@ def editaExpulsio( request, pk ):
     formset = [ formExpulsio ]
     formset.extend ( [  can_delete ] if l4 else []  )
 
+    #
+    for f in['motiu',
+              'tutor_contactat_per_l_expulsio',
+              'moment_comunicacio_a_tutors',
+              'tramitacio_finalitzada']:
+        formExpulsio.fields[f].widget.attrs['class'] = 'form-control ' + \
+                                                       formExpulsio.fields[f].widget.attrs.get('class', "")
     return render(
                 request,
                 'formset.html',
