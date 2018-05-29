@@ -410,6 +410,7 @@ def novaActuacio(request):
                 'formset.html',
                     {'formset': formset,
                      'head': 'Actuació' ,
+                     'titol_formulari': u"Alta d'una nova actuació",                     
                     },
                 )
 
@@ -480,6 +481,7 @@ def editaActuacio(request, pk):
                     {'formset': formset,
                      'infoForm': infoForm,
                      'head': 'Actuació' ,
+                     'titol_formulari': u"Edició d'una actuació",
                     },
                 )
 
