@@ -163,11 +163,13 @@ def sincronitza(file, usuari):
 
             #aula
             nom_aula = unicode(row['aula'], 'iso-8859-1')
-            aula, create = Aula.objects.get_or_create( nom_aula=nom_aula )
-            nAulesCreades += 1 if created else 0
+            if bool(nom_aula):
+                aula, create = Aula.objects.get_or_create( nom_aula=nom_aula )
+                nAulesCreades += 1 if created else 0
+            else:
+                aula = None
+            
             horari.aula = aula
-
-
 
             # dia_de_la_setmana
             dia_kronowin = int(unicode(row['dia'], 'iso-8859-1').split(',')[0]) - 1

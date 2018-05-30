@@ -45,10 +45,10 @@ def impartir_post_save(sender, instance, created, **kwargs):
 
     # Mantenir reserva o assignar-li una de nova
     # Si el professor havia fet un canvi d'aula cal respectar-ho.
-    aula_informada_a_l_horari = instance.horari.aula is not None
+    aula_informada_a_l_horari = instance.horari.aula is not None and bool( instance.horari.aula )
     te_reserva = instance.reserva is not None
     es_reserva_manual = te_reserva and instance.reserva.es_reserva_manual
-    cal_assignar_nova_reserva = aula_informada_a_l_horari and not es_reserva_manual
+    cal_assignar_nova_reserva = not te_reserva and aula_informada_a_l_horari and not es_reserva_manual
     if cal_assignar_nova_reserva:
         reserves = ReservaAula.objects.filter( aula=instance.horari.aula,
                                                dia_reserva=instance.dia_impartir,
