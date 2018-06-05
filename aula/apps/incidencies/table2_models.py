@@ -166,7 +166,7 @@ class Table2_ExpulsionsPendentsPerAcumulacio(tables.Table):
         verbose_name = " ",
         template_code=u"""
                                         <a style='color:red' 
-                                        href="/incidencies/posaExpulsioPerAcumulacio/{{ record.pk }}"> Generar expulsió </a>
+                                        href="/incidencies/posaExpulsioPerAcumulacio/{{ record.pk }}?origen={{ record.aux_origen }}"> Generar expulsió </a>
                                         """,
         orderable=False,
     )

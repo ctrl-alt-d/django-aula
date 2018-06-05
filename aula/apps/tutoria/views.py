@@ -112,6 +112,7 @@ def incidenciesGestionadesPelTutor(request):
                                            if calTramitarExpulsioPerAcumulacio
                                            else None )
         if calTramitarExpulsioPerAcumulacio and alumne_str not in alumnes:
+            exempleIncidenciaPerAcumulacio.aux_origen = "tutoria"
             expulsionsPendentsPerAcumulacio.append(exempleIncidenciaPerAcumulacio)
 
         alumnes.setdefault(alumne_str, {

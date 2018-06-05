@@ -241,7 +241,7 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
     
     incidencia.credentials = credentials
     
-    origen = request.GET.get('origen')
+    origen = request.GET.get('origen', None)
     if origen=="tutoria":
         url_next = '/tutoria/incidenciesGestionadesPelTutor/'
     else:
@@ -757,21 +757,20 @@ def posaExpulsioPerAcumulacio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
     
-    #dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
-    try:
-        incidencia = Incidencia.objects.get(pk =pk)
-    except:
-        return render(
-                        request,
-                        'resultat.html', 
-                        {'head': u'Error al crear expulsió per acumulació' ,
-                         'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
-                    )
-    
+    incidencia = get_object_or_404( Incidencia, pk =pk)
+
+    url_incidencies_tutoria = '/tutoria/incidenciesGestionadesPelTutor/'
+    url_totes_les_incidencies = '/incidencies/llistaIncidenciesProfessional/'
+    origen = request.GET.get('origen', None)
+    if origen=="tutoria":
+        url_next_default = url_incidencies_tutoria
+    else:
+        url_next_default = url_totes_les_incidencies
+
     professional = incidencia.professional
     professor = User2Professor(professional.getUser() ) 
     
-    #seg---------
+    # -seg---------
     te_permis = (l4
                  or user.pk == professional.pk
                  or user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()]
@@ -779,83 +778,81 @@ def posaExpulsioPerAcumulacio( request, pk ):
     if not te_permis :
         raise Http404()
 
-    gestionada_pel_tutor = ( user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()]
-                             and user.pk != professional.pk )
-    
-    #si l'expulsió ja ha estat generada abans l'envio a l'expulsió
-    #seria el cas que seguissin l'enllaç d'un Missatge:
-    
+    # -ja ha generat l'expulsió---
     if incidencia.provoca_expulsio:
+        messages.warning(request, u"Aquesta incidència ja havia generat una expulsió" )
         url_next = '/incidencies/editaExpulsio/{0}/'.format( incidencia.provoca_expulsio.pk  )    
         return HttpResponseRedirect( url_next )
+
+    # - o bé es gestionada pel tutor o bé és d'un professor.
+    alumne = incidencia.alumne
+    incidencies = ( alumne
+                    .incidencia_set
+                    .filter(
+                            es_vigent = True,
+                            tipus__es_informativa = False,)
+                    )
+    # -- És gestionada pel tutor
+    incidencies_gestionades_tutor = incidencies.filter( gestionada_pel_tutor = True )
+    n_incidencies_gestionades_tutor = incidencies_gestionades_tutor.count() 
+    te_3_incidencies_gestionades_pel_tutor = ( n_incidencies_gestionades_tutor >= 3 and
+                                               user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()] )
+    if te_3_incidencies_gestionades_pel_tutor:
+        incidencies = incidencies_gestionades_tutor
+
+    # -- Tres incidències d'un mateix professor
+    if not te_3_incidencies_gestionades_pel_tutor:
+        incidencies_mateix_professor = incidencies.filter( professional = professional ) 
+        n_incidencies_mateix_professor = incidencies_mateix_professor.count()
+        te_3_incidencies_mateix_professor = n_incidencies_mateix_professor >= 3
+        if te_3_incidencies_mateix_professor:
+            incidencies = incidencies_mateix_professor
+
+    # -- Passem a fer l'expulsió
+    podem_fer_expulsio = te_3_incidencies_gestionades_pel_tutor or te_3_incidencies_mateix_professor
+    
+    if not podem_fer_expulsio:
+        messages.warning(request, u"No podem fer expulsió." )
+        return HttpResponseRedirect( url_next_default )        
     
     alumne = incidencia.alumne
-
-    q_tutor_o_professional = Q()
-    if gestionada_pel_tutor:
-        q_tutor_o_professional = Q(professional = professional)
-    else:
-        q_tutor_o_professional = Q(professional = professional)
-
-    incidencies = ( alumne
-                        .incidencia_set
-                        .filter(
-                                               es_vigent = True,
-                                               tipus__es_informativa = False,)
-                        .filter(q_tutor_o_professional )
-                    )
-    enTe3oMes = incidencies.count() >= 3
     professor_recull = User2Professor(user) 
-    
-    str_incidencies = u''
-    separador = u''
-    for i in incidencies:
-        str_incidencies +=  ( separador  + i.descripcio_incidencia + u'('+ unicode ( i.dia_incidencia) + u')')
-        separador = u', '
 
-    gestionada_pel_tutor_txt = u"\n(Incidència gestionada pel tutor)" if gestionada_pel_tutor else u""
+    str_incidencies = u", ".join( [ u"{0} ({1})".format( i.descripcio_incidencia, i.dia_incidencia) for i in incidencies ] )
+    gestionada_pel_tutor_txt = u"\n(Incidència gestionada pel tutor)" if te_3_incidencies_gestionades_pel_tutor else u""
     motiu_san = u'''Expulsió per acumulació d'incidències: {0} {1}'''.format( str_incidencies, gestionada_pel_tutor_txt )
+        
+    try:
+        expulsio = Expulsio.objects.create(
+                    estat = 'AS',
+                    professor_recull = professor_recull,
+                    professor = professor_recull,
+                    alumne = alumne,
+                    dia_expulsio = incidencia.dia_incidencia,
+                    franja_expulsio = incidencia.franja_incidencia,
+                    motiu = motiu_san,
+                    es_expulsio_per_acumulacio_incidencies = True                        
+                    )
 
+        #LOGGING
+        Accio.objects.create( 
+                tipus = 'EE',
+                usuari = user,
+                l4 = l4,
+                impersonated_from = request.user if request.user != user else None,
+                text = u"""Creada expulsió d'alumne {0} per acumulació d'incidències.""".format( expulsio.alumne )
+            )   
     
-    url_next = '/incidencies/llistaIncidenciesProfessional/'  #todo: a la pantalla d''incidencies
-    if enTe3oMes:
-        
-        try:
-            expulsio = Expulsio.objects.create(
-                        estat = 'AS',
-                        professor_recull = professor_recull,
-                        professor = professor_recull,
-                        alumne = alumne,
-                        dia_expulsio = incidencia.dia_incidencia,
-                        franja_expulsio = incidencia.franja_incidencia,
-                        motiu = motiu_san,
-                        es_expulsio_per_acumulacio_incidencies = True                        
-                        )
+        expulsio_despres_de_posar( expulsio )
+        incidencies.update( es_vigent = False, provoca_expulsio = expulsio )
+        missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0} """.format( expulsio.alumne )
+        messages.info(request, missatge)
 
-            #LOGGING
-            Accio.objects.create( 
-                    tipus = 'EE',
-                    usuari = user,
-                    l4 = l4,
-                    impersonated_from = request.user if request.user != user else None,
-                    text = u"""Creada expulsió d'alumne {0} per acumulació d'incidències.""".format( expulsio.alumne )
-                )   
-        
-            expulsio_despres_de_posar( expulsio )
-            incidencies.update( es_vigent = False, provoca_expulsio = expulsio )
-            missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0} """.format( expulsio.alumne )
-            messages.info(request, missatge)
-        except ValidationError, e:
-            resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
-                        'warnings':  [], 'infos':  [], 'url_next': url_next }
-            return render(
-                            request,
-                           'resultat.html', 
-                           {'head': u'Error al crear expulsió per acumulació.' ,
-                            'msgs': resultat },
-                        )
+    except ValidationError, e:
+        messages.error( request,  u", ".join( itertools.chain( *e.message_dict.values() ) ) )
+        return HttpResponseRedirect( url_next_default )   
 
-    return HttpResponseRedirect( url_next )         
+    return HttpResponseRedirect( url_totes_les_incidencies )         
 
 #--------------------------------------------------------------------------------------------------
 
@@ -898,6 +895,7 @@ def llistaIncidenciesProfessional( request ):
                                             if calTramitarExpulsioPerAcumulacio \
                                             else None
         if calTramitarExpulsioPerAcumulacio and alumne_str not in alumnes:
+            exempleIncidenciaPerAcumulacio.aux_origen = "professional"
             expulsionsPendentsPerAcumulacio.append( exempleIncidenciaPerAcumulacio )
         
         alumnes.setdefault( alumne_str, {
