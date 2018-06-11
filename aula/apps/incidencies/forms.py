@@ -4,6 +4,8 @@ from django import forms as forms
 
 from aula.apps.incidencies.models import FrassesIncidenciaAula, Expulsio
 from aula.apps.incidencies.models import TipusIncidencia
+from aula.apps.usuaris.models import Professor
+from aula.django_select2.forms import ModelSelect2Widget
 from aula.utils.widgets import DateTextImput
 
 class incidenciesRelacionadesForm(forms.Form):
@@ -95,9 +97,13 @@ class posaExpulsioFormW2(forms.ModelForm):
     class Meta:
         model = Expulsio
         fields = ( 'professor', )
-
-
-
+        widgets = {
+            'professor':ModelSelect2Widget(
+                            queryset=Professor.objects.all(),
+                            search_fields=('last_name__icontains', 'first_name__icontains',),
+                            attrs={'style': "'width': '100%'"}
+                        )
+        }
                     
     
 

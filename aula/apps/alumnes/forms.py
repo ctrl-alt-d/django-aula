@@ -73,11 +73,32 @@ class grupForm(ModelForm):
         fields = ('curs', 'nom_grup' )            
 
 #---form assignar tutor-----------------------------------------------------------------------------------------
-class tutorsForm(forms.Form):  
-    grup = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) ) 
-    tutor1 = forms.ModelChoiceField( queryset = Professor.objects.all(), required = False  )
-    tutor2 = forms.ModelChoiceField( queryset = Professor.objects.all(), required = False  )
-    tutor3 = forms.ModelChoiceField( queryset = Professor.objects.all(), required = False  )
+class tutorsForm(forms.Form):
+    grup = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )
+    tutor1 = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=True)
+    tutor2 = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=True)
+    tutor3 = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=True)
     
     
 #--tutoria individualitzada:
