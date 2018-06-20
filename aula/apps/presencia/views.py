@@ -5,6 +5,7 @@ from django.forms.utils import ErrorDict
 from django.template import RequestContext
 
 #formularis
+from aula.apps.aules.models import ReservaAula
 from aula.apps.presencia.forms import regeneraImpartirForm,ControlAssistenciaForm,\
     alertaAssistenciaForm, faltesAssistenciaEntreDatesForm,\
     marcarComHoraSenseAlumnesForm, passaLlistaGrupDataForm,\
@@ -273,6 +274,18 @@ def passaLlista(request, pk):
     info['assignatura'] = unicode(impartir.horari.assignatura)
     info['nom_aula'] = unicode(impartir.get_nom_aula)
     info['grup'] = unicode(impartir.horari.grup)
+
+    ultimaReserva = ( ReservaAula
+                     .objects.filter(dia_reserva = impartir.dia_impartir)
+                     .filter(aula__nom_aula = impartir.get_nom_aula)
+                     .filter(impartir__isnull = False)
+                     .order_by('hora_fi')
+                     .last()
+                      )
+    esUltimaHora = impartir.reserva_id == ultimaReserva.id
+    if esUltimaHora:
+        msg = u" Atenció: És última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes, pujar cadires, etc."
+        messages.error(request, SafeText(msg))
 
     url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
         impartir.dia_impartir.year,
