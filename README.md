@@ -13,6 +13,7 @@ Quick demo
 =========
 
 On Ubuntu Server 14.04 LTS 64 bits:
+
 * apt-get install python-virtualenv python-pip libxml2-dev libxslt-dev python-libxml2 python-dev lib32z1-dev git
 * mkdir djau
 * cd djau
@@ -25,4 +26,9 @@ On Ubuntu Server 14.04 LTS 64 bits:
 * python manage.py runserver 127.0.0.1:8000   # or your 
 * Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd 'dAju' )
 
+Deployment Docs
+=============
 
+Documentació pas a pas per a fer el desplegament.
+
+[Documentació instal·lació django-aula a gitbook](https://django-aula.gitbook.io/documentation/) (Recurs extern)
