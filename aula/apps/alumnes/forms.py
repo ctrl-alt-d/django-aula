@@ -82,7 +82,7 @@ class tutorsForm(forms.Form):
             attrs={'style': "'width': '100%'"}
         ),
         queryset=Professor.objects.all(),
-        required=True)
+        required=False)
     tutor2 = ModelChoiceField(
         widget=ModelSelect2Widget(
             queryset=Professor.objects.all(),
@@ -90,7 +90,7 @@ class tutorsForm(forms.Form):
             attrs={'style': "'width': '100%'"}
         ),
         queryset=Professor.objects.all(),
-        required=True)
+        required=False)
     tutor3 = ModelChoiceField(
         widget=ModelSelect2Widget(
             queryset=Professor.objects.all(),
@@ -98,7 +98,7 @@ class tutorsForm(forms.Form):
             attrs={'style': "'width': '100%'"}
         ),
         queryset=Professor.objects.all(),
-        required=True)
+        required=False)
     
     
 #--tutoria individualitzada:

@@ -113,7 +113,7 @@ def assignaTutors( request ):
                 tutor1 = form.cleaned_data['tutor1']
                 tutor2 = form.cleaned_data['tutor2']
                 tutor3 = form.cleaned_data['tutor3']
-                if tutor1:  parellesProfessorGrup.add( ( tutor1.pk, grup)  )
+                if tutor1:  parellesProfessorGrup.add( (tutor1.pk, grup)  )
                 if tutor2:  parellesProfessorGrup.add( (tutor2.pk, grup)  )
                 if tutor3:  parellesProfessorGrup.add( (tutor3.pk, grup)  )
             else:
