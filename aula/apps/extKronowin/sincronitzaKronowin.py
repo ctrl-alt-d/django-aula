@@ -195,6 +195,7 @@ def sincronitza(file, usuari):
 
         except Exception, e:
             warnings.append('Horari no importat, [' + unicode(e) + '] :' + unicode(row))
+            warnings.append( traceback.format_exc() )
 
         finally:
             nLiniesLlegides += 1
