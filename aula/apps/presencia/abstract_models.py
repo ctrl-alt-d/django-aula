@@ -42,14 +42,14 @@ class AbstractImpartir(models.Model):
     def get_nom_aula(self):
         te_reserva =  bool(self.reserva)
         if te_reserva:
-            alarma = " !" if self.reserva.es_reserva_manual else ""
+            alarma = "" #"" !" if self.reserva.es_reserva_manual else ""
             return u"{aula}{alarma}".format( aula= self.reserva.aula.nom_aula, alarma=alarma )
         else:
             return self.horari.aula or ""
 
     def esFutur(self):
         data = datetime( year = self.dia_impartir.year, 
-                         month = self.dia_impartir.month, 
+                         month = self.dia_impartir.month,
                          day = self.dia_impartir.day,
                          hour =  self.horari.hora.hora_inici.hour, 
                          minute = self.horari.hora.hora_inici.minute,
