@@ -153,7 +153,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     unDia = t.timedelta( days = 1)
     primera_franja_insertada = False
     for f in FranjaHoraria.objects.all():
-        impartir_franja=[ [ [( unicode(f),'','','','','','','','', )] , None ] ]
+        impartir_franja=[ [ [( unicode(f),'','','','','','','','','', )] , None ] ]
         te_imparticions = False
         for d in range(0,5):
             dia = data + d * unDia
@@ -174,6 +174,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                              x.resum(),
                              (x.professor_guardia  and x.professor_guardia.pk == professor.pk),
                              x.hi_ha_alumnes_amb_activitat_programada,
+                             x.esReservaManual,
                             )
                             for x in Impartir.objects.filter( franja_impartir & dia_impartir & (user_impartir | guardia)   ) ]
             

@@ -56,6 +56,13 @@ class AbstractImpartir(models.Model):
                          second = 0 )
         return data > datetime.now()
 
+    def esReservaManual(self):
+        te_reserva = bool(self.reserva)
+        if te_reserva:
+            return self.reserva.es_reserva_manual
+        else:
+            return False
+
     def esAvui(self):
         from datetime import date
         data = date( year = self.dia_impartir.year, 

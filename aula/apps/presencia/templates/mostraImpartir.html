@@ -41,7 +41,7 @@
 
         {% for imparticions, esDataActual in impartir_franja %}
             <div class="col-sm-2 col-xs-12 {% if forloop.counter != 1 and not esDataActual %}hidden-xs{% endif %}"   >
-              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia, hi_ha_sortida in imparticions %}
+              {% for assignatura, grup, aula, pk, color, color2, resum, esGuardia, hi_ha_sortida, esReservaManual in imparticions %}
                 <div class="imparticio" style="padding-bottom: 5px; margin-left:5px; margin-right: 5px;" >
                   {%if esGuardia%}
                    <div style="border: 1px solid gray;">
@@ -53,7 +53,13 @@
                     
                     	<div style="background-color:{{color}}">
                     		<a href="/presencia/passaLlista/{{pk}}">
-                    		{{ assignatura }} {{ aula }} {{ grup }}</br>
+                                {% if esReservaManual %}
+                                    <div style="font-style: italic;">
+                                {% endif %}
+                                {{ assignatura }} {{ aula }} {{ grup }}</br>
+                                {% if esReservaManual %}
+                                    </div>
+                                {% endif %}
                     		</a>
                     		<span class="label label-{{color2}}">{{ resum }}</span>
                     		{%if hi_ha_sortida %}
@@ -64,7 +70,13 @@
                     														
                   {%else%}
                   	<div style="background-color:{{color}}">
-                  		{{ assignatura }} {{ aula }} {{ grup }}</br>
+                        {% if esReservaManual %}
+                            <div style="font-style: italic;">
+                        {% endif %}
+                        {{ assignatura }} {{ aula }} {{ grup }}</br>
+                        {% if esReservaManual %}
+                            </div>
+                        {% endif %}
                     </div>
                   {%endif%}
                   {%if esGuardia%}
