@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="{{STATIC_URL}}bootstrap/css/bootstrap.min.css">
-<link rel="stylesheet" href="{{STATIC_URL}}css/mystylesheet.css">
+<link rel="stylesheet" href="{{STATIC_URL}}glyphicons/css/bootstrap-glyphicons.css">
 <title>django-aula | {% block title %}{% endblock %}</title>
 
 <script src="{{STATIC_URL}}jquery/jquery-2.1.4.min.js"></script>
@@ -38,7 +38,11 @@ $.fn.bootstrapDP = null;
 
 <body {%if l4%}style="background-color:#FF0000;"{%endif%}>
 
-  <div class="container">
+<br>
+<br>
+<br>
+<br>
+  <div class="container" {%if l4%}style="background-color:#FFFFFF;"{%endif%}> 
 
 	{% if messages %}
 	<ul class="messages">
@@ -46,7 +50,7 @@ $.fn.bootstrapDP = null;
 	    <div class="alert alert-{{ message.tags|valid_alert }}">{{ message }}</div>
 	{% endfor %}
 	</ul>
-	{% endif %}
+	{% endif %}  	
   
 	{% include "menu.html" %}
 
@@ -56,11 +60,9 @@ $.fn.bootstrapDP = null;
 
     {% endblock %}
   
-{% include "menu_fi.html" %}
 
   </div> <!--container-->
 
-<script src="{{STATIC_URL}}jquery/jquery-2.1.4.min.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min.js"></script>
 <script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
 <script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
@@ -71,18 +73,18 @@ $.fn.bootstrapDP = null;
 </script>
 
   {%  if user.is_authenticated %}
-            <script src="{{STATIC_URL}}session-timeout/bootstrap-session-timeout.js"></script>
-            <script>
-                $.sessionTimeout({
-                    keepAliveUrl: '/keepalive',
-                    logoutUrl: '/logout/',
-                    redirUrl: '/logout/',
-                    warnAfter: ({{my_safe_timeoff}} - 20)*1000,
-                    redirAfter: ({{my_safe_timeoff}} *1000),
-                    countdownBar: true
-                });
-            </script>
-    {% endif %}
+  <script src="{{STATIC_URL}}session-timeout/bootstrap-session-timeout.js"></script>
+  <script>
+      $.sessionTimeout({
+          keepAliveUrl: '/keepalive',
+          logoutUrl: '/logout/',
+          redirUrl: '/logout/',
+          warnAfter: ({{my_safe_timeoff}} - 20)*1000,
+          redirAfter: ({{my_safe_timeoff}} *1000),
+          countdownBar: true
+      });
+  </script>
+{% endif %}
 
 {% block afterscripts %} {% endblock %}
 
