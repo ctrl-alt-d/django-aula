@@ -75,10 +75,10 @@ def impartir_post_save(sender, instance, created, **kwargs):
             else:
                 reserva.delete()        
                 
-        if bool(reserves_automatiques):
-            reserva_a_assignar = reserves_automatiques[0]
-        else:
-            reserva_a_assignar = ReservaAula(aula=instance.horari.aula,
+        #if bool(reserves_automatiques):
+        #    reserva_a_assignar = reserves_automatiques[0]
+        #else:
+        reserva_a_assignar = ReservaAula(aula=instance.horari.aula,
                                       dia_reserva=instance.dia_impartir,
                                       hora_inici=instance.horari.hora.hora_inici,
                                       hora_fi=instance.horari.hora.hora_fi,
@@ -86,7 +86,7 @@ def impartir_post_save(sender, instance, created, **kwargs):
                                       usuari=instance.horari.professor,
                                       motiu=u"Docència",
                                       es_reserva_manual=False )
-            reserva_a_assignar.save()
+        reserva_a_assignar.save()
 
         instance.__class__.objects.filter(pk=instance.pk).update(reserva_id=reserva_a_assignar.pk)
         instance.refresh_from_db()

@@ -45,7 +45,7 @@ class AbstractImpartir(models.Model):
             alarma = "" #"" !" if self.reserva.es_reserva_manual else ""
             return u"{aula}{alarma}".format( aula= self.reserva.aula.nom_aula, alarma=alarma )
         else:
-            return self.horari.aula or ""
+            return self.horari.aula.nom_aula if self.horari.aula else ""
 
     def esFutur(self):
         data = datetime( year = self.dia_impartir.year, 
