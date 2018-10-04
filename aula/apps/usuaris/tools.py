@@ -213,7 +213,11 @@ def enviaBenvingudaAlumne( alumne, force = False ):
         infos.append(txtCapcelera)
         assumpte = u"Alta a l'aplicatiu Djau de {0}".format( settings.NOM_CENTRE )
 
-        missatge = [ u"Benvolgut/da,",
+        missatge = [ u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
+                     u"",
+                     u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                     u"",
+                     u"Benvolgut/da,",
                      u"",
                      u"El motiu d'aquest correu és el de donar-vos les instruccions d'alta de l'aplicació Djau del nostre centre.",
                      u"Aquesta aplicació us permetrà fer un seguiment diari del rendiment acadèmic del vostre fill/a.",
