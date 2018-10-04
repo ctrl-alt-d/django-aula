@@ -73,7 +73,11 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
                                                                 )
         infos.append(txtCapcelera)
         assumpte = u"{0} - Recuperar/Obtenir accés a l'aplicatiu Djau de {1}".format(alumne.nom, settings.NOM_CENTRE )
-        missatge = [ 
+        missatge = [
+                     u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
+                     u"",
+                     u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                     u"",
                      u"La pàgina principal del portal de relació amb famílies de l'Institut és:",
                      u"{0}".format( urlDjangoAula ),
                      u"El vostre codi d'usuari és: **  {0}  **".format( usuari ),
