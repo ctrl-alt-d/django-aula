@@ -274,15 +274,31 @@ def detallFranjaReserves (request, year, month, day, pk):
                                             )
     aules_lliures = Aula.objects.none()
     if hi_ha_classe_al_centre_aquella_hora:
-        reservable_aquella_hora = Q(disponibilitat_horaria__isnull = True ) | Q(disponibilitat_horaria = franja )
-        reservada = Q( reservaaula__dia_reserva = data )&Q(reservaaula__hora=franja)
-        aules_lliures=( Aula
-                       .objects
-                       .filter( reservable_aquella_hora )
-                       .exclude( reservada )
-                       .exclude( reservable = False )
-                       .distinct()
-                    )
+        # reservables
+        reservable_aquella_hora = (Q(disponibilitat_horaria__isnull=True)
+                                   | Q(disponibilitat_horaria=franja))
+        reservable_aquella_hora_ids = (Aula
+                                       .objects
+                                       .filter(reservable_aquella_hora)
+                                       .values_list('id', flat=True)
+                                       .distinct()
+                                       )
+        # reservades
+        reservada = Q(reservaaula__dia_reserva=data) & Q(reservaaula__hora=franja)
+        reservada_ids = (Aula
+                         .objects
+                         .filter(reservada)
+                         .values_list('id', flat=True)
+                         .distinct()
+                         )
+        # lliures
+        aules_lliures = (Aula
+                         .objects
+                         .exclude(reservable=False)
+                         .filter(pk__in=reservable_aquella_hora_ids)
+                         .exclude(pk__in=reservada_ids)
+                         .distinct()
+                         )
 
     if request.method == 'POST':
         form = AulesForm(queryset=aules_lliures,
