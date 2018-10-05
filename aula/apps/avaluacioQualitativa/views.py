@@ -126,12 +126,12 @@ def lesMevesAvaluacionsQualitatives( request ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 300
+        capcelera.amplade = 40
         capcelera.contingut = u'{0}'.format(unicode( qualitativa ) )
         taula.capceleres.append(capcelera)
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 300
+        capcelera.amplade = 60
         obertaLaQualitativa =  qualitativa.data_obrir_avaluacio <=  date.today() <= qualitativa.data_tancar_avaluacio
         estat = '(Oberta)' if obertaLaQualitativa else '(Tancada)'
         capcelera.contingut = u'del {0} al {1} {2}'.format( qualitativa.data_obrir_avaluacio, qualitativa.data_tancar_avaluacio, estat)
@@ -448,12 +448,12 @@ def resultats( request ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 35
     capcelera.contingut = u'{0}'.format( u'Avaluació qualitativa' )
     taula.capceleres.append(capcelera)
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 65
     capcelera.contingut = u'Dades'
     taula.capceleres.append(capcelera)
     

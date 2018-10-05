@@ -18,12 +18,12 @@ def duplicats_rpt():
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 120
+    capcelera.amplade = 30
     capcelera.contingut = u'Grup duplicat'
     taula.capceleres.append( capcelera )
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 120
+    capcelera.amplade = 70
     capcelera.contingut = u'Opcions'
     taula.capceleres.append( capcelera )    
     

@@ -73,11 +73,32 @@ class grupForm(ModelForm):
         fields = ('curs', 'nom_grup' )            
 
 #---form assignar tutor-----------------------------------------------------------------------------------------
-class tutorsForm(forms.Form):  
-    grup = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) ) 
-    tutor1 = forms.ModelChoiceField( queryset = Professor.objects.all(), required = False  )
-    tutor2 = forms.ModelChoiceField( queryset = Professor.objects.all(), required = False  )
-    tutor3 = forms.ModelChoiceField( queryset = Professor.objects.all(), required = False  )
+class tutorsForm(forms.Form):
+    grup = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )
+    tutor1 = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=False)
+    tutor2 = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=False)
+    tutor3 = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=False)
     
     
 #--tutoria individualitzada:
@@ -116,8 +137,11 @@ class promoForm(ModelForm):
 class newAlumne(ModelForm):
     class Meta:
         model = Alumne
-        fields = ['grup', 'nom', 'cognoms', 'data_neixement', 'correu_tutors', 'correu_relacio_familia_pare', 'correu_relacio_familia_mare', 'tutors_volen_rebre_correu', 'centre_de_procedencia', 'localitat', 'telefons', 'tutors', 'adreca']
-
+        #fields = ['grup', 'nom', 'cognoms', 'data_neixement', 'correu_tutors', 'correu_relacio_familia_pare', 'correu_relacio_familia_mare', 'tutors_volen_rebre_correu', 'centre_de_procedencia', 'localitat', 'telefons', 'tutors', 'adreca']
+        fields = ['grup', 'nom', 'cognoms', 'data_neixement', 'rp1_nom', 'rp1_telefon', 'rp1_mobil',
+                  'rp1_correu', 'rp2_nom', 'rp2_telefon', 'rp2_mobil', 'rp2_correu','correu_relacio_familia_pare',
+                  'correu_relacio_familia_mare', 'tutors_volen_rebre_correu', 'centre_de_procedencia', 'localitat',
+                   'adreca']
 
 
 #----------------

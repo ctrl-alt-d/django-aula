@@ -166,7 +166,7 @@ class Table2_ExpulsionsPendentsPerAcumulacio(tables.Table):
         verbose_name = " ",
         template_code=u"""
                                         <a style='color:red' 
-                                        href="/incidencies/posaExpulsioPerAcumulacio/{{ record.pk }}"> Generar expulsió </a>
+                                        href="/incidencies/posaExpulsioPerAcumulacio/{{ record.pk }}?origen={{ record.aux_origen }}"> Generar expulsió </a>
                                         """,
         orderable=False,
     )
@@ -179,27 +179,40 @@ class Table2_ExpulsionsPendentsPerAcumulacio(tables.Table):
 
 class Table2_ExpulsionsIIncidenciesPerAlumne(tables.Table):
 
+    Eliminar_Incidencia_Gestionada_Pel_Tutor = tables.TemplateColumn(
+        verbose_name=u" ",
+        attrs={'th': {'width': '4%'}},
+        template_code=u"""
+                        {% if record.gestionada_pel_tutor and record.professional_inicia %} 
+                                <a style="color:red" href="/incidencies/eliminaIncidencia/{{record.pk}}?origen=tutoria"> 
+                                    <span class="glyphicon glyphicon-remove"/> 
+                                </a>
+                        {% endif %}
+                        """,
+        orderable=False,
+    )
+
     Eliminar = tables.TemplateColumn(
         verbose_name=u" ",
         attrs={'th': {'width': '4%'}},
         template_code=u"""
-                                                {% if not record.es_incidencia_d_aula and not record.dia_expulsio %} 
-                                                        <a style="color:red" href="/incidencies/eliminaIncidencia/{{record.pk}}"> 
-                                                            <span class="glyphicon glyphicon-remove"/> 
-                                                        </a>
-                                                {% endif %}
-                                                {% if record.dia_expulsio %}
-                                                    <a href="/incidencies/editaExpulsio/{{ record.pk }}/"> 
-                                                            <span class="glyphicon glyphicon-pencil"/> 
-                                                    </a>
-                                                {% endif %}
-                                                {% if record.es_incidencia_d_aula %}
-                                                    <a class= "gi-2x" href="/incidencies/posaIncidenciaAula/{{record.control_assistencia.impartir.pk}}"> 
-                                                            <span class="glyphicon glyphicon-eye-open"/> 
-                                                    </a>
+                        {% if  not record.es_incidencia_d_aula and not record.dia_expulsio %} 
+                                <a style="color:red" href="/incidencies/eliminaIncidencia/{{record.pk}}"> 
+                                    <span class="glyphicon glyphicon-remove"/> 
+                                </a>
+                        {% endif %}                                                
+                        {% if record.dia_expulsio %}
+                            <a href="/incidencies/editaExpulsio/{{ record.pk }}/"> 
+                                    <span class="glyphicon glyphicon-pencil"/> 
+                            </a>
+                        {% endif %}
+                        {% if record.es_incidencia_d_aula %}
+                            <a class= "gi-2x" href="/incidencies/posaIncidenciaAula/{{record.control_assistencia.impartir.pk}}"> 
+                                    <span class="glyphicon glyphicon-eye-open"/> 
+                            </a>
 
-                                                {% endif %}
-                                                """,
+                        {% endif %}
+                        """,
         orderable=False,
     )
 

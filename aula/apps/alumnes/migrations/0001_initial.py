@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 ('data_baixa', models.DateField(null=True, blank=True)),
                 ('relacio_familia_darrera_notificacio', models.DateTimeField(null=True, blank=True)),
                 ('periodicitat_faltes', models.IntegerField(default=3, help_text='Interval de temps m\xednim entre dues notificacions', choices=[(0, b'No notificar'), (1, b'Un dia'), (2, b'Dos dies'), (3, b'Tres dies'), (7, b'Una setmana')])),
-                ('periodicitat_incidencies', models.BooleanField(default=3, help_text='Periodicitat en la notificaci\xf3 de les incid\xe8ncies.', choices=[(False, b'No notificar.'), (True, b'Notificar-les totes.')])),
+                ('periodicitat_incidencies', models.BooleanField(default=True, help_text='Periodicitat en la notificaci\xf3 de les incid\xe8ncies.', choices=[(False, b'No notificar.'), (True, b'Notificar-les totes.')])),
             ],
             options={
                 'ordering': ['grup', 'cognoms', 'nom'],

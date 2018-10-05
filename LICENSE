@@ -47,4 +47,9 @@ Llicència:
 
        Xevi Terradellas ( xeviterr@gmail.com ) 2014
        'Millores en gestió d'alumnes i grups
+       
+       Juaky Rubio ( juaky73@gmail.com ) 2017-
+       'Migració a django 1.11
+       'Mòdul reserva d'aules
+       'Buscadors de persones ( alumnes, professors )
 

@@ -17,37 +17,37 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 30
     capcelera.contingut = u'Alumne'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 15
     capcelera.contingut = u'hores absent no justificat'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 10
     capcelera.contingut = u'hores docència'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 100
+    capcelera.amplade = 20
     capcelera.contingut = u'%absència no justificada (absènc.no.justif./docència)'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 5
     capcelera.contingut = u'hores present'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 10
     capcelera.contingut = u'hores absènc. justif.'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 10
     capcelera.contingut = u'% assistència'
     taula.capceleres.append( capcelera )
 

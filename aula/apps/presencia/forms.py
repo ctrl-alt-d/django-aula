@@ -1,7 +1,8 @@
 # This Python file uses the following encoding: utf-8
+from aula.django_select2.forms import ModelSelect2Widget
 from aula.utils.widgets import DateTextImput
 from django import forms as forms
-from django.forms import ModelForm, RadioSelect
+from django.forms import ModelForm, RadioSelect, ModelChoiceField
 from django.forms.widgets import DateInput, TextInput
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.models import ControlAssistencia  , EstatControlAssistencia
@@ -37,11 +38,15 @@ class ControlAssistenciaFormFake(forms.Form):
 #----------------------------------------------------------------
 
 class afegeixGuardiaForm(forms.Form):
-    professor = forms.ModelChoiceField( 
-                        queryset= Professor.objects.all(),
-                        required= True,
-                        help_text=u'Tria a quin professor fas la guardia.',   
-                    )
+    professor = ModelChoiceField(
+        widget=ModelSelect2Widget(
+            queryset=Professor.objects.all(),
+            search_fields=('last_name__icontains', 'first_name__icontains',),
+            attrs={'style': "'width': '100%'"}
+        ),
+        queryset=Professor.objects.all(),
+        required=True,
+        help_text=u'Tria a quin professor fas la guardia.')
     franges = forms.ModelMultipleChoiceField( 
                         queryset= FranjaHoraria.objects.all(),
                         required= True,

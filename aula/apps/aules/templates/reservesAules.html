@@ -1,0 +1,40 @@
+{% extends "table2.html" %}
+
+{% block pretaula %}
+
+
+<div class="row">
+    <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12">
+        <div class="btn-group">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Nova Reserva
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="/aules/consultaAulaPerAula">
+                        Tria aula
+                    </a>
+                </li>
+                <li>
+                    <a href="/aules/consultaAulaPerFranja" >
+                        Triar franja
+                    </a>
+                </li>
+                {% if l4 %}
+                <li>
+                    <a href="/aules/tramitarReservaAula" >
+                        Reserva mode L4
+                    </a>
+                </li>                
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+    {% endblock %}
+
+    {% block posttaula %} 
+
+    {% endblock %}

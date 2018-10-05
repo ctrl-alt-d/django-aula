@@ -13,7 +13,9 @@
 		    {{missatge}}
 		  </div>
 	  {% endif %}
-  {% endblock %}
+	{% endblock %}
+	
+	{%if titol_formulari %}<h2>{{titol_formulari}}</h2>{%endif%}
 
   <form method="post" action="">{% csrf_token %}
     {{ formset.management_form }}

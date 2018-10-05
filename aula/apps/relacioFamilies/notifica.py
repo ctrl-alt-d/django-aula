@@ -87,7 +87,11 @@ def notifica():
             if hiHaNovetats:
                 #enviar correu i marcar novetats com a notificades:
                 assumpte = u"{0} - Notificacions al Djau de {1}".format(alumne.nom, settings.NOM_CENTRE )
-                missatge = [u"Benvolgut/da,",
+                missatge = [u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
+                            u"",
+                            u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                            u"",
+                            u"Benvolgut/da,",
                             u"",
                             u"Us comuniquem que teniu noves notificacions del vostre fill/a {0} a l'aplicació Djau del centre {1}".format(alumne.nom, urlDjangoAula),
                             u"",

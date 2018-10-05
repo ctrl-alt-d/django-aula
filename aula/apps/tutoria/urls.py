@@ -51,8 +51,11 @@ urlpatterns = [
         name="tutoria__justificar__justificador"),
                        
     url(r'^justificaNext/(?P<pk>\d+)/$', tutoria_views.justificaNext,
-        name="tutoria__justificar__next"),
-                       
+        name="tutoria__justificar__justificaNext"),
+
+    url(r'^faltaNext/(?P<pk>\d+)/$', tutoria_views.faltaNext,
+        name="tutoria__justificar__faltaNext"),
+
     url(r'^calendariCursEscolarTutor/$', tutoria_views.calendariCursEscolarTutor,
         name="tutoria__obsolet__treure"),
                        

@@ -15,6 +15,7 @@ from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
 from aula.apps.incidencies.helpers import preescriu
 from django.db.models import Count
+from django.utils.datetime_safe import datetime
 
 #templates
 from django.template import RequestContext, loader
@@ -25,7 +26,7 @@ from aula.apps.alumnes.models import Alumne
 from aula.apps.incidencies.models import Incidencia, Sancio
 from aula.apps.incidencies.models import TipusSancio, TipusIncidencia
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
-    Accio
+    Accio, User2ProfessorConserge
 from aula.apps.incidencies.models import Expulsio
 from aula.apps.horaris.models import DiaDeLaSetmana
 from aula.utils import tools    
@@ -117,6 +118,7 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
                                     text = u"""Posada incidència a l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
                                 )                             
                             incidencia_despres_de_posar( incidencia )
+
                     except ValidationError, e:
                         #Com que no és un formulari de model cal tractar a mà les incidències del save:
                         for _, v in e.message_dict.items():
@@ -239,7 +241,11 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
     
     incidencia.credentials = credentials
     
-    url_next = '/incidencies/llistaIncidenciesProfessional/'
+    origen = request.GET.get('origen', None)
+    if origen=="tutoria":
+        url_next = '/tutoria/incidenciesGestionadesPelTutor/'
+    else:
+        url_next = '/incidencies/llistaIncidenciesProfessional/'
     try:
         incidencia.delete()
         #LOGGING
@@ -249,7 +255,8 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
                 l4 = l4,
                 impersonated_from = request.user if request.user != user else None,
                 text = u"""Eliminada incidència de l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
-            )          
+            ) 
+        messages.success(request, u"Incidència de l'alumne {alumne} esborrada correctament".format(alumne=incidencia.alumne))         
     except ValidationError, e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
@@ -360,6 +367,101 @@ def posaIncidencia( request ):
                     },
                 )
 
+
+#Incidència per primera hora:
+
+
+@login_required
+@group_required(['consergeria'])
+def posaIncidenciaPrimeraHora( request ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+    
+    missatge = ""
+
+    #
+    formIncidenciaF = modelform_factory(Incidencia, fields=['dia_incidencia',
+                                                            'franja_incidencia',])
+    formIncidenciaF.base_fields['dia_incidencia'].widget =  DateTextImput()               
+
+    #
+    tipus_incidencia = TipusIncidencia.objects.filter( es_informativa=False ).first()
+    if not bool(tipus_incidencia):
+        messages.error(request,  u"Cal entrar el tipus 'Incidència' des d'admin. Crida a l'administrador del sistema." )
+        url = "/incidencies/posaIncidenciaprimerahora"
+        return HttpResponseRedirect( url )
+
+    #
+    ara = datetime.now().time()
+    franja = FranjaHoraria.objects.filter( hora_inici__lte = ara, hora_fi__gte = ara ).first()
+    conserge_inicia = User2ProfessorConserge(user)
+    incidencia = Incidencia ( dia_incidencia = datetime.today(),
+                                tipus = tipus_incidencia,
+                                franja_incidencia = franja,
+                                descripcio_incidencia = u"Retard en entrar al Centre",
+                                gestionada_pel_tutor = True,
+                                gestionada_pel_tutor_motiu = Incidencia.GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA,
+                                professional_inicia = conserge_inicia,
+                            )
+
+    #
+    formset = []
+    if request.method == 'POST':
+        
+        formAlumne = triaAlumneSelect2Form(request.POST )
+
+        incidencia.credentials = credentials
+        formIncidencia = formIncidenciaF(request.POST, instance = incidencia )
+        if formAlumne.is_valid():            
+            alumne = formAlumne.cleaned_data['alumne']
+            incidencia.alumne = alumne            
+            incidencia.professional = alumne.tutorsIndividualitzatsDeLAlumne().first() or  alumne.tutorsDeLAlumne().first()
+
+            if not bool(incidencia.professional):
+                messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
+                url = "/incidencies/posaIncidenciaprimerahora"
+                return HttpResponseRedirect( url )   
+
+            if formIncidencia.is_valid(): 
+                    incidencia = formIncidencia.save( )
+                    
+                    #LOGGING
+                    Accio.objects.create( 
+                            tipus = 'IN',
+                            usuari = user,
+                            l4 = l4,
+                            impersonated_from = request.user if request.user != user else None,
+                            text = u"""Posar incidència a {0}. Text incidència: {1}""".format( alumne, incidencia.descripcio_incidencia )
+                        )                    
+                    
+                    incidencia_despres_de_posar( incidencia )
+                    missatge = u"Incidència anotada."
+                    messages.info(request, missatge)
+                    url = '/incidencies/posaIncidenciaprimerahora' 
+    
+                    return HttpResponseRedirect( url )                      
+
+        formset.append( formAlumne )
+        formset.append( formIncidencia )
+        
+    else:
+
+        formAlumne = triaAlumneSelect2Form()        
+        formIncidencia = formIncidenciaF( instance = incidencia)
+
+        formset.append( formAlumne )
+        formset.append( formIncidencia )
+        
+    return render(
+                request,
+                'formset.html',
+                    {'formset': formset,
+                     'titol_formulari': 'Incidència per retard entrada al centre', 
+                     'head': 'Incidència primera hora' ,
+                     'missatge': missatge
+                    },
+                )
 
 #vistes -----------------------------------------------------------------------------------
 
@@ -536,17 +638,27 @@ def editaExpulsio( request, pk ):
         edatAlumne = (date.today() - expulsio.alumne.data_neixement).days / 365 
     except:
         pass
-    
+
+    nomResponsable1 = expulsio.alumne.rp1_nom if expulsio.alumne.rp1_nom else ''
+    nomResponsable2 = expulsio.alumne.rp2_nom if expulsio.alumne.rp2_nom else ''
+    telefonResponsable1 = expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon else ''
+    telefonResponsable2 = expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon else ''
+    mobilResponsable1 = expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else ''
+    mobilResponsable2 = expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else ''
+    responsable1 = nomResponsable1 + (u' (' + telefonResponsable1 + u' , ' + mobilResponsable1 + u')')
+    responsable2 = nomResponsable2 + (u' (' + telefonResponsable2 + u' , ' + mobilResponsable2 + u')')
+
     infoForm = [
-          ('Alumne',unicode( expulsio.alumne) ),
-          ('Dia', expulsio.dia_expulsio ) ,
-          ('Hora', expulsio.franja_expulsio ) ,
-          ( 'Telèfon Alumne', expulsio.alumne.telefons),                     
-          ( 'Nom tutors', expulsio.alumne.tutors),                     
-          ( 'Edat alumne', edatAlumne ),
-          ( 'Professor que expulsa',   expulsio.professor if expulsio.professor else 'N/A' ),
-          ( 'Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),                     
-                ]
+        ('Alumne', unicode(expulsio.alumne)),
+        ('Dia', expulsio.dia_expulsio),
+        ('Hora', expulsio.franja_expulsio),
+        ('Responsable 1', responsable1),
+        ('Responsable 2', responsable2),
+        ('Altres telèfons', expulsio.alumne.altres_telefons),
+        ('Edat alumne', edatAlumne),
+        ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
+        ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
+    ]
     
     fields = [ 'motiu', 
               'tutor_contactat_per_l_expulsio', 
@@ -620,6 +732,13 @@ def editaExpulsio( request, pk ):
     formset = [ formExpulsio ]
     formset.extend ( [  can_delete ] if l4 else []  )
 
+    #
+    for f in['motiu',
+              'tutor_contactat_per_l_expulsio',
+              'moment_comunicacio_a_tutors',
+              'tramitacio_finalitzada']:
+        formExpulsio.fields[f].widget.attrs['class'] = 'form-control ' + \
+                                                       formExpulsio.fields[f].widget.attrs.get('class', "")
     return render(
                 request,
                 'formset.html',
@@ -638,21 +757,20 @@ def posaExpulsioPerAcumulacio( request, pk ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials    
     
-    #dia_prescriu_incidencia = date.today() - timedelta( days = settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA )
-    try:
-        incidencia = Incidencia.objects.get(pk =pk)
-    except:
-        return render(
-                        request,
-                        'resultat.html', 
-                        {'head': u'Error al crear expulsió per acumulació' ,
-                         'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
-                    )
-    
+    incidencia = get_object_or_404( Incidencia, pk =pk)
+
+    url_incidencies_tutoria = '/tutoria/incidenciesGestionadesPelTutor/'
+    url_totes_les_incidencies = '/incidencies/llistaIncidenciesProfessional/'
+    origen = request.GET.get('origen', None)
+    if origen=="tutoria":
+        url_next_default = url_incidencies_tutoria
+    else:
+        url_next_default = url_totes_les_incidencies
+
     professional = incidencia.professional
     professor = User2Professor(professional.getUser() ) 
     
-    #seg---------
+    # -seg---------
     te_permis = (l4
                  or user.pk == professional.pk
                  or user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()]
@@ -660,83 +778,81 @@ def posaExpulsioPerAcumulacio( request, pk ):
     if not te_permis :
         raise Http404()
 
-    gestionada_pel_tutor = ( user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()]
-                             and user.pk != professional.pk )
-    
-    #si l'expulsió ja ha estat generada abans l'envio a l'expulsió
-    #seria el cas que seguissin l'enllaç d'un Missatge:
-    
+    # -ja ha generat l'expulsió---
     if incidencia.provoca_expulsio:
+        messages.warning(request, u"Aquesta incidència ja havia generat una expulsió" )
         url_next = '/incidencies/editaExpulsio/{0}/'.format( incidencia.provoca_expulsio.pk  )    
         return HttpResponseRedirect( url_next )
+
+    # - o bé es gestionada pel tutor o bé és d'un professor.
+    alumne = incidencia.alumne
+    incidencies = ( alumne
+                    .incidencia_set
+                    .filter(
+                            es_vigent = True,
+                            tipus__es_informativa = False,)
+                    )
+    # -- És gestionada pel tutor
+    incidencies_gestionades_tutor = incidencies.filter( gestionada_pel_tutor = True )
+    n_incidencies_gestionades_tutor = incidencies_gestionades_tutor.count() 
+    te_3_incidencies_gestionades_pel_tutor = ( n_incidencies_gestionades_tutor >= 3 and
+                                               user.pk in [p.pk for p in incidencia.alumne.tutorsDeLAlumne()] )
+    if te_3_incidencies_gestionades_pel_tutor:
+        incidencies = incidencies_gestionades_tutor
+
+    # -- Tres incidències d'un mateix professor
+    if not te_3_incidencies_gestionades_pel_tutor:
+        incidencies_mateix_professor = incidencies.filter( professional = professional ) 
+        n_incidencies_mateix_professor = incidencies_mateix_professor.count()
+        te_3_incidencies_mateix_professor = n_incidencies_mateix_professor >= 3
+        if te_3_incidencies_mateix_professor:
+            incidencies = incidencies_mateix_professor
+
+    # -- Passem a fer l'expulsió
+    podem_fer_expulsio = te_3_incidencies_gestionades_pel_tutor or te_3_incidencies_mateix_professor
+    
+    if not podem_fer_expulsio:
+        messages.warning(request, u"No podem fer expulsió." )
+        return HttpResponseRedirect( url_next_default )        
     
     alumne = incidencia.alumne
-
-    q_tutor_o_professional = Q()
-    if gestionada_pel_tutor:
-        q_tutor_o_professional = Q(professional = professional)
-    else:
-        q_tutor_o_professional = Q(professional = professional)
-
-    incidencies = ( alumne
-                        .incidencia_set
-                        .filter(
-                                               es_vigent = True,
-                                               tipus__es_informativa = False,)
-                        .filter(q_tutor_o_professional )
-                    )
-    enTe3oMes = incidencies.count() >= 3
     professor_recull = User2Professor(user) 
-    
-    str_incidencies = u''
-    separador = u''
-    for i in incidencies:
-        str_incidencies +=  ( separador  + i.descripcio_incidencia + u'('+ unicode ( i.dia_incidencia) + u')')
-        separador = u', '
 
-    gestionada_pel_tutor_txt = u"\n(Incidència gestionada pel tutor)" if gestionada_pel_tutor else u""
+    str_incidencies = u", ".join( [ u"{0} ({1})".format( i.descripcio_incidencia, i.dia_incidencia) for i in incidencies ] )
+    gestionada_pel_tutor_txt = u"\n(Incidència gestionada pel tutor)" if te_3_incidencies_gestionades_pel_tutor else u""
     motiu_san = u'''Expulsió per acumulació d'incidències: {0} {1}'''.format( str_incidencies, gestionada_pel_tutor_txt )
+        
+    try:
+        expulsio = Expulsio.objects.create(
+                    estat = 'AS',
+                    professor_recull = professor_recull,
+                    professor = professor_recull,
+                    alumne = alumne,
+                    dia_expulsio = incidencia.dia_incidencia,
+                    franja_expulsio = incidencia.franja_incidencia,
+                    motiu = motiu_san,
+                    es_expulsio_per_acumulacio_incidencies = True                        
+                    )
 
+        #LOGGING
+        Accio.objects.create( 
+                tipus = 'EE',
+                usuari = user,
+                l4 = l4,
+                impersonated_from = request.user if request.user != user else None,
+                text = u"""Creada expulsió d'alumne {0} per acumulació d'incidències.""".format( expulsio.alumne )
+            )   
     
-    url_next = '/incidencies/llistaIncidenciesProfessional/'  #todo: a la pantalla d''incidencies
-    if enTe3oMes:
-        
-        try:
-            expulsio = Expulsio.objects.create(
-                        estat = 'AS',
-                        professor_recull = professor_recull,
-                        professor = professor_recull,
-                        alumne = alumne,
-                        dia_expulsio = incidencia.dia_incidencia,
-                        franja_expulsio = incidencia.franja_incidencia,
-                        motiu = motiu_san,
-                        es_expulsio_per_acumulacio_incidencies = True                        
-                        )
+        expulsio_despres_de_posar( expulsio )
+        incidencies.update( es_vigent = False, provoca_expulsio = expulsio )
+        missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0} """.format( expulsio.alumne )
+        messages.info(request, missatge)
 
-            #LOGGING
-            Accio.objects.create( 
-                    tipus = 'EE',
-                    usuari = user,
-                    l4 = l4,
-                    impersonated_from = request.user if request.user != user else None,
-                    text = u"""Creada expulsió d'alumne {0} per acumulació d'incidències.""".format( expulsio.alumne )
-                )   
-        
-            expulsio_despres_de_posar( expulsio )
-            incidencies.update( es_vigent = False, provoca_expulsio = expulsio )
-            missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0} """.format( expulsio.alumne )
-            messages.info(request, missatge)
-        except ValidationError, e:
-            resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
-                        'warnings':  [], 'infos':  [], 'url_next': url_next }
-            return render(
-                            request,
-                           'resultat.html', 
-                           {'head': u'Error al crear expulsió per acumulació.' ,
-                            'msgs': resultat },
-                        )
+    except ValidationError, e:
+        messages.error( request,  u", ".join( itertools.chain( *e.message_dict.values() ) ) )
+        return HttpResponseRedirect( url_next_default )   
 
-    return HttpResponseRedirect( url_next )         
+    return HttpResponseRedirect( url_totes_les_incidencies )         
 
 #--------------------------------------------------------------------------------------------------
 
@@ -771,6 +887,7 @@ def llistaIncidenciesProfessional( request ):
                                                         professional = professional, 
                                                         es_vigent = True,
                                                         tipus__es_informativa = False,
+                                                        gestionada_pel_tutor = False,
                                                         #dia_incidencia__gte = dia_prescriu_incidencia
                                                                                    )
         calTramitarExpulsioPerAcumulacio = settings.CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO and incidenciesAlumne.count() >= 3
@@ -778,6 +895,7 @@ def llistaIncidenciesProfessional( request ):
                                             if calTramitarExpulsioPerAcumulacio \
                                             else None
         if calTramitarExpulsioPerAcumulacio and alumne_str not in alumnes:
+            exempleIncidenciaPerAcumulacio.aux_origen = "professional"
             expulsionsPendentsPerAcumulacio.append( exempleIncidenciaPerAcumulacio )
         
         alumnes.setdefault( alumne_str, {
@@ -819,6 +937,8 @@ def llistaIncidenciesProfessional( request ):
             incidenciesPerAlumne = tupla_alumne[1]['incidencies']
             expulsionsIIncidenciesPerAlumne = Table2_ExpulsionsIIncidenciesPerAlumne(expulsionsPerAlumne
                                                                                      +incidenciesPerAlumne)
+            expulsionsIIncidenciesPerAlumne.columns.hide('Eliminar_Incidencia_Gestionada_Pel_Tutor')
+
             diccionariTables[tupla_alumne[0]+' - ' + unicode (tupla_alumne[1]['grup'])]=expulsionsIIncidenciesPerAlumne
 
 
@@ -1067,42 +1187,42 @@ def sancions( request, s = 'nom' ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 120
+    capcelera.amplade = 10
     capcelera.contingut = u'Alumne'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()   
-    capcelera.amplade = 50
+    capcelera.amplade = 7
     capcelera.contingut = u'Tipus'
     taula.capceleres.append( capcelera )  
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 10
+    capcelera.amplade = 5
     capcelera.contingut = u'Obre Expedient'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 10
     capcelera.contingut = u'Periode sanció'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 9
     capcelera.contingut = u'Data Carta'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 9
     capcelera.contingut = u'Expulsions Relacionades'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 45
     capcelera.contingut = u'Incidències Relacionades'
     taula.capceleres.append( capcelera )
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 70
+    capcelera.amplade = 5
     capcelera.contingut = u'Accions'
     taula.capceleres.append( capcelera )
 

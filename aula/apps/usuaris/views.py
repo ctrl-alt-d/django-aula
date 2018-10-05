@@ -175,12 +175,12 @@ def elsProfessors( request ):
     taula.titol.contingut = ""
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 230
+    capcelera.amplade = 40
     capcelera.contingut = u'Professor'
     taula.capceleres.append( capcelera )
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 60
     capcelera.contingut = u'%Passa llista'
     taula.capceleres.append( capcelera )
        
@@ -513,12 +513,8 @@ def sendPasswdByEmail( request ):
 
 
 @login_required
-@group_required(['consergeria'])
-def cercaProfessor_fromConsergeria(request, from_request="consergeria"):
-    return cercaProfessor(request, from_request)
-
-
-def cercaProfessor(request, from_request):
+@group_required(['consergeria','professors','professional'])
+def cercaProfessor(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
@@ -526,11 +522,7 @@ def cercaProfessor(request, from_request):
         formUsuari = triaProfessorSelect2Form(request.POST)  # todo: multiple=True (multiples profes de cop)
         if formUsuari.is_valid():
             professor = formUsuari.cleaned_data['professor']
-            next_url = r""
-            if from_request == "consergeria":
-                next_url = r'/usuaris/detallProfessorHorari/{0}/all/'
-            # else:
-            #     next_url = r'/usuaris/detallProfessorHorariProfessors/{0}/all/'
+            next_url = r'/usuaris/detallProfessorHorari/{0}/all/'
             return HttpResponseRedirect(next_url.format(professor.pk))
 
     else:
@@ -554,12 +546,20 @@ def detallProfessorHorari(request, pk, detall='all'):
     #grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
 
     #mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
-    qAvui = datetime.today()
+
+    data_txt = request.GET.get( 'data', '' )
+
+    try:
+        data = datetime.strptime(data_txt, r"%Y-%m-%d").date()
+    except ValueError:
+        data = datetime.today()
+
+
     professor = get_object_or_404( Professor, pk=pk)
     tutoria = professor.tutor_set.filter( professor = professor )
 
-    qHorari = Q(horari__professor = professor, dia_impartir = qAvui)
-    qGuardies = Q(professor_guardia = professor, dia_impartir = qAvui)
+    qHorari = Q(horari__professor = professor, dia_impartir = data)
+    qGuardies = Q(professor_guardia = professor, dia_impartir = data)
     imparticions = Impartir.objects.filter( qHorari | qGuardies ).order_by( 'horari__hora')
 
     table=HorariProfessorTable(imparticions)
@@ -572,7 +572,17 @@ def detallProfessorHorari(request, pk, detall='all'):
         {'table': table,
          'professor':professor,
          'tutoria': tutoria,
-         'dia' : datetime.today().date(),
-         #'mostra_detalls': mostra_detalls,
+         'dia' : data,
+         'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
+         'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
+         'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          })
 
+@login_required
+@group_required(['professional'])
+def blanc( request ):
+    return render(
+                request,
+                'blanc.html',
+                    {},
+                    )

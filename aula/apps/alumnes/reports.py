@@ -14,17 +14,17 @@ def reportLlistaTutorsIndividualitzats(  ):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 30
     capcelera.contingut = u'{0}'.format('Professor')
     taula.capceleres.append( capcelera ) 
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 300
+    capcelera.amplade = 50
     capcelera.contingut = u'{0}'.format('Alumnes amb tutoria individualitzada')
     taula.capceleres.append( capcelera )
         
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 20
     capcelera.contingut = u'{0}'.format('Accions')
     taula.capceleres.append( capcelera ) 
         

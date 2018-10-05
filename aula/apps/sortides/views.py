@@ -886,7 +886,7 @@ def sortidaExcel( request, pk ):
     detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'grup', u'nivell', u"assitència" ], ]
+    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència" ], ]
     alumnes += [
                         [e,
                          e.grup.descripcio_grup,

@@ -147,8 +147,11 @@ def controlAssistencia_post_save(sender, instance, created, **kwargs):
                                                 ).exists()
 
             if not ja_hi_es:
-                es_primera_hora = instance.esPrimeraHora()
-                es_primera_hora_txt = Incidencia.GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA if es_primera_hora else ''
+                es_primera_hora = ( settings.CUSTOM_RETARD_PRIMERA_HORA_GESTIONAT_PEL_TUTOR  
+                                    and instance.esPrimeraHora() )
+                es_primera_hora_txt = ( Incidencia.GESTIONADA_PEL_TUTOR_RETARD_PRIMERA_HORA 
+                                        if es_primera_hora 
+                                        else '' )
                 i = Incidencia.objects.create(
                                           professional = User2Professional( instance.professor ),
                                           alumne = instance.alumne,

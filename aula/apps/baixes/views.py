@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from django import forms
 from django.contrib.auth.decorators import login_required
+from aula.django_select2.forms import ModelSelect2Widget
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor, Professor
@@ -99,7 +100,15 @@ def complementFormulariOmple( request, pk_professor, dia, mes, year  ):
     
     
     formsetFac = modelformset_factory(model = Feina, extra=0, can_delete=False,  
-                                      fields=('professor_fa_guardia','feina_a_fer','comentaris_per_al_professor_guardia',))
+                                      fields=('professor_fa_guardia','feina_a_fer','comentaris_per_al_professor_guardia',),
+                                      widgets = {
+                                            'professor_fa_guardia': ModelSelect2Widget(
+                                                queryset=Professor.objects.all(),
+                                                search_fields=('last_name__icontains', 'first_name__icontains',),
+                                                attrs={'style': "'width': '100%'"}
+                                            )
+                                      }
+                                      )
 
     if request.method == "POST":
         formset = formsetFac( request.POST, queryset=Feina.objects.filter( impartir__in = imparticions ) )

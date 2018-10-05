@@ -46,7 +46,8 @@ def calcula_menu( user , path ):
                                           .objects
                                           .order_by()
                                           .filter( incidencia__professional = professional, 
-                                                   incidencia__tipus__es_informativa = False, 
+                                                   incidencia__tipus__es_informativa = False,
+                                                   incidencia__gestionada_pel_tutor = False,
                                                    incidencia__es_vigent = True )
                                           .annotate( n = Count( 'incidencia' ) )
                                           .filter( n__gte = 3 )
@@ -103,7 +104,7 @@ def calcula_menu( user , path ):
                        .objects
                        .exclude( estat = 'E' )
                        .filter( estat__in = filtre )
-                       .filter( data_inici__lte = datetime.now() )
+                       .filter( data_inici__gte = datetime.now() )
                        .filter( tutors_alumnes_convocats = professor )
                        .exists()
                       )    
@@ -116,6 +117,16 @@ def calcula_menu( user , path ):
 
     
     arbre1 = (
+
+               #--Consergeria--------------------------------------------------------------------------
+               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
+                  (
+                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
+                      ("Incidència per retard", 'consergeria__incidencia__onbehalf', co, None, None ),
+
+                   )
+               ),
+        
                #--Aula--------------------------------------------------------------------------
                #  id,    nom     vista                 seg      label
                ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
@@ -126,7 +137,6 @@ def calcula_menu( user , path ):
                       ("Alumnes", 'aula__alumnes__blanc', pr, None,
                           ( 
                             ("Els meus alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None),
-                            ("Cerca alumne", 'aula__alumnes__cerca', pr, None ),
                           ),                        
                       ),                                                            
 
@@ -151,7 +161,16 @@ def calcula_menu( user , path ):
                ('tutoria', 'Tutoria', 'tutoria__actuacions__list', tu, None,
                    arbre_tutoria
                ),
-             
+
+               #--Gestió--------------------------------------------------------------------------
+               ('gestio', 'Gestió', 'gestio__reserva_aula__list', co or pl, None,
+                  (
+                      ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),                                        
+                      ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
+                      ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
+                   )
+               ),
+                            
                #--psicopedagog--------------------------------------------------------------------------
                ('psico', 'Psicopedagog', 'psico__informes_alumne__list', pg or di, None,
                   (
@@ -159,7 +178,7 @@ def calcula_menu( user , path ):
                       ("Actuacions", 'psico__actuacions__list', pg or di, None, None ),
                    )
                ),
-             
+
                #--Coord.Pedag--------------------------------------------------------------------------
                ('coordinacio_pedagogica', 'Coord.Pedag', 'coordinacio_pedagogica__qualitativa__blanc', di, None,
                   (
@@ -173,7 +192,7 @@ def calcula_menu( user , path ):
                       ("Seguiment Tutorial", "coordinacio_pedagogica__seguiment_tutorial__preguntes", di, None, None ),
                    ),
                ),
-  
+
                #--Coord.Alumnes--------------------------------------------------------------------------
                ('coordinacio_alumnes', 'Coord.Alumnes', 'coordinacio_alumnes__ranking__list', di, None,
                   (
@@ -213,6 +232,7 @@ def calcula_menu( user , path ):
                         (
                           ("Alumnes", 'administracio__sincronitza__saga', di , None  ),
                           ("Horaris", 'administracio__sincronitza__kronowin', di , None  ),
+                          ("Aules", 'gestio__aula__assignacomentari', di, None),
                           ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
                         ),
                       ),
@@ -224,16 +244,7 @@ def calcula_menu( user , path ):
 # Queda pendent acabar-la, o eliminar-la de l'aplicació.
                    )
                ),
-             
-               #--Consergeria--------------------------------------------------------------------------
-               ('consergeria', 'Consergeria', 'consergeria__missatges__envia_tutors', co, None,
-                  (
-                      ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
-                      ("Cerca Alumne", 'consergeria__usuari__cerca', co, None, None),
-                      ("Cerca Professor", 'consergeria__professor__cerca', co, None, None),
-                   )
-               ),
-
+        
                #--relacio_families--------------------------------------------------------------------------
                ('relacio_families', u'Famílies', 'relacio_families__informe__el_meu_informe', al, None,
                   (

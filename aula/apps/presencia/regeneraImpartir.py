@@ -8,6 +8,8 @@ from threading import Thread
 from aula.utils import tools
 from django.db.models import Q
 from aula.apps.horaris.helpers import esFestiu
+import traceback
+
 
 #http://docs.python.org/library/sets.html
 class regeneraThread(Thread):
@@ -58,7 +60,7 @@ class regeneraThread(Thread):
                 
             #per tots els dies:
             for dia in totsElsDies:
-                
+
                 #print 'processant dia: ' + unicode( dia ) #debug 
 
                 #estatus de l'actualització                
@@ -86,8 +88,25 @@ class regeneraThread(Thread):
                     dia_festa = esFestiu( curs=curs, dia=dia, hora=horari.hora )
                     if not fora_de_rang :
                         if not dia_festa:
-                            _ , created = Impartir.objects.get_or_create( dia_impartir = dia, horari = horari ) 
-                            if created: nHorarisInsertats += 1
+                            impartir_modificat , created = Impartir.objects.get_or_create( dia_impartir = dia, 
+                                                                          horari = horari ) 
+                            if created: 
+                                nHorarisInsertats += 1
+
+                            if not created:
+                                aula_horari = horari.aula.pk if horari.aula else -1
+                                aula_impartir = impartir_modificat.reserva.aula.pk if impartir_modificat.reserva else -1
+                                canvi_aula = ( aula_horari != aula_impartir )
+                                if ( canvi_aula and 
+                                     impartir_modificat.reserva and 
+                                     not impartir_modificat.reserva.es_reserva_manual ):
+                                    fake_l4_credentials = (None, True)
+                                    impartir_modificat.reserva.credentials = fake_l4_credentials
+                                    impartir_modificat.reserva.delete()
+                                    impartir_modificat.reserva = None
+                                    impartir_modificat.reserva_id = None                                    
+                                    impartir_modificat.save()
+
                         else:
                             Impartir.objects.filter( dia_impartir = dia, horari = horari ).delete()
                     else:
@@ -95,8 +114,9 @@ class regeneraThread(Thread):
                         #print 'fora de rang:' + unicode( horari )  #debug
 
 
-        except Exception, e:
-            errors.append(unicode(e))
+        except Exception as e:
+            errors.append( traceback.format_exc() )
+            #errors.append(unicode(e))
             self.str_status = unicode(e)
         
         self.str_status = u'Finalitzat' + unicode( errors )
@@ -109,8 +129,8 @@ class regeneraThread(Thread):
         
         msg = Missatge( 
                     remitent= self.user, 
-                    text_missatge = "Reprogramació de classes finalitzada.")    
-        msg.afegeix_errors( errors.sort() )
+                    text_missatge = "Reprogramació de classes finalitzada.") 
+        msg.afegeix_errors( errors )
         msg.afegeix_warnings(warnings)
         msg.afegeix_infos(infos)    
         importancia = 'VI' if len( errors )> 0 else 'IN'

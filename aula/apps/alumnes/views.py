@@ -113,7 +113,7 @@ def assignaTutors( request ):
                 tutor1 = form.cleaned_data['tutor1']
                 tutor2 = form.cleaned_data['tutor2']
                 tutor3 = form.cleaned_data['tutor3']
-                if tutor1:  parellesProfessorGrup.add( ( tutor1.pk, grup)  )
+                if tutor1:  parellesProfessorGrup.add( (tutor1.pk, grup)  )
                 if tutor2:  parellesProfessorGrup.add( (tutor2.pk, grup)  )
                 if tutor3:  parellesProfessorGrup.add( (tutor3.pk, grup)  )
             else:
@@ -349,19 +349,19 @@ def elsMeusAlumnesAndAssignatures( request ):
         taula.titol.contingut = ""
         
         capcelera_nom = tools.classebuida()
-        capcelera_nom.amplade = 230
+        capcelera_nom.amplade = 25
         capcelera_nom.contingut = u'{0} - {1}'.format(unicode( assignatura ) , unicode( grup ) )
 
         capcelera_nIncidencies = tools.classebuida()
-        capcelera_nIncidencies.amplade = 90
+        capcelera_nIncidencies.amplade = 10
         capcelera_nIncidencies.contingut = u'Incidències'
 
         capcelera_assistencia = tools.classebuida()
-        capcelera_assistencia.amplade = 80
+        capcelera_assistencia.amplade = 5
         capcelera_assistencia.contingut = u'Assist.'
 
         capcelera_nFaltes = tools.classebuida()
-        capcelera_nFaltes.amplade = 340
+        capcelera_nFaltes.amplade = 15
         nClasses = Impartir.objects.filter( horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup 
@@ -376,7 +376,7 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 80
+        capcelera_contacte.amplade = 45
         capcelera_contacte.contingut = u'Dades de contacte Tutors.'
         
         taula.capceleres = [capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]
@@ -452,10 +452,15 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-nom--------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0},{1}'.format( alumne.tutors, alumne.telefons )
+            camp.multipleContingut = [(u'{0} ({1}, {2}, {3})'.format( alumne.rp1_nom,
+                                                                        alumne.rp1_telefon,
+                                                                        alumne.rp1_mobil,
+                                                                        alumne.rp1_correu ), None,),
+                                      (u'{0} ({1}, {2}, {3})'.format( alumne.rp2_nom,
+                                                                        alumne.rp2_telefon,
+                                                                        alumne.rp2_mobil,
+                                                                        alumne.rp2_correu ), None,)]
             filera.append(camp)
-            
-            
             taula.fileres.append( filera )
         
         report.append(taula)
@@ -560,7 +565,13 @@ def detallAlumneHorari(request, pk, detall='all'):
 
     mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
 
-    qAvui = (Q(impartir__dia_impartir=datetime.today()))
+    data_txt = request.GET.get( 'data', '' )
+    try:
+        data = datetime.strptime(data_txt, r"%Y-%m-%d").date()
+    except ValueError:
+        data = datetime.today()    
+
+    qAvui = Q(impartir__dia_impartir=data)
     alumne = get_object_or_404( Alumne, pk=pk)
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
 
@@ -581,13 +592,13 @@ def detallAlumneHorari(request, pk, detall='all'):
         for aula in aules:
             if c.impartir.horari.hora == aula['hora']:
                 aula['horari_alumne']= aula['horari_alumne'] + u'\n' + \
-                                       c.impartir.horari.nom_aula + u' ' + \
+                                       c.impartir.get_nom_aula + u' ' + \
                                        c.impartir.horari.professor.get_full_name() + u' ' + \
                                        c.impartir.horari.assignatura.nom_assignatura + \
                                        u' (' + estat + u')'
                 horanova = False
         if horanova:
-            novaaula = {'horari_alumne': c.impartir.horari.nom_aula + ' ' +
+            novaaula = {'horari_alumne': c.impartir.get_nom_aula + ' ' +
                                          c.impartir.horari.professor.get_full_name() + u' ' +
                                          c.impartir.horari.assignatura.nom_assignatura +
                                          u' (' + estat + u')',
@@ -641,23 +652,17 @@ def detallAlumneHorari(request, pk, detall='all'):
         'mostraInfoAlumneCercat.html',
         {'table': table,
          'alumne':alumne,
-         'dia' : datetime.today().date(),
+         'dia' : data,
          'mostra_detalls': mostra_detalls,
+         'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
+         'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
+         'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          },
     )
 
-
 @login_required
-@group_required(['consergeria'])
-def cercaUsuari_fromConsergeria(request, from_request="consergeria"):
-    return cercaUsuari(request, from_request)
-
-@login_required
-@group_required(['professors'])
-def cercaUsuari_fromAula(request, from_request="professors"):
-    return cercaUsuari(request, from_request)
-
-def cercaUsuari(request, from_request):
+@group_required(['professional','consergeria',])
+def cercaUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
@@ -665,11 +670,7 @@ def cercaUsuari(request, from_request):
         formUsuari = triaAlumneSelect2Form(request.POST)  # todo: multiple=True (multiples alumnes de cop)
         if formUsuari.is_valid():
             alumne = formUsuari.cleaned_data['alumne']
-            next_url = r""
-            if from_request == "consergeria":
-                next_url = r'/alumnes/detallAlumneHorari/{0}/all/'
-            else:
-                next_url = r'/alumnes/detallAlumneHorariProfessors/{0}/all/'
+            next_url = r'/alumnes/detallAlumneHorari/{0}/all/'
             return HttpResponseRedirect(next_url.format(alumne.pk))
             
     else:

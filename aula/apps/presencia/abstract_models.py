@@ -14,6 +14,8 @@ class AbstractImpartir(models.Model):
     dia_passa_llista = models.DateTimeField(null=True, blank=True)
     comentariImpartir = models.TextField(null=False, blank=True, default='')
     pot_no_tenir_alumnes = models.BooleanField(default=False)
+    reserva = models.ForeignKey('aules.ReservaAula', null=True, blank=True, on_delete=models.SET_NULL)
+
     class Meta:
         abstract = True
         verbose_name = u'Impartir classe'
@@ -21,17 +23,45 @@ class AbstractImpartir(models.Model):
         unique_together = (("dia_impartir","horari"))
 
     def __unicode__(self):
-        return (  self.dia_impartir.strftime( "%d/%m/%Y") +
-                  ': ' + unicode( self.horari) )
+        canviaula = u""
+        if self.canvi_aula_respecte_horari:
+            canviaula = u" amb canvi d'aula a la {aula}".format(aula=self.get_nom_aula)
+        resposta = u"{dia}: {horari}{canviaula}".format(
+                                dia = self.dia_impartir.strftime( "%d/%m/%Y"),
+                                horari = self.horari,
+                                canviaula = canviaula,
+        )
+        return resposta
+
+    @property
+    def canvi_aula_respecte_horari(self):
+        te_reserva =  bool(self.reserva)
+        return te_reserva and self.reserva.aula != self.horari.aula
+
+    @property
+    def get_nom_aula(self):
+        te_reserva =  bool(self.reserva)
+        if te_reserva:
+            alarma = "" #"" !" if self.reserva.es_reserva_manual else ""
+            return u"{aula}{alarma}".format( aula= self.reserva.aula.nom_aula, alarma=alarma )
+        else:
+            return self.horari.aula.nom_aula if self.horari.aula else ""
 
     def esFutur(self):
         data = datetime( year = self.dia_impartir.year, 
-                         month = self.dia_impartir.month, 
+                         month = self.dia_impartir.month,
                          day = self.dia_impartir.day,
                          hour =  self.horari.hora.hora_inici.hour, 
                          minute = self.horari.hora.hora_inici.minute,
                          second = 0 )
         return data > datetime.now()
+
+    def esReservaManual(self):
+        te_reserva = bool(self.reserva)
+        if te_reserva:
+            return self.reserva.es_reserva_manual
+        else:
+            return False
 
     def esAvui(self):
         from datetime import date

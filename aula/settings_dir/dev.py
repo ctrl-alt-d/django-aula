@@ -9,7 +9,7 @@ SQL_DEBUG = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': location( 'db.sqlite'),
+        'NAME':  location( 'db.sqlite'),
         'USER': '',
         'PASSWORD': '',
         'HOST': '',

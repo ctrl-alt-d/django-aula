@@ -38,16 +38,10 @@ urlpatterns = [
        name="aula__materies__blanc"),
 
    url(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', alumnes_views.detallAlumneHorari,
-        name="consergeria__usuari__cercaresultat"),
+        name="gestio__usuari__cercaresultat"),
 
-   url(r'^cercaUsuari/$', alumnes_views.cercaUsuari_fromConsergeria,
-        name="consergeria__usuari__cerca"),
-
-   url(r'^detallAlumneHorariProfessors/(?P<pk>\d+)/(?P<detall>\w+)/$', alumnes_views.detallAlumneHorari,
-        name="aula__alumnes__cercaresultat"),
-
-   url(r'^cercaUsuariProfessors/$', alumnes_views.cercaUsuari_fromAula,
-        name="aula__alumnes__cerca"),
+   url(r'^cercaUsuari/$', alumnes_views.cercaUsuari,
+        name="gestio__usuari__cerca"),
 
     url(r'^blanc/$', alumnes_views.blanc,
         name="aula__alumnes__blanc"),                       

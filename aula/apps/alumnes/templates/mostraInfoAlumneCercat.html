@@ -9,12 +9,56 @@
           <span class="glyphicon glyphicon-calendar"> </span> {{ dia }} <br />
           <span class="glyphicon glyphicon-briefcase"> </span> {{ alumne.grup }}, Tutor(a): {{alumne.tutorsDeLAlumne_display}}<br />
           {% if mostra_detalls %}
-          <span class="glyphicon glyphicon-home"> </span> {{ alumne.adreca }} ({{ alumne.localitat }})<br />
-          <span class="glyphicon glyphicon-envelope"> </span> {{ alumne.correu_tutors }}<br />
-          <span class="glyphicon glyphicon-earphone"> </span> {{ alumne.telefons }}<br />
-          <span class="glyphicon glyphicon-info-sign"> </span> {{ alumne.tutors }}<br />
+          <span class="glyphicon glyphicon-home"> </span> {{ alumne.adreca }} (
+              {% if alumne.municipi == alumne.localitat %}
+                {{ alumne.localitat }}
+                {% else %}
+                    {% if alumne.municipi == '' %}
+                        {{ alumne.localitat }}
+                    {% elif alumne.localitat == '' %}
+                        {{ alumne.municipi }}
+                    {% else %}
+                        {{ alumne.localitat }}  -  {{ alumne.municipi }}
+                    {% endif %}
+                {% endif %}
+              )<br />
+
+          <span class="glyphicon glyphicon-user"> </span> {{ alumne.rp1_nom }} ({{ alumne.rp1_correu }} , {{ alumne.rp1_telefon }} - {{ alumne.rp1_mobil }})<br />
+          <span class="glyphicon glyphicon-user"> </span> {{ alumne.rp2_nom }} ({{ alumne.rp2_correu }} , {{ alumne.rp2_telefon }} - {{ alumne.rp2_mobil }})<br />
           {% endif %}
       	</p>
+          </div>
+    </div>
+
+{% endblock %}
+
+{% block posttaula %}
+
+    <div class="row">
+		  <div class="col-sm-8 col-xs-12">
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                  <li>
+                    <a href="?data={{diaabans}}" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>
+
+                  <li>
+                    <a href="?data={{avui}}" aria-label="Previous">
+                      <span aria-hidden="true">Avui</span>
+                    </a>
+                  </li>
+                
+                  <li>
+                    <a href="?data={{lendema}}" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+
           </div>
     </div>
 

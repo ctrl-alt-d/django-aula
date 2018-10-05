@@ -5,6 +5,7 @@ from django.forms.utils import ErrorDict
 from django.template import RequestContext
 
 #formularis
+from aula.apps.aules.models import ReservaAula
 from aula.apps.presencia.forms import regeneraImpartirForm,ControlAssistenciaForm,\
     alertaAssistenciaForm, faltesAssistenciaEntreDatesForm,\
     marcarComHoraSenseAlumnesForm, passaLlistaGrupDataForm,\
@@ -152,7 +153,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     unDia = t.timedelta( days = 1)
     primera_franja_insertada = False
     for f in FranjaHoraria.objects.all():
-        impartir_franja=[ [ [( unicode(f),'','','','','','','','', )] , None ] ]
+        impartir_franja=[ [ [( unicode(f),'','','','','','','','','', )] , None ] ]
         te_imparticions = False
         for d in range(0,5):
             dia = data + d * unDia
@@ -161,18 +162,19 @@ def mostraImpartir( request, year=None, month=None, day=None ):
             dia_impartir = Q( dia_impartir = dia )
             user_impartir = Q( horari__professor = professor )
             guardia = Q( professor_guardia  = professor )
-            
+
             #TODO: Passar només la impartició i que el template faci la resta de feina.
             imparticions = [
                             (x.horari.assignatura.nom_assignatura,          #
                              x.horari.grup if  x.horari.grup else '',       #
-                             x.horari.nom_aula,                             #
+                             x.get_nom_aula,                             #
                              x.pk,                                          #
                              getSoftColor( x.horari.assignatura ),    #
                              x.color(),                             
                              x.resum(),
                              (x.professor_guardia  and x.professor_guardia.pk == professor.pk),
                              x.hi_ha_alumnes_amb_activitat_programada,
+                             x.esReservaManual,
                             )
                             for x in Impartir.objects.filter( franja_impartir & dia_impartir & (user_impartir | guardia)   ) ]
             
@@ -271,8 +273,20 @@ def passaLlista(request, pk):
     info['dia_complet'] = impartir.dia_impartir.strftime("%d/%m/%Y")
     info['hora'] = unicode(impartir.horari.hora)
     info['assignatura'] = unicode(impartir.horari.assignatura)
-    info['nom_aula'] = unicode(impartir.horari.nom_aula)
+    info['nom_aula'] = unicode(impartir.get_nom_aula)
     info['grup'] = unicode(impartir.horari.grup)
+
+    ultimaReserva = ( ReservaAula
+                     .objects.filter(dia_reserva = impartir.dia_impartir)
+                     .filter(aula__nom_aula = impartir.get_nom_aula)
+                     .filter(impartir__isnull = False)
+                     .order_by('hora_fi')
+                     .last()
+                      )
+    esUltimaHora = impartir.reserva_id == ultimaReserva.id
+    if esUltimaHora:
+        msg = u" Atenció: És última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes, pujar cadires, etc."
+        messages.error(request, SafeText(msg))
 
     url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
         impartir.dia_impartir.year,

@@ -26,13 +26,13 @@ def gestioCartesRpt(professor, l4):
     taula.capceleres = []
     
     capcelera = tools.classebuida()
-    capcelera.amplade = 500
+    capcelera.amplade = 70
     capcelera.contingut = u"Cartes pendents d'imprimir"
     capcelera.enllac = ""
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 200
+    capcelera.amplade = 30
     capcelera.contingut = u""
     capcelera.enllac = ""
     taula.capceleres.append(capcelera)
@@ -77,28 +77,28 @@ def gestioCartesRpt(professor, l4):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 100
+        capcelera.amplade = 30
         capcelera.contingut = grup if grup == u'Altres' else u'{0} ({1})'.format( grup  ,  grup.curs  ) 
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 200
+        capcelera.amplade = 10
         capcelera.contingut = u'Faltes.'
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 100
+        capcelera.amplade = 10
         capcelera.contingut = u'Cartes.'
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 100
+        capcelera.amplade = 30
         capcelera.contingut = u"Faltes acumulades per a nova carta\n(Recordar 3 darrers dies no entra al còmput)."
         taula.capceleres.append(capcelera)
 
         capcelera = tools.classebuida()
-        capcelera.amplade = 60
+        capcelera.amplade = 20
         capcelera.contingut = u'Accions'
         taula.capceleres.append(capcelera)
         
