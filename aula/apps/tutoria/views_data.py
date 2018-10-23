@@ -146,11 +146,12 @@ def justificadorMKTable(request, year, month, day ):
      
                 cella = tools.classebuida()
                 cella.txt = ''
-                hiHaControls = len( [ c for c in controls_alumne if c.impartir.horari.hora == hora] )>0
-                haPassatLlista = hiHaControls and len( [ c for c in controls_alumne 
-                                                         if c.estat is not None and c.impartir.horari.hora == hora] )>0
+                controls_alumne_hora =  [ c for c in controls_alumne if c.impartir.horari.hora == hora]
+                hiHaControls = bool( controls_alumne_hora )
+                haPassatLlista = hiHaControls and bool( [ c for c in controls_alumne_hora 
+                                                         if c.estat is not None ] )
                 
-                cella.c = [ c for c in controls_alumne if c.impartir.horari.hora == hora]
+                cella.c = [ c for c in controls_alumne_hora]
                 for item in cella.c:
                     item.professor2show = item.professor or ( item.impartir.horari.professor if item.impartir.horari else ' ' ) 
                     item.estat2show= item.estat or " "
