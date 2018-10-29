@@ -32,3 +32,13 @@ Deployment Docs
 Documentació pas a pas per a fer el desplegament.
 
 [Documentació instal·lació django-aula a gitbook](https://django-aula.gitbook.io/documentation/) (Recurs extern)
+
+Vols col·laborar-hi?
+=============
+
+[FAQs](https://github.com/ctrl-alt-d/django-aula/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+)
+
+Necessites ajuda?
+============
+
+[Issues/Formularis d'ajuda](https://github.com/ctrl-alt-d/django-aula/issues/new/choose)
