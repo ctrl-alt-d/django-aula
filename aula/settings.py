@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*- 
 
+CUSTOM_MOSTRAR_MAJORS_EDAT = False
+CUSTOM_MARCA_MAJORS_EDAT = u' (^18)'
 CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
 CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
 CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
