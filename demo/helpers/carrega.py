@@ -10,7 +10,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from aula.apps.extKronowin.models import  Franja2Aula
 from aula.apps.extSaga.models import Grup2Aula as SGrup2Aula
-from aula.apps.alumnes.models import Grup
+from aula.apps.alumnes.models import Grup, Alumne
 
 from django.contrib.auth.models import User, Group
 from aula.apps.tutoria.models import Tutor
@@ -18,7 +18,7 @@ import random
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.regeneraImpartir import regeneraThread
-from aula.apps.presencia.models import Impartir
+from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
 
@@ -138,6 +138,19 @@ def fesCarrega( ):
                 afegeix.start()
                 afegeix.join()
     
+    print "posem unes quantes faltes d'assistència"
+    alumnes_faltons = random.sample( Alumne.objects.all(), 20 )
+    falta = EstatControlAssistencia.objects.get( codi_estat = "F" )
+    for alumne_falton in alumnes_faltons:
+        for ca in alumne_falton.controlassistencia_set.filter( impartir__dia_impartir__lt = date.today() ):
+            ca.estat = falta
+            ca.professor = ca.impartir.horari.professor
+            ca.save()
+            ca.impartir.professor_passa_llista = ca.impartir.horari.professor
+            ca.impartir.dia_passa_llista = date.today()
+            ca.impartir.save()
+
+
     print u"canviant dades dels professors"
     for p in Professor.objects.all():
         p.first_name, p.last_name = getRandomNomICognoms() 
