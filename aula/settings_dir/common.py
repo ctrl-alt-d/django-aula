@@ -195,6 +195,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.tutoria',
     'aula.apps.extKronowin',
     'aula.apps.extSaga',
+    'aula.apps.extEsfera',
     'aula.apps.avaluacioQualitativa',
     'aula.apps.todo',
     'aula.apps.usuaris',

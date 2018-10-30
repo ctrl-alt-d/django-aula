@@ -230,7 +230,8 @@ def calcula_menu( user , path ):
                   (
                       ("Sincronitza", 'administracio__sincronitza__blanc', di, None, 
                         (
-                          ("Alumnes", 'administracio__sincronitza__saga', di , None  ),
+                          ("Alumnes ESO/BAT", 'administracio__sincronitza__esfera', di , None  ),
+                          ("Alumnes Cicles", 'administracio__sincronitza__saga', di, None),
                           ("Horaris", 'administracio__sincronitza__kronowin', di , None  ),
                           ("Aules", 'gestio__aula__assignacomentari', di, None),
                           ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
@@ -392,6 +393,7 @@ administracio__sincronitza__fusiona
 administracio__sincronitza__kronowin
 administracio__sincronitza__regenerar_horaris
 administracio__sincronitza__saga
+administracio__sincronitza__esfera
 
 coordinacio_pedagogica__qualitativa__avaluacions
 coordinacio_pedagogica__qualitativa__items

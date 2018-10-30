@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+ 
+{% block content  %}
+	<h1>Carregar el fitxer xlsx d'alumnes de l'Esfer@</h1>
+	<form action="." method="post" enctype="multipart/form-data">{% csrf_token %}
+		 {{ form }}
+		 <input type="submit" value="Upload">
+	</form>
+	<h2>Recorda que els camps a enviar són</h2>
+	<ul>
+	<li>
+	<pre>
+Camps:
+	"Identificador de l’alumne/a",
+	"Primer Cognom",
+	"Segon Cognom",
+	"Nom",
+	"Data naixement",
+	"Tutor 1 - 1r cognom ",
+	"Tutor 1 - 2n cognom",
+	"Tutor 1 - nom",
+	"Contacte 1er tutor alumne - Valor",
+	"Tutor 2 - 1r cognom ",
+	"Tutor 2 - 2n cognom",
+	"Tutor 2 - nom",
+	"Contacte 2on tutor alumne - Valor",
+        "Tipus de via",
+	"Nom via",
+	"Número",
+	"Bloc",
+	"Escala",
+        "Planta",
+        "Porta",
+        "Codi postal",
+        "Localitat de residència",
+        "Municipi de residència",
+        "Correu electrònic",
+        "Contacte altres alumne - Valor",
+        "Grup Classe"
+	</pre>
+	</li>
+	</ul>
+{% endblock %}
