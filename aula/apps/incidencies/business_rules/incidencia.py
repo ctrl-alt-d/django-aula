@@ -131,6 +131,7 @@ def incidencia_despres_de_posar(instance):
                 tipus__es_informativa=False,
                 professional=instance.professional,
                 alumne=instance.alumne,
+                gestionada_pel_tutor=False,
             ).count()
             if nIncidenciesAlumneProfessor > 2:
                 txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers {2} dies. 
