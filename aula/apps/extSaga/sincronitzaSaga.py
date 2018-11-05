@@ -211,7 +211,12 @@ def sincronitza(f, user = None):
     #
     # Baixes:
     #
-        
+
+    #Els alumnes d'Esfer@ (ESO i BTX) no s'han de tenir en compte per fer les baixes
+    alumnesDeESO = Q(grup__curs__nivell__nom_nivell__exact='ESO')
+    alumnesDeBTX = Q(grup__curs__nivell__nom_nivell__exact='BTX')
+    AlumnesDeEsfera = Alumne.objects.filter(alumnesDeESO | alumnesDeBTX)
+    AlumnesDeEsfera.update(estat_sincronitzacio = '')
     #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
     AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
     AlumnesDonatsDeBaixa.update( 
