@@ -2,7 +2,7 @@
 from django.db import models
 from aula.apps.alumnes.models import Grup
 
-class Grup2AulaEsfera(models.Model):
+class Grup2Aula(models.Model):
     grup_esfera =  models.CharField(max_length=60, unique=True, blank=True)
     Grup2Aula = models.ForeignKey(Grup, null=True, related_name="grup2aulaesfera_set")
     class Meta:

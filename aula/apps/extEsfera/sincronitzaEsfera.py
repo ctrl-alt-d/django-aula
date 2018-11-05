@@ -14,18 +14,18 @@ from datetime import date
 from django.contrib.auth.models import Group
 
 import csv, time
-from aula.apps.extEsfera.models import Grup2AulaEsfera
+from aula.apps.extEsfera.models import Grup2Aula
 
 from django.conf import settings
 from appy.pod.buffers import ELSE_WITHOUT_IF
 
 def sincronitza(f, user = None):
     
-    # msgs = comprovar_grups( f )
-    #
-    # if msgs["errors"]:
-    #     return msgs
-    #
+    msgs = comprovar_grups( f )
+
+    if msgs["errors"]:
+        return msgs
+
     errors = []
     
     #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
@@ -78,56 +78,67 @@ def sincronitza(f, user = None):
                 #print(cell.value)
                 if col_indices[index].endswith(u"Identificador de l’alumne/a"):
                     a.ralc=unicode(cell.value)
-                    print a.ralc
                     trobatRalc = True
-#             if columnName.endswith( u"_NOM"):
-#                 a.nom =uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
-#                 a.cognoms = uvalue.split(',')[0]
-#                 trobatNom = True
-#             if columnName.endswith( u"_GRUPSCLASSE"):
-#                 try:
-#                     unGrup = Grup2AulaEsfera.objects.get(grup_esfera = uvalue, Grup2Aula__isnull = False)
-#                     a.grup = unGrup.Grup2Aula
-#                 except:
-#                     return { 'errors': [ u"error carregant {0}".format( uvalue ), ], 'warnings': [], 'infos': [] }
-#                 trobatGrupClasse = True
-#             #if columnName.endswith( u"_CORREU ELECTRÒNIC")  or columnName.find( u"_ADREÇA ELECTR. RESP.")>=0 :
-#             #    a.correu_tutors += unicode(value,'iso-8859-1') + u', '
-#             if columnName.endswith( u"_CORREU ELECTRÒNIC"):
-#                 a.correu = unicode(value,'iso-8859-1')
-#             if columnName.endswith( u"_DATA NAIXEMENT"):
-#                 dia=time.strptime( unicode(value,'iso-8859-1'),'%d/%m/%Y')
-#                 a.data_neixement = time.strftime('%Y-%m-%d', dia)
-#                 trobatDataNeixement = True
+                if col_indices[index].endswith(u"Primer Cognom"):
+                    a.cognoms = unicode(cell.value)
+                if col_indices[index].endswith(u"Segon Cognom"):
+                    a.cognoms += " " + unicode(cell.value)
+                if col_indices[index].endswith(u"Nom"):
+                    a.nom = unicode(cell.value)
+                    trobatNom = True
+                if col_indices[index].endswith(u"Grup Classe"):
+                    try:
+                        unGrup = Grup2Aula.objects.get(grup_esfera = unicode(cell.value), Grup2Aula__isnull = False)
+                        a.grup = unGrup.Grup2Aula
+                    except:
+                        return { 'errors': [ u"error carregant {0}".format( unicode(cell.value) ), ], 'warnings': [], 'infos': [] }
+                    trobatGrupClasse = True
+                if col_indices[index].endswith(u"Correu electrònic"):
+                    a.correu = unicode(cell.value)
+                if col_indices[index].endswith(u"Data naixement"):
+                    dia = time.strptime(unicode(cell.value), '%d/%m/%Y')
+                    a.data_neixement = time.strftime('%Y-%m-%d', dia)
+                    trobatDataNeixement = True
+                if col_indices[index].endswith(u"Correu electrònic"):
+                    a.correu = unicode(cell.value)
 #             if columnName.endswith( u"_CENTRE PROCEDÈNCIA"):
 #                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
-#             if columnName.endswith( u"_LOCALITAT"):
-#                 a.localitat = unicode(value,'iso-8859-1')
-#             if columnName.endswith( u"MUNICIPI"):
-#                 a.municipi = unicode(value,'iso-8859-1')
-#             # if columnName.find( u"_TELÈFON RESP")>=0 or columnName.find( u"_MÒBIL RESP")>=0 or columnName.find( u"_ALTRES TELÈFONS")>=0 :
-#             #     a.telefons += unicode(value,'iso-8859-1') + u', '
-#             if columnName.endswith(u"_TELÈFON RESP. 1" ):
-#                 a.rp1_telefon = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_TELÈFON RESP. 2" ):
-#                 a.rp2_telefon = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_MÒBIL RESP. 1" ):
-#                 a.rp1_mobil = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_MÒBIL RESP. 2" ):
-#                 a.rp2_mobil = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 1" ):
-#                 a.rp1_correu = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 2" ):
-#                 a.rp2_correu = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_ALTRES TELÈFONS"):
-#                 a.altres_telefons = unicode(value, 'iso-8859-1')
-#
-#             # if columnName.find( u"_RESPONSABLE")>=0:
-#             #     a.tutors = unicode(value,'iso-8859-1') + u', '
-#             if columnName.endswith(u"_RESPONSABLE 1" ):
-#                 a.rp1_nom = unicode(value,'iso-8859-1')
-#             if columnName.endswith(u"_RESPONSABLE 2" ):
-#                 a.rp2_nom = unicode(value,'iso-8859-1')
+                if col_indices[index].endswith(u"Localitat de residència"):
+                    a.localitat = unicode(cell.value)
+                if col_indices[index].endswith(u"Municipi de residència"):
+                    a.municipi = unicode(cell.value)
+                if col_indices[index].endswith(u"Contacte 1er tutor alumne - Valor"):
+                    dades_tutor1 = dades_responsable(unicode(cell.value))
+                    a.rp1_telefon = ', '.join(dades_tutor1["fixes"]);
+                    a.rp1_mobil = ', '.join(dades_tutor1["mobils"]);
+                    a.rp1_correu = ', '.join(dades_tutor1["mails"]);
+                if col_indices[index].endswith(u"Contacte 2on tutor alumne - Valor"):
+                    dades_tutor2 = dades_responsable(unicode(cell.value))
+                    a.rp2_telefon = ', '.join(dades_tutor2["fixes"]);
+                    a.rp2_mobil = ', '.join(dades_tutor2["mobils"]);
+                    a.rp2_correu = ', '.join(dades_tutor2["mails"]);
+                if col_indices[index].endswith(u"Contacte altres alumne - Valor"):
+                    a.altres_telefons = unicode(cell.value)
+                tutor1=u"";
+
+                if col_indices[index].endswith(u"Tutor 1 - 1r cognom "):
+                    tutor1 += unicode(cell.value)
+                if col_indices[index].endswith(u"Tutor 1 - 2n cognom"):
+                    tutor1 += " " +  unicode(cell.value)
+                if col_indices[index].endswith(u"Tutor 1 - nom"):
+                    separador = ", " if (tutor1 != "") else ""
+                    tutor1 += separador +  unicode(cell.value)
+                a.rp1_nom = tutor1.replace('\r', '').replace('\n', '')
+                tutor2 = u"";
+                if col_indices[index].endswith(u"Tutor 2 - 1r cognom "):
+                    tutor2 += unicode(cell.value)
+                if col_indices[index].endswith(u"Tutor 2 - 2n cognom"):
+                    tutor2 += " " + unicode(cell.value)
+                if col_indices[index].endswith(u"Tutor 2 - nom"):
+                    separador = ", " if (tutor2 != "") else ""
+                    tutor2 += separador + unicode(cell.value)
+                a.rp2_nom = tutor2.replace('\r', '').replace('\n', '')
+                print a.rp1_nom, a.rp2_nom
 #             if columnName.endswith( u"_ADREÇA" ):
 #                 a.adreca = unicode(value,'iso-8859-1')
 #
@@ -335,35 +346,52 @@ def sincronitza(f, user = None):
 #
 #
 #
-# def comprovar_grups( f ):
-#
-#     dialect = csv.Sniffer().sniff(f.readline())
-#     f.seek(0)
-#     f.readline()
-#     f.seek(0)
-#     reader = csv.DictReader(f, dialect=dialect )
-#
-#     errors=[]
-#     warnings=[]
-#     infos=[]
-#
-#     grup_field = next( x for x in reader.fieldnames if x.endswith("_GRUPSCLASSE") )
-#
-#     if grup_field is None:
-#         errors.append(u"No trobat el grup classe al fitxer d'importació")
-#         return False, { 'errors': errors, 'warnings': warnings, 'infos': infos }
-#
-#     for row in reader:
-#         grup_classe =  unicode(row[grup_field],'iso-8859-1')
-#         _, new = Grup2AulaEsfera.objects.get_or_create( grup_esfera = grup_classe )
-#         if new:
-#             errors.append( u"El grup '{grup_classe}' de l'Esfer@ no té correspondència al programa. Revisa les correspondències Esfer@-Aula".format( grup_classe=grup_classe ) )
+def comprovar_grups( f ):
+    errors = []
+    warnings = []
+    infos = []
+
+    # Carregar full de càlcul
+    wb2 = load_workbook(f)
+    full = wb2.active
+    max_row = full.max_row
+    max_column = full.max_column
+
+    # iterar sobre les files
+    colname = [u'Grup Classe']
+    rows = list(wb2.active.rows)
+    col_index = {n: cell.value for n, cell in enumerate(rows[5])
+                   if cell.value in colname}  # Començar a la fila 6, les anteriors són brossa
+
+    if col_index is None:
+        errors.append(u"No trobat el grup classe al fitxer d'importació")
+        return False, { 'errors': errors, 'warnings': warnings, 'infos': infos }
+
+    for row in rows[6:max_row - 1]:  # la darrera fila també és brossa
+        for index, cell in enumerate(row):
+            if index in col_index:
+                grup_classe = unicode(cell.value)
+                _, new = Grup2Aula.objects.get_or_create(grup_esfera=grup_classe)
+                if new:
+                    errors.append(
+                        u"El grup '{grup_classe}' de l'Esfer@ no té correspondència al programa. Revisa les correspondències Esfer@-Aula".format(
+                            grup_classe=grup_classe))
 
     return { 'errors': errors }
             
     
 
+def dades_responsable ( dades ):
+    splitted = dades.split(" - ")
+    mails = [ dada for dada in splitted if "@" in dada ]
+    fixes = [ dada for dada in splitted if dada.startswith("9") and dada not in mails ]
+    mobils =[ dada for dada in splitted if dada not in mails+fixes ]
 
+    diccionari = { "mails": mails,
+                   "fixes": fixes,
+                   "mobils": mobils,
+                 }
+    return diccionari
         
     
     

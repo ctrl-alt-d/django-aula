@@ -5,7 +5,7 @@ from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
 from django.shortcuts import render
 from aula.apps.extEsfera.forms import sincronitzaEsferaForm
-from aula.apps.extEsfera.models import Grup2AulaEsfera
+from aula.apps.extEsfera.models import Grup2Aula
 from django.forms.models import modelformset_factory
 from django.http.response import HttpResponseRedirect
 
@@ -54,7 +54,7 @@ def assignaGrups( request ):
 
     formset = []
     
-    factoria = modelformset_factory( Grup2AulaEsfera, extra = 0, exclude=(), can_delete=False )
+    factoria = modelformset_factory( Grup2Aula, extra = 0, exclude=(), can_delete=False )
     
     if request.method == "POST":
         #un formulari per cada grup
