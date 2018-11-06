@@ -97,8 +97,10 @@ def sincronitza(f, user = None):
 #                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
                 if col_indices[index].endswith(u"Localitat de residència"):
                     a.localitat = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Municipi de residència"):
+                if col_indices[index].endswith(u"Codi postal"):
                     a.municipi = unicode(cell.value) if cell.value else ""
+                if col_indices[index].endswith(u"Municipi de residència"):
+                    a.municipi += " - " + unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Contacte 1er tutor alumne - Valor"):
                     dades_tutor1 = dades_responsable(unicode(cell.value))
                     a.rp1_telefon = ', '.join(dades_tutor1["fixes"]);
