@@ -142,7 +142,6 @@ def sincronitza(f, user = None):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Porta"):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
-                print a.adreca
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
             return { 'errors': [ u'Falten camps al fitxer' ], 'warnings': [], 'infos': [] }
