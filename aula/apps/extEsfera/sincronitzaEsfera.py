@@ -70,14 +70,13 @@ def sincronitza(f, user = None):
         a.telefons = ''
         for index, cell in enumerate(row):
             if index in col_indices:
-                #print(cell.value)
                 if col_indices[index].endswith(u"Identificador de l’alumne/a"):
                     a.ralc=unicode(cell.value)
                     trobatRalc = True
                 if col_indices[index].endswith(u"Primer Cognom"):
                     a.cognoms = unicode(cell.value)
                 if col_indices[index].endswith(u"Segon Cognom"):
-                    a.cognoms += " " + unicode(cell.value)
+                    a.cognoms += " " + unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Nom"):
                     a.nom = unicode(cell.value)
                     trobatNom = True
@@ -89,13 +88,11 @@ def sincronitza(f, user = None):
                         return { 'errors': [ u"error carregant {0}".format( unicode(cell.value) ), ], 'warnings': [], 'infos': [] }
                     trobatGrupClasse = True
                 if col_indices[index].endswith(u"Correu electrònic"):
-                    a.correu = unicode(cell.value)
+                    a.correu = unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Data naixement"):
                     dia = time.strptime(unicode(cell.value), '%d/%m/%Y')
                     a.data_neixement = time.strftime('%Y-%m-%d', dia)
                     trobatDataNeixement = True
-                if col_indices[index].endswith(u"Correu electrònic"):
-                    a.correu = unicode(cell.value)
 #             if columnName.endswith( u"_CENTRE PROCEDÈNCIA"):
 #                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
                 if col_indices[index].endswith(u"Localitat de residència"):
@@ -115,19 +112,19 @@ def sincronitza(f, user = None):
                 if col_indices[index].endswith(u"Contacte altres alumne - Valor"):
                     a.altres_telefons = unicode(cell.value)
                 if col_indices[index].endswith(u"Tutor 1 - 1r cognom "):
-                    a.rp1_nom = unicode(cell.value)
+                    a.rp1_nom = unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Tutor 1 - 2n cognom"):
-                    a.rp1_nom += " " +  unicode(cell.value)
+                    a.rp1_nom += " " +  unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Tutor 1 - nom"):
                     separador = ", " if (a.rp1_nom != "") else ""
-                    a.rp1_nom += separador +  unicode(cell.value)
+                    a.rp1_nom += separador +  unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Tutor 2 - 1r cognom "):
-                    a.rp2_nom = unicode(cell.value)
+                    a.rp2_nom = unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Tutor 2 - 2n cognom"):
-                    a.rp2_nom += " " +  unicode(cell.value)
+                    a.rp2_nom += " " +  unicode(cell.value) if cell.value else ""
                 if col_indices[index].endswith(u"Tutor 2 - nom"):
                     separador = ", " if (a.rp2_nom != "") else ""
-                    a.rp2_nom += separador +  unicode(cell.value)
+                    a.rp2_nom += separador +  unicode(cell.value) if cell.value else ""
 
                 if col_indices[index].endswith(u"Tipus de via"):
                     a.adreca = unicode(cell.value) if cell.value else ""
@@ -151,7 +148,7 @@ def sincronitza(f, user = None):
 
         alumneDadesAnteriors = None
         try:
-            q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell )
+            q_mateix_ralc = Q( ralc = a.ralc )
             alumneDadesAnteriors =Alumne.objects.get (q_mateix_ralc)
 
         except Alumne.DoesNotExist:
