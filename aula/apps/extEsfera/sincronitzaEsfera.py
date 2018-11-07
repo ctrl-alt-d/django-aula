@@ -61,7 +61,7 @@ def sincronitza(f, user = None):
                 u'Contacte altres alumne - Valor',
                 u'Grup Classe']
     rows = list(wb2.active.rows)
-    col_indices = {n: cell.value for n, cell in enumerate(rows[5])
+    col_indexs = {n: cell.value for n, cell in enumerate(rows[5])
                    if cell.value in colnames} # Començar a la fila 6, les anteriors són brossa
     for row in rows[6:max_row - 1]:  # la darrera fila també és brossa
         info_nAlumnesLlegits += 1
@@ -69,83 +69,82 @@ def sincronitza(f, user = None):
         a.ralc = ''
         a.telefons = ''
         for index, cell in enumerate(row):
-            if index in col_indices:
-                if col_indices[index].endswith(u"Identificador de l’alumne/a"):
+            if index in col_indexs:
+                if col_indexs[index].endswith(u"Identificador de l’alumne/a"):
                     a.ralc=unicode(cell.value)
                     trobatRalc = True
-                if col_indices[index].endswith(u"Primer Cognom"):
+                if col_indexs[index].endswith(u"Primer Cognom"):
                     a.cognoms = unicode(cell.value)
-                if col_indices[index].endswith(u"Segon Cognom"):
+                if col_indexs[index].endswith(u"Segon Cognom"):
                     a.cognoms += " " + unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Nom"):
+                if col_indexs[index].endswith(u"Nom"):
                     a.nom = unicode(cell.value)
                     trobatNom = True
-                if col_indices[index].endswith(u"Grup Classe"):
+                if col_indexs[index].endswith(u"Grup Classe"):
                     try:
                         unGrup = Grup2Aula.objects.get(grup_esfera = unicode(cell.value), Grup2Aula__isnull = False)
                         a.grup = unGrup.Grup2Aula
                     except:
                         return { 'errors': [ u"error carregant {0}".format( unicode(cell.value) ), ], 'warnings': [], 'infos': [] }
                     trobatGrupClasse = True
-                if col_indices[index].endswith(u"Correu electrònic"):
+                if col_indexs[index].endswith(u"Correu electrònic"):
                     a.correu = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Data naixement"):
+                if col_indexs[index].endswith(u"Data naixement"):
                     dia = time.strptime(unicode(cell.value), '%d/%m/%Y')
                     a.data_neixement = time.strftime('%Y-%m-%d', dia)
                     trobatDataNeixement = True
 #             if columnName.endswith( u"_CENTRE PROCEDÈNCIA"):
 #                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
-                if col_indices[index].endswith(u"Localitat de residència"):
+                if col_indexs[index].endswith(u"Localitat de residència"):
                     a.localitat = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Codi postal"):
+                if col_indexs[index].endswith(u"Codi postal"):
                     a.municipi = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Municipi de residència"):
+                if col_indexs[index].endswith(u"Municipi de residència"):
                     a.municipi += " - " + unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Contacte 1er tutor alumne - Valor"):
-                    dades_tutor1 = dades_responsable(unicode(cell.value))
+                if col_indexs[index].endswith(u"Contacte 1er tutor alumne - Valor"):
+                    dades_tutor1 = dades_responsable(unicode(cell.value) if cell.value else "")
                     a.rp1_telefon = ', '.join(dades_tutor1["fixes"]);
                     a.rp1_mobil = ', '.join(dades_tutor1["mobils"]);
                     a.rp1_correu = ', '.join(dades_tutor1["mails"]);
-                if col_indices[index].endswith(u"Contacte 2on tutor alumne - Valor"):
-                    dades_tutor2 = dades_responsable(unicode(cell.value))
+                if col_indexs[index].endswith(u"Contacte 2on tutor alumne - Valor"):
+                    dades_tutor2 = dades_responsable(unicode(cell.value) if cell.value else "")
                     a.rp2_telefon = ', '.join(dades_tutor2["fixes"]);
                     a.rp2_mobil = ', '.join(dades_tutor2["mobils"]);
                     a.rp2_correu = ', '.join(dades_tutor2["mails"]);
-                if col_indices[index].endswith(u"Contacte altres alumne - Valor"):
+                if col_indexs[index].endswith(u"Contacte altres alumne - Valor"):
                     a.altres_telefons = unicode(cell.value)
-                if col_indices[index].endswith(u"Tutor 1 - 1r cognom "):
+                if col_indexs[index].endswith(u"Tutor 1 - 1r cognom "):
                     a.rp1_nom = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Tutor 1 - 2n cognom"):
+                if col_indexs[index].endswith(u"Tutor 1 - 2n cognom"):
                     a.rp1_nom += " " +  unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Tutor 1 - nom"):
+                if col_indexs[index].endswith(u"Tutor 1 - nom"):
                     separador = ", " if (a.rp1_nom != "") else ""
                     a.rp1_nom += separador +  unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Tutor 2 - 1r cognom "):
+                if col_indexs[index].endswith(u"Tutor 2 - 1r cognom "):
                     a.rp2_nom = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Tutor 2 - 2n cognom"):
+                if col_indexs[index].endswith(u"Tutor 2 - 2n cognom"):
                     a.rp2_nom += " " +  unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Tutor 2 - nom"):
+                if col_indexs[index].endswith(u"Tutor 2 - nom"):
                     separador = ", " if (a.rp2_nom != "") else ""
                     a.rp2_nom += separador +  unicode(cell.value) if cell.value else ""
 
-                if col_indices[index].endswith(u"Tipus de via"):
+                if col_indexs[index].endswith(u"Tipus de via"):
                     a.adreca = unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Nom via"):
+                if col_indexs[index].endswith(u"Nom via"):
                     a.adreca += " " +  unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Número"):
+                if col_indexs[index].endswith(u"Número"):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Bloc"):
+                if col_indexs[index].endswith(u"Bloc"):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Escala"):
+                if col_indexs[index].endswith(u"Escala"):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Planta"):
+                if col_indexs[index].endswith(u"Planta"):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
-                if col_indices[index].endswith(u"Porta"):
+                if col_indexs[index].endswith(u"Porta"):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
             return { 'errors': [ u'Falten camps al fitxer' ], 'warnings': [], 'infos': [] }
-
 
         alumneDadesAnteriors = None
         try:
