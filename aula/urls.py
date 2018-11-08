@@ -23,6 +23,7 @@ urlpatterns = [
     #(r'^horaris/', include('horaris.urls')),
     url(r'^extKronowin/', include('aula.apps.extKronowin.urls')),
     url(r'^extSaga/', include('aula.apps.extSaga.urls')),
+    url(r'^extEsfera/', include('aula.apps.extEsfera.urls')),
     url(r'^promocions/(?P<grup>\d+)/$', mostraGrupPromocionar, name = 'administracio__promocions__grups'),
     url(r'^promocions/nou-alumne', nouAlumnePromocionar, name = 'administracio__alumnes__noualumne'),
     url(r'^promocions/', llistaGrupsPromocionar, name = 'administracio__promocions__llista'),
