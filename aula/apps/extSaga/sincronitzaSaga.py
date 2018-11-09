@@ -7,9 +7,9 @@ from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
 from aula.apps.extSaga.models import ParametreSaga
 
-from django.db.models import Q 
+from django.db.models import Q
 
-from datetime import date 
+from datetime import date
 from django.contrib.auth.models import Group
 
 import csv, time
@@ -19,14 +19,14 @@ from django.conf import settings
 from appy.pod.buffers import ELSE_WITHOUT_IF
 
 def sincronitza(f, user = None):
-    
+
     msgs = comprovar_grups( f )
-    
+
     if msgs["errors"]:
         return msgs
-    
+
     errors = []
-    
+
     #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
     Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
         .update( estat_sincronitzacio = 'PRC')
@@ -36,23 +36,24 @@ def sincronitza(f, user = None):
     info_nAlumnesLlegits=0
     info_nAlumnesInsertats=0
     info_nAlumnesEsborrats=0
-    info_nAlumnesCanviasDeGrup=0    
+    info_nAlumnesCanviasDeGrup=0
     info_nAlumnesModificats=0
     info_nMissatgesEnviats = 0
-    
+
     AlumnesCanviatsDeGrup = []
     AlumnesInsertats = []
 
  #,"00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT",
  #"03_ADREÇA","04_CENTRE PROCEDÈNCIA","05_GRUPSCLASSE","06_CORREU ELECTRÒNIC","07_LOCALITAT",
  #"08_TELÈFON RESP. 1","09_TELÈFON RESP. 2","10_RESPONSABLE 2","11_RESPONSABLE 1"
-    
+
     trobatGrupClasse = False
     trobatNom = False
     trobatDataNeixement = False
     trobatRalc = False
-    
+
     f.seek(0)
+    nivells = set()
     for row in reader:
         info_nAlumnesLlegits+=1
         a=Alumne()
@@ -68,7 +69,7 @@ def sincronitza(f, user = None):
             if columnName.endswith(u"_IDENTIFICADOR DE L'ALUMNE/A"):
                 a.ralc=unicode(value,'iso-8859-1')
                 trobatRalc = True
-            if columnName.endswith( u"_NOM"): 
+            if columnName.endswith( u"_NOM"):
                 a.nom =uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
                 a.cognoms = uvalue.split(',')[0]
                 trobatNom = True
@@ -83,13 +84,13 @@ def sincronitza(f, user = None):
             #    a.correu_tutors += unicode(value,'iso-8859-1') + u', '
             if columnName.endswith( u"_CORREU ELECTRÒNIC"):
                 a.correu = unicode(value,'iso-8859-1')
-            if columnName.endswith( u"_DATA NAIXEMENT"): 
+            if columnName.endswith( u"_DATA NAIXEMENT"):
                 dia=time.strptime( unicode(value,'iso-8859-1'),'%d/%m/%Y')
                 a.data_neixement = time.strftime('%Y-%m-%d', dia)
                 trobatDataNeixement = True
-            if columnName.endswith( u"_CENTRE PROCEDÈNCIA"): 
+            if columnName.endswith( u"_CENTRE PROCEDÈNCIA"):
                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
-            if columnName.endswith( u"_LOCALITAT"): 
+            if columnName.endswith( u"_LOCALITAT"):
                 a.localitat = unicode(value,'iso-8859-1')
             if columnName.endswith( u"MUNICIPI"):
                 a.municipi = unicode(value,'iso-8859-1')
@@ -116,18 +117,18 @@ def sincronitza(f, user = None):
                 a.rp1_nom = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_RESPONSABLE 2" ):
                 a.rp2_nom = unicode(value,'iso-8859-1')
-            if columnName.endswith( u"_ADREÇA" ): 
+            if columnName.endswith( u"_ADREÇA" ):
                 a.adreca = unicode(value,'iso-8859-1')
-                
-                
+
+
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
             return { 'errors': [ u'Falten camps al fitxer' ], 'warnings': [], 'infos': [] }
 
-        
+
         alumneDadesAnteriors = None
         try:
-            q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell ) 
-            
+            q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell )
+
             # Antic mètode de cassar alumnes:
             #
             # q_mateix_cognom = Q(
@@ -159,22 +160,22 @@ def sincronitza(f, user = None):
 
         except Alumne.DoesNotExist:
             pass
-        
+
         if alumneDadesAnteriors is None:
             a.estat_sincronitzacio = 'S-I'
             a.data_alta = date.today()
             a.motiu_bloqueig = u'No sol·licitat'
-            a.tutors_volen_rebre_correu = False            
+            a.tutors_volen_rebre_correu = False
 
             info_nAlumnesInsertats+=1
             AlumnesInsertats.append(a)
-            
+
         else:
-            #TODO: si canvien dades importants avisar al tutor. 
+            #TODO: si canvien dades importants avisar al tutor.
             a.pk = alumneDadesAnteriors.pk
             a.estat_sincronitzacio = 'S-U'
             info_nAlumnesModificats+=1
-            
+
             # En cas que l'alumne pertanyi a un dels grups parametritzat com a estàtic,
             # no se li canviarà de grup en les importacions de SAGA.
             grups_estatics, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'grups estatics' )
@@ -189,14 +190,14 @@ def sincronitza(f, user = None):
                     a.grup = alumneDadesAnteriors.grup
                 else:
                     AlumnesCanviatsDeGrup.append(a)
-                
+
             a.user_associat = alumneDadesAnteriors.user_associat
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
                 a.data_alta = date.today()
                 a.motiu_bloqueig = u'No sol·licitat'
-                a.tutors_volen_rebre_correu = False                    
+                a.tutors_volen_rebre_correu = False
             else:
                 a.correu_relacio_familia_pare         = alumneDadesAnteriors.correu_relacio_familia_pare
                 a.correu_relacio_familia_mare         = alumneDadesAnteriors.correu_relacio_familia_mare
@@ -205,28 +206,26 @@ def sincronitza(f, user = None):
                 a.periodicitat_faltes                 = alumneDadesAnteriors.periodicitat_faltes
                 a.periodicitat_incidencies            = alumneDadesAnteriors.periodicitat_incidencies
                 a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
-        
+
         a.save()
-    
+        nivells.add(a.grup.curs.nivell)
     #
     # Baixes:
     #
 
-    #Els alumnes d'Esfer@ (ESO i BTX) no s'han de tenir en compte per fer les baixes
-    alumnesDeESO = Q(grup__curs__nivell__nom_nivell__exact='ESO')
-    alumnesDeBTX = Q(grup__curs__nivell__nom_nivell__exact='BTX')
-    AlumnesDeEsfera = Alumne.objects.filter(alumnesDeESO | alumnesDeBTX)
-    AlumnesDeEsfera.update(estat_sincronitzacio = '')
+    # Els alumnes d'Esfer@ no s'han de tenir en compte per fer les baixes
+    AlumnesDeEsfera = Alumne.objects.exclude(grup__curs__nivell__in=nivells)
+    AlumnesDeEsfera.update(estat_sincronitzacio='')
     #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
     AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
-    AlumnesDonatsDeBaixa.update( 
-                            data_baixa = date.today(), 
+    AlumnesDonatsDeBaixa.update(
+                            data_baixa = date.today(),
                             estat_sincronitzacio = 'DEL' ,
-                            motiu_bloqueig = 'Baixa'                            
+                            motiu_bloqueig = 'Baixa'
                             )
 
     #Avisar als professors: Baixes
-    #: enviar un missatge a tots els professors que tenen aquell alumne.    
+    #: enviar un missatge a tots els professors que tenen aquell alumne.
     info_nAlumnesEsborrats = len(  AlumnesDonatsDeBaixa )
     professorsNotificar = {}
     for alumneDonatDeBaixa in AlumnesDonatsDeBaixa:
@@ -243,7 +242,7 @@ def sincronitza(f, user = None):
 
     #Avisar als professors: Canvi de grup
     #enviar un missatge a tots els professors que tenen aquell alumne.
-    info_nAlumnesCanviasDeGrup = len(  AlumnesCanviatsDeGrup )    
+    info_nAlumnesCanviasDeGrup = len(  AlumnesCanviatsDeGrup )
     professorsNotificar = {}
     for alumneCanviatDeGrup in AlumnesCanviatsDeGrup:
         qElTenenALHorari = Q( horari__impartir__controlassistencia__alumne = alumneCanviatDeGrup   )
@@ -274,28 +273,28 @@ def sincronitza(f, user = None):
         msg.afegeix_infos( llista )
         msg.envia_a_usuari( Professor.objects.get( pk = professorPK ) , 'IN')
         info_nMissatgesEnviats += 1
-        
-        
+
+
     #Treure'ls de les classes: les baixes
-    ControlAssistencia.objects.filter( 
-                impartir__dia_impartir__gte = date.today(), 
+    ControlAssistencia.objects.filter(
+                impartir__dia_impartir__gte = date.today(),
                 alumne__in = AlumnesDonatsDeBaixa ).delete()
 
     #Treure'ls de les classes: els canvis de grup   #Todo: només si l'àmbit és grup.
-    
+
     ambit_no_es_el_grup = Q( impartir__horari__assignatura__tipus_assignatura__ambit_on_prendre_alumnes__in = [ 'C', 'N', 'I' ] )
     ( ControlAssistencia
       .objects
-      .filter( ambit_no_es_el_grup ) 
+      .filter( ambit_no_es_el_grup )
       .filter( impartir__dia_impartir__gte = date.today() )
       .filter( alumne__in = AlumnesCanviatsDeGrup )
       .delete()
      )
 
-    
+
     #Altes: posar-ho als controls d'assistència de les classes (?????????)
-    
-    
+
+
     #
     # FI
     #
@@ -313,19 +312,19 @@ def sincronitza(f, user = None):
         len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
 
-    msg = Missatge( 
-                remitent= user, 
-                text_missatge = u"Importació Saga finalitzada.")    
+    msg = Missatge(
+                remitent= user,
+                text_missatge = u"Importació Saga finalitzada.")
     msg.afegeix_errors( errors )
     msg.afegeix_warnings(warnings)
-    msg.afegeix_infos(infos)    
+    msg.afegeix_infos(infos)
     importancia = 'VI' if len( errors )> 0 else 'IN'
     grupDireccio =  Group.objects.get( name = 'direcció' )
     msg.envia_a_grup( grupDireccio , importancia=importancia)
-    
+
     return { 'errors': errors, 'warnings': warnings, 'infos': infos }
 
-    
+
 
 
 def comprovar_grups( f ):
@@ -335,17 +334,17 @@ def comprovar_grups( f ):
     f.readline()
     f.seek(0)
     reader = csv.DictReader(f, dialect=dialect )
-    
+
     errors=[]
     warnings=[]
     infos=[]
-    
+
     grup_field = next( x for x in reader.fieldnames if x.endswith("_GRUPSCLASSE") )
 
     if grup_field is None:
         errors.append(u"No trobat el grup classe al fitxer d'importació")
         return False, { 'errors': errors, 'warnings': warnings, 'infos': infos }
-    
+
     for row in reader:
         grup_classe =  unicode(row[grup_field],'iso-8859-1')
         _, new = Grup2Aula.objects.get_or_create( grup_saga = grup_classe )
@@ -353,11 +352,11 @@ def comprovar_grups( f ):
             errors.append( u"El grup '{grup_classe}' del Saga no té correspondència al programa. Revisa les correspondències Saga-Aula".format( grup_classe=grup_classe ) )
 
     return { 'errors': errors, 'warnings': warnings, 'infos': infos }
-            
-    
 
 
-        
-    
-    
+
+
+
+
+
     
