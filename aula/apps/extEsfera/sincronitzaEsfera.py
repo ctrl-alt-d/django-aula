@@ -359,9 +359,9 @@ def comprovar_grups( f ):
 def dades_responsable ( dades ):
     splitted = dades.split(" - ")
     mails = [ dada for dada in splitted if "@" in dada ]
-    fixes = [ dada for dada in splitted if dada.startswith("9") and dada not in mails ]
+    fixes = [ dada for dada in splitted if dada.startswith(("9","8")) and dada not in mails ]
     mobils =[ dada for dada in splitted if dada not in mails+fixes ]
-
+    
     dades_tutor = { "mails": mails,
                    "fixes": fixes,
                    "mobils": mobils,
