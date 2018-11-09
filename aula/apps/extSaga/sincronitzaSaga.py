@@ -53,6 +53,7 @@ def sincronitza(f, user = None):
     trobatRalc = False
 
     f.seek(0)
+    nivells = set()
     for row in reader:
         info_nAlumnesLlegits+=1
         a=Alumne()
@@ -207,16 +208,14 @@ def sincronitza(f, user = None):
                 a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
 
         a.save()
-
+        nivells.add(a.grup.curs.nivell)
     #
     # Baixes:
     #
 
-    #Els alumnes d'Esfer@ (ESO i BTX) no s'han de tenir en compte per fer les baixes
-    alumnesDeESO = Q(grup__curs__nivell__nom_nivell__exact='ESO')
-    alumnesDeBTX = Q(grup__curs__nivell__nom_nivell__exact='BTX')
-    AlumnesDeEsfera = Alumne.objects.filter(alumnesDeESO | alumnesDeBTX)
-    AlumnesDeEsfera.update(estat_sincronitzacio = '')
+    # Els alumnes d'Esfer@ no s'han de tenir en compte per fer les baixes
+    AlumnesDeEsfera = Alumne.objects.exclude(grup__curs__nivell__in=nivells)
+    AlumnesDeEsfera.update(estat_sincronitzacio='')
     #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
     AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
     AlumnesDonatsDeBaixa.update(
