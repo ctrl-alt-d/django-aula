@@ -8,9 +8,9 @@ from aula.apps.usuaris.models import Professor
 from aula.apps.extEsfera.models import ParametreEsfera
 from openpyxl import load_workbook
 
-from django.db.models import Q 
+from django.db.models import Q
 
-from datetime import date 
+from datetime import date
 from django.contrib.auth.models import Group
 
 import time
@@ -18,12 +18,12 @@ from aula.apps.extEsfera.models import Grup2Aula
 
 
 def sincronitza(f, user = None):
-    
+
     msgs = comprovar_grups( f )
     if msgs["errors"]:
         return msgs
     errors = []
-    
+
     #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
     Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
         .update( estat_sincronitzacio = 'PRC')
@@ -354,8 +354,8 @@ def comprovar_grups( f ):
                             grup_classe=grup_classe))
 
     return { 'errors': errors }
-            
-    
+
+
 
 def dades_responsable ( dades ):
     splitted = dades.split(" - ")
@@ -368,7 +368,6 @@ def dades_responsable ( dades ):
                    "mobils": mobils,
                  }
     return dades_tutor
-        
-    
-    
-    
+
+
+
