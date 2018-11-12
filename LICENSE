@@ -52,4 +52,12 @@ Llicència:
        'Migració a django 1.11
        'Mòdul reserva d'aules
        'Buscadors de persones ( alumnes, professors )
+       'Adaptació a Esfer@
+       
+       Quim Saurina ( jsaurina@xtec.cat ) 2018 -
+       'Aportacions a la documentació.
+       
+       Jordi Subias ( jsubias6@xtec.cat ) 2018
+       'Millores parametritzacions
+       
 
