@@ -99,9 +99,9 @@ def sincronitza(f, user = None):
                 if col_indexs[index].endswith(u"Localitat de residència"):
                     a.localitat = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith(u"Codi postal"):
-                    a.municipi = unicode(cell.value) if cell.value else ""
+                    a.cp = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith(u"Municipi de residència"):
-                    a.municipi += " - " + unicode(cell.value) if cell.value else ""
+                    a.municipi = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith(u"Contacte 1er tutor alumne - Valor"):
                     dades_tutor1 = dades_responsable(unicode(cell.value) if cell.value else "")
                     a.rp1_telefon = ', '.join(dades_tutor1["fixes"]);
@@ -361,7 +361,7 @@ def dades_responsable ( dades ):
     mails = [ dada for dada in splitted if "@" in dada ]
     fixes = [ dada for dada in splitted if dada.startswith(("9","8")) and dada not in mails ]
     mobils =[ dada for dada in splitted if dada not in mails+fixes ]
-    
+
     dades_tutor = { "mails": mails,
                    "fixes": fixes,
                    "mobils": mobils,
