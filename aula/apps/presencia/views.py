@@ -301,7 +301,7 @@ def passaLlista(request, pk):
         hiHaRetard = False
         form0 = forms.Form()
         formset.append(form0)
-        for control_a in impartir.controlassistencia_set.order_by('alumne'):  # .order_by( 'alumne__grup', 'alumne' )
+        for control_a in impartir.controlassistencia_set.order_by(*settings.CUSTOM_ORDER_PRESENCIA):  # .order_by( 'alumne__grup', 'alumne' )
             control_a.currentUser = user
             form = helper_tuneja_item_nohadeseralaula( request, control_a )
 
@@ -370,7 +370,7 @@ def passaLlista(request, pk):
                     form0._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
 
     else:
-        for control_a in impartir.controlassistencia_set.order_by('alumne'):
+        for control_a in impartir.controlassistencia_set.order_by(*settings.CUSTOM_ORDER_PRESENCIA):
             form = helper_tuneja_item_nohadeseralaula(request, control_a)
             formset.append(form)
 

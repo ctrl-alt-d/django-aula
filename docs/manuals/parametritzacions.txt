@@ -4,6 +4,12 @@ PARAMETRITZACIONS DEL DJANGO-AULA
 Al fitxer settings.py (o settings_local.py)
 -------------------------------------------
 
+CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
+    Serveix per mostrar com s'ordena l'alumnat a l'hora de passar llista
+    	'alumne': 	Ordena primer per grup i després per cognom de l'alumnat (alumnes de diferents grups)
+	'alumne nom':	Ordena l'alumnat per nom
+	'alumne_cognom':Ordena l'alumant per cognoms
+    
 CUSTOM_RETARD_PROVOCA_INCIDENCIA
     Si True, cada retard d'un alumne provoca una incidència
     
