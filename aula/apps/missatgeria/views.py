@@ -27,14 +27,16 @@ from django.shortcuts import get_object_or_404
 from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
 from django.contrib import messages
+from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES
 
 @login_required
-def elMeuMur( request, pg ):
+def elMeuMur( request, pg ,tipus = 'all'):
     
     credentials = tools.getImpersonateUser(request) 
     (user, l4) = credentials
-        
-    q = user.destinatari_set.order_by('-missatge__data')
+
+    q = user.destinatari_set.filter(missatge__tipus_de_missatge=tipus.upper()).order_by('-missatge__data') \
+        if tipus != 'all' else user.destinatari_set.order_by('-missatge__data')
 
     if not request.session.has_key('impersonacio'):
         request.user.destinatari_set.filter(
@@ -44,10 +46,12 @@ def elMeuMur( request, pg ):
     table = MissatgesTable(q)
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 25}).configure(table)
 
+    missatges = list(MISSATGES.keys())
     return render(
                     request,
                     'missatges.html',
                     {'table': table,
+                     'missatges': missatges,
                     },
                  )
     
@@ -163,7 +167,7 @@ def enviaMissatgeAdministradors( request ):
                 msg = Missatge( remitent = user, text_missatge = u'''Avís a administradors enviat correctament. El text de l'avís és: "{0}"'''.format( txtMsg ) )
                 msg.envia_a_usuari(user, 'PI')
                 
-                url = '/missatgeria/elMeuMur/'  
+                url = '/missatgeria/elMeuMur/'
                 return HttpResponseRedirect( url )  
     else:
         msgForm = msgFormF(  )
