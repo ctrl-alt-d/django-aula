@@ -116,14 +116,16 @@ def impartir_despres_de_passar_llista(instance):
         text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )
         Missatge = apps.get_model( 'missatgeria','Missatge')
         tipus_de_missatge =''
-        for tipus, frases in MISSATGES.items():
-            tipus_de_missatge = tipus if missatge in frases else ''
+        for tipus, valors in MISSATGES.items():
+            for frases in valors:
+                tipus_de_missatge = tipus if missatge in frases else ''
         msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge)
         msg.envia_a_usuari( usuari = instance.professor_passa_llista.getUser(), importancia = 'VI')
 
         missatge = HAN_PASSAT_LLISTA_PER_MI
         text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )
-        for tipus, frases in MISSATGES.items():
-            tipus_de_missatge = tipus if missatge in frases else ''
+        for tipus, valors in MISSATGES.items():
+            for frases in valors:
+                tipus_de_missatge = tipus if missatge in frases else ''
         msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge )
         msg.envia_a_usuari( usuari = instance.horari.professor.getUser(), importancia = 'VI')

@@ -3,18 +3,10 @@
 
 {% block content  %}
     </select>
-    {% for missatge in missatges %}
-        <a href="{% url 'varis__elmur__veure' missatge|lower %}" class="btn btn-info btn-xs">{{ missatge }}</a>
+    {% for missatge,color in missatges.items %}
+        <a href="{% url 'varis__elmur__veure' missatge|lower %}" class="btn btn-{{ color }} btn-xs"> {{ missatge }} </a>
     {% endfor %}
     {% render_table table %}
-{% endblock %}
-
-{% block extrahead %}
-<style>
-    .btn-info {
-        width: 100px;
-    }
-</style>
 {% endblock %}
 
 

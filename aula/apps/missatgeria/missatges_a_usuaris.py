@@ -11,13 +11,13 @@ FI_PROCES_AFEGIR_ALUMNES = u"""Fi procés afegir alumnes a {0}"""
 FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS = u"""Fi procés afegir alumnes a {0} amb errors"""
 
 
-MISSATGES = {'ADMINISTRACIO' : {PASSAR_LLISTA_GRUP_NO_MEU,
+MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_AFEGIR_ALUMNES,
                                 FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS,
                                 HAN_PASSAT_LLISTA_PER_MI,
-                                },
+                                }},
 
-             'DISCIPLINA': {},
-             'MISSATGERIA': {},
-             'ACTIVITATS': {},
-             'INFORMATIVES_DISCIPLINA': {},}
+             'DISCIPLINA': {'danger': {}},
+             'MISSATGERIA': {'info': {}},
+             'ACTIVITATS': {'success': {}},
+             'INFORMATIVES_DISCIPLINA': {'primary': {}},}

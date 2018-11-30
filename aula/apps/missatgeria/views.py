@@ -46,7 +46,10 @@ def elMeuMur( request, pg ,tipus = 'all'):
     table = MissatgesTable(q)
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 25}).configure(table)
 
-    missatges = list(MISSATGES.keys())
+    missatges = dict()
+    for key,value in MISSATGES.items():
+        missatges [key] = value.keys()[0]
+
     return render(
                     request,
                     'missatges.html',
