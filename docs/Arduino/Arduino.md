@@ -1,6 +1,6 @@
 ## Integració Arduino
 
-El curs 2017-18 vam muntar taller IoT i vam fer una integració del djau amb (compatible) arduino.
+El curs 2017-18 vam fer el þtaller IoT](https://twitter.com/ctrl_alt_d/status/956594187755053058) i vam fer una [integració del djau amb (compatible) arduino](https://twitter.com/ctrl_alt_d/status/992477372413808640).
 
 El dispositiu que varem fer servir era:
 
