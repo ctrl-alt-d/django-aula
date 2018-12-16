@@ -478,8 +478,12 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
         form.fields['estat'].label = unicode(control_a.alumne)
         avui_es_anivesari = (control_a.alumne.data_neixement.month == control_a.impartir.dia_impartir.month and
                              control_a.alumne.data_neixement.day == control_a.impartir.dia_impartir.day)
+        missatge = ''
+        if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and es_major_edat (control_a.alumne.data_neixement)):
+                missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
+
         form.fields['estat'].label = (unicode(control_a.alumne)
-                                      + ('(fa anys en aquesta data)' if avui_es_anivesari else '')
+                                      + missatge +('(fa anys en aquesta data)' if avui_es_anivesari else '')
                                       )
     return form
 
