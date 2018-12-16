@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*- 
 
 CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
-CUSTOM_NUMERAR_ALUMNES = True
 CUSTOM_MOSTRAR_MAJORS_EDAT = False
 CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' #Missatge que apareix al costat dels majors d'edat
 CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
