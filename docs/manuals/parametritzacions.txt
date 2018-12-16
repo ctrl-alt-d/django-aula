@@ -9,7 +9,14 @@ CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__no
     	'alumne': 	Ordena primer per grup i després per cognom de l'alumnat (alumnes de diferents grups)
 	'alumne nom':	Ordena l'alumnat per nom
 	'alumne_cognom':Ordena l'alumant per cognoms
-    
+
+CUSTOM_MOSTRAR_MAJORS_EDAT = False 
+	Amb True mostrarà al costat del llistat de l'alumne si és major d'edat o no.
+	El missatge el definim a CUSTOM_MARCA_MAJORS_EDAT 
+CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' 
+	Missatge que apareix al costat dels majors d'edat
+	Cognom1 Cognom2, Nom (^18)
+	
 CUSTOM_RETARD_PROVOCA_INCIDENCIA
     Si True, cada retard d'un alumne provoca una incidència
     
