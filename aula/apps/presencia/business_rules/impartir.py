@@ -6,7 +6,8 @@ from aula.apps.aules.models import ReservaAula, Aula
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.missatgeria.models import Missatge
 from django.contrib.auth.models import User
-from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES, PASSAR_LLISTA_GRUP_NO_MEU, HAN_PASSAT_LLISTA_PER_MI
+from aula.apps.missatgeria.missatges_a_usuaris import  PASSAR_LLISTA_GRUP_NO_MEU, HAN_PASSAT_LLISTA_PER_MI, tipusMissatge
+
 
 def impartir_clean( instance ):
     pass
@@ -115,17 +116,12 @@ def impartir_despres_de_passar_llista(instance):
         missatge = PASSAR_LLISTA_GRUP_NO_MEU
         text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )
         Missatge = apps.get_model( 'missatgeria','Missatge')
-        tipus_de_missatge =''
-        for tipus, valors in MISSATGES.items():
-            for frases in valors:
-                tipus_de_missatge = tipus if missatge in frases else ''
+        tipus_de_missatge = tipusMissatge (missatge)
         msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge)
         msg.envia_a_usuari( usuari = instance.professor_passa_llista.getUser(), importancia = 'VI')
 
         missatge = HAN_PASSAT_LLISTA_PER_MI
         text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )
-        for tipus, valors in MISSATGES.items():
-            for frases in valors:
-                tipus_de_missatge = tipus if missatge in frases else ''
+        tipus_de_missatge = tipusMissatge(missatge)
         msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge )
         msg.envia_a_usuari( usuari = instance.horari.professor.getUser(), importancia = 'VI')
