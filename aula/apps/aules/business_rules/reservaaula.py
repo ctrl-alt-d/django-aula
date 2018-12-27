@@ -8,6 +8,9 @@ from django.contrib.auth.models import User
 from django.apps import apps
 from django.conf import settings
 
+from aula.apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipusMissatge
+
+
 def reservaaula_clean(instance):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
 
@@ -112,9 +115,12 @@ def reservaaula_post_delete( sender, instance, **lwargs ):
     if instance.es_reserva_manual:
         usuari_notificacions, _ = User.objects.get_or_create( username = 'TP')
         Missatge = apps.get_model( 'missatgeria','Missatge')
+        missatge = SISTEMA_ANULA_RESERVA
+        tipus_de_missatge = tipusMissatge(missatge)
         msg = Missatge(
             remitent=usuari_notificacions,
-            text_missatge=u"El sistema ha hagut d'anul·lar la teva reserva: {0}".format(instance),
+            text_missatge=missatge.format(instance),
+            tipus_de_missatge = tipus_de_missatge,
             )
         msg.envia_a_usuari(instance.usuari, 'VI')
         

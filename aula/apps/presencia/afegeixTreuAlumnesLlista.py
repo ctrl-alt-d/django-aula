@@ -7,6 +7,8 @@ from threading import Thread
 from django.db.models import Q
 
 #models
+from aula.apps.missatgeria.missatges_a_usuaris import FI_PROCES_AFEGIR_ALUMNES, tipusMissatge, \
+    FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS, FI_PROCES_TREURE_ALUMNES, FI_PROCES_TREURE_ALUMNES_AMB_ERRORS
 from aula.apps.presencia.models import Impartir, ControlAssistencia,\
     EstatControlAssistencia
 from aula.apps.missatgeria.models import Missatge
@@ -86,18 +88,21 @@ class afegeixThread(Thread):
             errors.append( traceback.format_exc() )
 
         finally:
-            self.flagPrimerDiaFet = True                
-
-        msg = Missatge( remitent = self.usuari, text_missatge = u'Fi procés afegir alumnes a {0}'.format( self.impartir.horari.assignatura ) )
+            self.flagPrimerDiaFet = True
+        missatge = FI_PROCES_AFEGIR_ALUMNES
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = self.usuari, text_missatge = missatge.format( self.impartir.horari.assignatura ), tipus_de_missatge = tipus_de_missatge )
         importancia = 'PI'
 
         if len(errors)>0:
-            msg.afegeix_error([u"Procés finalitzat amb errors. S'ha enviat incidència als administradors.",])
+            missatge = FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS
+            msg.afegeix_error([missatge,])
+            msg.tipus_de_missatge = tipusMissatge(missatge)
             importancia = 'VI'
             msg.save()
             administradors, _ = Group.objects.get_or_create( name = 'administradors' )
 
-            msgAdmins = Missatge( remitent = self.usuari, text_missatge = u'Fi procés afegir alumnes a {0} amb errors'.format( self.impartir ) )
+            msgAdmins = Missatge( remitent = self.usuari, text_missatge = missatge.format( self.impartir ) )
             msgAdmins.afegeix_error(errors)
             msgAdmins.save()
             msgAdmins.envia_a_grup(administradors, importancia)
@@ -158,8 +163,10 @@ class treuThread(Thread):
         
         finally:
             self.flagPrimerDiaFet = True
-                
-        msg = Missatge( remitent = self.usuari, text_missatge = u'Fi procés treure alumnes a {0}'.format( self.impartir.horari.assignatura ) )
+
+        missatge = FI_PROCES_TREURE_ALUMNES
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = self.usuari, text_missatge = missatge.format( self.impartir.horari.assignatura ), tipus_de_missatge = tipus_de_missatge)
         importancia = 'PI'
 
         if len(errors)>0:
@@ -167,8 +174,9 @@ class treuThread(Thread):
             importancia = 'VI'
             msg.save()
             administradors, _ = Group.objects.get_or_create( name = 'administradors' )
-
-            msgAdmins = Missatge( remitent = self.usuari, text_missatge = u'Fi procés treure alumnes a {0} amb errors'.format( self.impartir ) )
+            missatge = FI_PROCES_TREURE_ALUMNES_AMB_ERRORS
+            tipus_de_missatge = tipusMissatge(missatge)
+            msgAdmins = Missatge( remitent = self.usuari, text_missatge = missatge.format( self.impartir ), tipus_de_missatge = tipus_de_missatge )
             msgAdmins.afegeix_error(errors)
             msgAdmins.save()
             msgAdmins.envia_a_grup(administradors, importancia)

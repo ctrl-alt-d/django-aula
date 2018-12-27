@@ -2,6 +2,8 @@
 
 # --
 from django.contrib.auth.models import Group
+
+from aula.apps.missatgeria.missatges_a_usuaris import RECORDA_REPROGRAMAR_CLASSES, tipusMissatge
 from aula.apps.usuaris.models import Professor
 
 from aula.apps.horaris.models import Horari, DiaDeLaSetmana
@@ -244,11 +246,13 @@ def sincronitza(file, usuari):
 
     # invocar refer 'imparticions'
     from aula.apps.missatgeria.models import Missatge
-
+    missatge = RECORDA_REPROGRAMAR_CLASSES
+    tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(
         remitent=usuari,
-        text_missatge="Actualització d'horaris realitzada, recorda reprogramar les classes.",
-        enllac="/presencia/regeneraImpartir")
+        text_missatge=RECORDA_REPROGRAMAR_CLASSES,
+        enllac="/presencia/regeneraImpartir",
+        tipus_de_missatge = tipus_de_missatge)
     msg.afegeix_errors(errors)
     msg.afegeix_warnings(warnings)
     msg.afegeix_infos(infos)

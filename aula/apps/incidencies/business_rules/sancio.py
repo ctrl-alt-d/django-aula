@@ -6,6 +6,9 @@ from django.utils.datetime_safe import datetime
 from django.apps import apps
 from datetime import datetime, timedelta, tzinfo
 
+from aula.apps.missatgeria.missatges_a_usuaris import ALUME_HA_ESTAT_SANCIONAT, tipusMissatge
+
+
 def sancio_pre_delete(sender, instance, **kwargs):
     #
     # Regles:
@@ -59,9 +62,11 @@ def sancio_pre_save(sender, instance, **kwargs):
 def sancio_post_save(sender, instance, created, **kwargs):
     # missatge pels professors que tenen aquest alumne a l'aula (exepte el professor que sanciona):
     if instance.tmp__calNotificar:
-        txt_msg = u"L'alumne {0} ha estat sancionat ( del {1} al {2} ).".format( instance.alumne, instance.data_inici.strftime( '%d/%m/%Y' ), instance.data_fi.strftime( '%d/%m/%Y' ) )
+        missatge = ALUME_HA_ESTAT_SANCIONAT
+        txt_msg = missatge.format( instance.alumne, instance.data_inici.strftime( '%d/%m/%Y' ), instance.data_fi.strftime( '%d/%m/%Y' ) )
         Missatge = apps.get_model( 'missatgeria','Missatge')
-        msg = Missatge( remitent = instance.professor.getUser(), text_missatge =txt_msg )
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = instance.professor.getUser(), text_missatge =txt_msg, tipus_de_missatge = tipus_de_missatge)
         Professor = apps.get_model( 'usuaris','Professor' )
         professors_que_tenen_aquest_alumne_a_classe = Professor.objects.filter( horari__impartir__controlassistencia__alumne = instance.alumne ).distinct()                    
         for professor in professors_que_tenen_aquest_alumne_a_classe:

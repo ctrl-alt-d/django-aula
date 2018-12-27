@@ -6,7 +6,8 @@ from aula.apps.aules.models import ReservaAula, Aula
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.missatgeria.models import Missatge
 from django.contrib.auth.models import User
-from aula.apps.missatgeria.missatges_a_usuaris import  PASSAR_LLISTA_GRUP_NO_MEU, HAN_PASSAT_LLISTA_PER_MI, tipusMissatge
+from aula.apps.missatgeria.missatges_a_usuaris import PASSAR_LLISTA_GRUP_NO_MEU, HAN_PASSAT_LLISTA_PER_MI, \
+    tipusMissatge, SISTEMA_ANULA_RESERVA
 
 
 def impartir_clean( instance ):
@@ -63,15 +64,18 @@ def impartir_post_save(sender, instance, created, **kwargs):
         for reserva in reserves_manuals:
             impartir = reserva.impartir_set.first()
             if impartir:
-                msg = u"El sistema ha hagut d'anul·lar aquest reserva: {0}".format(impartir)
+                missatge = SISTEMA_ANULA_RESERVA
+                msg = missatge.format(impartir)
                 reserva.aula = impartir.horari.aula
                 reserva.es_reserva_manual = False
                 fake_l4_credentials = (None, True ) 
                 reserva.credentials = fake_l4_credentials
                 reserva.save()
+                tipus_de_missatge = tipusMissatge(missatge)
                 msg = Missatge(
                     remitent=usuari_notificacions,
                     text_missatge=msg,
+                    tipus_de_missatge = tipus_de_missatge,
                     )
                 msg.envia_a_usuari(reserva.usuari,'VI')                   
             else:
