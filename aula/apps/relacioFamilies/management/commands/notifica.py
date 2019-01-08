@@ -2,6 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
+from aula.apps.missatgeria.missatges_a_usuaris import ERROR_NOTIFICACIO_FAMILIES, tipusMissatge
 from aula.apps.relacioFamilies.notifica import notifica
 
 class Command(BaseCommand):
@@ -26,9 +27,12 @@ class Command(BaseCommand):
                 usuari_notificacions.is_active = False
                 usuari_notificacions.first_name = u"Usuari Tasques Programades"
                 usuari_notificacions.save()
-            msg = Missatge( 
+            missatge = ERROR_NOTIFICACIO_FAMILIES
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge(
                         remitent= usuari_notificacions, 
-                        text_missatge = u"Error enviant notificacions relació famílies.")    
+                        text_missatge = missatge,
+                        tipus_de_missatge = tipus_de_missatge)
             importancia = 'VI' 
              
             administradors, _ = Group.objects.get_or_create( name = 'administradors' )

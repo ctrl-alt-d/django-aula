@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 from django.core.management.base import BaseCommand, CommandError
+from aula.apps.missatgeria.missatges_a_usuaris import ERROR_SINCRONITZANT_SORTIDES, tipusMissatge
 from aula.apps.sortides.sincronitza import sincronitza
 
 class Command(BaseCommand):
@@ -25,9 +26,12 @@ class Command(BaseCommand):
                 usuari_notificacions.is_active = False
                 usuari_notificacions.first_name = u"Usuari Tasques Programades"
                 usuari_notificacions.save()
-            msg = Missatge( 
+            missatge = ERROR_SINCRONITZANT_SORTIDES
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge(
                         remitent= usuari_notificacions, 
-                        text_missatge = u"Error sincronitzant sortides.")    
+                        text_missatge = missatge,
+                        tipus_de_missatge = tipus_de_missatge)
             importancia = 'VI' 
              
             administradors, _ = Group.objects.get_or_create( name = 'administradors' )

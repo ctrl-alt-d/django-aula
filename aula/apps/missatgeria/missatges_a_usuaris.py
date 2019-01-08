@@ -67,6 +67,10 @@ HE_POSAT_INCIDENCIA_EN_NOM_DALGU = u"""He posat una {0} en nom de {5} a {1} ({2}
 
 SISTEMA_ANULA_RESERVA = u"El sistema ha hagut d'anul·lar aquesta reserva: {0}"
 
+ERROR_NOTIFICACIO_FAMILIES = u"Error enviant notificacions relació famílies."
+
+ERROR_SINCRONITZANT_SORTIDES = u"Error sincronitzant sortides."
+
 
 MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_AFEGIR_ALUMNES,
@@ -82,6 +86,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_REPROGRAMACIO_CLASSES,
                                 RECORDA_REPROGRAMAR_CLASSES,
                                 SISTEMA_ANULA_RESERVA,
+                                ERROR_NOTIFICACIO_FAMILIES,
+                                ERROR_SINCRONITZANT_SORTIDES,
                                 }},
              'DISCIPLINA': {'danger': {EXPULSIO_PER_ACUMULACIO_INCIDENCIES,
                                        EXPULSIO_PER_ACUMULACIO_INCIDENCIES_FORA_AULA,
