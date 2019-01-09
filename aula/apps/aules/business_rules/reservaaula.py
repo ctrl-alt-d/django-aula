@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.apps import apps
 from django.conf import settings
 
-from aula.apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipusMissatge
+from ....apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipusMissatge
 
 
 def reservaaula_clean(instance):
