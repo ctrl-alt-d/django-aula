@@ -2,14 +2,12 @@
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.utils.datetime_safe import datetime
 from datetime import timedelta
-from django.apps import apps
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.apps import apps
 from django.conf import settings
 
-from aula.apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipusMissatge
-
+from ....apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipusMissatge
 
 def reservaaula_clean(instance):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
