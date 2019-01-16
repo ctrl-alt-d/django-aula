@@ -3,7 +3,7 @@
 #--
 from aula.apps.alumnes.models import Alumne, Grup, Nivell
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
-    ALUMNES_DONATS_DALTA
+    ALUMNES_DONATS_DALTA, IMPORTACIO_SAGA_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
@@ -319,10 +319,12 @@ def sincronitza(f, user = None):
     infos.append(u'{0} alumnes en estat sincronització manual'.format( \
         len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
-
+    missatge = IMPORTACIO_SAGA_FINALITZADA
+    tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(
                 remitent= user,
-                text_missatge = u"Importació Saga finalitzada.")
+                text_missatge = missatge,
+                tipus_de_missatge = tipus_de_missatge)
     msg.afegeix_errors( errors )
     msg.afegeix_warnings(warnings)
     msg.afegeix_infos(infos)
