@@ -415,8 +415,8 @@ def posaIncidenciaPrimeraHora( request ):
         formIncidencia = formIncidenciaF(request.POST, instance = incidencia )
         if formAlumne.is_valid():            
             alumne = formAlumne.cleaned_data['alumne']
-            incidencia.alumne = alumne            
-            incidencia.professional = alumne.tutorsIndividualitzatsDeLAlumne().first() or  alumne.tutorsDeLAlumne().first()
+            incidencia.alumne = alumne
+            incidencia.professional = alumne.tutorsDelGrupDeLAlumne().first()
 
             if not bool(incidencia.professional):
                 messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
