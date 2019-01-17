@@ -3,6 +3,7 @@
 #--
 from aula.apps.alumnes.models import  Curs
 from aula.apps.horaris.models import Horari, FranjaHoraria
+from aula.apps.missatgeria.missatges_a_usuaris import FI_REPROGRAMACIO_CLASSES, tipusMissatge
 from aula.apps.presencia.models import Impartir
 from threading import Thread
 from aula.utils import tools
@@ -126,10 +127,12 @@ class regeneraThread(Thread):
 
         #Deixar missatge a la base de dades (utilitzar self.user )
         from aula.apps.missatgeria.models import Missatge
-        
+        missatge = FI_REPROGRAMACIO_CLASSES
+        tipus_de_missatge = tipusMissatge(missatge)
         msg = Missatge( 
                     remitent= self.user, 
-                    text_missatge = "Reprogramació de classes finalitzada.") 
+                    text_missatge = missatge,
+                    tipus_de_missatge = tipus_de_missatge)
         msg.afegeix_errors( errors )
         msg.afegeix_warnings(warnings)
         msg.afegeix_infos(infos)    

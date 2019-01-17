@@ -2,6 +2,8 @@
 
 #--
 from aula.apps.alumnes.models import Alumne, Grup, Nivell
+from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
+    ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
@@ -229,7 +231,9 @@ def sincronitza(f, user = None):
         llista = []
         for alumne in alumnes:
             llista.append( u'{0} ({1})'.format(unicode( alumne), alumne.grup.descripcio_grup ) )
-        msg = Missatge( remitent = user, text_missatge = u'''El següents alumnes han estat donats de baixa.'''  )
+        missatge = ALUMNES_DONATS_DE_BAIXA
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = user, text_missatge = missatge, tipus_de_missatge = tipus_de_missatge  )
         msg.afegeix_infos( llista )
         msg.envia_a_usuari( Professor.objects.get( pk = professorPK ) , 'IN')
         info_nMissatgesEnviats += 1
@@ -247,7 +251,9 @@ def sincronitza(f, user = None):
         llista = []
         for alumne in alumnes:
             llista.append( u'{0} passa a grup {1}'.format(unicode( alumne), alumne.grup.descripcio_grup ) )
-        msg = Missatge( remitent = user, text_missatge = u'''El següents alumnes han estat canviats de grup.'''  )
+        missatge = ALUMNES_CANVIATS_DE_GRUP
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = user, text_missatge = missatge, tipus_de_missatge = tipus_de_missatge  )
         msg.afegeix_infos( llista )
         msg.envia_a_usuari( Professor.objects.get( pk = professorPK ) , 'IN')
         info_nMissatgesEnviats += 1
@@ -263,7 +269,9 @@ def sincronitza(f, user = None):
         llista = []
         for alumne in alumnes:
             llista.append( u'{0} al grup {1}'.format(unicode( alumne), alumne.grup.descripcio_grup ) )
-        msg = Missatge( remitent = user, text_missatge = u'''El següents alumnes han estat donats d'alta.'''  )
+        missatge = ALUMNES_DONATS_DALTA
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = user, text_missatge = missatge, tipus_de_missatge = tipus_de_missatge  )
         msg.afegeix_infos( llista )
         msg.envia_a_usuari( Professor.objects.get( pk = professorPK ) , 'IN')
         info_nMissatgesEnviats += 1
@@ -305,10 +313,12 @@ def sincronitza(f, user = None):
     infos.append(u'{0} alumnes en estat sincronització manual'.format( \
         len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
-
+    missatge = IMPORTACIO_ESFERA_FINALITZADA
+    tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(
                 remitent= user,
-                text_missatge = u"Importació Esfer@ finalitzada.")
+                text_missatge = missatge,
+                tipus_de_missatge = tipus_de_missatge)
     msg.afegeix_errors( errors )
     msg.afegeix_warnings(warnings)
     msg.afegeix_infos(infos)

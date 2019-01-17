@@ -6,6 +6,9 @@ from aula.apps.aules.models import ReservaAula, Aula
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.missatgeria.models import Missatge
 from django.contrib.auth.models import User
+from aula.apps.missatgeria.missatges_a_usuaris import PASSAR_LLISTA_GRUP_NO_MEU, HAN_PASSAT_LLISTA_PER_MI, \
+    tipusMissatge, SISTEMA_ANULA_RESERVA
+
 
 def impartir_clean( instance ):
     pass
@@ -61,15 +64,18 @@ def impartir_post_save(sender, instance, created, **kwargs):
         for reserva in reserves_manuals:
             impartir = reserva.impartir_set.first()
             if impartir:
-                msg = u"El sistema ha hagut d'anul·lar aquest reserva: {0}".format(impartir)
+                missatge = SISTEMA_ANULA_RESERVA
+                msg = missatge.format(impartir)
                 reserva.aula = impartir.horari.aula
                 reserva.es_reserva_manual = False
                 fake_l4_credentials = (None, True ) 
                 reserva.credentials = fake_l4_credentials
                 reserva.save()
+                tipus_de_missatge = tipusMissatge(missatge)
                 msg = Missatge(
                     remitent=usuari_notificacions,
                     text_missatge=msg,
+                    tipus_de_missatge = tipus_de_missatge,
                     )
                 msg.envia_a_usuari(reserva.usuari,'VI')                   
             else:
@@ -111,16 +117,15 @@ def impartir_despres_de_passar_llista(instance):
     #Si passa llista un professor que no és el de l'Horari cal avisar.
     if instance.professor_passa_llista <> instance.horari.professor:
         remitent = instance.professor_passa_llista
-        text_missatge = u"""Has passat llista a un grup que no és el teu: ({0}). 
-                         El professor del grup {1} rebrà un missatge com aquest.
-                         """.format( unicode(instance),  unicode(instance.horari.professor) )
+        missatge = PASSAR_LLISTA_GRUP_NO_MEU
+        text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )
         Missatge = apps.get_model( 'missatgeria','Missatge')
-        msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )           
+        tipus_de_missatge = tipusMissatge (missatge)
+        msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge)
         msg.envia_a_usuari( usuari = instance.professor_passa_llista.getUser(), importancia = 'VI')
 
-        text_missatge = u"""Ha passat llista d'una classe on consta que la fas tú: ({0}). 
-                         """.format( unicode(instance),  unicode(instance.horari.professor) )
-        msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )           
+        missatge = HAN_PASSAT_LLISTA_PER_MI
+        text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge )
         msg.envia_a_usuari( usuari = instance.horari.professor.getUser(), importancia = 'VI')
-    
-

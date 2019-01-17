@@ -1,6 +1,12 @@
 {% extends "table2.html" %}
+{% load render_table from django_tables2 %}
 
-
-
+{% block content  %}
+    </select>
+    {% for missatge,color in missatges.items %}
+        <a href="{% url 'varis__elmur__veure' missatge|lower %}" class="btn btn-{{ color }} btn-xs"> {{ missatge }} </a>
+    {% endfor %}
+    {% render_table table %}
+{% endblock %}
 
 

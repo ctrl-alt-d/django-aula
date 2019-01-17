@@ -3,13 +3,16 @@ from django.conf.urls import url
 from aula.apps.missatgeria import views as missatgeria_views
 
 urlpatterns = [
-                       
+
     url(r'^elMeuMur/$', missatgeria_views.elMeuMur, {'pg':1},
+        name ="varis__elmur__veure" ),
+                       
+    url(r'^elMeuMur/(?P<tipus>\w+)/$', missatgeria_views.elMeuMur, {'pg':1},
         name ="varis__elmur__veure" ),
                        
     url(r'^elMeuMur/(?P<pg>\d+)/$', missatgeria_views.elMeuMur,
         name ="varis__elmur__veure_by_pg" ),
-                       
+
     url(r'^enviaMissatgeTutors/$', missatgeria_views.enviaMissatgeTutors,
         name ="consergeria__missatges__envia_tutors" ),
                        

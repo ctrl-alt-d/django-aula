@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
@@ -333,21 +334,21 @@ def sortidaEdit( request, pk = None, clonar=False, origen=False ):
             if instance.data_inici is not None:
                 data_inici = """del dia {dia}""".format( dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
             
-            #missatge a acompanyants:                
-            txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
-            {dia}
-            """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
+            #missatge a acompanyants:
+            missatge = ACOMPANYANT_A_ACTIVITAT
+            txt = missatge.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
             enllac=reverse( 'sortides__sortides__edit_by_pk', kwargs={'pk':instance.id } )
-            msg = Missatge( remitent = user, text_missatge = txt, enllac = enllac )
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge( remitent = user, text_missatge = txt, enllac = enllac, tipus_de_missatge = tipus_de_missatge )
             for nou in acompanyen_nous:                
                 importancia = 'VI'
                 msg.envia_a_usuari(nou, importancia)                
 
             #missatge a responsables:
-            txt = u"""Has estat afegit com a professor responsable a l'activitat {sortida} 
-            {dia}
-            """.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
-            msg = Missatge( remitent = user, text_missatge = txt )
+            missatge = RESPONSABLE_A_ACTIVITAT
+            txt = missatge.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge( remitent = user, text_missatge = txt, tipus_de_missatge = tipus_de_missatge )
             for nou in organitzen_nous:                
                 importancia = 'VI'
                 msg.envia_a_usuari(nou, importancia)                
@@ -718,19 +719,19 @@ def professorsAcompanyants( request, pk , origen ):
                     organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
                     
                     #missatge a acompanyants:
-                    txt = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
-                    del dia {dia}
-                    """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
-                    msg = Missatge( remitent = user, text_missatge = txt )
+                    missatge = ACOMPANYANT_A_ACTIVITAT
+                    txt = missatge.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+                    tipus_de_missatge = tipusMissatge(missatge)
+                    msg = Missatge( remitent = user, text_missatge = txt, tipus_de_missatge = tipus_de_missatge )
                     for nou in acompanyen_nous:                
                         importancia = 'VI'
                         msg.envia_a_usuari(nou, importancia)                
         
                     #missatge a responsables:
-                    txt = u"""Has estat afegit com a professor responsable a l'activitat {sortida} 
-                    del dia {dia}
-                    """.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
-                    msg = Missatge( remitent = user, text_missatge = txt )
+                    missatge = RESPONSABLE_A_ACTIVITAT
+                    txt = RESPONSABLE_A_ACTIVITAT.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+                    tipus_de_missatge = tipusMissatge(missatge)
+                    msg = Missatge( remitent = user, text_missatge = txt, tipus_de_missatge = tipus_de_missatge )
                     for nou in organitzen_nous:                
                         importancia = 'VI'
                         msg.envia_a_usuari(nou, importancia) 

@@ -9,6 +9,9 @@ from django.conf import settings
 
 #-------------INCIDENCIES-------------------------------------------------------------
 from aula.apps.alumnes.named_instances import Cursa_nivell
+from aula.apps.missatgeria.missatges_a_usuaris import EXPULSIO_PER_ACUMULACIO_INCIDENCIES, tipusMissatge, \
+    EXPULSIO_PER_ACUMULACIO_INCIDENCIES_FORA_AULA, INCIDENCIA_INFORMATIVA, HE_POSAT_INCIDENCIA_EN_NOM_TEU, \
+    HE_POSAT_INCIDENCIA_EN_NOM_DALGU
 from aula.apps.usuaris.models import User2Professor
 
 
@@ -134,13 +137,13 @@ def incidencia_despres_de_posar(instance):
                 gestionada_pel_tutor=False,
             ).count()
             if nIncidenciesAlumneProfessor > 2:
-                txt = u"""A l'alumne {0} ja li has posat {1} incidències en els darrers {2} dies. 
-                        Segons la normativa del Centre hauries de tramitar 
-                        una expulsió per acumulació d'incidències.""".format(instance.alumne,
-                                                                             nIncidenciesAlumneProfessor,
-                                                                             settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
+                missatge = EXPULSIO_PER_ACUMULACIO_INCIDENCIES
+                txt = missatge.format(instance.alumne,
+                                        nIncidenciesAlumneProfessor,
+                                        settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
 
-                msg = Missatge(remitent=instance.professional.getUser(), text_missatge=txt)
+                tipus_de_missatge = tipusMissatge(missatge)
+                msg = Missatge(remitent=instance.professional.getUser(), text_missatge=txt, tipus_de_missatge = tipus_de_missatge)
                 msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str(instance.pk)
                 if nIncidenciesAlumneProfessor > 5:
                     msg.importancia = 'VI'
@@ -156,13 +159,13 @@ def incidencia_despres_de_posar(instance):
                 gestionada_pel_tutor=True,
             ).count()
             if nIncidenciesAlumneProfessor > 2:
-                txt = u"""A l'alumne {0} li han posat {1} incidències gestionades pel tutor en els darrers {2} dies. 
-                        Segons la normativa del Centre, com a tutor de l'alumne, hauries de tramitar 
-                        una expulsió per acumulació d'incidències.""".format(instance.alumne,
-                                                                             nIncidenciesAlumneProfessor,
-                                                                             settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
+                missatge = EXPULSIO_PER_ACUMULACIO_INCIDENCIES_FORA_AULA
+                txt = missatge.format(instance.alumne,
+                                        nIncidenciesAlumneProfessor,
+                                        settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA)
 
-                msg = Missatge(remitent=instance.professional.getUser(), text_missatge=txt)
+                tipus_de_missatge = tipusMissatge(missatge)
+                msg = Missatge(remitent=instance.professional.getUser(), text_missatge=txt, tipus_de_missatge = tipus_de_missatge)
                 msg.enllac = '/incidencies/posaExpulsioPerAcumulacio/' + str(instance.pk)
                 if nIncidenciesAlumneProfessor > 5:
                     msg.importancia = 'VI'
@@ -172,43 +175,47 @@ def incidencia_despres_de_posar(instance):
         if bool(instance.professional_inicia):
             #
             remitent = instance.professional_inicia
-            text_missatge = u"""He posat una {0} en nom teu a {1} ({2}) el dia {3}. 
-                                El text de la incidència és: {4}""".format(
+            missatge = HE_POSAT_INCIDENCIA_EN_NOM_TEU
+            text_missatge = missatge.format(
                                         u"Incidència de Retard d'entrada al centre",
                                         instance.alumne,
                                         instance.alumne.grup,
                                         instance.dia_incidencia,
                                         instance.descripcio_incidencia)
+            tipus_de_missatge = tipusMissatge(missatge)
             msg1 = Missatge( remitent = remitent.getUser(), 
-                             text_missatge = text_missatge )
+                             text_missatge = text_missatge,
+                             tipus_de_missatge = tipus_de_missatge)
             importancia = 'VI'
             msg1.envia_a_usuari( instance.professional.getUser(), importancia )           
             
             #
             remitent = instance.professional_inicia
-            text_missatge = u"""He posat una {0} en nom de {5} a {1} ({2}) el dia {3}. 
-                                El text de la incidència és: {4}""".format(
+            missatge = HE_POSAT_INCIDENCIA_EN_NOM_DALGU
+            text_missatge = missatge.format(
                                         u"Incidència de Retard d'entrada al centre",
                                         instance.alumne,
                                         instance.alumne.grup,
                                         instance.dia_incidencia,
                                         instance.descripcio_incidencia,
                                         instance.professional,)
-            msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge)
             importancia = 'PI'
             msg1.envia_a_usuari( remitent.getUser(), importancia )    
             msg1.destinatari_set.filter(destinatari = remitent.getUser()).update(moment_lectura=datetime.now())
             
         #Cal que els professors i tutors sàpiguen que aquest alumne ha tingut incidència --> Envio missatge
         remitent = instance.professional
-        text_missatge = u"""Ha posat una incidència {0}a {1} ({2}) el dia {3}. 
-                            El text de la incidència és: {4}""".format(
+        missatge = INCIDENCIA_INFORMATIVA
+        text_missatge = missatge.format(
                                     'informativa ' if instance.tipus.es_informativa else '',
                                     instance.alumne,
                                     instance.alumne.grup,
                                     instance.dia_incidencia,
                                     instance.descripcio_incidencia)
-        msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge )           
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge )
         #si és una unitat formativa envio a tots:
         if Cursa_nivell( u"CICLES", instance.alumne):
             Professor = apps.get_model( 'usuaris','Professor')

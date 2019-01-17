@@ -15,7 +15,8 @@ class AbstractMissatge(models.Model):
     data = models.DateTimeField( auto_now_add = True, db_index = True )
     remitent = models.ForeignKey( User, db_index = True )    
     text_missatge = models.TextField("Missatge", help_text=u"Escriu el missatge")
-    enllac = models.URLField(blank = True)    
+    enllac = models.URLField(blank = True)
+    tipus_de_missatge = models.CharField(max_length=250, null=True)
     class Meta:
         abstract = True
         verbose_name = u'Missatge'

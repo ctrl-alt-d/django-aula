@@ -27,14 +27,18 @@ from django.shortcuts import get_object_or_404
 from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
 from django.contrib import messages
+from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES, CONSERGERIA_A_TUTOR, tipusMissatge, \
+    CONSERGERIA_A_CONSERGERIA, ERROR_AL_PROGRAMA, ACUS_REBUT_ERROR_AL_PROGRAMA, ACUS_REBUT_ENVIAT_A_PROFE_O_PAS
+
 
 @login_required
-def elMeuMur( request, pg ):
+def elMeuMur( request, pg ,tipus = 'all'):
     
     credentials = tools.getImpersonateUser(request) 
     (user, l4) = credentials
-        
-    q = user.destinatari_set.order_by('-missatge__data')
+
+    q = user.destinatari_set.filter(missatge__tipus_de_missatge=tipus.upper()).order_by('-missatge__data') \
+        if tipus != 'all' else user.destinatari_set.order_by('-missatge__data')
 
     if not request.session.has_key('impersonacio'):
         request.user.destinatari_set.filter(
@@ -44,10 +48,15 @@ def elMeuMur( request, pg ):
     table = MissatgesTable(q)
     RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 25}).configure(table)
 
+    missatges = dict()
+    for key,value in MISSATGES.items():
+        missatges [key] = value.keys()[0]
+
     return render(
                     request,
                     'missatges.html',
                     {'table': table,
+                     'missatges': missatges,
                     },
                  )
     
@@ -78,9 +87,11 @@ def enviaMissatgeTutors( request ):
             else:
                 request.session['consergeria_darrera_data'] = data
                 txt2 = msg.text_missatge
-                txt = u'''Missatge relatiu a un teu alumne tutorat'''
+                txt = CONSERGERIA_A_TUTOR
                 msg.text_missatge = txt
                 msg.enllac = '/tutoria/justificaFaltes/{0}/{1}/{2}/{3}'.format(alumne.pk, data.year, data.month, data.day)
+                tipus_de_missatge = tipusMissatge(txt)
+                msg.tipus_de_missatge = tipus_de_missatge
                 msg.save()
                 msg.afegeix_info(u"Alumne: {alumne}".format(alumne=alumne))
                 msg.afegeix_info(u"Data relativa a l'avís: {data}".format(data=data))
@@ -90,8 +101,11 @@ def enviaMissatgeTutors( request ):
                 strTutors = u", ".join(  u'Sr(a) {}'.format( tutor) for tutor in tutors )
 
                 #envio al que ho envia:
+                missatge = CONSERGERIA_A_CONSERGERIA
+                tipus_de_missatge = tipusMissatge(missatge)
                 msg = Missatge( remitent = user,
-                                text_missatge = u'''Enviat avís a tutors de l'alumne {0} ({1}). El text de l'avís és: "{2}"'''.format( alumne, strTutors, msg.text_missatge ) )
+                                text_missatge = missatge.format( alumne, strTutors, msg.text_missatge ),
+                                tipus_de_missatge = tipus_de_missatge)
                 msg.envia_a_usuari(user, 'PI')
                 msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())  #marco com a llegit
                 
@@ -149,7 +163,10 @@ def enviaMissatgeAdministradors( request ):
             if len( administradors ) == 0:
                 msgForm._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''No estan definits els administradors, sorry.'''  )
             else:
-                msg.text_missatge = u'''Avís d'error al programa: {0}'''.format(msg.text_missatge)
+                missatge = ERROR_AL_PROGRAMA
+                msg.text_missatge = missatge.format(msg.text_missatge)
+                tipus_de_missatge = tipusMissatge(missatge)
+                msg.tipus_de_missatge = tipus_de_missatge
                 msg.save()
                 strAdmins = u''
                 separador = ''
@@ -160,10 +177,12 @@ def enviaMissatgeAdministradors( request ):
                 txtMsg = msg.text_missatge
                 
                 #envio al que ho envia:
-                msg = Missatge( remitent = user, text_missatge = u'''Avís a administradors enviat correctament. El text de l'avís és: "{0}"'''.format( txtMsg ) )
+                missatge = ACUS_REBUT_ERROR_AL_PROGRAMA
+                tipus_de_missatge = tipusMissatge(missatge)
+                msg = Missatge( remitent = user, text_missatge = missatge.format( txtMsg ), tipus_de_missatge = tipus_de_missatge )
                 msg.envia_a_usuari(user, 'PI')
                 
-                url = '/missatgeria/elMeuMur/'  
+                url = '/missatgeria/elMeuMur/'
                 return HttpResponseRedirect( url )  
     else:
         msgForm = msgFormF(  )
@@ -199,6 +218,7 @@ def enviaMissatgeProfessorsPas(request):
         msgForm = msgFormF(data=request.POST, instance=msg)
 
         if formProfessorConserge.is_valid() and msgForm.is_valid():
+            msg.tipus_de_missatge = 'MISSATGERIA'
             msg.save()
             professors_conserges = formProfessorConserge.cleaned_data['professors_conserges']
             destinataris_txt = ", ".join( unicode(pc) for pc in professors_conserges)
@@ -206,10 +226,13 @@ def enviaMissatgeProfessorsPas(request):
                 msg.envia_a_usuari(professor_conserge.getUser(), 'IN')
 
             # envio al que ho envia:
+            missatge = ACUS_REBUT_ENVIAT_A_PROFE_O_PAS
+            tipus_de_missatge = tipusMissatge(missatge)
             msg2 = Missatge(remitent=user,
-                           text_missatge=u'''Missatge enviat a {0}. El text del missatge és: "{1}"'''.format(
+                           text_missatge=missatge.format(
                                destinataris_txt,
-                               msg.text_missatge))
+                               msg.text_missatge),
+                            tipus_de_missatge= tipus_de_missatge)
             msg2.envia_a_usuari(user, 'PI')
             msg2.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
 
