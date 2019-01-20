@@ -57,6 +57,7 @@ from django.template.defaultfilters import date as _date
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
+from aula.utils.testing import tests
 
 #vistes -----------------------------------------------------------------------------------
 @login_required
@@ -696,7 +697,7 @@ def afegeixAlumnesLlista(request, pk):
         if totBe:
             from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
             afegeix=afegeixThread(expandir = expandir, alumnes=alumnes, impartir=impartir, usuari = user, matmulla = matmulla)
-            afegeix.start()
+            tests.executaAmbOSenseThread(afegeix)
 
             #LOGGING
             Accio.objects.create( 
@@ -796,7 +797,7 @@ def treuAlumnesLlista(request, pk):
         
             from aula.apps.presencia.afegeixTreuAlumnesLlista import treuThread
             treu=treuThread(expandir = expandir, alumnes=alumnes, impartir=impartir, matmulla=matmulla,usuari=user)
-            treu.start()
+            tests.executaAmbOSenseThread(treu)
 
             #LOGGING
             Accio.objects.create( 
