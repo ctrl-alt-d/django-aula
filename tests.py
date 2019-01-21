@@ -13,7 +13,7 @@ if len(camps) <= 1:
     raise Exception("Error al descarregar de la web")
   print ("Executa això: sudo tar -xzvf /tmp/geckodriver-v0.23.0-linux64.tar.gz --directory=/tmp/ && cp /tmp/geckodriver /usr/local/bin/")
 else:
-  subprocess.call("python manage.py test aula.apps.presencia.tests.MySeleniumTests --keepdb", shell=True)  
+  subprocess.call("python manage.py test aula.apps.presencia.tests --keepdb", shell=True)  
 
 
 

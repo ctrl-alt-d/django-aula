@@ -159,4 +159,21 @@ def fetch_resources(uri, rel):
     path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
     return path
 
+def obtenirMotorBD():
+    #Obtenir el nom del motor de la BD.
+    motorBD = None
+    try:
+        motorBD = settings.DATABASES['default']['ENGINE']
+    except:
+        raise Exception("BD per defecte no trobada.")
+    return motorBD
 
+def executaAmbOSenseThread(objecteThread):
+    # type: (Thread) -> None
+    #Executa el thread de forma convencional o executa sense threads.
+    #No podem usar els threads en cas de treballar amb sqlite3. (O almenys no ho podem fer fàcilment.)
+    if obtenirMotorBD() == 'django.db.backends.sqlite3':
+        #No hi ha multithread en SQLITE3. Executo sense el thread.
+        objecteThread.run()
+    else:
+        objecteThread.start()

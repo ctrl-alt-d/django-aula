@@ -80,16 +80,6 @@ class TestUtils():
         traceback.print_exc()
         ipdb.post_mortem(tb)
 
-    @staticmethod
-    def obtenirMotorBD():
-        #Obtenir el nom del motor de la BD.
-        motorBD = None
-        try:
-            motorBD = settings.DATABASES['default']['ENGINE']
-        except:
-            raise Exception("BD per defecte no trobada.")
-        return motorBD
-
 class SeleniumLiveServerTestCase(LiveServerTestCase):
     #Classe porqueria per tal que funcionin les traces en el codi de selenium.
     #Altrament no et dona els settings i és complicat.
@@ -97,13 +87,3 @@ class SeleniumLiveServerTestCase(LiveServerTestCase):
         super(SeleniumLiveServerTestCase, self).__init__(*args, **kwargs)
         if settings.DEBUG == False:
             settings.DEBUG = True
-
-def executaAmbOSenseThread(objecteThread):
-    # type: (Thread) -> None
-    #Executa el thread de forma convencional o executa sense threads.
-    #No podem usar els threads en cas de treballar amb sqlite3. (O almenys no ho podem fer fàcilment.)
-    if TestUtils.obtenirMotorBD() == 'django.db.backends.sqlite3':
-        #No hi ha multithread en SQLITE3. Executo sense el thread.
-        objecteThread.run()
-    else:
-        objecteThread.start()
