@@ -21,7 +21,7 @@ from aula.apps.usuaris.models import User2Professor, Accio
 
 #helpers
 from aula.apps.presencia.regeneraImpartir import regeneraThread
-from aula.utils.tools import getImpersonateUser, getSoftColor
+from aula.utils.tools import getImpersonateUser, getSoftColor, executaAmbOSenseThread
 from django.utils.safestring import SafeText
 from django.apps import apps
 
@@ -56,7 +56,6 @@ from aula.apps.presencia.business_rules.impartir import impartir_despres_de_pass
 from django.template.defaultfilters import date as _date
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-
 
 #vistes -----------------------------------------------------------------------------------
 @login_required
@@ -696,7 +695,7 @@ def afegeixAlumnesLlista(request, pk):
         if totBe:
             from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
             afegeix=afegeixThread(expandir = expandir, alumnes=alumnes, impartir=impartir, usuari = user, matmulla = matmulla)
-            afegeix.start()
+            executaAmbOSenseThread(afegeix)
 
             #LOGGING
             Accio.objects.create( 
@@ -796,7 +795,7 @@ def treuAlumnesLlista(request, pk):
         
             from aula.apps.presencia.afegeixTreuAlumnesLlista import treuThread
             treu=treuThread(expandir = expandir, alumnes=alumnes, impartir=impartir, matmulla=matmulla,usuari=user)
-            treu.start()
+            executaAmbOSenseThread(treu)
 
             #LOGGING
             Accio.objects.create( 
