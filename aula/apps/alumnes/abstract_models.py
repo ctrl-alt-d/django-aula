@@ -180,7 +180,9 @@ class AbstractAlumne(models.Model):
         from django.db.models import Q
         q_tutors_individualitat = Q( tutorindividualitzat__alumne = self )
         return Professor.objects.filter(q_tutors_individualitat ).distinct()
-    
+
+    def tutorsDelGrupDeLAlumne(self):
+        return Professor.objects.filter(tutor__grup=self.grup).distinct()
 
     def tutorsDeLAlumne_display(self):
         return u", ".join( [unicode(tutor) for tutor in self.tutorsDeLAlumne() ])
