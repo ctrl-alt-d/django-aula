@@ -237,7 +237,7 @@ class Table2_Sortides(tables.Table):
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "professor_que_proposa", "participacio", "n_acompanyants" )
+        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "calendari_finsa", "professor_que_proposa", "participacio", "n_acompanyants" )
         fields = sequence
         template = 'bootable2.html'      
         
