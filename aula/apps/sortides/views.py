@@ -8,6 +8,8 @@ from aula.utils.decorators import group_required
 #helpers
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
+from aula.apps.presencia.models import Impartir
+from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
@@ -248,159 +250,217 @@ def sortidesGestioList( request ):
                   {'table': table,
                    'url': url,
                    }
-                 )       
-        
-     
+                 )
+
+
 @login_required
-@group_required(['professors'])   #TODO: i grup sortides
-def sortidaEdit( request, pk = None, clonar=False, origen=False ):
+@group_required(['professors'])  # TODO: i grup sortides
+def sortidaEdit(request, pk=None, clonar=False, origen=False):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
 
-    credentials = tools.getImpersonateUser(request) 
-    (user, _ ) = credentials
-    
-    es_post = ( request.method == "POST" )
-    
-    professor = User2Professor( user )     
-    
-    professors_acompanyen_abans = set( )
-    professors_acompanyen_despres = set( ) 
+    es_post = (request.method == "POST")
 
-    professors_organitzen_abans = set( )
-    professors_organitzen_despres = set( ) 
-    
-    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
-    if bool( pk ) and not clonar:
-        instance = get_object_or_404( Sortida, pk = pk )
-        potEntrar = ( professor in instance.professors_responsables.all() or 
-                      professor in instance.altres_professors_acompanyants.all() or
-                      fEsDireccioOrGrupSortides )
+    professor = User2Professor(user)
+
+    professors_acompanyen_abans = set()
+    professors_acompanyen_despres = set()
+
+    professors_organitzen_abans = set()
+    professors_organitzen_despres = set()
+
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+    if bool(pk) and not clonar:
+        instance = get_object_or_404(Sortida, pk=pk)
+        potEntrar = (professor in instance.professors_responsables.all() or
+                     professor in instance.altres_professors_acompanyants.all() or
+                     fEsDireccioOrGrupSortides)
         if not potEntrar:
             raise Http404
-        professors_acompanyen_abans = set( instance.altres_professors_acompanyants.all() )
-        professors_organitzen_abans = set( instance.professors_responsables.all() )
-    elif bool( pk ) and clonar:
-        instance = get_object_or_404( Sortida, pk = pk )
+        professors_acompanyen_abans = set(instance.altres_professors_acompanyants.all())
+        professors_organitzen_abans = set(instance.professors_responsables.all())
+    elif bool(pk) and clonar:
+        instance = get_object_or_404(Sortida, pk=pk)
         instance.pk = None
         instance.estat = 'E'
         instance.titol_de_la_sortida = u"**CLONADA** " + instance.titol_de_la_sortida
         instance.esta_aprovada_pel_consell_escolar = 'P'
         instance.professor_que_proposa = professor
-#         instance.professors_responsables = None
-#         instance.altres_professors_acompanyants = None
-#         instance.tutors_alumnes_convocats = None
-#         instance.alumnes_convocats = None
-#         instance.alumnes_que_no_vindran = None
-#         instance.alumnes_justificacio = None
-#         instance.professor_que_proposa_id = None
+    # instance.professors_responsables = None
+    #         instance.altres_professors_acompanyants = None
+    #         instance.tutors_alumnes_convocats = None
+    #         instance.alumnes_convocats = None
+    #         instance.alumnes_que_no_vindran = None
+    #         instance.alumnes_justificacio = None
+    #         instance.professor_que_proposa_id = None
 
     else:
-        instance = Sortida()        
+        instance = Sortida()
         instance.professor_que_proposa = professor
-    
+
     instance.credentials = credentials
 
-    exclude=( 'alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', )
-    formIncidenciaF = modelform_factory(Sortida, exclude=exclude )
+    # És un formulari reduit?
+    if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
+        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'data_inici', 'franja_inici', 'data_fi',
+                   'franja_fi', 'codi_de_barres', 'empresa_de_transport', 'pagament_a_empresa_de_transport',
+                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula')
+    else:
+        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio',)
+
+    formIncidenciaF = modelform_factory(Sortida, exclude=exclude)
 
     if request.method == "POST":
         post_mutable = request.POST.copy()
         if 'esta_aprovada_pel_consell_escolar' not in post_mutable:
             post_mutable['esta_aprovada_pel_consell_escolar'] = 'P'
-        
-        form = formIncidenciaF(post_mutable, instance = instance)
-            
-        if form.is_valid(): 
+
+        form = formIncidenciaF(post_mutable, instance=instance)
+
+        if form.is_valid():
+            # Omplir camps de classes afectades
+            if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
+                # Mirar si el dia d'inici de la sortida és lectiu
+                if instance.calendari_desde.date() == (Impartir.objects.filter(dia_impartir=instance.calendari_desde.date())
+                                                               .values_list("dia_impartir", flat=True)[0]):
+                    # Mirar si encara queden hores per impartir
+                    if instance.calendari_desde.time() < (Impartir.objects.filter(dia_impartir=instance.calendari_desde.date())
+                                                                  .order_by('horari__hora__hora_fi').values_list('horari__hora__hora_fi', flat=True).last()):
+                        instance.data_inici = instance.calendari_desde.date()
+                        instance.franja_inici = (FranjaHoraria.objects.filter(hora_inici__gte=instance.calendari_desde.time())
+                                                 .order_by('hora_inici').first())
+                        # El dia i hora d'inici de la sortida no queden hores per impartir, per tant serà el següent dia lectiu
+                    else:
+                        instance.data_inici = (Impartir.objects.filter(dia_impartir__gt=instance.calendari_desde.date())
+                                               .order_by('dia_impartir').values_list('dia_impartir', flat=True).first())
+                        instance.franja_inici = (FranjaHoraria.objects.order_by('hora_inici').first())
+                else:
+                    instance.data_inici = (Impartir.objects.filter(dia_impartir__gt=instance.calendari_desde.date())
+                                           .order_by('dia_impartir').values_list('dia_impartir', flat=True).first())
+                    instance.franja_inici = (FranjaHoraria.objects.order_by('hora_inici').first())
+
+                # Mirar si el dia final de la sortida és lectiu
+                if instance.calendari_finsa.date() == (Impartir.objects.filter(dia_impartir=instance.calendari_finsa.date())
+                                                               .values_list("dia_impartir", flat=True)[0]):
+                    # Mirar si encara queden hores per impartir
+                    if instance.calendari_finsa.time() < (Impartir.objects.filter(dia_impartir=instance.calendari_finsa.date())
+                                                                  .order_by('horari__hora__hora_inici').values_list('horari__hora__hora_inici', flat=True).last()):
+
+                        instance.data_fi = instance.calendari_finsa.date()
+                        instance.franja_fi = (FranjaHoraria.objects.filter(hora_fi__lte=instance.calendari_finsa.time())
+                                              .order_by('hora_fi').last())
+
+                    # El dia i hora de fi de la sortida no queden hores per impartir, per tant serà l'anterior dia lectiu
+                    else:
+                        instance.data_fi = (
+                            Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date()).order_by(
+                                'dia_impartir').values_list('dia_impartir', flat=True).last())
+                        instance.franja_fi = (
+                            FranjaHoraria.objects.order_by(
+                                'hora_fi').last())
+                else:
+                    instance.data_fi = (
+                        Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date())
+                            .order_by('dia_impartir').values_list('dia_impartir', flat=True).last())
+                    instance.franja_fi = (FranjaHoraria.objects.order_by('hora_fi').last())
+
+                # Comprovem si la sortida en realitat no afecta cap hora d'impartició, això passa quan la data inicial > data final
+                if (instance.data_fi < instance.data_inici):
+                    instance.data_inici = None
+                    instance.data_fi = None
+                    instance.franja_inici = None
+                    instance.franja_fi = None
             form.save()
-            
-            if origen=="Meves":
-                messages.warning(request,  
-                                SafeText(u"""RECORDA: Una vegada enviades les dades, 
+
+            if origen == "Meves":
+                messages.warning(request,
+                                 SafeText(u"""RECORDA: Una vegada enviades les dades, 
                                   has de seleccionar els <a href="{0}">alumnes convocats</a> i els 
                                   <a href="{1}">alumnes que no hi van</a> 
                                   des del menú desplegable ACCIONS""".format(
-                                        "/sortides/alumnesConvocats/{id}".format( id = instance.id),
-                                        "/sortides/alumnesFallen/{id}".format( id = instance.id),
-                                                                             )
-                                ))
+                                     "/sortides/alumnesConvocats/{id}".format(id=instance.id),
+                                     "/sortides/alumnesFallen/{id}".format(id=instance.id),
+                                 )
+                                 ))
 
-            professors_acompanyen_despres = set( instance.altres_professors_acompanyants.all() )
-            professors_organitzen_despres = set( instance.professors_responsables.all() )
-            
+            professors_acompanyen_despres = set(instance.altres_professors_acompanyants.all())
+            professors_organitzen_despres = set(instance.professors_responsables.all())
+
             acompanyen_nous = professors_acompanyen_despres - professors_acompanyen_abans
             organitzen_nous = professors_organitzen_despres - professors_organitzen_abans
-            
-            #helper missatges:
+
+            # helper missatges:
             data_inici = u"( data activitat encara no informada )"
             if instance.data_inici is not None:
-                data_inici = """del dia {dia}""".format( dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
-            
-            #missatge a acompanyants:
-            missatge = ACOMPANYANT_A_ACTIVITAT
-            txt = missatge.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
-            enllac=reverse( 'sortides__sortides__edit_by_pk', kwargs={'pk':instance.id } )
-            tipus_de_missatge = tipusMissatge(missatge)
-            msg = Missatge( remitent = user, text_missatge = txt, enllac = enllac, tipus_de_missatge = tipus_de_missatge )
-            for nou in acompanyen_nous:                
-                importancia = 'VI'
-                msg.envia_a_usuari(nou, importancia)                
+                data_inici = """del dia {dia}""".format(dia=instance.data_inici.strftime('%d/%m/%Y'))
 
-            #missatge a responsables:
-            missatge = RESPONSABLE_A_ACTIVITAT
-            txt = missatge.format( sortida = instance.titol_de_la_sortida, dia = data_inici )
+                # missatge a acompanyants:
+            missatge = ACOMPANYANT_A_ACTIVITAT
+            txt = missatge.format(sortida=instance.titol_de_la_sortida, dia=data_inici)
+            enllac = reverse('sortides__sortides__edit_by_pk', kwargs={'pk': instance.id})
             tipus_de_missatge = tipusMissatge(missatge)
-            msg = Missatge( remitent = user, text_missatge = txt, tipus_de_missatge = tipus_de_missatge )
-            for nou in organitzen_nous:                
+            msg = Missatge(remitent=user, text_missatge=txt, enllac=enllac, tipus_de_missatge=tipus_de_missatge)
+            for nou in acompanyen_nous:
                 importancia = 'VI'
-                msg.envia_a_usuari(nou, importancia)                
-                        
-            nexturl =  r"/sortides/sortides{origen}".format( origen = origen) 
-            return HttpResponseRedirect( nexturl )
-            
+                msg.envia_a_usuari(nou, importancia)
+
+                # missatge a responsables:
+            missatge = RESPONSABLE_A_ACTIVITAT
+            txt = missatge.format(sortida=instance.titol_de_la_sortida, dia=data_inici)
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge(remitent=user, text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+            for nou in organitzen_nous:
+                importancia = 'VI'
+                msg.envia_a_usuari(nou, importancia)
+
+            nexturl = r"/sortides/sortides{origen}".format(origen=origen)
+            return HttpResponseRedirect(nexturl)
+
     else:
 
-        form = formIncidenciaF( instance = instance  )
-        
-    form.fields['data_inici'].widget = DateTextImput()
-    form.fields['data_fi'].widget = DateTextImput()
-    #form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
-    widgetBootStrapButtonSelect= bootStrapButtonSelect( )
-    widgetBootStrapButtonSelect.choices = form.fields['estat'].widget.choices 
-    form.fields['estat'].widget = widgetBootStrapButtonSelect    
-    
+        form = formIncidenciaF(instance=instance)
+
+    # form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
+    widgetBootStrapButtonSelect = bootStrapButtonSelect()
+    widgetBootStrapButtonSelect.choices = form.fields['estat'].widget.choices
+    form.fields['estat'].widget = widgetBootStrapButtonSelect
+
     form.fields["alumnes_a_l_aula_amb_professor_titular"].widget.attrs['style'] = u"width: 3%"
     form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
     for f in form.fields:
-        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class',"") 
+        form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class', "")
 
     form.fields['calendari_desde'].widget = DateTimeTextImput()
     form.fields['calendari_finsa'].widget = DateTimeTextImput()
     form.fields['termini_pagament'].widget = DateTimeTextImput()
-    
+
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
-        form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
+        if not settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
+            form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
         form.fields["informacio_pagament"].widget.attrs['disabled'] = u"disabled"
-        
-    #si no és propietari tot a disabled
-    deshabilitat = ( instance.id and 
-                     not ( professor in instance.professors_responsables.all() or 
-                         fEsDireccioOrGrupSortides )
+
+    # si no és propietari tot a disabled
+    deshabilitat = (instance.id and
+                    not (professor in instance.professors_responsables.all() or
+                         fEsDireccioOrGrupSortides)
                     )
-    
+
     if deshabilitat:
         for field in form.fields:
             form.fields[field].widget.attrs['disabled'] = u"disabled"
-        form.fields['estat'].label += u": {0} ".format( instance.get_estat_display() )
-    
+        form.fields['estat'].label += u": {0} ".format(instance.get_estat_display())
+
     return render(
-                request,
-                'formSortida.html',
-                    {'form': form,
-                     'head': 'Sortides' ,
-                     'missatge': 'Sortides',
-                     'deshabilitat': '1==1' if deshabilitat else '1==2',
-                    },
-                )
+        request,
+        'formSortida.html',
+        {'form': form,
+         'head': 'Sortides',
+         'missatge': 'Sortides',
+         'deshabilitat': '1==1' if deshabilitat else '1==2',
+         },
+    )
+
 
 #-------------------------------------------------------------------
     
