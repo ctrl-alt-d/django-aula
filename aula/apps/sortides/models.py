@@ -45,6 +45,7 @@ class Sortida(models.Model):
                      )
 
     TIPUS_PAGAMENT_CHOICES = [
+        ('NO', u'No cal pagament',),
         ('EF', u'En efectiu',),
     ]
     if CUSTOM_SORTIDES_PAGAMENT_ONLINE: TIPUS_PAGAMENT_CHOICES.append(('ON', u'Online a través del dJau',))
@@ -100,7 +101,7 @@ class Sortida(models.Model):
                                            default=u"",
                                            help_text=u"Instruccions de pagament: entitat, concepte, import, ... ( el posa secretaria / coordinador(a) activitats )")
 
-    tipus_de_pagament = models.CharField(max_length=2,choices= TIPUS_PAGAMENT_CHOICES, help_text = u"Quin serà el tipus de pagament predominant", default="OL", null=False)
+    tipus_de_pagament = models.CharField(max_length=2,choices= TIPUS_PAGAMENT_CHOICES, help_text = u"Quin serà el tipus de pagament predominant", default="EB", null=False)
 
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
