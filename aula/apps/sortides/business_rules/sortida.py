@@ -31,7 +31,7 @@ def clean_sortida(instance):
     if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists():
         instance.informacio_pagament = settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA \
             if instance.tipus_de_pagament == 'EB' else settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU if \
-                instance.tipus_de_pagament == 'EF' else settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE
+                instance.tipus_de_pagament == 'EF' else settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE if instance.tipus_de_pagament == 'ON' else ''
 
 
         # if instance.tipus_de_pagament == 'EB':
@@ -111,7 +111,7 @@ def clean_sortida(instance):
 
     # només direcció o grup sortides pot tocar. Tenim tres missatges diferents
 
-    if ( instance.informacio_pagament not in [settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA,settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE]) :
+    if ( instance.informacio_pagament not in [settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA,settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE,'']) :
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot posar informació de pagament." )
 
