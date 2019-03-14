@@ -321,10 +321,10 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
             # Omplir camps de classes afectades
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
                 # Mirar si el dia d'inici de la sortida és lectiu
-                if instance.calendari_desde.date() == (Impartir.objects.filter(dia_impartir=instance.calendari_desde.date())
-                                                               .values_list("dia_impartir", flat=True)[0]):
+                if instance.calendari_desde.date() == (Impartir.objects.filter(dia_impartir__gte =instance.calendari_desde.date())
+                                                               .values_list("dia_impartir", flat=True).first()):
                     # Mirar si encara queden hores per impartir
-                    if instance.calendari_desde.time() < (Impartir.objects.filter(dia_impartir=instance.calendari_desde.date())
+                    if instance.calendari_desde.time() < (Impartir.objects.filter(dia_impartir__gte=instance.calendari_desde.date())
                                                                   .order_by('horari__hora__hora_fi').values_list('horari__hora__hora_fi', flat=True).last()):
                         instance.data_inici = instance.calendari_desde.date()
                         instance.franja_inici = (FranjaHoraria.objects.filter(hora_inici__gte=instance.calendari_desde.time())
@@ -340,10 +340,10 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                     instance.franja_inici = (FranjaHoraria.objects.order_by('hora_inici').first())
 
                 # Mirar si el dia final de la sortida és lectiu
-                if instance.calendari_finsa.date() == (Impartir.objects.filter(dia_impartir=instance.calendari_finsa.date())
-                                                               .values_list("dia_impartir", flat=True)[0]):
+                if instance.calendari_finsa.date() == (Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date())
+                                                               .values_list("dia_impartir", flat=True).last()):
                     # Mirar si encara queden hores per impartir
-                    if instance.calendari_finsa.time() < (Impartir.objects.filter(dia_impartir=instance.calendari_finsa.date())
+                    if instance.calendari_finsa.time() < (Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date())
                                                                   .order_by('horari__hora__hora_inici').values_list('horari__hora__hora_inici', flat=True).last()):
 
                         instance.data_fi = instance.calendari_finsa.date()
