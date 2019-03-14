@@ -45,13 +45,13 @@ class Table2_Sortides(tables.Table):
                         
                           <li>
                             <a href="/sortides/alumnesFallenGestio/{{record.id}}">
-                            Alumnes que faltaran<br>
+                            Alumnes no assistents a l'activitat<br>
                             </a>
                           </li>
 
                           <li>
                             <a href="/sortides/alumnesJustificatsGestio/{{record.id}}">
-                            Alumnes que faltaran i no han de venir al centre<br>
+                            Alumnes no assistents a l'activitat ni al centre<br>
                             </a>
                           </li>
 
