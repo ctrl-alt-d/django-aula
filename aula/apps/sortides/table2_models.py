@@ -105,13 +105,13 @@ class Table2_Sortides(tables.Table):
                     
                       <li>
                         <a href="/sortides/alumnesFallen/{{record.id}}">
-                        Alumnes que faltaran<br>
+                        Alumnes no assistents a l'activitat<br>
                         </a>
                       </li>
 
                       <li>
                         <a href="/sortides/alumnesJustificats/{{record.id}}">
-                        Alumnes que faltaran i no han de venir al centre<br>
+                        Alumnes no assistents a l'activitat ni al centre<br>
                         </a>
                       </li>
                                               
@@ -172,13 +172,13 @@ class Table2_Sortides(tables.Table):
                         
                           <li>
                             <a href="/sortides/alumnesFallenAll/{{record.id}}">
-                            Alumnes que faltaran<br>
+                            Alumnes no assistents a l'activitat<br>
                             </a>
                           </li>
 
                           <li>
                             <a href="/sortides/alumnesJustificatsAll/{{record.id}}">
-                            Alumnes que faltaran i no han de venir al centre<br>
+                            Alumnes no assistents a l'activitat ni al centre<br>
                             </a>
                           </li>
 
@@ -220,7 +220,7 @@ class Table2_Sortides(tables.Table):
                                               
                       <li>
                         <a href="/tutoria/justificarSortidaAlumne/{{record.id}}">
-                        Alumnes que faltaran i no han de venir al centre<br>
+                        Alumnes no assistents a l'activitat ni al centre<br>
                         </a>
                       </li>                    
                     
