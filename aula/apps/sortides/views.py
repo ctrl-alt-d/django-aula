@@ -350,11 +350,10 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                         instance.franja_fi = (FranjaHoraria.objects.filter(hora_fi__lte=instance.calendari_finsa.time())
                                               .order_by('hora_fi').last())
 
-                    # El dia i hora de fi de la sortida no queden hores per impartir, per tant serà l'anterior dia lectiu
+                    # El dia i hora de fi de la sortida no queden hores per impartir, per tant serà la darrera impartició del dia
                     else:
                         instance.data_fi = (
-                            Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date()).order_by(
-                                'dia_impartir').values_list('dia_impartir', flat=True).last())
+                            Impartir.objects.filter(dia_impartir = instance.calendari_finsa.date()).values_list('dia_impartir', flat=True).last())
                         instance.franja_fi = (
                             FranjaHoraria.objects.order_by(
                                 'hora_fi').last())

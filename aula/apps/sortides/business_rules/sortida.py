@@ -28,7 +28,7 @@ def clean_sortida(instance):
     #     ('R', u'Revisada pel Coordinador',),
     #     ('G', u"Gestionada pel Cap d'estudis",),
 
-    if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists():
+    if instance.informacio_pagament == None or instance.informacio_pagament == '':
         instance.informacio_pagament = settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA \
             if instance.tipus_de_pagament == 'EB' else settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU if \
                 instance.tipus_de_pagament == 'EF' else settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE if instance.tipus_de_pagament == 'ON' else ''
