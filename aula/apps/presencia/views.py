@@ -44,7 +44,7 @@ from django.http import Http404
 from django.utils.datetime_safe import datetime, date
 from django import forms
 from aula.apps.assignatures.models import Assignatura
-from aula.apps.presencia.reports import alertaAssitenciaReport 
+from aula.apps.presencia.reports import alertaAssitenciaReport, indicadorsReport
 from aula.apps.presencia.rpt_faltesAssistenciaEntreDatesProfessor import faltesAssistenciaEntreDatesProfessorRpt
 from django.forms.models import modelformset_factory
 from django.forms.widgets import RadioSelect, HiddenInput, TextInput
@@ -475,10 +475,17 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
                 instance=control_a)
 
         form.fields['estat'].label = unicode(control_a.alumne)
-        avui_es_anivesari = (control_a.alumne.data_neixement.month == control_a.impartir.dia_impartir.month and
-                             control_a.alumne.data_neixement.day == control_a.impartir.dia_impartir.day)
+        avui_es_aniversari = control_a.alumne.aniversari(control_a.impartir.dia_impartir)
+
+        missatge = ''
+        try:
+            if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and control_a.alumne.edat(control_a.impartir.dia_impartir)>=18):
+                missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
+        except:
+            pass
+
         form.fields['estat'].label = (unicode(control_a.alumne)
-                                      + ('(fa anys en aquesta data)' if avui_es_anivesari else '')
+                                      + missatge +('(fa anys en aquesta data)' if avui_es_aniversari else '')
                                       )
     return form
 
@@ -1013,6 +1020,30 @@ def alertaAssistencia(request):
             {'head': head ,
              'form': form },
             )
+
+#amorilla@xtec.cat 
+@login_required
+@group_required(['direcció'])
+def indicadors(request):
+
+    menuCTX={"/presencia/indcsv": "Baixa dades csv"}
+    (report, _) = indicadorsReport()
+    return render(
+            request,
+            'report.html',
+                {'report': report,
+                 'head': 'Indicadors' ,
+                 'menuCTX':menuCTX.items()
+                },
+            )
+
+#amorilla@xtec.cat 
+@login_required
+@group_required(['direcció'])
+def indcsv(request):
+
+    (_, dades) = indicadorsReport()
+    return dades
 
 @login_required
 @group_required(['professors'])

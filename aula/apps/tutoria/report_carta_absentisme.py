@@ -29,7 +29,19 @@ def report_cartaAbsentisme( request, carta ):
         path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/cartesFaltesAssistencia.odt' )
         if not os.path.isfile(path):
             path = os.path.join(os.path.dirname(__file__), 'templates/cartesFaltesAssistencia.odt')
-        
+
+	# amorilla@xtec.cat  
+        try:
+            datafmt = settings.CUSTOM_DATE_FORMAT
+        except AttributeError:
+            datafmt = "%d %B de %Y"
+
+        try:
+            # fa falta fer makemigrations i migrate per fer servir des_de_data
+            des_de_data = carta.faltes_des_de_data.strftime( '%d/%m/%Y' )
+        except:
+            des_de_data = ''
+
         dades_report = {'professor':carta.professor,
                         'alumne': unicode(carta.alumne),
                         'grup':unicode(carta.alumne.grup),
@@ -42,6 +54,18 @@ def report_cartaAbsentisme( request, carta ):
                         'tipus3B': carta.tipus_carta == 'tipus3B',
                         'tipus3C': carta.tipus_carta == 'tipus3C',
                         'tipus3D': carta.tipus_carta == 'tipus3D',
+                        # amorilla@xtec.cat  
+                        # nous elements per personalitzar la carta
+                        'data': carta.data_carta.strftime( datafmt ),
+                        'des_de_data': des_de_data,
+                        'adreca': carta.alumne.adreca,
+                        'cp': carta.alumne.cp,
+                        'localitat': carta.alumne.localitat,
+                        'municipi': carta.alumne.municipi,
+                        'cognoms': carta.alumne.cognoms,
+                        'nivell': carta.alumne.getNivellCustom(),  # nivell de CUSTOM_NIVELLS
+                        'edat': carta.alumne.edat(carta.data_carta),
+                        'numcarta': carta.carta_numero
                         }
         
         

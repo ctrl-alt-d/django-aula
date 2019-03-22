@@ -105,6 +105,9 @@ class AbstractCartaAbsentisme(models.Model):
     carta_numero = models.IntegerField( editable=False, verbose_name = u'Avís número' )
     tipus_carta = models.CharField( editable = False, max_length = 10 )
     faltes_fins_a_data = models.DateField( editable = False, verbose_name = 'Faltes fins a data' )
+    # amorilla@xtec.cat  per a poder mostrar la data 'des de' a les cartes
+    # fa falta fer 'python manage.py makemigrations' i 'python manage.py migrate' per fer servir des_de_data
+    faltes_des_de_data = models.DateField( editable = False, verbose_name = 'Faltes des de data', default='2018-09-17' )
     professor = models.ForeignKey( to = 'usuaris.Professor', verbose_name = 'Professor que signa la carta' )
     data_carta = models.DateField( verbose_name = 'Data de la carta' )
     faltes_incloses = models.TextField( editable = False, blank=True, verbose_name = 'Faltes incloses a la carta' )

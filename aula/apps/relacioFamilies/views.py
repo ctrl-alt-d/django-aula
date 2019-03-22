@@ -171,7 +171,7 @@ def configuraConnexio( request , pk ):
 
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - alumne.data_neixement).days / 365 
+        edatAlumne = alumne.edat()
     except:
         pass
         
@@ -350,7 +350,7 @@ def canviParametres( request ):
 
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - alumne.data_neixement).days / 365 
+        edatAlumne = alumne.edat()
     except:
         pass
 
