@@ -45,7 +45,7 @@ from django.db.utils import IntegrityError
 
 @login_required
 @group_required(['professors'])  
-def imprimir( request, pk ):
+def imprimir( request, pk, din = '4'):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -118,9 +118,9 @@ def imprimir( request, pk ):
     #resultat = StringIO.StringIO( )
     resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
     #context = Context( {'reports' : reports, } )
-    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt')
+    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt') if din==4 else os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2-A5.odt')
     if not os.path.isfile(path):
-        path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt')
+        path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt') if din=='4' else os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2-A5.odt')
 
     renderer = Renderer(path, {'report' :report, }, resultat)  
     renderer.run()
