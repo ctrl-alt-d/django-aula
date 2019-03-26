@@ -134,8 +134,14 @@ class Table2_Sortides(tables.Table):
                       </li>            
                       
                           <li>
-                            <a href="/sortides/imprimir/{{record.id}}">
-                            Imprimir fulls autorització<br>
+                            <a href="/sortides/imprimir/{{record.id}}/4">
+                            Imprimir fulls autorització i pagament<br>
+                            </a>
+                          </li>
+                          
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}/5">
+                            Imprimir fulls de pagament<br>
                             </a>
                           </li>
                                                               
@@ -201,8 +207,14 @@ class Table2_Sortides(tables.Table):
                           </li>
                                               
                           <li>
-                            <a href="/sortides/imprimir/{{record.id}}">
-                            Imprimir fulls autorització<br>
+                            <a href="/sortides/imprimir/{{record.id}}/4">
+                            Imprimir fulls autorització i pagament<br>
+                            </a>
+                          </li>
+                          
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}/5">
+                            Imprimir fulls de pagament<br>
                             </a>
                           </li>
                                               
