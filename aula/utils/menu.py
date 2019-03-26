@@ -203,7 +203,7 @@ def calcula_menu( user , path ):
                       ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di, None, None ),
                       ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
                       #amorilla@xtec.cat
-                      ("Indicadors", 'coordinacio_alumnes__indicadors__llistat', di, None, None )
+                      ("Indicadors", 'coordinacio_alumnes__indicadors__llistat', di, None, None ),
                    )
                ),
 

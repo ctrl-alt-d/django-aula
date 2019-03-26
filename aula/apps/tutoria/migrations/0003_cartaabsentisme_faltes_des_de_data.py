@@ -17,4 +17,4 @@ class Migration(migrations.Migration):
             name='faltes_des_de_data',
             field=models.DateField(default=b'2018-09-17', editable=False, verbose_name=b'Faltes des de data'),
         ),
-    ]
+]

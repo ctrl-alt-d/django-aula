@@ -1033,7 +1033,7 @@ def indicadors(request):
             'report.html',
                 {'report': report,
                  'head': 'Indicadors' ,
-                 'menuCTX':menuCTX.items()
+                 'menuCTX':menuCTX.items(),
                 },
             )
 
