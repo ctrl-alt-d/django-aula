@@ -342,13 +342,20 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                 # Mirar si el dia final de la sortida és lectiu
                 if instance.calendari_finsa.date() == (Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date())
                                                                .values_list("dia_impartir", flat=True).last()):
+
                     # Mirar si encara queden hores per impartir
                     if instance.calendari_finsa.time() < (Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date())
                                                                   .order_by('horari__hora__hora_inici').values_list('horari__hora__hora_inici', flat=True).last()):
 
-                        instance.data_fi = instance.calendari_finsa.date()
                         instance.franja_fi = (FranjaHoraria.objects.filter(hora_fi__lte=instance.calendari_finsa.time())
                                               .order_by('hora_fi').last())
+
+                        # Mirar si no afecta a cap impartició del darrer dia de la sortida
+                        if not bool (instance.franja_fi):
+                            instance.data_fi = Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date()).values_list("dia_impartir", flat=True).last()
+                            instance.franja_fi = FranjaHoraria.objects.all().last()
+                        else:
+                            instance.data_fi = instance.calendari_finsa.date()
 
                     # El dia i hora de fi de la sortida no queden hores per impartir, per tant serà la darrera impartició del dia
                     else:
