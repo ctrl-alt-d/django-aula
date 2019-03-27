@@ -30,7 +30,7 @@ def report_cartaAbsentisme( request, carta ):
         if not os.path.isfile(path):
             path = os.path.join(os.path.dirname(__file__), 'templates/cartesFaltesAssistencia.odt')
 
-	    # amorilla@xtec.cat  
+        # amorilla@xtec.cat  
         try:
             datafmt = settings.CUSTOM_DATE_FORMAT
         except AttributeError:
