@@ -1331,7 +1331,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         camp.contingut = u'Data Naixement (Edat)'
         filera.append(camp)
 
-        edatAlumne = (date.today() - alumne.data_neixement).days / 365
+        edatAlumne = alumne.edat()
         camp = tools.classebuida()
         camp.enllac = None
         camp.contingut = u'{0} ({1} anys)'.format( alumne.data_neixement.strftime( '%d/%m/%Y' ) , edatAlumne)

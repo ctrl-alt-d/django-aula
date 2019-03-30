@@ -2,9 +2,14 @@
 from aula.utils import tools
 from aula.apps.alumnes.models import Alumne
 from django.db.models.aggregates import Count
-from django.db.models import Q
+from django.db.models import Q, F, Case, When, IntegerField
 from itertools import chain
 from aula.apps.presencia.models import ControlAssistencia
+#amorilla@xtec.cat
+from datetime import date, datetime
+from django.conf import settings
+import csv
+from django.http import HttpResponse
 
 def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     report = []
@@ -74,8 +79,17 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     q_data_fi = Q( impartir__dia_impartir__lte = data_fi  )
     q_filtre = q_data_inici & q_data_fi
     q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
-    
-    q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
+
+    #amorilla@xtec.cat
+    try:
+        if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+            # té en compte tots els dies encara que no s'hagi passat llista
+            q_p = q_controls.order_by().values_list( 'id','alumne__id' ).distinct()
+        else:
+            q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
+    except:
+        q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
+
     q_j = q_controls.filter( estat__codi_estat = 'J' ).order_by().values_list( 'id','alumne__id' ).distinct()
     q_f = q_controls.filter( estat__codi_estat = 'F' ).order_by().values_list( 'id','alumne__id' ).distinct()
     
@@ -161,3 +175,192 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     report.append(taula)
 
     return report
+
+#amorilla@xtec.cat
+# Calcula l'indicador d'absentisme, segons el nivell, percentatge i dates.
+def indicadorAbsentisme( data_inici, data_fi, nivell, tpc):
+
+    # Selecciona alumnes del nivell i que no siguin baixa
+    q_alumnes = Alumne.objects.filter( grup__curs__nivell__nom_nivell__in = settings.CUSTOM_NIVELLS[nivell]).filter(data_baixa__isnull=True )    
+    # Selecciona en les dates indicades
+    q_data_inici = Q( impartir__dia_impartir__gte = data_inici  )
+    q_data_fi = Q( impartir__dia_impartir__lte = data_fi  )
+    q_filtre = q_data_inici & q_data_fi
+    q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
+    
+    # calcula el 'total' de dies per alumne i les 'faltes' per alumne.
+    try:
+        if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+            # té en compte tots els dies encara que no s'hagi passat llista
+            q_p = q_controls.values('alumne__id').annotate(total=Count('id'), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
+        else:
+            q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
+    except:
+        q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
+
+    quantitat=q_p.count()
+    # Calcula el percentatge d'absentisme per alumne i compta els que superen el límit indicat
+    superen = q_p.annotate(per=F('faltes')/F('total')*100).filter(per__gt=tpc).count() if quantitat > 0 else 0
+
+    # Percentatge d'alumnes que superen el límit
+    IND=float(superen)/float(quantitat) * 100.0 if quantitat > 0 else 0
+
+    return (IND, superen, quantitat)
+
+#amorilla@xtec.cat
+# mostra el report de tots els indicadors de CUSTOM_INDICADORS
+def indicadorsReport():
+
+    report = []
+
+    taula = tools.classebuida()
+    
+    taula.titol = tools.classebuida()
+    taula.titol.contingut = u'Indicadors Absentisme'
+    taula.capceleres = []
+    
+    capcelera = tools.classebuida()
+    capcelera.amplade = 10
+    capcelera.contingut = u'Curs'
+    taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 10
+    capcelera.contingut = u'Nivell'
+    taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 8
+    capcelera.contingut = u'% ind.'
+    taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 8
+    capcelera.contingut = u'1rTrim'
+    taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 8
+    capcelera.contingut = u'2nTrim'
+    taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 8
+    capcelera.contingut = u'3rTrim'
+    taula.capceleres.append( capcelera )
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 8
+    capcelera.contingut = u'Curs'
+    taula.capceleres.append( capcelera )
+
+    # Report per defecte si no n'hi ha cap indicador
+    taula.fileres = []
+    filera = []
+    camp = tools.classebuida()
+    camp.contingut="No n'hi ha indicadors definits"
+    filera.append(camp)
+    taula.fileres.append( filera )
+    filera = []
+    camp = tools.classebuida()
+    camp.contingut="S'han de definir a CUSTOM_INDICADORS"
+    filera.append(camp)
+    taula.fileres.append( filera )
+
+    try:
+        if len(settings.CUSTOM_INDICADORS)==0:
+            report.append(taula)
+            return (report, None)
+    except:
+        report.append(taula)
+        return (report, None)
+
+    taula.fileres = []
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="indicadors.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Curs', 'Nivell', '%', 
+                     'ini1rT', 'fi1rT', 'sup1rT', 'tot1rT', 'ind1rT', 
+                     'ini2nT', 'fi2nT', 'sup2nT', 'tot2nT', 'ind2nT', 
+                     'ini3rT', 'fi3rT', 'sup3rT', 'tot3rT', 'ind3rT', 
+                     'inicurs', 'ficurs', 'supc', 'totc', 'indc'
+                     ])
+
+    for ind in settings.CUSTOM_INDICADORS:
+        data = date.today()
+        data = datetime(year=data.year, month=data.month, day=data.day)
+        dtrim0=datetime.strptime(ind[0], '%d/%m/%Y')
+        dtrim1=datetime.strptime(ind[1], '%d/%m/%Y')
+        dtrim2=datetime.strptime(ind[2], '%d/%m/%Y')
+        dtrim3=datetime.strptime(ind[3], '%d/%m/%Y')
+        nivell = ind[4]
+        tpc = ind[5]
+        trim1=0
+        trim2=0
+        trim3=0
+        curs=0
+        sup1=sup2=sup3=quan1=quan2=quan3=0
+
+        if data>dtrim1:
+            (trim1, sup1, quan1)=indicadorAbsentisme( dtrim0, dtrim1, nivell, tpc)
+
+        if data>dtrim2:
+            (trim2, sup2, quan2)=indicadorAbsentisme( dtrim1, dtrim2, nivell, tpc)
+
+        if data>dtrim3:
+            (trim3, sup3, quan3)=indicadorAbsentisme( dtrim2, dtrim3, nivell, tpc)
+        
+        (curs, supc, quanc)=indicadorAbsentisme( dtrim0, dtrim3, nivell, tpc)
+
+    
+        filera = []
+        
+        #-Curs--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = dtrim0.strftime("%Y") + "/" + dtrim3.strftime("%Y")
+        filera.append(camp)
+
+        #-nivell--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = unicode(nivell)
+        filera.append(camp)
+
+        #-% ind--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = u'{0:.2f}%'.format(tpc)
+        filera.append(camp)
+
+        #-%1rTrim--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = u'{0:.2f}%'.format(trim1)
+        filera.append(camp)
+
+        #-%2nTrim--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = u'{0:.2f}%'.format(trim2)
+        filera.append(camp)
+        
+        #-%3rTrim--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = u'{0:.2f}%'.format(trim3)
+        filera.append(camp)
+
+        #-%Curs--------------------------------------------
+        camp = tools.classebuida()
+        camp.contingut = u'{0:.2f}%'.format(curs)
+        filera.append(camp)
+
+        writer.writerow([filera[0].contingut, filera[1].contingut, filera[2].contingut,
+                         ind[0], ind[1], sup1, quan1, trim1,
+                         ind[1], ind[2], sup2, quan2, trim2,
+                         ind[2], ind[3], sup3, quan3, trim3,
+                         ind[0], ind[3], supc, quanc, curs
+                         ])
+
+        taula.fileres.append( filera )
+
+    report.append(taula)
+
+    return (report, response)
+
