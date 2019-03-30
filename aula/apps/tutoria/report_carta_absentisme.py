@@ -3,7 +3,7 @@
 from aula.apps.alumnes.models import  Nivell
 from aula.apps.avaluacioQualitativa.models import  RespostaAvaluacioQualitativa
 from django.db.models import Q
-from aula.utils import tools
+from aula.utils.tools import unicode
 from django.template.context import RequestContext
 from django.conf import settings
 import os
@@ -41,6 +41,7 @@ def report_cartaAbsentisme( request, carta ):
         except:
             des_de_data = ''
 
+
         dades_report = {'professor':carta.professor,
                         'alumne': unicode(carta.alumne),
                         'grup':unicode(carta.alumne.grup),
@@ -75,7 +76,7 @@ def report_cartaAbsentisme( request, carta ):
         docFile.close()
         os.remove(resultat)
         
-    except Exception, e:
+    except Exception as e:
         excepcio = unicode( e )
         
     if not excepcio:

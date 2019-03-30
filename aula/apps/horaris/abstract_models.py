@@ -3,6 +3,7 @@
 
 from django.db import models
 from django.apps import apps
+from aula.utils.tools import unicode
 
 
 class AbstractDiaDeLaSetmana(models.Model):
@@ -16,7 +17,7 @@ class AbstractDiaDeLaSetmana(models.Model):
         ordering = ['n_dia_ca']
         verbose_name = u'Dia de la Setmana'
         verbose_name_plural = u'Dies de la Setmana'
-    def __unicode__(self):
+    def __str__(self):
         return self.dia_de_la_setmana
 
 class AbstractFranjaHoraria(models.Model):
@@ -28,7 +29,7 @@ class AbstractFranjaHoraria(models.Model):
         ordering = ['hora_inici']
         verbose_name = u'Franja Horària'
         verbose_name_plural = u'Franges Horàries'
-    def __unicode__(self):
+    def __str__(self):
         return  self.nom_franja if self.nom_franja else  unicode(self.hora_inici)[0:5] + ' a ' + unicode(self.hora_fi)[0:5]
     def text_hora_inici(self):
         return self.hora_inici.strftime("%H:%M");
@@ -36,11 +37,11 @@ class AbstractFranjaHoraria(models.Model):
 #------------------------------------------------------------------------------------------------
 
 class AbstractHorari(models.Model):
-    assignatura = models.ForeignKey('assignatures.Assignatura', null=True, blank=True)
-    professor = models.ForeignKey('usuaris.Professor', null=True,  blank=True, db_index=True)
-    grup = models.ForeignKey(to='alumnes.Grup', null=True,  blank=True, db_index=True)
-    dia_de_la_setmana = models.ForeignKey('horaris.DiaDeLaSetmana', )
-    hora = models.ForeignKey( 'horaris.FranjaHoraria', )
+    assignatura = models.ForeignKey('assignatures.Assignatura', null=True, blank=True, on_delete=models.CASCADE)
+    professor = models.ForeignKey('usuaris.Professor', null=True,  blank=True, db_index=True, on_delete=models.CASCADE)
+    grup = models.ForeignKey(to='alumnes.Grup', null=True,  blank=True, db_index=True, on_delete=models.CASCADE)
+    dia_de_la_setmana = models.ForeignKey('horaris.DiaDeLaSetmana', on_delete=models.CASCADE )
+    hora = models.ForeignKey( 'horaris.FranjaHoraria', on_delete=models.CASCADE )
     nom_aula = models.CharField(max_length=45, blank=True)
     aula = models.ForeignKey('aules.Aula', null=True, blank=True, on_delete=models.SET_NULL)
     es_actiu = models.BooleanField()
@@ -56,7 +57,7 @@ class AbstractHorari(models.Model):
         verbose_name = u"Entrada a l'Horari"
         verbose_name_plural = u"Entrades a l'Horari"
 
-    def __unicode__(self):
+    def __str__(self):
         obsolet = u'(Obsolet:) ' if not self.es_actiu else ''
         aula = u" a l'aula " + self.get_nom_aula if self.get_nom_aula else ''
         grup = u' al grup ' + unicode( self.grup) if self.grup else ''
@@ -84,11 +85,11 @@ class AbstractHorari(models.Model):
 #------------------------------------------------------------------------------------------------
 
 class AbstractFestiu(models.Model):
-    curs = models.ForeignKey('alumnes.Curs', null=True, blank=True)
+    curs = models.ForeignKey('alumnes.Curs', null=True, blank=True, on_delete=models.CASCADE)
     data_inici_festiu = models.DateField()
-    franja_horaria_inici = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_inici_festiu', )
+    franja_horaria_inici = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_inici_festiu', on_delete=models.CASCADE )
     data_fi_festiu = models.DateField()
-    franja_horaria_fi = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_fi_festiu')
+    franja_horaria_fi = models.ForeignKey('horaris.FranjaHoraria', related_name='hora_fi_festiu', on_delete=models.CASCADE)
     descripcio = models.CharField(max_length=45)
     
     class Meta:
@@ -97,7 +98,7 @@ class AbstractFestiu(models.Model):
         verbose_name = u'Entrada al calendari de festius'
         verbose_name_plural = u'Entrades al calendari de festius'
 
-    def __unicode__(self):
+    def __str__(self):
         curs =  u'(' + unicode( self.curs ) + u')' if self.curs else u''
         return  self.descripcio + curs
     

@@ -63,9 +63,9 @@ CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 1 }
 
 
 try:
-    from settings_local import *
+    from .settings_local import *
 except ImportError:
-    from settings_dir.demo import *
+    from .settings_dir.demo import *
 
 
     

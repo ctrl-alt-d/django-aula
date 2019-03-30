@@ -1,10 +1,11 @@
 # This Python file uses the following encoding: utf-8
 from django.conf.urls import include, url
+from django.urls import path
 from django.views.generic import TemplateView
 from django.contrib import admin
 from aula.utils.views import keepalive,menu,logout_page
 from aula.apps.alumnes.views import mostraGrupPromocionar,nouAlumnePromocionar,llistaGrupsPromocionar
-from django.contrib.auth.views import password_change
+from django.contrib.auth.views import PasswordChangeView
 from django.views.static import serve
 admin.autodiscover()
 
@@ -40,10 +41,10 @@ urlpatterns = [
     url(r'^open/', include('aula.apps.relacioFamilies.urls')),
     url(r'^aules/', include('aula.apps.aules.urls')),
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    path('admin/', admin.site.urls),
     # Login i logout automàtics
     #(r'^login/$', 'django.contrib.auth.views.login'),
-    url(r'^password_change/$', password_change, {'post_change_redirect': '/'}, name="password_change"),
+    url(r'^password_change/$', PasswordChangeView.as_view(), {'post_change_redirect': '/'}, name="password_change"),
     url(r'^logout/$', logout_page),
     #fitxers estàtics:
     url(r'^site-css/(?P<path>.*)$', serve,{'document_root': site_media_site_css}),

@@ -20,6 +20,7 @@ from django.shortcuts import  get_object_or_404, render
 
 #helpers
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.utils.forms import ckbxForm
 from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd,\
     Accio
@@ -221,7 +222,7 @@ def elsProfessors( request ):
                                        .count()
                                      )
         pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 'N/A'
-        camp.contingut = u'{0}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
+        camp.contingut = u'{0:.0f}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
         camp.codi_ordenacio = pct
         filera.append(camp)
 

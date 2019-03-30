@@ -12,7 +12,7 @@ from aula.apps.alumnes.models import Alumne
 
 class MissatgesTable(tables.Table):
     Data = tables.TemplateColumn(
-        attrs={'th': {'width': '25%'}},
+        #attrs={'th': {'width': '50%'}},
         template_code=u"""
                             {% now "jS F Y H:i" as ara %} 
                             {% if record.moment_lectura|date:"jS F Y H:i" == ara %}
@@ -37,6 +37,7 @@ class MissatgesTable(tables.Table):
     )
 
     Remitent = tables.TemplateColumn(
+        #attrs={'th': {'width': '50%'}},
         template_code=u"""
                                 """,
         orderable=False,
@@ -50,7 +51,7 @@ class MissatgesTable(tables.Table):
                                                                                        tutors = alumne.tutorsDeLAlumne_display() )
         else:
             try:
-                missatge_class = MISSATGES[record.missatge.tipus_de_missatge].keys()[0]
+                missatge_class = list(MISSATGES[record.missatge.tipus_de_missatge].keys())[0]
             except:
                 missatge_class = 'dark'
             missatge='<span class="text-' + missatge_class + '">'
@@ -66,12 +67,12 @@ class MissatgesTable(tables.Table):
     @register.simple_tag
     def Missatges_content(key):
         try:
-            return MISSATGES[key].keys()[0]
+            return list(MISSATGES[key].keys())[0]
         except:
             return 'dark'
 
     Contingut = tables.TemplateColumn(
-       attrs={'th': {'width': '60%'}},
+        #attrs={'th': {'width': '50%'}},
         template_code=u"""  
                                     <div class="text-{%Missatges_content record.missatge.tipus_de_missatge%}">
                                         {{record.missatge.text_missatge|linebreaks}}
@@ -101,6 +102,7 @@ class MissatgesTable(tables.Table):
         orderable=False,
     )
     Seguit = tables.TemplateColumn(
+        #attrs={'th': {'width': '50%'}},
         verbose_name=" ",
         template_code=u"""
                                     {% if record.missatge.enllac %}

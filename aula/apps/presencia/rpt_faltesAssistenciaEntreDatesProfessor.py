@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 from aula.apps.presencia.models import ControlAssistencia
 from django.db.models import Q
@@ -116,7 +117,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
         filera.append(camp)
 
         #-% assistència --------------------------------------------
-        tpc = 1.0 - (1.0*( f + j ) ) / (1.0*ca) if ca <> 0 else 'N/A'   
+        tpc = 1.0 - (1.0*( f + j ) ) / (1.0*ca) if ca != 0 else 'N/A'   
         camp = tools.classebuida()
         camp.contingut =u'{0:.2f}%'.format(tpc * 100) if isinstance( tpc, float ) else 'N/A'
         filera.append(camp)
@@ -139,7 +140,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
         filera.append(camp)
 
         #-% insjustif --------------------------------------------
-        tpc = (1.0 * f  ) / (1.0*ca) if ca <> 0 else 'N/A'   
+        tpc = (1.0 * f  ) / (1.0*ca) if ca != 0 else 'N/A'   
         camp = tools.classebuida()
         camp.contingut =u'{0:.2f}%'.format(tpc * 100) if isinstance( tpc, float ) else 'N/A'
         filera.append(camp)

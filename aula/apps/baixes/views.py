@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from aula.django_select2.forms import ModelSelect2Widget
 from aula.utils.decorators import group_required
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.usuaris.models import User2Professor, Professor
 from django.forms.models import modelform_factory, modelformset_factory
 from aula.apps.baixes.models import Feina

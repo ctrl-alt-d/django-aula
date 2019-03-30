@@ -34,11 +34,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sortida',
             name='franja_fi',
-            field=models.ForeignKey(related_name='hora_fi_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Darrera franja lectiva afectatada per l'activitat", null=True, verbose_name='Afecta classes: fins a franja'),
+            field=models.ForeignKey(related_name='hora_fi_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Darrera franja lectiva afectatada per l'activitat", null=True, verbose_name='Afecta classes: fins a franja', on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='sortida',
             name='franja_inici',
-            field=models.ForeignKey(related_name='hora_inici_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Primera franja lectiva afectada per l'activitat", null=True, verbose_name='Afecta classes: Des de franja'),
+            field=models.ForeignKey(related_name='hora_inici_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Primera franja lectiva afectada per l'activitat", null=True, verbose_name='Afecta classes: Des de franja', on_delete=models.CASCADE),
         ),
     ]
