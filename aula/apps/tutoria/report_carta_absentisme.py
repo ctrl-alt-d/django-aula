@@ -33,9 +33,11 @@ def report_cartaAbsentisme( request, carta ):
         # amorilla@xtec.cat  
         try:
             datafmt = settings.CUSTOM_DATE_FORMAT
-        except AttributeError:
-            datafmt = "%d %B de %Y"
-
+            carta_data=carta.data_carta.strftime( datafmt )
+        except:
+            datafmt = "%-d %B de %Y"
+            carta_data=carta.data_carta.strftime( datafmt )
+            
         try:
             des_de_data = carta.faltes_des_de_data.strftime( '%d/%m/%Y' )
         except:
@@ -55,7 +57,7 @@ def report_cartaAbsentisme( request, carta ):
                         'tipus3D': carta.tipus_carta == 'tipus3D',
                         # amorilla@xtec.cat  
                         # nous elements per personalitzar la carta
-                        'data': carta.data_carta.strftime( datafmt ),
+                        'data': carta_data,
                         'des_de_data': des_de_data,
                         'adreca': carta.alumne.adreca,
                         'cp': carta.alumne.cp,

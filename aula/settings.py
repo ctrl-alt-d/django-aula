@@ -61,6 +61,21 @@ CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
 CUSTOM_FALTES_ABSENCIA_PER_CARTA = 1
 CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 1 }
 
+CUSTOM_MOSTRAR_MAJORS_EDAT = False
+CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' #Missatge que apareix al costat dels majors d'edat
+
+CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA = {  
+                    # nivell: [faltes per carta1, faltes per carta 2, ...],
+                }
+
+CUSTOM_LC_TIME = None  # 'ca_ES.utf8'
+CUSTOM_DATE_FORMAT = "%-d %B de %Y"   #  5 d'abril de 1999, si fem servir 'ca_ES.utf8'
+
+CUSTOM_NO_CONTROL_ES_PRESENCIA = False
+
+CUSTOM_INDICADORS = [
+            # [inici_curs,    Final 1Trim,  Final 2Trim,   Final 3Trim,  nivell,  % ],
+          ]
 
 try:
     from settings_local import *
