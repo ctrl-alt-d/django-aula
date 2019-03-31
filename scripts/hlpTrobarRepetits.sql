@@ -21,8 +21,8 @@ for x in a:
 for x in a:
      repetits = [ y for y in a if y.ss == x.ss and y.id != x.id and y.id !=  544 ]  # and not y.data_baixa
      if repetits and all( [ (x.id < r.id) for r in repetits ] ) and x.data_baixa:
-        print x.id, [ z.id for z in repetits ]
-        print x,  repetits 
+        print (x.id, [ z.id for z in repetits ])
+        print (x,  repetits) 
         f( x, repetits, c )
         
 
