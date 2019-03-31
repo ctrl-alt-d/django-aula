@@ -478,11 +478,8 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
         avui_es_aniversari = control_a.alumne.aniversari(control_a.impartir.dia_impartir)
 
         missatge = ''
-        try:
-            if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and control_a.alumne.edat(control_a.impartir.dia_impartir)>=18):
-                missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
-        except:
-            pass
+        if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and control_a.alumne.edat(control_a.impartir.dia_impartir)>=18):
+            missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
 
         form.fields['estat'].label = (unicode(control_a.alumne)
                                       + missatge +('(fa anys en aquesta data)' if avui_es_aniversari else '')

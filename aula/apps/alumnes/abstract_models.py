@@ -10,7 +10,7 @@ from django.utils import timezone
 #  amorilla@xtec.cat
 from django.conf import settings
 import calendar
-from aula.utils.tools import unicode
+from dateutil.relativedelta import relativedelta
 
 class AbstractNivell(models.Model):
     nom_nivell = models.CharField("Nom nivell",max_length=45, unique=True)
@@ -189,7 +189,7 @@ class AbstractAlumne(models.Model):
         return Professor.objects.filter(tutor__grup=self.grup).distinct()
 
     def tutorsDeLAlumne_display(self):
-        return u", ".join( [unicode(tutor) for tutor in self.tutorsDeLAlumne() ])
+        return u", ".join( [str(tutor) for tutor in self.tutorsDeLAlumne() ])
 
     def force_delete(self):
         super(AbstractAlumne,self).delete()
@@ -254,7 +254,7 @@ class AbstractAlumne(models.Model):
         if data is None:
             data = date.today()
         dnaix = self.data_neixement
-        return  data.year - dnaix.year - (( data.month,  data.day) < (dnaix.month, dnaix.day))
+        return relativedelta(data, dnaix).years
 
     # amorilla@xtec.cat 
     # Retorna true si és l'aniversari de l'alumne. 

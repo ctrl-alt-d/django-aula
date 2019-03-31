@@ -13,7 +13,7 @@ INSTALLED_APPS  = [
 
 NOM_CENTRE = 'Centre de Demo'
 LOCALITAT = u"L'Escala"
-URL_DJANGO_AULA = r'http://djau.local'
+URL_DJANGO_AULA = r'http://djau.ctrlalt.d.webfactional.com'
 
 EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

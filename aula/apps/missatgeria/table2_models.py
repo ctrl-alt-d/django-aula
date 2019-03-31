@@ -12,7 +12,7 @@ from aula.apps.alumnes.models import Alumne
 
 class MissatgesTable(tables.Table):
     Data = tables.TemplateColumn(
-        #attrs={'th': {'width': '50%'}},
+        attrs={'th': {'width': '25%'}},
         template_code=u"""
                             {% now "jS F Y H:i" as ara %} 
                             {% if record.moment_lectura|date:"jS F Y H:i" == ara %}
@@ -37,7 +37,6 @@ class MissatgesTable(tables.Table):
     )
 
     Remitent = tables.TemplateColumn(
-        #attrs={'th': {'width': '50%'}},
         template_code=u"""
                                 """,
         orderable=False,
@@ -72,7 +71,7 @@ class MissatgesTable(tables.Table):
             return 'dark'
 
     Contingut = tables.TemplateColumn(
-        #attrs={'th': {'width': '50%'}},
+        attrs={'th': {'width': '60%'}},
         template_code=u"""  
                                     <div class="text-{%Missatges_content record.missatge.tipus_de_missatge%}">
                                         {{record.missatge.text_missatge|linebreaks}}
@@ -102,7 +101,6 @@ class MissatgesTable(tables.Table):
         orderable=False,
     )
     Seguit = tables.TemplateColumn(
-        #attrs={'th': {'width': '50%'}},
         verbose_name=" ",
         template_code=u"""
                                     {% if record.missatge.enllac %}

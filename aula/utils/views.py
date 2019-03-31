@@ -208,7 +208,7 @@ def about(request):
         nImparticionsLlistaPassada = imparticions.filter( professor_passa_llista__isnull = False ).count()
         pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 'N/A'
     
-        estadistica1 = u'{0}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
+        estadistica1 = u'{0:.0f}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
         
             #---hores de classe
         nProfessor = Impartir.objects.filter( horari__professor = professor, horari__grup__isnull = False ).count()
