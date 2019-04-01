@@ -7,6 +7,10 @@ from aula.apps.usuaris.models import Professor, AlumneUser
 from aula.apps.tutoria.models import SeguimentTutorial
 from aula.apps.alumnes.named_instances import Nivells_no_obligatoris, Cursa_nivell
 from django.utils import timezone
+#  amorilla@xtec.cat
+from django.conf import settings
+import calendar
+from dateutil.relativedelta import relativedelta
 
 class AbstractNivell(models.Model):
     nom_nivell = models.CharField("Nom nivell",max_length=45, unique=True)
@@ -232,9 +236,34 @@ class AbstractAlumne(models.Model):
 
     def cursa_nivell(self, nivell_txt):
         return Cursa_nivell(nivell_txt, self)
+    
+    #amorilla@xtec.cat
+    # Retorna el nivell que correspon a l'alumne segons CUSTOM_NIVELLS
+    # Si no correspon cap aleshores retorna el nivell assignat a la base de dades
+    def getNivellCustom(self):
+        for k,v in settings.CUSTOM_NIVELLS.items():
+            if self.grup.curs.nivell.nom_nivell in v:
+                return k
+        return self.grup.curs.nivell.nom_nivell
 
+    # amorilla@xtec.cat  
+    # Retorna l'edat de l'alumne. 
+    # Si s'indica una data per paràmetre retorna l'edat en la data indicada, 
+    # en altre cas calcula l'edat en el dia actual
+    def edat( self, data=None):
+        if data is None:
+            data = date.today()
+        dnaix = self.data_neixement
+        return relativedelta(data, dnaix).years
 
-
-
-
+    # amorilla@xtec.cat 
+    # Retorna true si és l'aniversari de l'alumne. 
+    # Té en compte el cas 29/2, si l'any no té 29/2 indica aniversari el 28/2.
+    # Si s'indica una data per paràmetre retorna si és aniversari en la data indicada, 
+    # en altre cas calcula en el dia actual
+    def aniversari( self, data=None):
+        if data is None:
+            data = date.today()
+        dnaix = self.data_neixement
+        return  (( data.month,  data.day) == (dnaix.month, dnaix.day)) or (not calendar.isleap(data.year) and (dnaix.month, dnaix.day) ==(2,29) and ( data.month,  data.day)==(2,28) )
 
