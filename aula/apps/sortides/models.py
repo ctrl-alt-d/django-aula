@@ -10,6 +10,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
 
 from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE, CUSTOM_SORTIDES_PAGAMENT_CAIXER
+from aula.utils.tools import unicode
 
 
 @python_2_unicode_compatible
@@ -75,14 +76,14 @@ class Sortida(models.Model):
 
     esta_aprovada_pel_consell_escolar = models.CharField( u'Aprovada_pel_consell_escolar?',max_length=1, choices=CONSELL_ESCOLAR_CHOICES, default='P', help_text=u"Marca si aquesta activitat ja ha estat aprovada pel consell escolar" )
 
-    departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza l'activitat", blank=True, null=True)
+    departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza l'activitat", blank=True, null=True, on_delete=models.CASCADE)
     comentari_organitza = models.CharField(max_length=50,help_text=u"En cas de no ser organitzat per un departament cal informar qui organitza l'activitat.", blank = True )
 
     alumnes_a_l_aula_amb_professor_titular =  models.BooleanField(u"Passar llista com normalment?", default=False, help_text = u"Els alumnes seran a l'aula i el professor de l'hora corresponent passarà llista com fa habitualment.")
     data_inici = models.DateField( u"Afecta classes: Des de", help_text=u"Primer dia lectiu afectat per l'activitat", blank=True, null=True)
-    franja_inici = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: Des de franja", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva afectada per l'activitat", blank=True, null=True)
+    franja_inici = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: Des de franja", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva afectada per l'activitat", blank=True, null=True, on_delete=models.CASCADE)
     data_fi = models.DateField(  u"Afecta classes: Fins a",help_text=u"Darrer dia  lectiu de l'activitat", blank=True, null=True)
-    franja_fi = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: fins a franja", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva afectatada per l'activitat", blank=True, null=True)
+    franja_fi = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: fins a franja", related_name='hora_fi_sortida',  help_text=u"Darrera franja lectiva afectatada per l'activitat", blank=True, null=True, on_delete=models.CASCADE)
 
     calendari_desde = models.DateTimeField( u"Horari real, des de:",
                                             help_text=u"Horari real de l'activitat, hora de sortida, aquest horari, a més, es publicarà al calendari del Centre")
@@ -124,7 +125,7 @@ class Sortida(models.Model):
 
     comentaris_interns = models.TextField(blank=True, help_text=u"Espai per anotar allò que sigui rellevant de cares a l'activitat. Si no hi ha comentaris rellevants indica-ho.")
 
-    professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa l'activitat", related_name='professor_proposa_sortida')
+    professor_que_proposa = models.ForeignKey(Professor, editable=False, help_text=u"Professor que proposa l'activitat", related_name='professor_proposa_sortida', on_delete=models.CASCADE)
 
     professors_responsables = models.ManyToManyField(Professor, blank=True, verbose_name=u"Professors que organitzen", help_text=u"Professors responsables de l'activitat", related_name='professors_responsables_sortida')
 
@@ -195,8 +196,8 @@ class Sortida(models.Model):
 
 @python_2_unicode_compatible
 class NotificaSortida( models.Model):
-    alumne = models.ForeignKey( Alumne )
-    sortida = models.ForeignKey(Sortida )
+    alumne = models.ForeignKey( Alumne, on_delete=models.CASCADE )
+    sortida = models.ForeignKey(Sortida, on_delete=models.CASCADE )
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True )
 

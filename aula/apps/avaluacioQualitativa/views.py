@@ -24,6 +24,7 @@ from django.utils.safestring import SafeText
 from django.forms.models import modelformset_factory, modelform_factory
 from aula.apps.avaluacioQualitativa.models import ItemQualitativa, AvaluacioQualitativa, RespostaAvaluacioQualitativa
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.alumnes.models import Grup, Alumne
@@ -326,7 +327,7 @@ def entraQualitativa( request, qualitativa_pk, assignatura_pk, grup_pk  ):
                         novaResposta.credentials = (user, l4)
                         novaResposta.save()
                 #---Fi TX---------------------------------------------------------------
-                except ValidationError, e:
+                except ValidationError as e:
                     for _, v in e.message_dict.items():
                         for x in v: errors.add( x )
                     totBe = False
@@ -515,7 +516,7 @@ def report(request, pk ):
                 
                 
         if totBe:            
-            import reports 
+            from . import reports
             return reports.reportQualitativa(qualitativa, alumnes, grups, request)
     else:
         form = triaQualitativaForm( initial = {'qualitativa': qualitativa }, prefix = 'qua' )

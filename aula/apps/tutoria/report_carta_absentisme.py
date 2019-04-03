@@ -3,7 +3,7 @@
 from aula.apps.alumnes.models import  Nivell
 from aula.apps.avaluacioQualitativa.models import  RespostaAvaluacioQualitativa
 from django.db.models import Q
-from aula.utils import tools
+from aula.utils.tools import unicode
 from django.template.context import RequestContext
 from django.conf import settings
 import os
@@ -37,7 +37,7 @@ def report_cartaAbsentisme( request, carta ):
         except:
             datafmt = "%-d %B de %Y"
             carta_data=carta.data_carta.strftime( datafmt )
-            
+
         try:
             des_de_data = carta.faltes_des_de_data.strftime( '%d/%m/%Y' )
         except:
@@ -77,7 +77,7 @@ def report_cartaAbsentisme( request, carta ):
         docFile.close()
         os.remove(resultat)
         
-    except Exception, e:
+    except Exception as e:
         excepcio = unicode( e )
         
     if not excepcio:

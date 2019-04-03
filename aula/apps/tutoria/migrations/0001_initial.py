@@ -21,8 +21,8 @@ class Migration(migrations.Migration):
                 ('amb_qui_es_actuacio', models.CharField(help_text="Sobre qui es realitza l'actuaci\xf3", max_length=1, choices=[(b'A', 'alumnes.Alumne'), (b'F', 'Familia'), (b'T', 'Altres')])),
                 ('assumpte', models.CharField(help_text='Assumpte', max_length=200)),
                 ('actuacio', models.TextField(help_text="Explicaci\xf3 detallada de l'actuaci\xf3 realitzada. No inclogueu dades m\xe8diques ni diagn\xf2stiques.", blank=True)),
-                ('alumne', models.ForeignKey(help_text="Alumne sobre el qual es fa l'actuaci\xf3", to='alumnes.Alumne')),
-                ('professional', models.ForeignKey(blank=True, to='usuaris.Professional', help_text="Professional que fa l'actuacio", null=True)),
+                ('alumne', models.ForeignKey(help_text="Alumne sobre el qual es fa l'actuaci\xf3", to='alumnes.Alumne', on_delete=models.CASCADE)),
+                ('professional', models.ForeignKey(blank=True, to='usuaris.Professional', help_text="Professional que fa l'actuacio", null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -42,8 +42,8 @@ class Migration(migrations.Migration):
                 ('carta_esborrada_moment', models.DateTimeField(null=True, editable=False, blank=True)),
                 ('nfaltes', models.IntegerField(verbose_name='Abs\xe8ncies injustificades', editable=False)),
                 ('impresa', models.BooleanField(default=False, editable=False)),
-                ('alumne', models.ForeignKey(verbose_name='Alumne', to='alumnes.Alumne')),
-                ('professor', models.ForeignKey(verbose_name=b'Professor que signa la carta', to='usuaris.Professor')),
+                ('alumne', models.ForeignKey(verbose_name='Alumne', to='alumnes.Alumne', on_delete=models.CASCADE)),
+                ('professor', models.ForeignKey(verbose_name=b'Professor que signa la carta', to='usuaris.Professor', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['alumne', 'carta_numero'],
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
                 ('datadarreraactualitzacio', models.DateTimeField(null=True, blank=True)),
                 ('data_neixement', models.DateField()),
                 ('informacio_de_primaria', models.TextField(blank=True)),
-                ('alumne', models.OneToOneField(null=True, to='alumnes.Alumne')),
+                ('alumne', models.OneToOneField(null=True, to='alumnes.Alumne', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
                 ('resposta', models.TextField()),
                 ('ordre', models.IntegerField(default=100)),
                 ('professorQueInforma', models.CharField(default=b'', max_length=200, blank=True)),
-                ('seguiment_tutorial', models.ForeignKey(to='tutoria.SeguimentTutorial')),
+                ('seguiment_tutorial', models.ForeignKey(to='tutoria.SeguimentTutorial', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -116,8 +116,8 @@ class Migration(migrations.Migration):
             name='Tutor',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('grup', models.ForeignKey(to='alumnes.Grup')),
-                ('professor', models.ForeignKey(to='usuaris.Professor')),
+                ('grup', models.ForeignKey(to='alumnes.Grup', on_delete=models.CASCADE)),
+                ('professor', models.ForeignKey(to='usuaris.Professor', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -129,8 +129,8 @@ class Migration(migrations.Migration):
             name='TutorIndividualitzat',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('alumne', models.ForeignKey(to='alumnes.Alumne')),
-                ('professor', models.ForeignKey(to='usuaris.Professor')),
+                ('alumne', models.ForeignKey(to='alumnes.Alumne', on_delete=models.CASCADE)),
+                ('professor', models.ForeignKey(to='usuaris.Professor', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -141,7 +141,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='resumanualalumne',
             name='seguiment_tutorial',
-            field=models.ForeignKey(to='tutoria.SeguimentTutorial'),
+            field=models.ForeignKey(to='tutoria.SeguimentTutorial', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='tutorindividualitzat',

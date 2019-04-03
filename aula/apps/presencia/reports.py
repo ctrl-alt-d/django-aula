@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 from django.db.models.aggregates import Count
 from django.db.models import Q, F, Case, When, IntegerField
@@ -194,7 +195,7 @@ def indicadorAbsentisme( data_inici, data_fi, nivell, tpc):
 
     quantitat=q_p.count()
     # Calcula el percentatge d'absentisme per alumne i compta els que superen el límit indicat
-    superen = q_p.annotate(per=F('faltes')/F('total')*100).filter(per__gt=tpc).count() if quantitat > 0 else 0
+    superen = q_p.annotate(per=F('faltes')*100.0/F('total')).filter(per__gt=tpc).count() if quantitat > 0 else 0
 
     # Percentatge d'alumnes que superen el límit
     IND=float(superen)/float(quantitat) * 100.0 if quantitat > 0 else 0
@@ -290,7 +291,6 @@ def indicadorsReport():
         trim3=0
         curs=0
         sup1=sup2=sup3=quan1=quan2=quan3=0
-
         if data>dtrim1:
             (trim1, sup1, quan1)=indicadorAbsentisme( dtrim0, dtrim1, nivell, tpc)
 

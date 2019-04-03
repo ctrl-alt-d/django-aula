@@ -22,13 +22,13 @@ from django.utils.datetime_safe import datetime
 from django.db.models import Q
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from aula.utils.tools import calculate_my_time_off
 
 
 def keepalive(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         my_timeoff = calculate_my_time_off(request.user)
         return JsonResponse({'my_timeoff': my_timeoff ,
                              'my_safe_timeoff': my_timeoff -10 ,
@@ -50,7 +50,7 @@ def menu(request):
     #How do I make a variable available to all my templates?
     #http://readthedocs.org/docs/django/1.2.4/faq/usage.html#how-do-i-make-a-variable-available-to-all-my-templates
     
-    if request.user.is_anonymous():        
+    if request.user.is_anonymous:      
         return HttpResponseRedirect( settings.LOGIN_URL )         
     else:
         #si és un alumne l'envio a mirar el seu informe
@@ -208,7 +208,7 @@ def about(request):
         nImparticionsLlistaPassada = imparticions.filter( professor_passa_llista__isnull = False ).count()
         pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 'N/A'
     
-        estadistica1 = u'{0}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
+        estadistica1 = u'{0:.0f}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
         
             #---hores de classe
         nProfessor = Impartir.objects.filter( horari__professor = professor, horari__grup__isnull = False ).count()

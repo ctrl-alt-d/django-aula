@@ -18,9 +18,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('motiu', models.CharField(max_length=5, choices=[(b'E', 'Expulsat del centre'), (b'A', 'Activitat')])),
-                ('control', models.ForeignKey(to='presencia.ControlAssistencia')),
-                ('sancio', models.ForeignKey(blank=True, to='incidencies.Sancio', null=True)),
-                ('sortida', models.ForeignKey(blank=True, to='sortides.Sortida', null=True)),
+                ('control', models.ForeignKey(to='presencia.ControlAssistencia', on_delete=models.CASCADE)),
+                ('sancio', models.ForeignKey(blank=True, to='incidencies.Sancio', null=True, on_delete=models.CASCADE)),
+                ('sortida', models.ForeignKey(blank=True, to='sortides.Sortida', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
