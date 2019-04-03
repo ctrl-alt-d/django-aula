@@ -15,7 +15,7 @@ for s in SeguimentTutorial.objects.all():
     d['actuacions_tutor']=[]
     for a in s.alumne.actuacio_set.filter( qui_fa_actuacio = 'T' ):
         da={}
-        da['professional'] = str( a.professional )
+        da['professional'] = unicode( a.professional )
         da['moment_actuacio'] = a.moment_actuacio.strftime("%d/%m/%y")
         da['amb_qui_es_actuacio'] = a.get_amb_qui_es_actuacio_display()
         da['assumpte'] = a.assumpte

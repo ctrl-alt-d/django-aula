@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('importancia', models.CharField(default=b'IN', max_length=2, choices=[(b'VI', b'Molt important'), (b'IN', b'Informatiu'), (b'PI', b'Poc important')])),
                 ('moment_lectura', models.DateTimeField(db_index=True, null=True, blank=True)),
                 ('followed', models.BooleanField(default=False)),
-                ('destinatari', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
+                ('destinatari', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 ('data', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('text_missatge', models.TextField(help_text='Escriu el missatge', verbose_name=b'Missatge')),
                 ('enllac', models.URLField(blank=True)),
-                ('remitent', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
+                ('remitent', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -58,11 +58,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='detallmissatge',
             name='missatge',
-            field=models.ForeignKey(to='missatgeria.Missatge', on_delete=models.CASCADE),
+            field=models.ForeignKey(to='missatgeria.Missatge'),
         ),
         migrations.AddField(
             model_name='destinatari',
             name='missatge',
-            field=models.ForeignKey(to='missatgeria.Missatge', on_delete=models.CASCADE),
+            field=models.ForeignKey(to='missatgeria.Missatge'),
         ),
     ]

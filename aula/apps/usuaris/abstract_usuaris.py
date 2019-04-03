@@ -3,7 +3,6 @@
 from django.db import models
 #from django.db.models import get_model
 from django.contrib.auth.models import User
-from aula.utils.tools import unicode
 
 #-------------------------------------------------------------
 
@@ -17,7 +16,7 @@ class AbstractDepartament(models.Model):
         verbose_name = u"Departament Didàctic"
         verbose_name_plural = u"Departaments Didàctics"        
 
-    def __str__(self):
+    def __unicode__(self):
         return unicode( self.nom )
 
 #----------------------------------------------------------------------------------------------
@@ -38,8 +37,8 @@ class AbstractAccio(models.Model):
         ('NF','Notificacio Families'),        
     )
     tipus = models.CharField(max_length=2, choices=TIPUS_ACCIO_CHOICES)
-    usuari = models.ForeignKey( User, db_index = True, related_name = 'usuari', on_delete=models.CASCADE )
-    impersonated_from = models.ForeignKey( User, blank = True, null = True, related_name = 'impersonate_from', on_delete=models.CASCADE )
+    usuari = models.ForeignKey( User, db_index = True, related_name = 'usuari' )
+    impersonated_from = models.ForeignKey( User, blank = True, null = True, related_name = 'impersonate_from' )
     moment = models.DateTimeField( auto_now_add = True,  db_index = True )
     l4 = models.BooleanField( default = False )
     text = models.TextField( )
@@ -47,7 +46,7 @@ class AbstractAccio(models.Model):
         abstract = True
         verbose_name = u"Acció d'usuari"
         verbose_name_plural = u"Accions d'usuari"
-    def __str__(self):
+    def __unicode__(self):
         txt_imp = u'({0})'.format(self.impersonated_from) if self.impersonated_from else ''
         return u'{0} {1} {2} {3} {4}'.format( self.moment, self.tipus, self.data, self.user, txt_imp )
     
@@ -55,7 +54,7 @@ class AbstractAccio(models.Model):
 
 class AbstractLoginUsuari(models.Model):   
     exitos = models.BooleanField()
-    usuari = models.ForeignKey( User, db_index = True, related_name = 'LoginUsuari', on_delete=models.CASCADE )
+    usuari = models.ForeignKey( User, db_index = True, related_name = 'LoginUsuari' )
     moment = models.DateTimeField( auto_now_add = True,  db_index = True )
     ip = models.CharField( max_length = 15, blank = True )
     class Meta:
@@ -66,7 +65,7 @@ class AbstractLoginUsuari(models.Model):
     #cal crear index a mà: create index login_usuar_u_m_idx1 on login_usuari ( usuari_id , moment desc );
 
 class AbstractOneTimePasswd(models.Model):
-    usuari = models.ForeignKey( User, db_index = True, on_delete=models.CASCADE)
+    usuari = models.ForeignKey( User, db_index = True)
     moment_expedicio = models.DateTimeField( auto_now_add = True )
     clau = models.CharField(max_length=40 )
     reintents = models.IntegerField( default = 0 )

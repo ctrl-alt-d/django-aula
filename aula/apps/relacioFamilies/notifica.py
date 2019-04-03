@@ -109,7 +109,7 @@ def notifica():
                 try:                        
                     fromuser = settings.DEFAULT_FROM_EMAIL
                     if settings.DEBUG:
-                        print (u'Enviant missatge a {0}'.format( alumne ))
+                        print u'Enviant missatge a {0}'.format( alumne )
                     send_mail(assumpte, 
                               u'\n'.join( missatge ), 
                               fromuser,

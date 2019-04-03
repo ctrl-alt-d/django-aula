@@ -147,15 +147,14 @@ TEMPLATES = [
 
 
 ATOMIC_REQUESTS = True  # per quan es migri a 1.6
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+MIDDLEWARE_CLASSES = [
+    'aula.utils.middleware.MultipleProxyMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'aula.utils.middleware.MultipleProxyMiddleware',
     'aula.utils.middleware.NoCacheMiddleware',   
     'aula.utils.middleware.timeOutMiddleware', 
     'aula.utils.middleware.IncludeLoginInErrors',    
@@ -172,13 +171,13 @@ WSGI_APPLICATION = 'aula.wsgi.application'
 # ]
 
 INSTALLED_APPS_DJANGO = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
+    'django.contrib.admin',
     'django_extensions',
     'django_tables2',
     'django.contrib.humanize',

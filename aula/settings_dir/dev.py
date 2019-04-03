@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
 
-from .common import *
+from common import *
 
 DEBUG = True
 SQL_DEBUG = True
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'demo',
 ] + INSTALLED_APPS
 
-MIDDLEWARE += [
+MIDDLEWARE_CLASSES += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 

@@ -8,7 +8,7 @@ from time import strftime
 from django.utils.safestring import mark_safe
 from django.utils.html import conditional_escape, escape, format_html
 from django.forms.utils import flatatt
-from django.utils.encoding import force_text
+from django.utils.encoding import force_unicode, force_text
 from itertools import chain
 
 #-----------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ class SelectAjax( Select ):
         
         Select.__init__(self, attrs=attrs, choices=choices)
         
-    def render(self, name, value, attrs=None, renderer=None, choices=()):
+    def render(self, name, value, attrs=None, choices=()):
         script =u'<script>%s</script>'%self.jquery
 
         output = super(SelectAjax, self).render(name, value=value, attrs=attrs, choices=choices)
@@ -31,13 +31,13 @@ class SelectAjax( Select ):
 
     def render_options(self, choices, selected_choices):
         
-        selected_choices = set([force_text(v) for v in selected_choices])
+        selected_choices = set([force_unicode(v) for v in selected_choices])
         output = []
         for option_value, option_label in chain(self.choices, choices):
-            if (not self.buit) or (force_text(option_value) in selected_choices):
+            if (not self.buit) or (force_unicode(option_value) in selected_choices):
                 if isinstance(option_label, (list, tuple)):
                     output.append(u'<optgroup label="%s">' % escape
-                     (force_text(option_value)))
+                     (force_unicode(option_value)))
                     for option in option_label:
                         output.append(self.render_option(selected_choices, *option))
                     
@@ -56,7 +56,7 @@ class label(Widget):
     def __init__(self, attrs=None, format=None):
         super(label, self).__init__(attrs)
     
-    def render(self, name, value, attrs=None, renderer=None):
+    def render(self, name, value, attrs=None):
         if value is None:
             value = ''
         return u'--------> %s'%value 
@@ -108,12 +108,12 @@ class JqSplitDateTimeWidget(MultiWidget):
 # (c) Joan Rodriguez
 
 class bootStrapButtonSelect2(RadioSelect):
-    def render(self, name, value, attrs=None, renderer=None, choices=()):
-        print (self)
-        print (name)
-        print (value)
-        print (attrs)
-        print (choices)
+    def render(self, name, value, attrs=None, choices=()):
+        print self
+        print name
+        print value
+        print attrs
+        print choices
         output = ['<div class="btn-group" data-toggle="buttons">']
         output.append(super(bootStrapButtonSelect, self).render(self, name, value))
         output.append('</div>');
@@ -122,7 +122,7 @@ class bootStrapButtonSelect2(RadioSelect):
 class bootStrapButtonSelect(Widget):
     allow_multiple_selected = False
 
-    def render(self, name, value, attrs=None, renderer=None, choices=()):
+    def render(self, name, value, attrs=None, choices=()):
         id_ = attrs['id']
         num_id = 0
         if value is None: value = ''
@@ -134,7 +134,7 @@ class bootStrapButtonSelect(Widget):
         return mark_safe(u'\n'.join(output))
 
     def render_button(self, selected_choices, name, id_, num_id, option_value, option_label):
-        option_value = force_text(option_value)
+        option_value = force_unicode(option_value)
         if option_value in selected_choices:
             label_selected_html = u' active'
             input_selected_html = u' checked'
@@ -146,17 +146,17 @@ class bootStrapButtonSelect(Widget):
             input_selected_html = ''
         return u"""<label class="btn btn-default btn%s%s" id="label_%s_%s">
                    <input type="radio" class="rad rad%s" name="%s" value="%s" id="rad_%s_%s" %s />%s</label>""" % (
-            conditional_escape(force_text(option_label)),
+            conditional_escape(force_unicode(option_label)),
             label_selected_html, id_, num_id,
-            conditional_escape(force_text(option_label)),
+            conditional_escape(force_unicode(option_label)),
             name, escape(option_value),
             id_, num_id,
             input_selected_html,
-            conditional_escape(force_text(option_label)))
+            conditional_escape(force_unicode(option_label)))
 
     def render_buttons(self, choices, name, id_, num_id, selected_choices):
         # Normalize to strings.
-        selected_choices = set(force_text(v) for v in selected_choices)
+        selected_choices = set(force_unicode(v) for v in selected_choices)
         output = []
         for option_value, option_label in chain(self.choices, choices):
           output.append(self.render_button(selected_choices, name, id_, num_id, option_value, option_label))
@@ -166,7 +166,7 @@ class bootStrapButtonSelect(Widget):
 
 
 class DateTimeTextImput(DateTimeInput):
-    def render(self, name, value, attrs={}, renderer=None):
+    def render(self, name, value, attrs={}):
         pre_html = """
                          <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( attrs['id'] )
         post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
@@ -193,7 +193,7 @@ class DateTimeTextImput(DateTimeInput):
     
 
 class DateTextImput(DateInput):
-    def render(self, name, value, attrs={}, renderer=None):
+    def render(self, name, value, attrs={}):
         pre_html = """
                          <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( attrs['id'] )
         post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>

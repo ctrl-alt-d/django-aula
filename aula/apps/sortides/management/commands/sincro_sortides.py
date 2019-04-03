@@ -3,7 +3,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from aula.apps.missatgeria.missatges_a_usuaris import ERROR_SINCRONITZANT_SORTIDES, tipusMissatge
 from aula.apps.sortides.sincronitza import sincronitza
-from aula.utils.tools import unicode
 
 class Command(BaseCommand):
     help = "Notifica a les families"
@@ -14,7 +13,7 @@ class Command(BaseCommand):
             self.stdout.write(u"Iniciant procés sincronitzacio sortides" )
             sincronitza()
             self.stdout.write(u"Fi procés sincronitzacio sortides" )
-        except Exception as e:
+        except Exception, e:
             self.stdout.write(u"Error al procés sincronitzacio sortides: {0}".format( unicode(e) ) )
             errors = [unicode(e)]            
          

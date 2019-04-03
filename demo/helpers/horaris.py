@@ -2,7 +2,6 @@
 
 import random
 import csv
-from aula.utils.tools import unicode
 
 def generaFitxerKronowin( path, nivellsCursosGrups, nivellsMatins, frangesMatins, frangesTardes ):
     #sample
@@ -13,11 +12,11 @@ def generaFitxerKronowin( path, nivellsCursosGrups, nivellsMatins, frangesMatins
     horaris_matins = generaHoraris( [ g for g in nivellsCursosGrups if g[0] in nivellsMatins ],  frangesMatins, 'M')
     horaris_tardes = generaHoraris( [ g for g in nivellsCursosGrups if g[0] not in nivellsMatins ],  frangesTardes, 'T')
     
-    with open(path, 'w') as csvfile:
+    with open(path, 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
         for row in horaris_matins + horaris_tardes:
-            #utfrow = [ unicode(s).encode("utf-8") for s in row ]
-            spamwriter.writerow( row )    
+            utfrow = [ unicode(s).encode("utf-8") for s in row ]
+            spamwriter.writerow( utfrow )    
     
 def generaHoraris( nivellsCursosGrups, franges, mati_tarda):
     rows = []

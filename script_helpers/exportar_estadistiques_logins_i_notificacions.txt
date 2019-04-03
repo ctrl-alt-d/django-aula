@@ -37,8 +37,8 @@ f.close()
 #num logins cada usuari
 from aula.apps.usuaris.models import LoginUsuari
 from aula.apps.alumnes.models import Alumne
-import csv
-f=open("/tmp/logins.csv",'w')
+import unicodecsv as csv
+f=open("/tmp/logins.csv",'wb')
 w=csv.writer(f)
 row = ['nivell','curs','grup','nom','cognoms', 'email1', 'email2', 'n_logins']
 w.writerow(row)

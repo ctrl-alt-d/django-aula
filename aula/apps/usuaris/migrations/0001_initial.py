@@ -99,28 +99,28 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='OneTimePasswd',
             fields=[
-                ('abstractonetimepasswd_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='usuaris.AbstractOneTimePasswd', on_delete=models.CASCADE)),
+                ('abstractonetimepasswd_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='usuaris.AbstractOneTimePasswd')),
             ],
             bases=('usuaris.abstractonetimepasswd',),
         ),
         migrations.AddField(
             model_name='loginusuari',
             name='usuari',
-            field=models.ForeignKey(related_name='LoginUsuari', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='LoginUsuari', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='accio',
             name='impersonated_from',
-            field=models.ForeignKey(related_name='impersonate_from', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='impersonate_from', blank=True, to=settings.AUTH_USER_MODEL, null=True),
         ),
         migrations.AddField(
             model_name='accio',
             name='usuari',
-            field=models.ForeignKey(related_name='usuari', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='usuari', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='abstractonetimepasswd',
             name='usuari',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
         ),
     ]

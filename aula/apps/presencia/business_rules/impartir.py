@@ -8,7 +8,7 @@ from aula.apps.missatgeria.models import Missatge
 from django.contrib.auth.models import User
 from aula.apps.missatgeria.missatges_a_usuaris import PASSAR_LLISTA_GRUP_NO_MEU, HAN_PASSAT_LLISTA_PER_MI, \
     tipusMissatge, SISTEMA_ANULA_RESERVA
-from aula.utils.tools import unicode
+
 
 def impartir_clean( instance ):
     pass
@@ -115,7 +115,7 @@ def impartir_post_save(sender, instance, created, **kwargs):
 
 def impartir_despres_de_passar_llista(instance):
     #Si passa llista un professor que no és el de l'Horari cal avisar.
-    if instance.professor_passa_llista != instance.horari.professor:
+    if instance.professor_passa_llista <> instance.horari.professor:
         remitent = instance.professor_passa_llista
         missatge = PASSAR_LLISTA_GRUP_NO_MEU
         text_missatge = missatge.format( unicode(instance),  unicode(instance.horari.professor) )

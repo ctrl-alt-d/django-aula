@@ -3,7 +3,7 @@ import django_tables2 as tables
 from django_tables2.utils import A
 
 from django.utils.safestring import mark_safe
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from aula.apps.incidencies.models import Expulsio
 from aula.apps.incidencies.models import TipusIncidencia

@@ -3,7 +3,7 @@
 from django.db.models import Q
 from aula.utils import tools
 from django.template.context import RequestContext
-from aula.utils.tools import write_pdf, unicode
+from aula.utils.tools import write_pdf
 from aula.apps.baixes.models import Feina
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.presencia.models import Impartir
@@ -82,7 +82,7 @@ def reportBaixaCarpeta( request, dia, professors ):
         docFile.close()
         os.remove(resultat)
         
-    except Exception as e:
+    except Exception, e:
         excepcio = unicode( e )
         
     if not excepcio:

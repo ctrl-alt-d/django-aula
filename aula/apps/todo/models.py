@@ -18,7 +18,7 @@ class ToDo(models.Model):
         ('P', 'Poc Inportant' ),
                      )
     
-    propietari = models.ForeignKey( User, db_index = True, on_delete=models.CASCADE ) 
+    propietari = models.ForeignKey( User, db_index = True ) 
     data = models.DateTimeField( default = timezone.now, db_index = True )   
     tasca = models.CharField(max_length=100, help_text=u"Tasca a realitzar")
     informacio_adicional = models.TextField("Informació adicional", help_text=u"Informació adicional")
@@ -30,5 +30,5 @@ class ToDo(models.Model):
         verbose_name = u'Llista de tasques'
         verbose_name_plural = u'Llista de tasques'
         ordering = ['-data']
-    def __str__(self):
+    def __unicode__(self):
         return (  self.tasca )

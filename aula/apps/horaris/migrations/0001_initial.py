@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
                 ('data_inici_festiu', models.DateField()),
                 ('data_fi_festiu', models.DateField()),
                 ('descripcio', models.CharField(max_length=45)),
-                ('curs', models.ForeignKey(blank=True, to='alumnes.Curs', null=True, on_delete=models.CASCADE)),
+                ('curs', models.ForeignKey(blank=True, to='alumnes.Curs', null=True)),
             ],
             options={
                 'ordering': ['data_inici_festiu', 'franja_horaria_inici'],
@@ -68,11 +68,11 @@ class Migration(migrations.Migration):
                 ('nom_aula', models.CharField(max_length=45, blank=True)),
                 ('es_actiu', models.BooleanField()),
                 ('estat_sincronitzacio', models.CharField(max_length=3, blank=True)),
-                ('assignatura', models.ForeignKey(blank=True, to='assignatures.Assignatura', null=True, on_delete=models.CASCADE)),
-                ('dia_de_la_setmana', models.ForeignKey(to='horaris.DiaDeLaSetmana', on_delete=models.CASCADE)),
-                ('grup', models.ForeignKey(blank=True, to='alumnes.Grup', null=True, on_delete=models.CASCADE)),
-                ('hora', models.ForeignKey(to='horaris.FranjaHoraria', on_delete=models.CASCADE)),
-                ('professor', models.ForeignKey(blank=True, to='usuaris.Professor', null=True, on_delete=models.CASCADE)),
+                ('assignatura', models.ForeignKey(blank=True, to='assignatures.Assignatura', null=True)),
+                ('dia_de_la_setmana', models.ForeignKey(to='horaris.DiaDeLaSetmana')),
+                ('grup', models.ForeignKey(blank=True, to='alumnes.Grup', null=True)),
+                ('hora', models.ForeignKey(to='horaris.FranjaHoraria')),
+                ('professor', models.ForeignKey(blank=True, to='usuaris.Professor', null=True)),
             ],
             options={
                 'ordering': ['es_actiu', 'professor', 'dia_de_la_setmana__n_dia_ca', 'hora__hora_inici'],
@@ -84,11 +84,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='festiu',
             name='franja_horaria_fi',
-            field=models.ForeignKey(related_name='hora_fi_festiu', to='horaris.FranjaHoraria', on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='hora_fi_festiu', to='horaris.FranjaHoraria'),
         ),
         migrations.AddField(
             model_name='festiu',
             name='franja_horaria_inici',
-            field=models.ForeignKey(related_name='hora_inici_festiu', to='horaris.FranjaHoraria', on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='hora_inici_festiu', to='horaris.FranjaHoraria'),
         ),
     ]

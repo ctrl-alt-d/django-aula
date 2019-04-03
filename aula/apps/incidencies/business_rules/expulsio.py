@@ -6,7 +6,6 @@ from django.utils.datetime_safe import datetime
 from django.apps import apps
 
 from aula.apps.missatgeria.missatges_a_usuaris import HAS_RECOLLIT_EXPULSIO, tipusMissatge, CAL_TRAMITAR_EXPULSIO
-from aula.utils.tools import unicode
 
 
 def expulsio_clean( instance ):

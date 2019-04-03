@@ -125,7 +125,7 @@ class MySeleniumTests(SeleniumLiveServerTestCase):
         self.assertTrue(len(cas)==0)
 
         #Seleccionar dos usuaris.
-        for i in range(0,2):
+        for i in xrange(0,2):
             js = """ x = document.evaluate('//input[@type=\\\'checkbox\\\' and @value="""+str(self.db.alumnes[i].pk)+"""]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null );
                     x.singleNodeValue.click();
                 """

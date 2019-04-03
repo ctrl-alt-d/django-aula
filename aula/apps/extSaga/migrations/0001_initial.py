@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('grup_saga', models.CharField(unique=True, max_length=60, blank=True)),
-                ('Grup2Aula', models.ForeignKey(related_name='grup2aulasaga_set', to='alumnes.Grup', null=True, on_delete=models.CASCADE)),
+                ('Grup2Aula', models.ForeignKey(related_name='grup2aulasaga_set', to='alumnes.Grup', null=True)),
             ],
             options={
                 'ordering': ['Grup2Aula', 'grup_saga'],

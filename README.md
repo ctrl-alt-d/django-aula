@@ -12,22 +12,20 @@ School Attendance Software
 Quick demo
 =========
 
-On Ubuntu Server 18.04 LTS 64 bits:
+On Ubuntu Server 14.04 LTS 64 bits:
 
 ```bash
-sudo apt-get update
-sudo apt-get install python3 python3-venv python-dev git
-sudo apt-get install python3-lxml python3-libxml2 libxml2-dev libxslt-dev lib32z1-dev
+apt-get install python-virtualenv python-pip libxml2-dev 
+apt-get install libxslt-dev python-libxml2 python-dev lib32z1-dev git
 mkdir djau
 cd djau
-python3 -m venv venv3
-source venv3/bin/activate
-git clone --single-branch --branch feature/django2 https://github.com/ctrl-alt-d/django-aula.git django-aula
+virtualenv venv
+source venv/bin/activate
+git clone https://github.com/ctrl-alt-d/django-aula.git
 cd django-aula
 pip install -r requirements.txt
-./scripts/create_demo_data.sh
-python manage.py runserver
-
+./scripts/create_demo_data.sh  #this take for a while ( > 7 minutes of fake data )
+python manage.py runserver 127.0.0.1:8000   # or your 
 ```
 
 Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd 'dAju' )

@@ -20,8 +20,6 @@ from aula.apps.extSaga.models import Grup2Aula
 from django.conf import settings
 from appy.pod.buffers import ELSE_WITHOUT_IF
 
-from aula.utils.tools import unicode
-
 def sincronitza(f, user = None):
 
     msgs = comprovar_grups( f )
@@ -66,7 +64,7 @@ def sincronitza(f, user = None):
         #a.tutors = ''
         #a.correu_tutors = ''
 
-        for columnName, value in iter(row.items()):
+        for columnName, value in row.iteritems():
             columnName = unicode(columnName,'iso-8859-1')
             #columnName = unicode( rawColumnName, 'iso-8859-1'  )
             uvalue =  unicode(value,'iso-8859-1')

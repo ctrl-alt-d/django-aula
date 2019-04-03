@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
 from aula.apps.missatgeria.missatges_a_usuaris import ERROR_NOTIFICACIO_FAMILIES, tipusMissatge
 from aula.apps.relacioFamilies.notifica import notifica
-from aula.utils.tools import unicode
 
 class Command(BaseCommand):
     help = "Notifica a les families"
@@ -15,7 +14,7 @@ class Command(BaseCommand):
             self.stdout.write(u"Iniciant procés notificacions" )
             notifica()
             self.stdout.write(u"Fi procés notificacions" )
-        except Exception as e:
+        except Exception, e:
             self.stdout.write(u"Error al procés notificacions: {0}".format( unicode(e) ) )
             errors = [unicode(e)]            
          

@@ -7,7 +7,7 @@ from aula.utils import tools
 from aula.apps.assignatures.models import Assignatura
 from django.shortcuts import render
 from django.template.context import RequestContext
-from aula.utils.tools import write_pdf, unicode
+from aula.utils.tools import write_pdf
 from django.conf import settings 
 
 #http://xhtml2pdf.appspot.com/static/pisa-en.html
@@ -94,7 +94,7 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
         docFile.close()
         os.remove(resultat)
         
-    except Exception as e:
+    except Exception, e:
         excepcio = unicode( e )
         
     if not excepcio:

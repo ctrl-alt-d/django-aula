@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('swaped', models.BooleanField(default=False)),
                 ('relacio_familia_revisada', models.DateTimeField(null=True)),
                 ('relacio_familia_notificada', models.DateTimeField(null=True)),
-                ('alumne', models.ForeignKey(to='alumnes.Alumne', on_delete=models.CASCADE)),
+                ('alumne', models.ForeignKey(to='alumnes.Alumne')),
             ],
             options={
                 'abstract': False,
@@ -50,9 +50,9 @@ class Migration(migrations.Migration):
                 ('dia_passa_llista', models.DateTimeField(null=True, blank=True)),
                 ('comentariImpartir', models.TextField(default=b'', blank=True)),
                 ('pot_no_tenir_alumnes', models.BooleanField(default=False)),
-                ('horari', models.ForeignKey(to='horaris.Horari', on_delete=models.CASCADE)),
-                ('professor_guardia', models.ForeignKey(related_name='professor_guardia', blank=True, to='usuaris.Professor', null=True, on_delete=models.CASCADE)),
-                ('professor_passa_llista', models.ForeignKey(related_name='professor_passa_llista', blank=True, to='usuaris.Professor', null=True, on_delete=models.CASCADE)),
+                ('horari', models.ForeignKey(to='horaris.Horari')),
+                ('professor_guardia', models.ForeignKey(related_name='professor_guardia', blank=True, to='usuaris.Professor', null=True)),
+                ('professor_passa_llista', models.ForeignKey(related_name='professor_passa_llista', blank=True, to='usuaris.Professor', null=True)),
             ],
             options={
                 'abstract': False,
@@ -63,27 +63,27 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='controlassistencia',
             name='estat',
-            field=models.ForeignKey(blank=True, to='presencia.EstatControlAssistencia', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(blank=True, to='presencia.EstatControlAssistencia', null=True),
         ),
         migrations.AddField(
             model_name='controlassistencia',
             name='estat_backup',
-            field=models.ForeignKey(related_name='controlassistencia_as_bkup', blank=True, to='presencia.EstatControlAssistencia', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='controlassistencia_as_bkup', blank=True, to='presencia.EstatControlAssistencia', null=True),
         ),
         migrations.AddField(
             model_name='controlassistencia',
             name='impartir',
-            field=models.ForeignKey(to='presencia.Impartir', on_delete=models.CASCADE),
+            field=models.ForeignKey(to='presencia.Impartir'),
         ),
         migrations.AddField(
             model_name='controlassistencia',
             name='professor',
-            field=models.ForeignKey(blank=True, to='usuaris.Professor', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(blank=True, to='usuaris.Professor', null=True),
         ),
         migrations.AddField(
             model_name='controlassistencia',
             name='professor_backup',
-            field=models.ForeignKey(related_name='controlassistencia_as_bkup', blank=True, to='usuaris.Professor', null=True, on_delete=models.CASCADE),
+            field=models.ForeignKey(related_name='controlassistencia_as_bkup', blank=True, to='usuaris.Professor', null=True),
         ),
         migrations.AlterUniqueTogether(
             name='impartir',

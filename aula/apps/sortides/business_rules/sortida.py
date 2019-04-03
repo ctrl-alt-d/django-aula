@@ -7,7 +7,6 @@ from aula.apps.tutoria.models import Tutor
 from django.apps import apps
 from datetime import timedelta
 from django.conf import settings
-from aula.utils.tools import unicode
 
 
 def clean_sortida(instance):

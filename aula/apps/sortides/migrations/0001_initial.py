@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('relacio_familia_revisada', models.DateTimeField(null=True)),
                 ('relacio_familia_notificada', models.DateTimeField(null=True)),
-                ('alumne', models.ForeignKey(to='alumnes.Alumne', on_delete=models.CASCADE)),
+                ('alumne', models.ForeignKey(to='alumnes.Alumne')),
             ],
         ),
         migrations.CreateModel(
@@ -52,10 +52,10 @@ class Migration(migrations.Migration):
                 ('alumnes_convocats', models.ManyToManyField(help_text='Alumnes convocats. Per seleccionar un grup sencer, clica una sola vegada damunt el nom del grup.', related_name='sortides_confirmades', to='alumnes.Alumne', blank=True)),
                 ('alumnes_justificacio', models.ManyToManyField(help_text="Alumnes que no venen i disposen de justificaci\xf3 per no assistir al Centre el dia de l'activitat.", related_name='sortides_falta_justificat', to='alumnes.Alumne', blank=True)),
                 ('alumnes_que_no_vindran', models.ManyToManyField(help_text="Alumnes que haurien d'assistir-hi perqu\xe8 estan convocats per\xf2 sabem que no venen.", related_name='sortides_on_ha_faltat', to='alumnes.Alumne', blank=True)),
-                ('departament_que_organitza', models.ForeignKey(blank=True, to='usuaris.Departament', help_text="Indica quin departament organitza l'activitat", null=True, on_delete=models.CASCADE)),
-                ('franja_fi', models.ForeignKey(related_name='hora_fi_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Darrera franja lectiva de l'activitat que afecta a les classes", null=True, verbose_name=b'Presencia: Fins a', on_delete=models.CASCADE)),
-                ('franja_inici', models.ForeignKey(related_name='hora_inici_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Primera franja lectiva de l'activitat", null=True, verbose_name=b'Presencia: Des de', on_delete=models.CASCADE)),
-                ('professor_que_proposa', models.ForeignKey(related_name='professor_proposa_sortida', editable=False, to='usuaris.Professor', help_text="Professor que proposa l'activitat", on_delete=models.CASCADE)),
+                ('departament_que_organitza', models.ForeignKey(blank=True, to='usuaris.Departament', help_text="Indica quin departament organitza l'activitat", null=True)),
+                ('franja_fi', models.ForeignKey(related_name='hora_fi_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Darrera franja lectiva de l'activitat que afecta a les classes", null=True, verbose_name=b'Presencia: Fins a')),
+                ('franja_inici', models.ForeignKey(related_name='hora_inici_sortida', blank=True, to='horaris.FranjaHoraria', help_text="Primera franja lectiva de l'activitat", null=True, verbose_name=b'Presencia: Des de')),
+                ('professor_que_proposa', models.ForeignKey(related_name='professor_proposa_sortida', editable=False, to='usuaris.Professor', help_text="Professor que proposa l'activitat")),
                 ('professors_responsables', models.ManyToManyField(help_text="Professors responsables de l'activitat", related_name='professors_responsables_sortida', verbose_name='Professors que organitzen', to='usuaris.Professor', blank=True)),
                 ('tutors_alumnes_convocats', models.ManyToManyField(related_name='tutors_sortida', editable=False, to='usuaris.Professor', blank=True, help_text='Tutors dels alumnes', verbose_name='Tutors dels alumnes')),
             ],
@@ -63,6 +63,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notificasortida',
             name='sortida',
-            field=models.ForeignKey(to='sortides.Sortida', on_delete=models.CASCADE),
+            field=models.ForeignKey(to='sortides.Sortida'),
         ),
     ]

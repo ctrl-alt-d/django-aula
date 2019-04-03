@@ -5,7 +5,6 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.abstract_usuaris import AbstractDepartament,\
     AbstractAccio, AbstractLoginUsuari, AbstractOneTimePasswd
-from aula.utils.tools import unicode
 
 #-------------------------------------------------------------
 
@@ -36,7 +35,7 @@ class AlumneUser(User):
             pass
         return alumne
                         
-    def __str__(self):
+    def __unicode__(self):
         return unicode( self.getAlumne() )
 
     # ----------------------------------------------------------------------------------------------
@@ -63,7 +62,7 @@ class Professor(User):
     def nMissatgesNoLlegits(self):
         self.destinatari_set.filter(moment_lectura__isnull=True).count()
 
-    def __str__(self):
+    def __unicode__(self):
         nom = self.first_name + u' ' + self.last_name if self.last_name else self.username
         return nom.title()
 
@@ -98,7 +97,7 @@ class ProfessorConserge(User):
     def nMissatgesNoLlegits(self):
         self.destinatari_set.filter(moment_lectura__isnull=True).count()
 
-    def __str__(self):
+    def __unicode__(self):
         nom = u"{} {}".format( self.first_name, self.last_name ) if self.last_name else self.username
         rol = u" (consergeria)" if self.groups.filter(name="consergeria").exists() else u" (professorat)"
         nom += rol
@@ -129,7 +128,7 @@ class Professional(User):
     def getUser(self):
         return User.objects.get( pk = self.pk )
                     
-    def __str__(self):
+    def __unicode__(self):
         nom = self.first_name + u' ' + self.last_name if self.last_name else self.username 
         return nom.title() 
 

@@ -1,6 +1,5 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
-from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 from aula.apps.presencia.models import ControlAssistencia
 from django.db.models import Q

@@ -50,7 +50,7 @@ class MissatgesTable(tables.Table):
                                                                                        tutors = alumne.tutorsDeLAlumne_display() )
         else:
             try:
-                missatge_class = list(MISSATGES[record.missatge.tipus_de_missatge].keys())[0]
+                missatge_class = MISSATGES[record.missatge.tipus_de_missatge].keys()[0]
             except:
                 missatge_class = 'dark'
             missatge='<span class="text-' + missatge_class + '">'
@@ -66,12 +66,12 @@ class MissatgesTable(tables.Table):
     @register.simple_tag
     def Missatges_content(key):
         try:
-            return list(MISSATGES[key].keys())[0]
+            return MISSATGES[key].keys()[0]
         except:
             return 'dark'
 
     Contingut = tables.TemplateColumn(
-        attrs={'th': {'width': '60%'}},
+       attrs={'th': {'width': '60%'}},
         template_code=u"""  
                                     <div class="text-{%Missatges_content record.missatge.tipus_de_missatge%}">
                                         {{record.missatge.text_missatge|linebreaks}}

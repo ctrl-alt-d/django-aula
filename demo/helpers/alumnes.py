@@ -5,7 +5,6 @@ from demo.helpers import nomsICognoms
 from datetime import timedelta, date
 from django.template.defaultfilters import slugify
 import csv
-from aula.utils.tools import unicode
 
 def random_date(start, end):
     """
@@ -29,7 +28,7 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
 
 #1,"Aasss, ssss","09/03/1995","ssss , dfdfdfd","","","","","","","","CR Tarragona fdfd","Figueres","","+34-6543434395 (Primer telèfon de l)","17001218, Institut Ramon Muntaner, Figueres","CF adm 2"    
 
-    with open(path, 'w') as csvfile:
+    with open(path, 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
 
         spamwriter.writerow( ( "#","00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT","03_RESPONSABLE 1","04_TELÈFON RESP. 1","05_MÒBIL RESP. 1","06_ADREÇA ELECTR. RESP. 1","07_RESPONSABLE 2","08_TELÈFON RESP. 2","09_MÒBIL RESP. 2","10_ADREÇA ELECTR. RESP. 2","11_ADREÇA","12_LOCALITAT","13_MUNICIPI","14_CORREU ELECTRÒNIC","15_ALTRES TELÈFONS","16_CENTRE PROCEDÈNCIA","17_GRUPSCLASSE", ) )
@@ -81,8 +80,8 @@ def generaFitxerSaga( path, nivellsCursosGrups ):
                                 #"17_GRUPSCLASSE",
                                 u"{nivell}{curs}{grup}".format( nivell = nivell, grup = grup, curs = curs)                           
                                )
-                        #utfrow = [ unicode(s).encode("iso-8859-1") for s in row ]
-                        spamwriter.writerow( row )
+                        utfrow = [ unicode(s).encode("iso-8859-1") for s in row ]
+                        spamwriter.writerow( utfrow )
 
                         
     

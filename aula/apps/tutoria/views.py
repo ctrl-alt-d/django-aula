@@ -27,7 +27,6 @@ from aula.apps.tutoria.forms import  justificaFaltesW1Form, informeSetmanalForm,
 
 #helpers
 from aula.utils import tools
-from aula.utils.tools import unicode
 from aula.apps.presencia.models import  ControlAssistencia, EstatControlAssistencia,\
     Impartir
 from django.utils.datetime_safe import  date, datetime
@@ -47,7 +46,7 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS,\
 from django.http import Http404
 from aula.apps.horaris.models import FranjaHoraria, Horari
 from aula.apps.incidencies.models import Incidencia, Expulsio
-from aula.utils.tools import llista, unicode
+from aula.utils.tools import llista
 from aula.apps.avaluacioQualitativa.forms import alumnesGrupForm
 from aula.utils.forms import dataForm, ckbxForm, choiceForm
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
@@ -60,7 +59,7 @@ from aula.apps.tutoria.rpt_gestioCartes import gestioCartesRpt
 from aula.apps.tutoria import report_carta_absentisme
 from aula.apps.tutoria.report_carta_absentisme import report_cartaAbsentisme
 from aula.apps.tutoria.rpt_totesLesCartes import totesLesCartesRpt
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from aula.apps.sortides.models import Sortida
 from aula.apps.sortides.table2_models import Table2_Sortides
 from django_tables2.config import RequestConfig
@@ -126,7 +125,7 @@ def incidenciesGestionadesPelTutor(request):
             'expulsions': []})
         alumnes[alumne_str]['incidencies'].append(incidencia)
 
-    alumnesOrdenats = [ (alumneKey, alumnes[alumneKey],) for alumneKey in sorted(iter(alumnes.keys())) ]
+    alumnesOrdenats = [ (alumneKey, alumnes[alumneKey],) for alumneKey in sorted(alumnes.iterkeys()) ]
 
     hi_ha_expulsions_per_acumulacio = bool(len(expulsionsPendentsPerAcumulacio))
 
@@ -226,7 +225,7 @@ def tutorPosaExpulsioPerAcumulacio(request, pk):
             missatge = mark_safe( escape( missatge ) +
                                   r"<a href='{url}'>o accedir-hi directament a l'expulsió</a>".format(url=url_expulsio ) )
             messages.info(request, missatge)
-        except ValidationError as e:
+        except ValidationError, e:
             missatge =  u"""Error en generar l'expulsió: {errors}""".format( u" - ".join(itertools.chain(*e.message_dict.values()) ) )
             messages.error(request, missatge)
 
@@ -251,7 +250,7 @@ def lesMevesActuacions(request):
     table = Table2_Actuacions( list( actuacions ) ) 
     table.order_by = '-moment_actuacio' 
     
-    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 20}).configure(table)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 20}).configure(table)
         
     return render(
                   request, 
@@ -516,7 +515,7 @@ def esborraActuacio(request, pk):
                 text = u"""Esborrada actuació a l'alumne {0}. """.format( actuacio.alumne )
             )     
                         
-    except ValidationError as e:
+    except ValidationError, e:
         import itertools
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
@@ -782,7 +781,7 @@ def informeSetmanalPrint(request, pk, year, month, day, suport):
     try:
         dades = informeSetmanalMKTable(request, pk, year, month, day)
  
-    except Exception as e:
+    except Exception, e:
         errorsTrobats = e
                                               
     if errorsTrobats:
@@ -904,7 +903,7 @@ def justificaNext(request, pk):
                     impersonated_from = request.user if request.user != user else None,
                     text = u"""Justificades faltes de l'alumne {0} del dia {1}. """.format( control.alumne, control.impartir.dia_impartir )
                 )                
-        except ValidationError as e:
+        except ValidationError, e:
             ok=False
             import itertools
             errors = list( itertools.chain( *e.message_dict.values() )  )        
@@ -963,7 +962,7 @@ def faltaNext(request, pk):
                     impersonated_from = request.user if request.user != user else None,
                     text = u"""Correcció de presència de l'alumne {0} del dia {1}. """.format( control.alumne, control.impartir.dia_impartir )
                 )                
-        except ValidationError as e:
+        except ValidationError, e:
             ok=False
             import itertools
             errors = list( itertools.chain( *e.message_dict.values() )  )        
@@ -2084,7 +2083,7 @@ def informeCompletFaltesIncidencies(request):
                     totBe = False
                 
         if totBe and dataInici and dataFi:            
-            from . import reports
+            import reports 
             return reports.reportFaltesIncidencies(dataInici, dataFi, alumnes_informe, alumnes_recordatori, grups, request)
     else:
 
@@ -2346,7 +2345,7 @@ def justificarSortida(request):
     table = Table2_Sortides( data=list( sortides ), origen="Tutoria" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
         
     return render(
                   request, 
@@ -2391,7 +2390,7 @@ def justificarSortidaAlumne(request, pk ):
                     
                 nexturl =  r'/tutoria/justificarSortida/'
                 return HttpResponseRedirect( nexturl )
-            except ValidationError as e:
+            except ValidationError, e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
 

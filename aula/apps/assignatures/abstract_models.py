@@ -19,7 +19,7 @@ class AbstractTipusDAssignatura(models.Model):
         verbose_name = u"Tipus d'assignatura"
         verbose_name_plural = u"Tipus d'assignatura"
 
-    def __str__(self):
+    def __unicode__(self):
         return self.tipus_assignatura
 
     def delete(self):
@@ -30,15 +30,15 @@ class AbstractTipusDAssignatura(models.Model):
         self.save()
 
 class AbstractAssignatura(models.Model):
-    curs = models.ForeignKey(Curs, null=True, blank=True, on_delete=models.CASCADE)
-    tipus_assignatura = models.ForeignKey("assignatures.TipusDAssignatura", null=True, blank=True, on_delete=models.CASCADE)
+    curs = models.ForeignKey(Curs, null=True, blank=True)
+    tipus_assignatura = models.ForeignKey("assignatures.TipusDAssignatura", null=True, blank=True)
     codi_assignatura = models.CharField(max_length=45)
     nom_assignatura = models.CharField(max_length=250, blank=True)
     class Meta:
         abstract = True        
         verbose_name = u'Assignatura'
         verbose_name_plural = u'Assignatures'
-    def __str__(self):        
+    def __unicode__(self):        
         curs = u'({0})'.format(self.curs.nom_curs) if self.curs else ''
         return u'{0}{1}'.format(self.codi_assignatura,curs )
     

@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils.tools import classebuida
-from django.urls import resolve, reverse
+from django.core.urlresolvers import resolve, reverse
 from django.contrib.auth.models import Group, User
 from aula.apps.usuaris.models import User2Professor, AlumneUser
 from django.db.models.aggregates import Count
@@ -14,7 +14,7 @@ from aula.apps.sortides.models import Sortida
 
 def calcula_menu( user , path ):
     
-    if not user.is_authenticated:
+    if not user.is_authenticated():
         return
 
     #mire a quins grups està aquest usuari:

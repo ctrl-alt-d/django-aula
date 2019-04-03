@@ -21,7 +21,7 @@ from aula.apps.usuaris.models import User2Professor, Accio
 
 #helpers
 from aula.apps.presencia.regeneraImpartir import regeneraThread
-from aula.utils.tools import getImpersonateUser, getSoftColor, executaAmbOSenseThread, unicode
+from aula.utils.tools import getImpersonateUser, getSoftColor, executaAmbOSenseThread
 from django.utils.safestring import SafeText
 from django.apps import apps
 
@@ -55,8 +55,8 @@ from aula.apps.presencia.business_rules.impartir import impartir_despres_de_pass
 #template filters
 from django.template.defaultfilters import date as _date
 from django.contrib import messages
-from django.urls import reverse
-  
+from django.core.urlresolvers import reverse
+
 #vistes -----------------------------------------------------------------------------------
 @login_required
 @group_required(['direcció'])
@@ -224,7 +224,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 
 
     ###fi miscelania sortides.####################################################################################
-
+    
     return render(
                 request,
                 'mostraImpartir.html', 
@@ -314,7 +314,7 @@ def passaLlista(request, pk):
                     control_aux = form.save()
                     hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R")
                     quelcomBe |= True
-                except ValidationError as e:
+                except ValidationError, e:
                     totBe = False
                     # Com que no és un formulari de model cal tractar a mà les incidències del save:
                     form = helper_tuneja_item_nohadeseralaula(request, control_a,
@@ -363,7 +363,7 @@ def passaLlista(request, pk):
                 impartir_despres_de_passar_llista(impartir)
                 if totBe:
                     return HttpResponseRedirect(url_next)
-            except ValidationError as e:
+            except ValidationError, e:
                 # Com que no és un formulari de model cal tractar a mà les incidències del save:
                 for _, v in e.message_dict.items():
                     form0._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
@@ -963,7 +963,7 @@ def calculadoraUnitatsFormatives(request):
                 try:
                     darreraImparticio = imparticionsAssignatura[hores-1]
                     infoForm = [ ('Darrera classe', u'dia {0} a les {1}'.format( darreraImparticio.dia_impartir, darreraImparticio.horari.hora.hora_inici )), ]
-                except Exception as e:
+                except Exception, e:
                     form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  [e]  )  
             
                 
@@ -1027,7 +1027,7 @@ def indicadors(request):
     if dades is None:
         menuCTX=False
     else:
-        menuCTX=list({"/presencia/indcsv": "Baixa dades csv"}.items())
+        menuCTX={"/presencia/indcsv": "Baixa dades csv"}.items()
     return render(
             request,
             'report.html',
@@ -1083,7 +1083,7 @@ def faltesAssistenciaEntreDates(request):
                          'head': 'Informació alumnes' ,
                         },
                     )
-#            except Exception as e:
+#            except Exception, e:
 #                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  [e]  )  
             
                 
@@ -1182,7 +1182,7 @@ def copiarAlumnesLlista(request, pk):
                 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread, treuThread
                 #Eliminem alumnes abans de copiar.
                 if eliminarAlumnes:
-                    treu = treuThread(expandir=None, alumnes=list(alumnesDesti.values()), impartir=horaDesti, matmulla = False
+                    treu = treuThread(expandir=None, alumnes=alumnesDesti.values(), impartir=horaDesti, matmulla = False
                                       ,usuari=user)
                     treu.usuari = user
                     treu.start()
@@ -1260,7 +1260,7 @@ def anularImpartir(request, pk):
             control.estat = None
             try:
                 control.save()
-            except ValidationError as e:
+            except ValidationError, e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1270,7 +1270,7 @@ def anularImpartir(request, pk):
                 impartir.professor_passa_llista = User2Professor( user )
                 impartir.dia_passa_llista =  datetime.now()
                 impartir.save()
-            except ValidationError as e:
+            except ValidationError, e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1306,7 +1306,7 @@ def desanularImpartir(request, pk):
                 control.swaped = False
             try:
                 control.save()
-            except ValidationError as e:
+            except ValidationError, e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1316,7 +1316,7 @@ def desanularImpartir(request, pk):
                 impartir.professor_passa_llista = None
                 impartir.dia_passa_llista = None
                 impartir.save()
-            except ValidationError as e:
+            except ValidationError, e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 

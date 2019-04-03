@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 
-from . import sincronitzaKronowin as s
+import sincronitzaKronowin as s
 
 from aula.apps.extKronowin.forms import sincronitzaKronowinForm, Kronowin2DjangoAulaFranjaForm, Kronowin2DjangoAulaGrupForm,\
     creaNivellCursGrupDesDeKronowinForm

@@ -55,7 +55,7 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
     
     controls_desti = a_desti.controlassistencia_set.values_list('impartir__pk', flat=True)
     
-    print (a_fusionar)
+    print a_fusionar
     
     for a in a_fusionar:
 

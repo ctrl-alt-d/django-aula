@@ -48,11 +48,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('frase_oberta', models.CharField(help_text='Frase oberta', max_length=120, verbose_name='Frase oberta', blank=True)),
-                ('alumne', models.ForeignKey(to='alumnes.Alumne', on_delete=models.CASCADE)),
-                ('assignatura', models.ForeignKey(to='assignatures.Assignatura', on_delete=models.CASCADE)),
-                ('item', models.ForeignKey(blank=True, to='avaluacioQualitativa.ItemQualitativa', null=True, on_delete=models.CASCADE)),
-                ('professor', models.ForeignKey(to='usuaris.Professor', on_delete=models.CASCADE)),
-                ('qualitativa', models.ForeignKey(to='avaluacioQualitativa.AvaluacioQualitativa', on_delete=models.CASCADE)),
+                ('alumne', models.ForeignKey(to='alumnes.Alumne')),
+                ('assignatura', models.ForeignKey(to='assignatures.Assignatura')),
+                ('item', models.ForeignKey(blank=True, to='avaluacioQualitativa.ItemQualitativa', null=True)),
+                ('professor', models.ForeignKey(to='usuaris.Professor')),
+                ('qualitativa', models.ForeignKey(to='avaluacioQualitativa.AvaluacioQualitativa')),
             ],
             options={
                 'ordering': ['qualitativa', 'assignatura', 'alumne'],

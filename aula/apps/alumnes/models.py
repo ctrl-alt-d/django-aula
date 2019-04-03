@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.alumnes.abstract_models import AbstractNivell, AbstractCurs,\
     AbstractGrup, AbstractAlumne
-from aula.utils.tools import unicode
 
 class Nivell(AbstractNivell):
     pass
@@ -26,7 +25,7 @@ class AlumneGrupNom(Alumne):
     class Meta:
         proxy = True
 
-    def __str__(self):
+    def __unicode__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + self.nom         
 
 class AlumneGrup(Alumne):
@@ -34,7 +33,7 @@ class AlumneGrup(Alumne):
     class Meta:
         proxy = True
 
-    def __str__(self):
+    def __unicode__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + self.nom         
 
 

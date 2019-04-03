@@ -33,7 +33,6 @@ from aula.apps.alumnes.forms import triaAlumneForm
 
 #helpers
 from aula.utils import tools
-from aula.utils.tools import unicode
 from aula.apps.presencia.models import Impartir
 from django.utils.datetime_safe import  date, datetime
 from datetime import timedelta
@@ -45,6 +44,7 @@ from aula.apps.tutoria.models import TutorIndividualitzat
 from aula.apps.alumnes.rpt_duplicats import duplicats_rpt
 from aula.apps.alumnes.tools import fusiona_alumnes_by_pk
 from aula.apps.alumnes.forms import promoForm, newAlumne
+
 
 #duplicats
 @login_required
@@ -70,7 +70,7 @@ def fusiona(request,pk):
     resultat = { 'errors': [], 'warnings':  [], 'infos':  [ u'Procés realitzat correctament' ]  }
     try:
         fusiona_alumnes_by_pk( int( pk ) , credentials)
-    except Exception as e:
+    except Exception, e:
         resultat = { 'errors': [ unicode(e), ], 'warnings':  [], 'infos':  []  }
         
     
@@ -265,7 +265,7 @@ def gestionaAlumnesTutor( request , pk ):
 @login_required
 @group_required(['consergeria','professors','professional'])
 def triaAlumne( request ):
-    if not request.user.is_authenticated:
+    if not request.user.is_authenticated():
         return render('/login')
 
     if request.method == 'POST':
@@ -515,7 +515,7 @@ def mostraGrupPromocionar(request, grup=""):
     PromoFormset = modelformset_factory(Alumne, form=promoForm, extra = 0)
     if request.method == 'POST':
         curs_vinent = request.POST.get('curs_desti')
-        print (request.POST)
+        print request.POST
         formset = PromoFormset(request.POST)
         for form in formset.forms:
             if form.is_valid():

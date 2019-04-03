@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.datetime_safe import datetime
-from aula.utils.tools import unicode
 
 class AbstractAula(models.Model):
     nom_aula = models.CharField(max_length=45, blank=True)
@@ -18,7 +17,7 @@ class AbstractAula(models.Model):
         ordering = ['nom_aula']
         verbose_name = 'Aula'
         verbose_name_plural = 'Aules'
-    def __str__(self):
+    def __unicode__(self):
         descripcio = u" - {0}".format( self.descripcio_aula ) if bool(self.descripcio_aula) else u""
         nom_i_descripcio =  u"{0}{1}".format( self.nom_aula, descripcio )
         return nom_i_descripcio if nom_i_descripcio else "-"
@@ -34,8 +33,8 @@ class AbstractReservaAula(models.Model):
     hora_fi = models.TimeField()
     hora = models.ForeignKey('horaris.FranjaHoraria',
                              null=True, blank=True,
-                             verbose_name='Franja Horaria', on_delete=models.CASCADE)
-    usuari = models.ForeignKey(User, on_delete=models.CASCADE)
+                             verbose_name='Franja Horaria')
+    usuari = models.ForeignKey(User)
     motiu = models.CharField(max_length=120, 
                              blank=False, 
                              help_text="""Explica el propòsit de la reserva o del canvi d'aula.
@@ -55,7 +54,7 @@ class AbstractReservaAula(models.Model):
             models.Index(fields=['es_reserva_manual','usuari','dia_reserva', 'hora']),
         ]
         
-    def __str__(self):
+    def __unicode__(self):
         return "{aula} {hora_inici}-{hora_fi} {usuari}".format(aula=self.aula, hora_inici=self.hora_inici, hora_fi=self.hora_fi, usuari = self.usuari)
 
     @property

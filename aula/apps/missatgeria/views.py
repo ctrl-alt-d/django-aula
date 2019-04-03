@@ -16,7 +16,6 @@ from django_tables2 import RequestConfig
 from aula.apps.missatgeria.table2_models import MissatgesTable
 from aula.apps.usuaris.forms import triaProfessorsConsergesSelect2Form
 from aula.utils import tools
-from aula.utils.tools import unicode
 from django.forms.models import modelform_factory
 from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
 from aula.apps.missatgeria.models import Missatge, Destinatari
@@ -47,11 +46,11 @@ def elMeuMur( request, pg ,tipus = 'all'):
                 ).update( moment_lectura = datetime.now() )
 
     table = MissatgesTable(q)
-    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 25}).configure(table)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 25}).configure(table)
 
     missatges = dict()
     for key,value in MISSATGES.items():
-        missatges [key] = list(value.keys())[0]
+        missatges [key] = value.keys()[0]
 
     return render(
                     request,

@@ -5,12 +5,11 @@ from datetime import datetime
 from django.apps import apps
 #consultes
 from django.db.models import Q
-from aula.utils.tools import unicode
 
 class AbstractImpartir(models.Model):
-    horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
-    professor_guardia = models.ForeignKey('usuaris.Professor', null=True,  blank=True, related_name='professor_guardia', on_delete=models.CASCADE)
-    professor_passa_llista = models.ForeignKey('usuaris.Professor', null=True,  blank=True, db_index=True, related_name='professor_passa_llista', on_delete=models.CASCADE)
+    horari = models.ForeignKey('horaris.Horari', db_index=True)
+    professor_guardia = models.ForeignKey('usuaris.Professor', null=True,  blank=True, related_name='professor_guardia')
+    professor_passa_llista = models.ForeignKey('usuaris.Professor', null=True,  blank=True, db_index=True, related_name='professor_passa_llista')
     dia_impartir = models.DateField(db_index=True)
     dia_passa_llista = models.DateTimeField(null=True, blank=True)
     comentariImpartir = models.TextField(null=False, blank=True, default='')
@@ -23,7 +22,7 @@ class AbstractImpartir(models.Model):
         verbose_name_plural = u'Impartir classes'
         unique_together = (("dia_impartir","horari"))
 
-    def __str__(self):
+    def __unicode__(self):
         canviaula = u""
         if self.canvi_aula_respecte_horari:
             canviaula = u" amb canvi d'aula a la {aula}".format(aula=self.get_nom_aula)
@@ -169,19 +168,19 @@ class AbstractEstatControlAssistencia(models.Model):
         verbose_name = u"Estat control d'assistencia"
         verbose_name_plural = u"Estats control d'assistencia"
         
-    def __str__(self):
+    def __unicode__(self):
         return self.nom_estat    
     
 
 class AbstractControlAssistencia(models.Model):
-    alumne = models.ForeignKey(to = 'alumnes.Alumne',  db_index=True, on_delete=models.CASCADE)
-    estat = models.ForeignKey('presencia.EstatControlAssistencia',  db_index=True, null=True, blank=True, on_delete=models.CASCADE)
-    impartir = models.ForeignKey('presencia.Impartir', db_index=True, on_delete=models.CASCADE)
-    professor = models.ForeignKey('usuaris.Professor', null=True, blank=True, on_delete=models.CASCADE)
+    alumne = models.ForeignKey(to = 'alumnes.Alumne',  db_index=True)
+    estat = models.ForeignKey('presencia.EstatControlAssistencia',  db_index=True, null=True, blank=True)
+    impartir = models.ForeignKey('presencia.Impartir', db_index=True)
+    professor = models.ForeignKey('usuaris.Professor', null=True, blank=True)
     
     swaped = models.BooleanField(default=False)
-    estat_backup = models.ForeignKey('presencia.EstatControlAssistencia', related_name='controlassistencia_as_bkup', db_index=True, null=True, blank=True, on_delete=models.CASCADE)
-    professor_backup = models.ForeignKey('usuaris.Professor', related_name='controlassistencia_as_bkup', null=True, blank=True, on_delete=models.CASCADE)
+    estat_backup = models.ForeignKey('presencia.EstatControlAssistencia', related_name='controlassistencia_as_bkup', db_index=True, null=True, blank=True)
+    professor_backup = models.ForeignKey('usuaris.Professor', related_name='controlassistencia_as_bkup', null=True, blank=True)
     
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
@@ -192,7 +191,7 @@ class AbstractControlAssistencia(models.Model):
         verbose_name_plural = u'Entrades al Control d\'Assistencia'
         unique_together = (("alumne", "impartir"))
         
-    def __str__(self):
+    def __unicode__(self):
         return unicode(self.alumne) + u' -> '+ unicode(self.estat)
 
     def esPrimeraHora(self):
@@ -236,7 +235,7 @@ class AbstractNoHaDeSerALAula(models.Model):
         verbose_name = u'Motiu no ha està pressent'
         verbose_name_plural = u'Motius no presència a l\'aula'
         
-    def __str__(self):
+    def __unicode__(self):
         return unicode(self.control.alumne) + u' -> '+ unicode(self.get_motiu_display() )    
 
 

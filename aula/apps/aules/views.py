@@ -33,7 +33,6 @@ from aula.apps.aules.forms import ( disponibilitatAulaPerAulaForm, AulesForm,
 from aula.apps.usuaris.models import User2Professor
 from aula.utils.decorators import group_required
 from aula.utils import tools
-from aula.utils.tools import unicode
 from django.contrib import messages
 import csv
 from django.utils.datetime_safe import datetime
@@ -55,7 +54,7 @@ def reservaAulaList( request ):
     table = Table2_ReservaAula(  reserves ) 
     table.order_by = ['-dia_reserva', ]
     
-    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 30}).configure(table)
+    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 30}).configure(table)
         
     return render(
                   request, 
@@ -396,7 +395,7 @@ def tramitarReservaAula (request, pk_aula=None, pk_franja= None , year=None, mon
                     messages.success(request, missatge)
                 return HttpResponseRedirect(r'/aules/lesMevesReservesDAula/')
 
-            except ValidationError as e:
+            except ValidationError, e:
                 for _, v in e.message_dict.items():
                     form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
 
@@ -432,7 +431,7 @@ def eliminarReservaAula (request, pk ):
         reserva.delete()
         missatge = u"Reserva anul·lada correctament"
         messages.info(request, missatge)
-    except ValidationError as e:
+    except ValidationError, e:
         for _,llista_errors in  e.message_dict.items():
             missatge = u"No s'ha pogut anul·lar la reserva: {0}".format(
                 u", ".join( x for x in llista_errors ) 

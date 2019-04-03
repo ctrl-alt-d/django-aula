@@ -13,7 +13,7 @@ import collections
 class AbstractMissatge(models.Model):
 
     data = models.DateTimeField( auto_now_add = True, db_index = True )
-    remitent = models.ForeignKey( User, db_index = True, on_delete=models.CASCADE )    
+    remitent = models.ForeignKey( User, db_index = True )    
     text_missatge = models.TextField("Missatge", help_text=u"Escriu el missatge")
     enllac = models.URLField(blank = True)
     tipus_de_missatge = models.CharField(max_length=250, null=True)
@@ -21,7 +21,7 @@ class AbstractMissatge(models.Model):
         abstract = True
         verbose_name = u'Missatge'
         verbose_name_plural = u'Missatges'
-    def __str__(self):
+    def __unicode__(self):
         return self.text_missatge
     
     def envia_a_usuari(self, usuari, importancia='IN'):
@@ -92,14 +92,14 @@ class AbstractDetallMissatge(models.Model):
         ('I', 'Info' ),
                      )
     
-    missatge = models.ForeignKey( 'missatgeria.Missatge', on_delete=models.CASCADE )   
+    missatge = models.ForeignKey( 'missatgeria.Missatge' )   
     detall = models.TextField("detall")
     tipus = models.CharField(max_length=2, choices=TIPUS_CHOICES, default = 'I')
     class Meta:
         abstract = True
         verbose_name = u'Detall del missatge'
         verbose_name_plural = u'Detalls del missatge'
-    def __str__(self):
+    def __unicode__(self):
         return self.detall
 
 
@@ -111,16 +111,16 @@ class AbstractDestinatari(models.Model):
         (importancia_IN,'Informatiu'),
         (importancia_PI,'Poc important'),
                            )
-    missatge = models.ForeignKey( 'missatgeria.Missatge', on_delete=models.CASCADE )
+    missatge = models.ForeignKey( 'missatgeria.Missatge' )
     importancia = models.CharField(max_length=2, choices=IMPORTANCIA_CHOICES, default = 'IN')
-    destinatari = models.ForeignKey( User, db_index = True, on_delete=models.CASCADE )
+    destinatari = models.ForeignKey( User, db_index = True )
     moment_lectura = models.DateTimeField( blank=True, null=True, db_index = True )
     followed = models.BooleanField( default = False )
     class Meta:
         abstract = True
         verbose_name = u'Lectura de missatge'
         verbose_name_plural = u'Lectures de missatges'
-    def __str__(self):
+    def __unicode__(self):
         return 'Missatge llegit' if self.moment_lectura else 'Missatge no llegit'
     
     def llegit(self):
