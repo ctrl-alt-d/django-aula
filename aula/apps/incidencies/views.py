@@ -635,7 +635,7 @@ def editaExpulsio( request, pk ):
     
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - expulsio.alumne.data_neixement).days / 365 
+        edatAlumne = expulsio.alumne.edat()
     except:
         pass
 
@@ -1485,7 +1485,7 @@ def editaSancio( request, pk ):
     
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - sancio.alumne.data_neixement).days / 365 
+        edatAlumne = sancio.alumne.edat()
     except:
         pass
     

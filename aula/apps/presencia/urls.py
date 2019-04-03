@@ -37,6 +37,14 @@ urlpatterns = [
                        
     url(r'^alertaAssistencia/$', presencia_views.alertaAssistencia,
         name="coordinacio_alumnes__assistencia_alertes__llistat" ),  
+          
+    #amorilla@xtec.cat             
+    url(r'^Indicadors/$', presencia_views.indicadors,
+        name="coordinacio_alumnes__indicadors__llistat" ),  
+
+    #amorilla@xtec.cat             
+    url(r'^indcsv/$', presencia_views.indcsv,
+        name="coordinacio_alumnes__indicadors__baixacsv" ),  
                        
     url(r'^faltesAssistenciaEntreDates/$', presencia_views.faltesAssistenciaEntreDates,
         name="aula__materies__assistencia_llistat_entre_dates" ),  
