@@ -1,9 +1,13 @@
 # This Python file uses the following encoding: utf-8
 
 #templates
-from django.template import RequestContext
 
 #workflow
+import os
+
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -111,7 +115,13 @@ def sincronitzaKronowin(request):
     if request.method == 'POST':
         form = sincronitzaKronowinForm(request.POST, request.FILES)
         if form.is_valid():
-            resultat=s.sincronitza(request.FILES['fitxer_kronowin'], request.user)
+
+            f = request.FILES['fitxer_kronowin']
+            path = default_storage.save('tmp/kronowin.txt', ContentFile(f.read()))
+            tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+            with open(tmp_file, 'r', encoding="utf-8") as f1:
+                resultat = s.sincronitza(f1, request.user)
+            default_storage.delete(path)
 
             #LOGGING
             Accio.objects.create( 
