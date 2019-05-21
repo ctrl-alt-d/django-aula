@@ -1551,7 +1551,7 @@ def editaSancio( request, pk ):
                 url = '/incidencies/sancions/'
                 return HttpResponseRedirect(url)
         except ValueError as e:
-            msg=u"S'ha produit un error intern. Potser que hagis sortit de mode L4 a mig procés?. L'error intern és {}".format(e.message)
+            msg=u"S'ha produit un error intern. Potser que hagis sortit de mode L4 a mig procés?. L'error intern és {}".format(str(e))
             formSancio.add_error(field=None, error=msg)  #rebo errors perquè penso que es barreja mode L4 i no L4
 
     else:

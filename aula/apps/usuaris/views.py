@@ -221,7 +221,7 @@ def elsProfessors( request ):
                                        .distinct()
                                        .count()
                                      )
-        pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 'N/A'
+        pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 0
         camp.contingut = u'{0:.0f}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
         camp.codi_ordenacio = pct
         filera.append(camp)
