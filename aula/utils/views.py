@@ -206,10 +206,10 @@ def about(request):
         imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup )    
         nImparticios = imparticions.count()
         nImparticionsLlistaPassada = imparticions.filter( professor_passa_llista__isnull = False ).count()
-        pct = nImparticionsLlistaPassada * 100 / nImparticios if nImparticios > 0 else 0
-    
-        estadistica1 = u'{0:.0f}% ({1} classes impartides, {2} controls)'.format( pct, nImparticios, nImparticionsLlistaPassada)
-        
+
+        pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
+        estadistica1 = u'{0}% ({1} classes impartides, {2} controls)'.format(pct, nImparticios, nImparticionsLlistaPassada)
+
             #---hores de classe
         nProfessor = Impartir.objects.filter( horari__professor = professor, horari__grup__isnull = False ).count()
         nTotal = Impartir.objects.filter( horari__grup__isnull = False).count()
