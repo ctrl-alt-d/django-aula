@@ -4,12 +4,61 @@ PARAMETRITZACIONS DEL DJANGO-AULA
 Al fitxer settings.py (o settings_local.py)
 -------------------------------------------
 
+# Permet concretar quantes faltes són necessaries segons el número de la carta
+# Si existeix aquest valor aleshores no es fa servir CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA
+# Si un nivell té assignat zero aleshores es mostrarà el missatge "Error triant la carta a enviar a la família"
+# Si es superen les cartes indicades mostrarà el missatge "Aquest alumne ha arribat al màxim de cartes"
+CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA = {  # nivell: [faltes per carta1, faltes per carta 2, ...]
+                    u"ESO": [5,5,5],  
+                    u"BTX": [5,5,5],
+                    u"CICLES": [15,15,10,10],
+                    u"INFORMATICA": [0],
+                  }
+
+# Permet fer servir un idioma concret per al format
+# de la data de la carta.
+# S'ha d'activar, per Ubuntu:
+# sudo locale-gen ca_ES.utf8
+
+CUSTOM_LC_TIME = 'ca_ES.utf8'
+CUSTOM_DATE_FORMAT = "%d %B de %Y"   #  5 d'abril de 1999, si fem servir 'ca_ES.utf8'
+
+# Si True, permet comptabilitzar tots els dies encara que no s'hagi passat llista.
+# Els dies en que no s'ha fet control d'assistència compten com dies en que tothom ha vingut.
+# Si no existeix o és False aleshores es comporta segons el mecanisme per defecte, no té
+# en compte els dies en que no s'ha passat llista
+CUSTOM_NO_CONTROL_ES_PRESENCIA = True
+
+# Per al càlcul d'indicadors
+# Aquest indicadors apareixen a Coord.Alumnes / Indicadors
+#  (Alumnes amb absències [justificades o no] de més del <percentatge> de les hores lectives del trimestre / Total alumnes del nivell)*100
+# els noms dels nivells corresponen a CUSTOM_NIVELLS
+CUSTOM_INDICADORS = [
+            # inici_curs    Final 1Trim   Final 2Trim   Final 3Trim  nivell  %
+            ['13/09/2018', '03/12/2018', '09/03/2019', '05/06/2019', 'ESO', 25],  
+            ['13/09/2018', '03/12/2018', '09/03/2019', '05/06/2019', 'ESO', 10],  
+            ['13/09/2018', '03/12/2018', '09/03/2019', '05/06/2019', 'ESO', 5],  
+            ['17/09/2018', '03/12/2018', '09/03/2019', '07/06/2019', 'BTX', 25],  
+            ['17/09/2018', '03/12/2018', '09/03/2019', '07/06/2019', 'BTX', 10],  
+            ['17/09/2018', '03/12/2018', '09/03/2019', '07/06/2019', 'BTX', 5],  
+            ['17/09/2018', '03/12/2018', '09/03/2019', '31/05/2019', 'CICLES', 25],  
+            ['17/09/2018', '03/12/2018', '09/03/2019', '31/05/2019', 'CICLES', 10],  
+            ['17/09/2018', '03/12/2018', '09/03/2019', '31/05/2019', 'CICLES', 5],  
+          ]
+
+CUSTOM_MOSTRAR_MAJORS_EDAT = False 
+	Amb True mostrarà al costat del llistat de l'alumne si és major d'edat o no.
+	El missatge el definim a CUSTOM_MARCA_MAJORS_EDAT 
+CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' 
+	Missatge que apareix al costat dels majors d'edat
+	Cognom1 Cognom2, Nom (^18)
+
 CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
     Serveix per mostrar com s'ordena l'alumnat a l'hora de passar llista
     	'alumne': 	Ordena primer per grup i després per cognom de l'alumnat (alumnes de diferents grups)
 	'alumne nom':	Ordena l'alumnat per nom
 	'alumne_cognom':Ordena l'alumant per cognoms
-    
+
 CUSTOM_RETARD_PROVOCA_INCIDENCIA
     Si True, cada retard d'un alumne provoca una incidència
     

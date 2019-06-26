@@ -1,8 +1,13 @@
 # This Python file uses the following encoding: utf-8
+import os
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.shortcuts import render
 from django.template.context import RequestContext
 from aula.apps.extSaga.forms import sincronitzaSagaForm
@@ -25,9 +30,12 @@ def sincronitzaSaga(request):
         form = sincronitzaSagaForm(request.POST, request.FILES)
         
         if form.is_valid():
-            f=request.FILES['fitxerSaga']
-            resultat=sincronitza(f, user)
-            
+            f = request.FILES['fitxerSaga']
+            path = default_storage.save('tmp/saga.csv', ContentFile(f.read()))
+            tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+            with open(tmp_file, 'r', encoding="latin1") as f1:
+                resultat=sincronitza(f1, user)
+            default_storage.delete(path)
             return render(
                     request,
                     'resultat.html', 

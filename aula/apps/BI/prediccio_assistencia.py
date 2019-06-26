@@ -6,6 +6,7 @@ Created on Mar 24, 2013
 '''
 from django.conf import settings
 from lxml import etree
+from aula.utils.tools import unicode
 
 def predictTreeModel( values ):
     

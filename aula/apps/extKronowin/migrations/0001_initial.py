@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('franja_kronowin', models.CharField(unique=True, max_length=45, verbose_name='Codi hora al kronowin(0,0=primera hora)')),
-                ('franja_aula', models.ForeignKey(blank=True, to='horaris.FranjaHoraria', null=True)),
+                ('franja_aula', models.ForeignKey(blank=True, to='horaris.FranjaHoraria', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['franja_kronowin'],
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('grup_kronowin', models.CharField(unique=True, max_length=45)),
-                ('Grup2Aula', models.ForeignKey(related_name='grup2aulakonowin_set', to='alumnes.Grup', null=True)),
+                ('Grup2Aula', models.ForeignKey(related_name='grup2aulakonowin_set', to='alumnes.Grup', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['Grup2Aula', 'grup_kronowin'],

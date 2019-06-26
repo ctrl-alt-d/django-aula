@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils.tools import classebuida
-from django.core.urlresolvers import resolve, reverse
+from django.urls import resolve, reverse
 from django.contrib.auth.models import Group, User
 from aula.apps.usuaris.models import User2Professor, AlumneUser
 from django.db.models.aggregates import Count
@@ -14,7 +14,7 @@ from aula.apps.sortides.models import Sortida
 
 def calcula_menu( user , path ):
     
-    if not user.is_authenticated():
+    if not user.is_authenticated:
         return
 
     #mire a quins grups està aquest usuari:
@@ -202,6 +202,8 @@ def calcula_menu( user , path ):
                       ("Sancions", 'coordinacio_alumnes__sancions__sancions', di, None, None ),
                       ("Passa llista grup", 'coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria', di, None, None ),
                       ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
+                      #amorilla@xtec.cat
+                      ("Indicadors", 'coordinacio_alumnes__indicadors__llistat', di, None, None ),
                    )
                ),
 
@@ -383,6 +385,7 @@ coordinacio_alumnes__sancions__sancions_excel
 coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria
 coordinacio_alumnes__ranking__list
 coordinacio_alumnes__seguiment_tutorial__preguntes
+coordinacio_alumnes__indicadors__llistat
 
 administracio__configuracio__assigna_franges_kronowin
 administracio__configuracio__assigna_grups

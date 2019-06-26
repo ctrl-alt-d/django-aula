@@ -30,6 +30,7 @@ from aula.apps.usuaris.models import  Professor, User2Professor, Professional, U
 from aula.apps.incidencies.models import Expulsio
 from aula.apps.horaris.models import DiaDeLaSetmana
 from aula.utils import tools    
+from aula.utils.tools import unicode    
 
 from aula.utils.widgets import DateTimeTextImput,DateTextImput
 
@@ -119,7 +120,7 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
                                 )                             
                             incidencia_despres_de_posar( incidencia )
 
-                    except ValidationError, e:
+                    except ValidationError as e:
                         #Com que no és un formulari de model cal tractar a mà les incidències del save:
                         for _, v in e.message_dict.items():
                             form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  v  )
@@ -208,7 +209,7 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
                 text = u"""Eliminada incidència d'aula de l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
             )  
         
-    except ValidationError, e:
+    except ValidationError as e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render(
@@ -257,7 +258,7 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
                 text = u"""Eliminada incidència de l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
             ) 
         messages.success(request, u"Incidència de l'alumne {alumne} esborrada correctament".format(alumne=incidencia.alumne))         
-    except ValidationError, e:
+    except ValidationError as e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render(
@@ -635,7 +636,7 @@ def editaExpulsio( request, pk ):
     
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - expulsio.alumne.data_neixement).days / 365 
+        edatAlumne = expulsio.alumne.edat()
     except:
         pass
 
@@ -702,7 +703,7 @@ def editaExpulsio( request, pk ):
                             impersonated_from = request.user if request.user != user else None,
                             text = u"""Esborrada expulsió d'alumne {0}.""".format( expulsio.alumne )
                         )  
-                except ValidationError, e:
+                except ValidationError as e:
                     hiHaErrors = True
                     for m in itertools.chain( *e.message_dict.values() ):
                         messages.error( unicode( m ) )
@@ -848,7 +849,7 @@ def posaExpulsioPerAcumulacio( request, pk ):
         missatge = u"""Generada expulsió per acumulació d'incidències. Alumne/a: {0} """.format( expulsio.alumne )
         messages.info(request, missatge)
 
-    except ValidationError, e:
+    except ValidationError as e:
         messages.error( request,  u", ".join( itertools.chain( *e.message_dict.values() ) ) )
         return HttpResponseRedirect( url_next_default )   
 
@@ -915,7 +916,7 @@ def llistaIncidenciesProfessional( request ):
                                           'expulsions': []}  )
         alumnes[alumne_str]['expulsions'].append( expulsio  )
 
-    alumnesOrdenats = [(alumneKey, alumnes[alumneKey], )  for alumneKey in  sorted(alumnes.iterkeys()) ]
+    alumnesOrdenats = [(alumneKey, alumnes[alumneKey], )  for alumneKey in  sorted(iter(alumnes.keys())) ]
 
     #table = Table2_IncidenciesMostrar(alumnesOrdenats)
     hi_ha_expulsions_pendents_tramitar=True
@@ -1069,7 +1070,7 @@ def alertesAcumulacioExpulsions( request ):
         
     table = table2( alumnes )
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 50}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 50}).configure(table)
     
     return render(
                   request, 
@@ -1150,7 +1151,7 @@ def sancio( request, pk ):
                 text = u"""Creada sanció de l'alumne {0}.""".format( sancio.alumne )
             )   
 
-    except ValidationError, e:
+    except ValidationError as e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render(
@@ -1391,7 +1392,7 @@ def cartaSancio( request, pk ):
     report.hora_final = sancio.franja_fi.hora_fi.strftime('%H:%M')    
 
     capDeSetmana = DiaDeLaSetmana.objects.filter(es_festiu=True).values_list('n_dia_ca', flat=True)
-    generadorDies = (sancio.data_inici + timedelta(d) for d in xrange((sancio.data_fi-sancio.data_inici).days+1))
+    generadorDies = (sancio.data_inici + timedelta(d) for d in range((sancio.data_fi-sancio.data_inici).days+1))
     report.quantitat_dies = sum(1 for dia in generadorDies if dia.weekday() not in capDeSetmana)
     
     report.motiu = sancio.motiu
@@ -1451,7 +1452,7 @@ def cartaSancio( request, pk ):
         docFile.close()
         os.remove(resultat)
         
-    except Exception, e:
+    except Exception as e:
         excepcio = unicode( e )
         
     if not excepcio:
@@ -1485,7 +1486,7 @@ def editaSancio( request, pk ):
     
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - sancio.alumne.data_neixement).days / 365 
+        edatAlumne = sancio.alumne.edat()
     except:
         pass
     
@@ -1550,7 +1551,7 @@ def editaSancio( request, pk ):
                 url = '/incidencies/sancions/'
                 return HttpResponseRedirect(url)
         except ValueError as e:
-            msg=u"S'ha produit un error intern. Potser que hagis sortit de mode L4 a mig procés?. L'error intern és {}".format(e.message)
+            msg=u"S'ha produit un error intern. Potser que hagis sortit de mode L4 a mig procés?. L'error intern és {}".format(str(e))
             formSancio.add_error(field=None, error=msg)  #rebo errors perquè penso que es barreja mode L4 i no L4
 
     else:
@@ -1625,12 +1626,12 @@ def esborrarSancio( request, pk ):
         sancio.delete()
 
         
-    except ValidationError, e:
+    except ValidationError as e:
         #Com que no és un formulari de model cal tractar a mà les incidències del save:
         for _, v in e.message_dict.items():
             for x in v:
                 messages.error(request,  x  )
-    except ProtectedError, e:
+    except ProtectedError as e:
         messages.error(request,  "Aquesta sanció té expulsions relacionades."  )
 
     url = '/incidencies/sancions/'
@@ -1653,7 +1654,7 @@ def controlTramitacioExpulsions( request ):
     table = Table2_ExpulsioTramitar( list( expulsions) ) 
     table.order_by = 'total_expulsions_vigents' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     return render(
                   request, 

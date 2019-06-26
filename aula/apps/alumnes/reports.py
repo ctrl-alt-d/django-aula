@@ -1,6 +1,7 @@
 from aula.apps.tutoria.models import TutorIndividualitzat
 from aula.apps.usuaris.models import Professor
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 
 def reportLlistaTutorsIndividualitzats(  ):

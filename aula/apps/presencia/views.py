@@ -21,7 +21,7 @@ from aula.apps.usuaris.models import User2Professor, Accio
 
 #helpers
 from aula.apps.presencia.regeneraImpartir import regeneraThread
-from aula.utils.tools import getImpersonateUser, getSoftColor, executaAmbOSenseThread
+from aula.utils.tools import getImpersonateUser, getSoftColor, executaAmbOSenseThread, unicode
 from django.utils.safestring import SafeText
 from django.apps import apps
 
@@ -44,7 +44,7 @@ from django.http import Http404
 from django.utils.datetime_safe import datetime, date
 from django import forms
 from aula.apps.assignatures.models import Assignatura
-from aula.apps.presencia.reports import alertaAssitenciaReport 
+from aula.apps.presencia.reports import alertaAssitenciaReport, indicadorsReport
 from aula.apps.presencia.rpt_faltesAssistenciaEntreDatesProfessor import faltesAssistenciaEntreDatesProfessorRpt
 from django.forms.models import modelformset_factory
 from django.forms.widgets import RadioSelect, HiddenInput, TextInput
@@ -55,8 +55,8 @@ from aula.apps.presencia.business_rules.impartir import impartir_despres_de_pass
 #template filters
 from django.template.defaultfilters import date as _date
 from django.contrib import messages
-from django.core.urlresolvers import reverse
-
+from django.urls import reverse
+  
 #vistes -----------------------------------------------------------------------------------
 @login_required
 @group_required(['direcció'])
@@ -224,7 +224,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 
 
     ###fi miscelania sortides.####################################################################################
-    
+
     return render(
                 request,
                 'mostraImpartir.html', 
@@ -314,7 +314,7 @@ def passaLlista(request, pk):
                     control_aux = form.save()
                     hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R")
                     quelcomBe |= True
-                except ValidationError, e:
+                except ValidationError as e:
                     totBe = False
                     # Com que no és un formulari de model cal tractar a mà les incidències del save:
                     form = helper_tuneja_item_nohadeseralaula(request, control_a,
@@ -363,7 +363,7 @@ def passaLlista(request, pk):
                 impartir_despres_de_passar_llista(impartir)
                 if totBe:
                     return HttpResponseRedirect(url_next)
-            except ValidationError, e:
+            except ValidationError as e:
                 # Com que no és un formulari de model cal tractar a mà les incidències del save:
                 for _, v in e.message_dict.items():
                     form0._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
@@ -475,10 +475,14 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
                 instance=control_a)
 
         form.fields['estat'].label = unicode(control_a.alumne)
-        avui_es_anivesari = (control_a.alumne.data_neixement.month == control_a.impartir.dia_impartir.month and
-                             control_a.alumne.data_neixement.day == control_a.impartir.dia_impartir.day)
+        avui_es_aniversari = control_a.alumne.aniversari(control_a.impartir.dia_impartir)
+
+        missatge = ''
+        if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and control_a.alumne.edat(control_a.impartir.dia_impartir)>=18):
+            missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
+
         form.fields['estat'].label = (unicode(control_a.alumne)
-                                      + ('(fa anys en aquesta data)' if avui_es_anivesari else '')
+                                      + missatge +('(fa anys en aquesta data)' if avui_es_aniversari else '')
                                       )
     return form
 
@@ -959,7 +963,7 @@ def calculadoraUnitatsFormatives(request):
                 try:
                     darreraImparticio = imparticionsAssignatura[hores-1]
                     infoForm = [ ('Darrera classe', u'dia {0} a les {1}'.format( darreraImparticio.dia_impartir, darreraImparticio.horari.hora.hora_inici )), ]
-                except Exception, e:
+                except Exception as e:
                     form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  [e]  )  
             
                 
@@ -1014,6 +1018,33 @@ def alertaAssistencia(request):
              'form': form },
             )
 
+#amorilla@xtec.cat 
+@login_required
+@group_required(['direcció'])
+def indicadors(request):
+
+    (report, dades) = indicadorsReport()
+    if dades is None:
+        menuCTX=False
+    else:
+        menuCTX=list({"/presencia/indcsv": "Baixa dades csv"}.items())
+    return render(
+            request,
+            'report.html',
+                {'report': report,
+                 'head': 'Indicadors' ,
+                 'menuCTX':menuCTX
+                },
+            )
+
+#amorilla@xtec.cat 
+@login_required
+@group_required(['direcció'])
+def indcsv(request):
+
+    (_, dades) = indicadorsReport()
+    return dades
+
 @login_required
 @group_required(['professors'])
 def faltesAssistenciaEntreDates(request):    
@@ -1052,7 +1083,7 @@ def faltesAssistenciaEntreDates(request):
                          'head': 'Informació alumnes' ,
                         },
                     )
-#            except Exception, e:
+#            except Exception as e:
 #                form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  [e]  )  
             
                 
@@ -1151,7 +1182,7 @@ def copiarAlumnesLlista(request, pk):
                 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread, treuThread
                 #Eliminem alumnes abans de copiar.
                 if eliminarAlumnes:
-                    treu = treuThread(expandir=None, alumnes=alumnesDesti.values(), impartir=horaDesti, matmulla = False
+                    treu = treuThread(expandir=None, alumnes=list(alumnesDesti.values()), impartir=horaDesti, matmulla = False
                                       ,usuari=user)
                     treu.usuari = user
                     treu.start()
@@ -1229,7 +1260,7 @@ def anularImpartir(request, pk):
             control.estat = None
             try:
                 control.save()
-            except ValidationError, e:
+            except ValidationError as e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1239,7 +1270,7 @@ def anularImpartir(request, pk):
                 impartir.professor_passa_llista = User2Professor( user )
                 impartir.dia_passa_llista =  datetime.now()
                 impartir.save()
-            except ValidationError, e:
+            except ValidationError as e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1275,7 +1306,7 @@ def desanularImpartir(request, pk):
                 control.swaped = False
             try:
                 control.save()
-            except ValidationError, e:
+            except ValidationError as e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1285,7 +1316,7 @@ def desanularImpartir(request, pk):
                 impartir.professor_passa_llista = None
                 impartir.dia_passa_llista = None
                 impartir.save()
-            except ValidationError, e:
+            except ValidationError as e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 

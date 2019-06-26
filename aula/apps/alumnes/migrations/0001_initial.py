@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('nom_grup', models.CharField(help_text="Aix\xf2 normalment ser\xe0 una lletra. Ex 'A' ", max_length=45)),
                 ('descripcio_grup', models.CharField(max_length=240, blank=True)),
-                ('curs', models.ForeignKey(to='alumnes.Curs')),
+                ('curs', models.ForeignKey(to='alumnes.Curs', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['curs', 'curs__nivell__nom_nivell', 'curs__nom_curs', 'nom_grup'],
@@ -94,12 +94,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='curs',
             name='nivell',
-            field=models.ForeignKey(to='alumnes.Nivell'),
+            field=models.ForeignKey(to='alumnes.Nivell', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='alumne',
             name='grup',
-            field=models.ForeignKey(to='alumnes.Grup'),
+            field=models.ForeignKey(to='alumnes.Grup', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='alumne',

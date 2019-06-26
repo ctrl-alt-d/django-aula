@@ -7,6 +7,10 @@ from aula.apps.usuaris.models import Professor, AlumneUser
 from aula.apps.tutoria.models import SeguimentTutorial
 from aula.apps.alumnes.named_instances import Nivells_no_obligatoris, Cursa_nivell
 from django.utils import timezone
+#  amorilla@xtec.cat
+from django.conf import settings
+import calendar
+from dateutil.relativedelta import relativedelta
 
 class AbstractNivell(models.Model):
     nom_nivell = models.CharField("Nom nivell",max_length=45, unique=True)
@@ -18,13 +22,13 @@ class AbstractNivell(models.Model):
         ordering = ['ordre_nivell']
         verbose_name = u'Nivell'
         verbose_name_plural = u'Nivells'
-    def __unicode__(self):
+    def __str__(self):
         return self.nom_nivell + ' (' + self.descripcio_nivell + ')'
     def save(self, *args, **kwargs):
         super(AbstractNivell, self).save(*args, **kwargs) # Call the "real" save() method.
 
 class AbstractCurs(models.Model):
-    nivell = models.ForeignKey("alumnes.Nivell")
+    nivell = models.ForeignKey("alumnes.Nivell", on_delete=models.CASCADE)
     nom_curs = models.CharField("Nom curs",max_length=45, help_text=u"Un número que representa el curs (Ex: 3)")
     nom_curs_complert = models.CharField(max_length=45, blank=True, unique=True, help_text=u"Dades que es mostraran (Ex: 1r ESO)")
     data_inici_curs = models.DateField("Comencen", null=True, blank=True, help_text=u"Dia que comencen les classes (cal informar aquest cap per poder fer control de presència)")
@@ -40,7 +44,7 @@ class AbstractCurs(models.Model):
     def save(self, *args, **kwargs):
         super(AbstractCurs, self).save(*args, **kwargs) # Call the "real" save() method.
     
-    def __unicode__(self):
+    def __str__(self):
         return self.nom_curs_complert
     
     def dies(self):
@@ -56,7 +60,7 @@ class AbstractCurs(models.Model):
         return totsElsDies    
 
 class AbstractGrup(models.Model):
-    curs = models.ForeignKey("alumnes.Curs")
+    curs = models.ForeignKey("alumnes.Curs", on_delete=models.CASCADE)
     nom_grup = models.CharField(max_length=45, help_text=u'''Això normalment serà una lletra. Ex 'A' ''')
     descripcio_grup = models.CharField(max_length=240, blank=True)
     class Meta:
@@ -64,7 +68,7 @@ class AbstractGrup(models.Model):
         ordering = ['curs','curs__nivell__nom_nivell', 'curs__nom_curs', 'nom_grup']
         verbose_name = u'Grup'
         verbose_name_plural = u'Grups'
-    def __unicode__(self):
+    def __str__(self):
         return self.descripcio_grup if self.descripcio_grup else self.curs.nom_curs_complert + ' ' + self.nom_grup
 
     def save(self, *args, **kwargs):
@@ -107,7 +111,7 @@ class AbstractAlumne(models.Model):
             )
         
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
-    grup = models.ForeignKey("alumnes.Grup")
+    grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
     nom = models.CharField("Nom",max_length=240)
     cognoms = models.CharField("Cognoms",max_length=240)
     data_neixement = models.DateField("Data naixement",null=True)
@@ -160,7 +164,7 @@ class AbstractAlumne(models.Model):
         verbose_name_plural = u'Alumnes'
         unique_together = [] #("nom", "cognoms",  "data_neixement", "grup__curs__nivell"),("ralc","grup__curs__nivell"))
 
-    def __unicode__(self):
+    def __str__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom 
 
     def delete(self):
@@ -185,7 +189,7 @@ class AbstractAlumne(models.Model):
         return Professor.objects.filter(tutor__grup=self.grup).distinct()
 
     def tutorsDeLAlumne_display(self):
-        return u", ".join( [unicode(tutor) for tutor in self.tutorsDeLAlumne() ])
+        return u", ".join( [str(tutor) for tutor in self.tutorsDeLAlumne() ])
 
     def force_delete(self):
         super(AbstractAlumne,self).delete()
@@ -232,9 +236,34 @@ class AbstractAlumne(models.Model):
 
     def cursa_nivell(self, nivell_txt):
         return Cursa_nivell(nivell_txt, self)
+    
+    #amorilla@xtec.cat
+    # Retorna el nivell que correspon a l'alumne segons CUSTOM_NIVELLS
+    # Si no correspon cap aleshores retorna el nivell assignat a la base de dades
+    def getNivellCustom(self):
+        for k,v in settings.CUSTOM_NIVELLS.items():
+            if self.grup.curs.nivell.nom_nivell in v:
+                return k
+        return self.grup.curs.nivell.nom_nivell
 
+    # amorilla@xtec.cat  
+    # Retorna l'edat de l'alumne. 
+    # Si s'indica una data per paràmetre retorna l'edat en la data indicada, 
+    # en altre cas calcula l'edat en el dia actual
+    def edat( self, data=None):
+        if data is None:
+            data = date.today()
+        dnaix = self.data_neixement
+        return relativedelta(data, dnaix).years
 
-
-
-
+    # amorilla@xtec.cat 
+    # Retorna true si és l'aniversari de l'alumne. 
+    # Té en compte el cas 29/2, si l'any no té 29/2 indica aniversari el 28/2.
+    # Si s'indica una data per paràmetre retorna si és aniversari en la data indicada, 
+    # en altre cas calcula en el dia actual
+    def aniversari( self, data=None):
+        if data is None:
+            data = date.today()
+        dnaix = self.data_neixement
+        return  (( data.month,  data.day) == (dnaix.month, dnaix.day)) or (not calendar.isleap(data.year) and (dnaix.month, dnaix.day) ==(2,29) and ( data.month,  data.day)==(2,28) )
 

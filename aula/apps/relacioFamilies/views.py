@@ -18,6 +18,7 @@ from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 
 #qualitativa
@@ -105,7 +106,7 @@ def enviaBenvinguda( request , pk ):
         
     try:
         cosMissatge = enviaBenvingudaAlumne( alumne ) 
-    except Exception, e:
+    except Exception as e:
         cosMissatge = {'errors': [ e ], 'infos':[], 'warnings':[] }
     
     cosMissatge['url_next']=url_next
@@ -171,7 +172,7 @@ def configuraConnexio( request , pk ):
 
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - alumne.data_neixement).days / 365 
+        edatAlumne = alumne.edat()
     except:
         pass
         
@@ -350,7 +351,7 @@ def canviParametres( request ):
 
     edatAlumne = None
     try:
-        edatAlumne = (date.today() - alumne.data_neixement).days / 365 
+        edatAlumne = alumne.edat()
     except:
         pass
 
