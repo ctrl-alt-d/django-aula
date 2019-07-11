@@ -236,7 +236,90 @@ def about(request):
                      'head': 'About' ,
                     },
                 )
-            
+
+
+@login_required
+def pagamentOnLine(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+
+    report = []
+    taula = tools.classebuida()
+
+    taula.titol = tools.classebuida()
+    taula.titol.contingut = ''
+    taula.titol.enllac = None
+
+    taula.capceleres = []
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 20
+    capcelera.contingut = u'Informació'
+    capcelera.enllac = None
+    taula.capceleres.append(capcelera)
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 80
+    capcelera.contingut = u''
+    taula.capceleres.append(capcelera)
+
+    taula.fileres = []
+
+    filera = []
+
+    # -by--------------------------------------------
+    camp = tools.classebuida()
+    camp.enllac = None
+    camp.contingut = u'Dades Fiscals'
+    camp.enllac = ''
+    filera.append(camp)
+
+    # -tip--------------------------------------------
+
+    dadesFiscalsFile = open(settings.DADES_FISCALS_FILE, "r")
+    tip = dadesFiscalsFile.read()
+
+    camp = tools.classebuida()
+    camp.enllac = ''
+    camp.contingut = tip
+    filera.append(camp)
+
+    taula.fileres.append(filera)
+
+    # -1--------------------------------------------
+    filera = []
+
+    camp = tools.classebuida()
+    camp.enllac = None
+    camp.contingut = u'Política de vendes/devolucions'
+    camp.enllac = ''
+    filera.append(camp)
+
+    # -tip--------------------------------------------
+
+    politicaVendesFile = open(settings.POLITICA_VENDA_FILE, "r")
+    tip = politicaVendesFile.read()
+
+    camp = tools.classebuida()
+    camp.enllac = ''
+    camp.contingut = tip
+    filera.append(camp)
+
+    taula.fileres.append(filera)
+
+
+    report.append(taula)
+
+    return render(
+        request,
+        'report.html',
+        {'report': report,
+         'head': 'Pagament Online',
+         },
+    )
+
+
 @login_required    
 def calendariDevelop(request):
     credentials = tools.getImpersonateUser(request) 

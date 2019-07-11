@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE
 from aula.utils.tools import classebuida
 from django.urls import resolve, reverse
 from django.contrib.auth.models import Group, User
@@ -266,6 +267,7 @@ def calcula_menu( user , path ):
                       ("Missatge a professorat o PAS", 'varis__prof_i_pas__envia_professors_i_pas', pr or pl or co, None, None ),
                       ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', tots, None, None ),
                       ("About", 'varis__about__about', tots, None, None ),
+                      ("Pagament Online", 'varis__pagament__pagament_online', al if CUSTOM_SORTIDES_PAGAMENT_ONLINE else None, None, None),
                    )
                ),
 

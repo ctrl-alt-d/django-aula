@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from aula.utils.views import carregaInicial, calendariDevelop, blanc, about
+from aula.utils.views import carregaInicial, calendariDevelop, blanc, about, pagamentOnLine
 
 urlpatterns = [
                        
@@ -8,6 +8,9 @@ urlpatterns = [
                        
     url(r'^about/$', about,
         name ="varis__about__about" )    ,
+
+    url(r'^pagamentOnLine/$', pagamentOnLine,
+        name ="varis__pagament__pagament_online" )    ,
                        
     url(r'^calendariDevelop/$', calendariDevelop,
         name ="help__calendari__calendari" )    ,
