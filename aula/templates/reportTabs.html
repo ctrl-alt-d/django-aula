@@ -68,9 +68,22 @@
 				      <div class="modal-body">
 				        {{camp.modal.body | linebreaks}}
 				      </div>
-				      <div class="modal-footer">
-				        <button type="button" class="btn btn-primary" data-dismiss="modal">Tancar</button>
-				      </div>
+
+                        {% if camp.modal.checkbox %}
+                          <div class="modal-footer">
+                              <input type="checkbox" class="custom-control-input" id="defaultUnchecked">
+                              <a class="custom-control-label" for="defaultUnchecked" href="{{camp.modal.checkbox_enllac}}" target="_blank">{{ camp.modal.checkbox }}</a></label>
+                          </div>
+                      {% endif %}
+                      {% if camp.modal.enllac %}
+                          <div class="modal-footer">
+                            <a class="btn btn-primary" href="{{ camp.modal.enllac }}" role="button">{{ camp.modal.text_enllac }}</a>
+                          </div>
+                      {% else %}
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Tancar</button>
+                          </div>
+                      {% endif %}
 				    </div>
 				  </div>
 				</div>
