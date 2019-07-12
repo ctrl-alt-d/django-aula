@@ -18,6 +18,8 @@ from django.contrib.auth.models import Group
 import time
 from aula.apps.extEsfera.models import Grup2Aula
 
+from aula.utils.tools import unicode
+
 
 def sincronitza(f, user = None):
 

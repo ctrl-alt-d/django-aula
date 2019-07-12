@@ -6,7 +6,7 @@ from django.template.loader import get_template
 from django.template import Context
 from django.conf import settings
 
-import cStringIO as StringIO
+from io import StringIO
 import cgi
 from django.core.validators import validate_ipv4_address
 from django.core.exceptions import ValidationError
@@ -17,8 +17,11 @@ except:
 
 #--------------------------------------------------
 
+def unicode(text, codi=None):
+    return str(text)
+
 def calculate_my_time_off(user):
-    if user.is_anonymous():
+    if user.is_anonymous:
         return settings.CUSTOM_TIMEOUT
     else:
         return max(settings.CUSTOM_TIMEOUT_GROUP.get(g.name, settings.CUSTOM_TIMEOUT)
@@ -61,10 +64,10 @@ def lowpriority():
     pass
     
 def getSoftColor( obj ):
-    str = unicode( obj ) + u'con mucha marcha'
+    strc = unicode( obj ) + u'con mucha marcha'
     i = 0
     j = 77
-    for s in str:
+    for s in strc:
         i += ( 103 * ord( s ) ) % 2001
         j = j % 573 + i * 5
     i = i*i
@@ -103,7 +106,7 @@ def getRealUser( request ):
 
 def sessioImpersonada( request ):
     (user, _ ) = getImpersonateUser(request)
-    return request and request.user.is_authenticated() and request.user.pk != user.pk
+    return request and request.user.is_authenticated and request.user.pk != user.pk
 
 class classebuida(object):
     pass
@@ -118,7 +121,7 @@ class diccionari(dict):
     def compte(self):
         return self.__len__()
     def itemsEnOrdre(self):
-        return iter(sorted(self.iteritems()))
+        return iter(sorted(self.items()))
     def __init__(self, *args, **kwargs):
         super(dict,self).__init__(*args,**kwargs)    
 

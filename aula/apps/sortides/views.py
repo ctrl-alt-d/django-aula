@@ -7,6 +7,7 @@ from aula.utils.decorators import group_required
 
 #helpers
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.presencia.models import Impartir
 from aula.apps.horaris.models import FranjaHoraria
@@ -27,7 +28,7 @@ from icalendar import vCalAddress, vText
 from django.http.response import HttpResponse, Http404
 from django.utils.datetime_safe import datetime
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom
 from django.contrib import messages
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
@@ -118,7 +119,7 @@ def imprimir( request, pk, din = '4'):
     #resultat = StringIO.StringIO( )
     resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
     #context = Context( {'reports' : reports, } )
-    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt') if din==4 else os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2-A5.odt')
+    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt') if din=='4' else os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2-A5.odt')
     if not os.path.isfile(path):
         path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt') if din=='4' else os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2-A5.odt')
 
@@ -132,7 +133,7 @@ def imprimir( request, pk, din = '4'):
     #barcode
     os.remove(barres)
         
-#     except Exception, e:
+#     except Exception as e:
 #         excepcio = unicode( e )
         
     if True: #not excepcio:
@@ -168,7 +169,7 @@ def sortidesMevesList( request ):
     table = Table2_Sortides( list( sortides ), origen="Meves" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     return render(
                   request, 
@@ -196,7 +197,7 @@ def sortidesAllList( request ):
     table = Table2_Sortides( data=sortides, origen="All" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
         
@@ -240,7 +241,7 @@ def sortidesGestioList( request ):
     table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
         
@@ -501,7 +502,7 @@ def alumnesConvocats( request, pk , origen ):
 
                 nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
             
     else:
@@ -597,12 +598,12 @@ def alumnesFallen( request, pk , origen ):
                 
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
 
@@ -681,7 +682,7 @@ def alumnesJustificats( request, pk , origen ):
                 
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
     else:
@@ -787,7 +788,7 @@ def professorsAcompanyants( request, pk , origen ):
                                     
                 nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )                
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
     else:

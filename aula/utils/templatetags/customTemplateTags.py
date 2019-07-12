@@ -40,7 +40,7 @@ class GroupCheckNode(template.Node):
     def render(self, context):
         user = Variable('user').resolve(context)
         
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return self.nodelist_false.render(context)
 
         #if user.is_staff:
@@ -81,14 +81,14 @@ class TutorCheckNode(template.Node):
     def render(self, context):
         user = Variable('user').resolve(context)
         
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return self.nodelist_false.render(context)
 
         if user.is_staff:
             return self.nodelist_true.render(context)
 
         try:
-            from usuaris.models import User2Professor
+            from aula.apps.usuaris.models import User2Professor
             professor = User2Professor( user )
         except:
             return self.nodelist_false.render(context)

@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 from django.db.models.aggregates import Count
 from django.db.models import Q, F, Case, When, IntegerField
@@ -290,7 +291,6 @@ def indicadorsReport():
         trim3=0
         curs=0
         sup1=sup2=sup3=quan1=quan2=quan3=0
-
         if data>dtrim1:
             (trim1, sup1, quan1)=indicadorAbsentisme( dtrim0, dtrim1, nivell, tpc)
 

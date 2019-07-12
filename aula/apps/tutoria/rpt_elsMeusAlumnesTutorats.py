@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.tutoria.models import Tutor, SeguimentTutorialRespostes, ResumAnualAlumne
 from aula.utils import tools
+from aula.utils.tools import unicode
 from django.db.models import Min, Max, Q
 from django.utils.datetime_safe import  date, datetime
 from aula.apps.alumnes.models import Alumne, Grup

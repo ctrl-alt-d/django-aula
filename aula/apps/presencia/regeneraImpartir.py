@@ -7,6 +7,7 @@ from aula.apps.missatgeria.missatges_a_usuaris import FI_REPROGRAMACIO_CLASSES, 
 from aula.apps.presencia.models import Impartir
 from threading import Thread
 from aula.utils import tools
+from aula.utils.tools import unicode
 from django.db.models import Q
 from aula.apps.horaris.helpers import esFestiu
 import traceback
