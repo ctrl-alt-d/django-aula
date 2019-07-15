@@ -1,4 +1,4 @@
 #!/bin/bash
 cd `dirname $0`/..
-source ../venv3/bin/activate
+source ./venv/bin/activate
 python manage.py notifica

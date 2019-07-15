@@ -124,7 +124,7 @@ NOM_CENTRE = 'Institut Badia'
 LOCALITAT = u"Badia Del Valles"
 
 #URL Por donde contestara la apliacion (Cambiar schema a https si se activa el trafico TSL)
-URL_DJANGO_AULA = r'http://djau.local'
+URL_DJANGO_AULA = r'http://el_teu_domini.cat'
 
 #HOSTS que tendran acceso a la Aplicacion (Por defecto '*' permite a todos los equipos con acceso a la maquina,usar la aplicacion)
 #Puedes colocar direciones en formato CIDR o dominios, tambien se aceptan Wildcards
@@ -261,11 +261,14 @@ El primer escenario es para servir la app por el puerto 80 \(http\),
 El segundo escenario sirve la app por SSL \(https\)
 
 **Primer Escenario `/etc/apache2/sites-available/djau.conf`**
+
+>El djau hauria de funcionar en mode `https`, aquesta seria la configuració sense `https`, un cop funcioni per `https` el millor es treure aquesta configuració i posar una redirecció cap al servidor `https`:
+
 ```text
 
 <VirtualHost *:80>
         ServerAdmin juan@xtec.cat
-        ServerName djau.local
+        ServerName el_teu_domini.cat
 
         WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
         WSGIProcessGroup djau
@@ -306,6 +309,15 @@ El segundo escenario sirve la app por SSL \(https\)
 </VirtualHost>
 ```
 
+>Exemple de redirecció cap a `https`:
+
+```
+<VirtualHost *:80>
+	ServerName el_teu_domini.cat
+	RedirectMatch permanent ^(.*)$ https://el_teu_domini.cat/$1
+</VirtualHost>
+```
+
 **Segundo Escenario `/etc/apache2/sites-available/djau_ssl.conf`**
 ```
 #Recuerda cambiar lo necesario en el archivo /opt/djau2019/aula/settings_local.py
@@ -313,13 +325,10 @@ El segundo escenario sirve la app por SSL \(https\)
 #Tambien activa si no lo esta el modulo ssl:
 # a2enmod ssl
 
-
-
-
 <VirtualHost *:443>
 
         ServerAdmin juan@xtec.cat
-        ServerName djau.local
+        ServerName el_teu_domini.cat
 
         WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
         WSGIProcessGroup djau
@@ -382,7 +391,7 @@ djau@djau:# a2ensite djau_ssl.conf
 djau@djau:# service apache2 reload
 ```
 
-Si todo ha ido bien, la aplicación ya esta desplegada en producción , si accedemos a su dominio en mi caso "http://djau.local" o "https://djau.local" según escenario, deberá abrirse el Panel de Login de Django-Aula. **¡Felicidades!**
+Si todo ha ido bien, la aplicación ya esta desplegada en producción , si accedemos a su dominio en mi caso "http://el_teu_domini.cat" o "https://el_teu_domini.cat" según escenario, deberá abrirse el Panel de Login de Django-Aula. **¡Felicidades!**
 
 ![](../.gitbook/assets/captura.PNG)
 
@@ -393,7 +402,9 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 **CronTab**
 
 ```text
-0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2018.sh42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&141 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&120,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2019.sh42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&141 
+00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
 

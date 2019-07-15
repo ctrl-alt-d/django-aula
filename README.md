@@ -20,11 +20,11 @@ sudo apt-get install python3 python3-venv python-dev git
 sudo apt-get install python3-lxml python3-libxml2 libxml2-dev libxslt-dev lib32z1-dev
 mkdir djau
 cd djau
-python3 -m venv venv3
-source venv3/bin/activate
 git clone --single-branch --branch master https://github.com/ctrl-alt-d/django-aula.git django-aula
 cd django-aula
-pip install -r requirements.txt
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
 ./scripts/create_demo_data.sh
 python manage.py runserver
 
@@ -35,9 +35,7 @@ Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd
 Deployment Docs
 =============
 
-Documentació pas a pas per a fer el desplegament.
-
-[Documentació instal·lació django-aula a gitbook](https://django-aula.gitbook.io/documentation/) (Recurs extern)
+[Documentació pas a pas per a fer el desplegament.](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/Wiki/README.md)
 
 Vols col·laborar-hi?
 =============
