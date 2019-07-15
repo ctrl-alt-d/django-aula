@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sortida',
             name='estat_sincronitzacio',
-            field=models.CharField(default=b'N', help_text="Per passar els alumnes a 'no han de ser a l'aula' ", max_length=1, editable=False, choices=[(b'N', 'No sincronitzada'), (b'x', ''), (b'Y', '')]),
+            field=models.CharField(default='N', help_text="Per passar els alumnes a 'no han de ser a l'aula' ", max_length=1, editable=False, choices=[('N', 'No sincronitzada'), ('x', ''), ('Y', '')]),
         ),
     ]

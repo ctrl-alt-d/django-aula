@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sortida',
             name='tipus_de_pagament',
-            field=models.CharField(choices=[(b'ON', 'Online'), (b'EB', 'Entitat Banc\xe0ria'), (b'EF', 'Efectiu')], default=b'OL', help_text='Quin ser\xe0 el tipus de pagament predominant', max_length=2),
+            field=models.CharField(choices=[('ON', 'Online'), ('EB', 'Entitat Banc\xe0ria'), ('EF', 'Efectiu')], default=b'OL', help_text='Quin ser\xe0 el tipus de pagament predominant', max_length=2),
         ),
     ]
