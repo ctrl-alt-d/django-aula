@@ -290,8 +290,8 @@ sys.path.append(' /opt/djau2019/aula/')
 # mod_wsgi daemon mode with each site in its own daemon process, or use
 # os.environ["DJANGO_SETTINGS_MODULE"] = "aula.settings"
 os.environ['DJANGO_SETTINGS_MODULE'] = 'aula.settings'
-activate_this = os.path.expanduser("/opt/djau2019/venv/bin/activate_this.py")
-execfile(activate_this, dict(__file__=activate_this))
+#activate_this = os.path.expanduser("/opt/djau2019/venv/bin/activate_this.py")
+#execfile(activate_this, dict(__file__=activate_this))
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
