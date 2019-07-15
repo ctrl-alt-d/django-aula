@@ -17,12 +17,14 @@ Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la ins
 Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el repositorio del proyecto.
 
 ```text
-cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2019 && cd djau2019
+cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2019 
+sudo chown :www-data djau2019  #opcionalment canviar tambe l'usuari propietari per no treballar amb root.
+cd djau2019
 ```
 
-{% hint style="info" %}
-Es recomendable que la carpeta contenga el año del curso, ya que la aplicación esta diseñada para ser instalada de nuevo en cada curso \(Decisión de diseño\).
-{% endhint %}
+
+>Es recomendable que la carpeta contenga el año del curso, ya que la aplicación esta diseñada para ser instalada de nuevo en cada curso \(Decisión de diseño\).
+
 
 El siguiente paso es montar nuestro **entorno virtual Python** sobre la carpeta del proyecto, este comando creará un entorno virtual en un directorio llamado _**venv.**_
 
@@ -40,7 +42,7 @@ Si todo ha ido bien el [**prompt**](https://es.wikipedia.org/wiki/Prompt) deber�
 
 _**`(venv) djau@djau:/opt/djau2019$`**_
 
-Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias [**pip**](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)
+Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias [**pip3**](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)
 
 ```text
 (venv) djau@djau:/opt/djau2019# pip3 install -r requirements.txt
@@ -52,36 +54,36 @@ Antes de seguir con la aplicación, instalaremos Apache  y el módulo [wsgi](htt
 
 Además instalaremos la base de datos que usará django-aula y su conector python correspondiente, se recomienda instalar la aplicación sobre postgresql pero también es posible hacerlo sobre Mysql.
 
-**Postgresql:**
+**Postgresql  (recomenat):**
 
 ```text
-apt-get install apache2 libapache2-mod-wsgi python-psycopg2 postgresql 
+apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql 
 pip3 install psycopg2
 ```
 
-**Mysql:**
+**Mysql (no recomenat):**
 
 ```text
-apt-get install apache2 libapache2-mod-wsgi python-mysqldb mysql-server
+apt-get install apache2 libapache2-mod-wsgi-py3 python-mysqldb mysql-server  
 ```
 
 Una vez elegido el motor de base de datos, hay que crear la base de datos de la aplicación, y crear un usuario que la pueda administrar.
 
-{% code-tabs %}
-{% code-tabs-item title="Para Postgresql" %}
+
+**Para Postgresql**
+
 ```text
- 
- sudo su postgres
- psql
- CREATE DATABASE djau2019;
+sudo su postgres
+psql
+CREATE DATABASE djau2019;
  
 CREATE USER djau2019 WITH PASSWORD 'XXXXXXXXXX';
  
 GRANT ALL PRIVILEGES ON DATABASE djau2019 TO djau2019;
 ```
-{% endcode-tabs-item %}
 
-{% code-tabs-item title="Para Mysql" %}
+**Para Mysql**
+
 ```
 mysql -u root -p
 CREATE DATABASE djau2019 CHARACTER SET utf8;
@@ -98,16 +100,16 @@ QUIT
 
 Django Aula tiene 3 archivos principales de configuración
 
-* **settings\_local.py \(Aquí esta la configuración principal\)**
-* **settings.py \(Aquí se encuentra la parametrización Custom de la app\) más info.** [**aqui**](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/manuals/parametritzacions.txt)
-* **wsgi.py \(Es el script que se encargará de levantar la aplicación, Apache utilizará este archivo para servir la app a través de él\).**
+* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más info.** [**aqui**](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/manuals/parametritzacions.txt)
+* **`settings_local.py` (Aquí esta la configuración principal )**
+* **`wsgi.py` (Es el script que se encargará de levantar la aplicación, Apache utilizará este archivo para servir la app a través de él).**
 
-A continuación dejo una configuración válida para los 3 archivos citados anteriormente, simplemente copia, pega y adáptalo a tus necesidades.
+A continuación dejo una configuración válida para los 2 archivos citados anteriormente, simplemente copia, pega y adáptalo a tus necesidades.
 
 Los archivos están comentados para entenderlos mejor.
 
-{% code-tabs %}
-{% code-tabs-item title="/opt/djau2019/aula/settings\_local.py" %}
+**`/opt/djau2019/aula/settings_local.py"`**
+
 ```python
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
@@ -166,8 +168,6 @@ INSTALLED_APPS  = [] + INSTALLED_APPS
 STATICFILES_DIRS =  STATICFILES_DIRS
 STATIC_ROOT= os.path.join(PROJECT_DIR,'static/')
 
-
-
 #Comprime los assets estaticos de la app False por defecto
 COMPRESS_ENABLED = False
 
@@ -191,121 +191,18 @@ DATABASES = {
 }
 
 ```
-{% endcode-tabs-item %}
 
-{% code-tabs-item title="/opt/djau2019/settings.py" %}
+**`/opt/djau2019/aula/wsgi.py`**
+
 ```python
-# -*- coding: utf-8 -*-
-
-CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
-CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
-CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
-CUSTOM_TIPUS_INCIDENCIES = False
-CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA = 90
-CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO = True
-CUSTOM_PERIODE_MODIFICACIO_ASSISTENCIA = 90
-CUSTOM_DIES_PRESCRIU_INCIDENCIA = 30
-CUSTOM_DIES_PRESCRIU_EXPULSIO = 90
-CUSTOM_NOMES_TUTOR_POT_JUSTIFICAR = True
-CUSTOM_MODUL_SORTIDES_ACTIU = True
-CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA = False
-CUSTOM_RETARD_PRIMERA_HORA_GESTIONAT_PEL_TUTOR = False
-CUSTOM_NIVELLS = { u"ESO": [u"ESO"],
-                    u"BTX": [u"BTX"],
-                    u"CICLES": [u'GA',u'AF',u'SMX',u'DAW',u'FCT',u"CFA",u"CFI",],
-                    u"INFORMATICA": [u'SMX',u'DAW'],
-                  }
-CUSTOM_TIMEOUT = 15*60
-CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
-                         u"professors":    15*60, # 15'
-                         }
-CUSTOM_RESERVES_API_KEY = '_default_api_aules_password_'
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    },
-    'select2': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'TIMEOUT': max( CUSTOM_TIMEOUT, *[ CUSTOM_TIMEOUT_GROUP[x] for x in CUSTOM_TIMEOUT_GROUP] ),
-        'OPTIONS': {
-            'MAX_ENTRIES': 200
-        }
-    }
-}
-
-CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT = u"""Podeu fer el pagament amb targeta de crèdit a qualsevol caixer de CaixaBank, amb el codi de barres o amb el codi entitat: XXXXXXX"""
-#Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
-CUSTOM_TUTORS_INFORME = False
-
-#URL on trobar el tutorial del portal famílies
-CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
-
-#Número de faltes no justificades per tal de generar carta
-#Els tipus de carta els trobareu a:
-#      aula/apps/tutoria/business_rules/cartaaabsentisme.py
-CUSTOM_FALTES_ABSENCIA_PER_CARTA = 1
-CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 1 }
-
-CUSTOM_FALTES_ABSENCIA_PER_CARTA = 15
-CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 15 }
-CUSTOM_DIES_PRESCRIU_EXPULSIO = 90
-CUSTOM_MODUL_SORTIDES_ACTIU = True
-
-try:
-    from settings_local import *
-except ImportError:
-    from settings_dir.demo import *
-```
-{% endcode-tabs-item %}
-
-{% code-tabs-item title="/opt/djau2019/aula/wsgi.py" %}
-```python
-
-"""
-WSGI config for aula project.
-
-This module contains the WSGI application used by Django's development server
-and any production WSGI deployments. It should expose a module-level variable
-named ``application``. Django's ``runserver`` and ``runfcgi`` commands discover
-this application via the ``WSGI_APPLICATION`` setting.
-
-Usually you will have the standard Django WSGI application here, but it also
-might make sense to replace the whole Django WSGI application with a custom one
-that later delegates to the Django one. For example, you could introduce WSGI
-middleware here, or combine a Django application with an application of another
-framework.
-
-"""
 import os
-import sys
-import site
 
-site.addsitedir(' /opt/djau2019/venv/lib/python3.6/site-packages/')
-sys.path.append(' /opt/djau2019/')
-sys.path.append(' /opt/djau2019/aula/')
-
-# We defer to a DJANGO_SETTINGS_MODULE already in the environment. This breaks
-# if running multiple sites in the same mod_wsgi process. To fix this, use
-# mod_wsgi daemon mode with each site in its own daemon process, or use
-# os.environ["DJANGO_SETTINGS_MODULE"] = "aula.settings"
 os.environ['DJANGO_SETTINGS_MODULE'] = 'aula.settings'
-#activate_this = os.path.expanduser("/opt/djau2019/venv/bin/activate_this.py")
-#execfile(activate_this, dict(__file__=activate_this))
 
-# This application object is used by any WSGI server configured to use this
-# file. This includes Django's development server, if the WSGI_APPLICATION
-# setting points here.
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)
-
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
 
 Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/2.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
 
@@ -319,9 +216,9 @@ Ahora que tenemos las tablas creadas, hay que llenarlas con algunos datos esenci
 djau@djau:/opt/djau2019# bash scripts/fixtures.sh
 ```
 
-{% hint style="warning" %}
-Es muy posible que dé algún Warning, simplemente ignóralo, recuerda que esta aplicación aún está en desarrollo.
-{% endhint %}
+
+>Es muy posible que dé algún Warning, simplemente ignóralo, recuerda que esta aplicación aún está en desarrollo.
+
 
 Ahora debemos crear un usuario administrador que pueda gestionar la app, para ello ejecutamos:
 
@@ -363,19 +260,17 @@ El primer escenario es para servir la app por el puerto 80 \(http\),
 
 El segundo escenario sirve la app por SSL \(https\)
 
-{% code-tabs %}
-{% code-tabs-item title="Primer Escenario /etc/apache2/sites-available/djau.conf" %}
+**Primer Escenario `/etc/apache2/sites-available/djau.conf`**
 ```text
 
 <VirtualHost *:80>
         ServerAdmin juan@xtec.cat
         ServerName djau.local
-        
-        #Ruta del demonio WSGI (utilizamos nuestro virtualenv)
-        WSGIDaemonProcess djau  python-home=/opt/djau2019/venv/bin  python-path=/opt/djau2019:/opt/djau2019/venv/lib/python3.6/sites-packages
+
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
         WSGIProcessGroup djau
-        #Script que arrancara la aplicacion wsgi
-        WSGIScriptAlias / /opt/djau2019/aula/wsgi.py
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
         
         #Alias para contenido estatico de la app
         
@@ -400,7 +295,7 @@ El segundo escenario sirve la app por SSL \(https\)
                 Require all granted
         </Directory>
 
-        LogLevel warn
+        LogLevel info
 
         CustomLog /var/log/apache2/djau_access.log combined
 
@@ -409,30 +304,30 @@ El segundo escenario sirve la app por SSL \(https\)
                 downgrade-1.0 force-response-1.0
 
 </VirtualHost>
-
 ```
-{% endcode-tabs-item %}
 
-{% code-tabs-item title="Segundo Escenario /etc/apache2/sites-available/djau\_ssl.conf" %}
+**Segundo Escenario `/etc/apache2/sites-available/djau_ssl.conf`**
 ```
 #Recuerda cambiar lo necesario en el archivo /opt/djau2019/aula/settings_local.py
 #Para que la app pueda ir por SSL (TLS)
 #Tambien activa si no lo esta el modulo ssl:
 # a2enmod ssl
 
+
+
+
 <VirtualHost *:443>
+
         ServerAdmin juan@xtec.cat
         ServerName djau.local
 
-        #Ruta del demonio WSGI (utilizamos nuestro virtualenv)
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
+        WSGIProcessGroup djau
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
         
-        WSGIDaemonProcess djaussl  python-home=/opt/djau2019/venv/bin  python-path=/opt/djau2019:/opt/djau2019/venv/lib/python3.6/sites-packages
-        WSGIProcessGroup djaussl
-        #Script que arrancara la aplicacion wsgi
-        WSGIScriptAlias / /opt/djau2019/aula/wsgi.py
-
         #Alias para contenido estatico de la app
-
+        
         Alias /site-css/admin /opt/djau2019/aula/static/admin/
         Alias /site-css /opt/djau2019/aula/static/
 
@@ -466,6 +361,7 @@ El segundo escenario sirve la app por SSL \(https\)
 
         #SSL Config#######################
 
+        LogLevel info
 
         CustomLog /var/log/apache2/djau_ssl_access.log combined
 
@@ -476,14 +372,13 @@ El segundo escenario sirve la app por SSL \(https\)
 </VirtualHost>
 
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
 
 Una vez creado el VirtualHost,  deshabilitamos el Vhost que trae por defecto Apache para que no nos de problemas y reiniciamos el servidor web
 
 ```text
-djau@djau:# a2dissite 000.default.conf  # potser el fitxer és diferent: 000-default.conf
+djau@djau:# a2dissite 000.default.conf  # potser el fitxer és diu: 000-default.conf
 djau@djau:# a2ensite djau.conf
+djau@djau:# a2ensite djau_ssl.conf
 djau@djau:# service apache2 reload
 ```
 
@@ -495,20 +390,16 @@ Si todo ha ido bien, la aplicación ya esta desplegada en producción , si acced
 
 Es recomendable programar los siguientes Scripts en **Cron:**
 
-{% code-tabs %}
-{% code-tabs-item title="CronTab" %}
+**CronTab**
+
 ```text
 0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2018.sh42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&141 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&120,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
 
-{% hint style="info" %}
-Están creados todos los scripts menos el siguiente, créalo y dale permisos de ejecución.
-{% endhint %}
 
-{% code-tabs %}
-{% code-tabs-item title="/opt/django/backup-bdd-2018.sh" %}
+>Están creados todos los scripts menos el siguiente, créalo y dale permisos de ejecución.
+
+**`/opt/django/backup-bdd-2019.sh`**
 ```bash
 #!/bin/bash
 ara=`/bin/date +%Y%m%d%H%M`
