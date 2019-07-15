@@ -133,7 +133,6 @@ def calcula_menu( user , path ):
                   (
                       ("Presencia", 'aula__horari__horari', pr, None, None ),
                       #("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None, None ),
-
                       ("Alumnes", 'aula__alumnes__blanc', pr, None,
                           ( 
                             ("Els meus alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None),
@@ -311,8 +310,16 @@ def calcula_menu( user , path ):
                    )
                ),                            
                          )
-    
-    arbre = arbre1 + arbreSortides + arbre2
+    arbrePresenciaSetmanal=()
+    if hasattr(settings, 'CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU' ) and settings.CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU:
+        arbrePresenciaSetmanal = \
+        ('presencia_setmanal', 'Presencia setmanal', 'presencia_setmanal__index__index', di or pr, None,
+            (
+                (u"Índex", 'presencia_setmanal__index__index', di or so, None, None ),
+            )
+        ),
+
+    arbre = arbre1 + arbreSortides + arbrePresenciaSetmanal + arbre2
     
     for item_id, item_label, item_url, item_condicio, alerta , subitems in arbre:
 

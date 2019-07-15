@@ -77,6 +77,9 @@ CUSTOM_INDICADORS = [
             # [inici_curs,    Final 1Trim,  Final 2Trim,   Final 3Trim,  nivell,  % ],
           ]
 
+#Permet veure una graella amb les diferents faltes setmanals d'un curs.
+CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = True
+
 try:
     from .settings_local import *
 except ImportError:
