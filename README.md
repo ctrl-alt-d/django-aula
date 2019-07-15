@@ -22,7 +22,7 @@ mkdir djau
 cd djau
 python3 -m venv venv3
 source venv3/bin/activate
-git clone --single-branch --branch feature/django2 https://github.com/ctrl-alt-d/django-aula.git django-aula
+git clone --single-branch --branch master https://github.com/ctrl-alt-d/django-aula.git django-aula
 cd django-aula
 pip install -r requirements.txt
 ./scripts/create_demo_data.sh
