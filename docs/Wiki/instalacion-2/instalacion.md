@@ -364,7 +364,7 @@ El primer escenario es para servir la app por el puerto 80 \(http\),
 El segundo escenario sirve la app por SSL \(https\)
 
 {% code-tabs %}
-{% code-tabs-item title="Primer Escenario /etc/apache2/sites-enabled/djau.conf" %}
+{% code-tabs-item title="Primer Escenario /etc/apache2/sites-available/djau.conf" %}
 ```text
 
 <VirtualHost *:80>
@@ -413,7 +413,7 @@ El segundo escenario sirve la app por SSL \(https\)
 ```
 {% endcode-tabs-item %}
 
-{% code-tabs-item title="Segundo Escenario /etc/apache2/sites-enbled/djau\_ssl.conf" %}
+{% code-tabs-item title="Segundo Escenario /etc/apache2/sites-available/djau\_ssl.conf" %}
 ```
 #Recuerda cambiar lo necesario en el archivo /opt/djau2019/aula/settings_local.py
 #Para que la app pueda ir por SSL (TLS)
@@ -483,6 +483,7 @@ Una vez creado el VirtualHost,  deshabilitamos el Vhost que trae por defecto Apa
 
 ```text
 djau@djau:# a2dissite 000.default.conf  # potser el fitxer és diferent: 000-default.conf
+djau@djau:# a2ensite djau.conf
 djau@djau:# service apache2 reload
 ```
 
