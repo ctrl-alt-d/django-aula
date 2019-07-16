@@ -113,8 +113,10 @@ def calcula_menu( user , path ):
                       ),                                      
                     )
 
-
-
+    activarModulPresenciaSetmanal=False
+    if hasattr(settings, 'CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU' ) and settings.CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU:
+        activarModulPresenciaSetmanal=True
+    
     
     arbre1 = (
 
@@ -153,6 +155,7 @@ def calcula_menu( user , path ):
                           )
                       ),         
                       ("Qualitativa", 'aula__qualitativa__les_meves_avaulacions_qualitatives', pr, ( u'!', 'info' ) if hiHaUnaQualitativaOberta else None, None ),
+                      ("Pres. Setmanal", 'aula__presencia_setmanal__index', pr and activarModulPresenciaSetmanal, None, None ),
                    )
                ),
 
@@ -310,16 +313,8 @@ def calcula_menu( user , path ):
                    )
                ),                            
                          )
-    arbrePresenciaSetmanal=()
-    if hasattr(settings, 'CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU' ) and settings.CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU:
-        arbrePresenciaSetmanal = \
-        ('presencia_setmanal', 'Presencia setmanal', 'presencia_setmanal__index__index', di or pr, None,
-            (
-                (u"Índex", 'presencia_setmanal__index__index', di or so, None, None ),
-            )
-        ),
-
-    arbre = arbre1 + arbreSortides + arbrePresenciaSetmanal + arbre2
+    
+    arbre = arbre1 + arbreSortides + arbre2
     
     for item_id, item_label, item_url, item_condicio, alerta , subitems in arbre:
 

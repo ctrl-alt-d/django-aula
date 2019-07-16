@@ -78,7 +78,7 @@ CUSTOM_INDICADORS = [
           ]
 
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
-CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = True
+CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 
 try:
     from .settings_local import *
