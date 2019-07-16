@@ -75,7 +75,7 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
             'horari__dia_de_la_setmana__n_dia_ca', 'horari__hora__hora_inici')
 
     #Expresssio per consultar els l'assistencia dels alumnes entre una data d'inici i una data de fi.
-    sqlExpr = \
+    '''sqlExpr = \
         str('SELECT alumnes_alumne.id as id_alumne, presencia_impartir.id as id_hora, ' +
             'presencia_controlassistencia.estat_id as estat_id, ' +
             'presencia_controlassistencia.id, alumnes_alumne.nom as nom_alumne, alumnes_alumne.cognoms as cognoms_alumne ' +
@@ -92,6 +92,13 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
             'ORDER BY alumnes_alumne.cognoms, horaris_diadelasetmana.n_dia_ca, horaris_franjahoraria.hora_inici')
 
     assistencies = ControlAssistencia.objects.raw(sqlExpr)
+    '''
+
+    assistencies=ControlAssistencia.objects.filter( 
+        impartir__dia_impartir__gte=dillunsSetmana.isoformat(), 
+        impartir__dia_impartir__lte=divendresSetmana.isoformat(),  
+        impartir__horari__grup_id=grup_id,
+    ).order_by('alumne__cognoms', 'impartir__horari__dia_de_la_setmana__n_dia_ca', 'impartir__horari__hora__hora_inici')
 
     # mah = Matriu alumnes, hores.
     mah = {}
@@ -102,25 +109,24 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     #Determinar els alumnes que han d'aparèixer i anotar-los al diccionari dAlumnes.
     nAssistencies = 0
     for assistencia in assistencies:
-        idAlumne = assistencia.id_alumne
-        idHora = assistencia.id_hora
+        idAlumne = assistencia.alumne.id
+        idHora = assistencia.impartir.id
         idEstat = 0
         #Estat zero equival a none. Millor aixi pel tema Javascript. Estats numerics.
-        if (assistencia.estat_id != None):
-            idEstat = assistencia.estat_id
+        if (assistencia.estat != None):
+            idEstat = assistencia.estat.id
+            #print("Estat", idEstat, "idAlumne", idAlumne, "idHora", idHora)
 
         if ( mah.get(str(idAlumne),None) == None):
             #print "\nidAlumne que no esta al grup:" + str(idAlumne) + "idHora" + str(idHora) + \
             #            "estat:" + str(assistencia.estat_id)
             mah[str(idAlumne)]={}
-            dAlumnes[str(idAlumne)] = AlumneMemoria(idAlumne, assistencia.nom_alumne, assistencia.cognoms_alumne)
+            dAlumnes[str(idAlumne)] = AlumneMemoria(idAlumne, assistencia.alumne.nom, assistencia.alumne.cognoms)
 
         mah[str(idAlumne)][str(idHora)] = AssistenciaAlumne(idEstat, idAlumne, idHora, estats)
         nAssistencies = nAssistencies + 1
 
     #print "NRegistres consulta: " + str(nAssistencies)
-
-
     # Llista ordenada d'alumnes per cognom.
     alumnes = sorted(dAlumnes.values(), key=lambda x: x.cognoms.lower())
     
@@ -137,10 +143,12 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
             idHora = str(hores[j].id)
 
             horesXAlumne: dict = mah[idAlumne]
-            #print str(idAlumne) + " " + str(idHora)
+            #import ipdb; ipdb.set_trace()
             if (not idHora in horesXAlumne):
                 mvisualitzafila.append(None)
+                #print ("..." + str(idAlumne) + ":" + str(idHora))
             else:
+                #print (str(idAlumne) + ":" + str(idHora))
                 mvisualitzafila.append(mah[idAlumne][idHora])
         mvisualitza.append(mvisualitzafila)
 
