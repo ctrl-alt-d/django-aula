@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from aula.utils.tools import getImpersonateUser
+from aula.utils.decorators import group_required
 
 #Models
 from aula.apps.presencia.models import Impartir, ControlAssistencia, EstatControlAssistencia
@@ -25,6 +26,7 @@ CONST_ERROR_CODE = '_'
 
 #Veure els grups disponibles.
 @login_required
+@group_required(['professors'])
 def index(request):
     # type: (HttpRequest) -> HttpResponse
     
@@ -43,6 +45,7 @@ def index(request):
     
 
 @login_required
+@group_required(['professors'])
 def detallgrup(request, grup_id, dataReferenciaStr=''):
     '''
     Veure els alumnes que entren dins les hores d'un grup i permetre modificar-ne l'estat.
@@ -58,12 +61,12 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
         dataPython = datetime.datetime.strptime(dataReferenciaStr, '%Y%m%d')
         dataRef = date(year=dataPython.year, month=dataPython.month, day=dataPython.day)
 
-    dillunsSetmana = convertDateToDjangoDate(dataRef + datetime.timedelta(days=-dataRef.weekday()))
+    dillunsSetmana = dataRef + datetime.timedelta(days=-dataRef.weekday())
     #4 és el divendres 0,1,2,3,4 (5é dia)
-    divendresSetmana = convertDateToDjangoDate(dataRef + datetime.timedelta(days=4-dataRef.weekday()))
-
-    nextDate = convertDateToDjangoDate(dataRef + datetime.timedelta(days=7))
-    previousDate = convertDateToDjangoDate(dataRef - datetime.timedelta(days=7))
+    divendresSetmana = dataRef + datetime.timedelta(days=4-dataRef.weekday())
+    
+    nextDate = dataRef + datetime.timedelta(days=7)
+    previousDate = dataRef - datetime.timedelta(days=7)
     
     #Consultar els estats del control d'assistencia
     estats = LlistaEstats()
@@ -71,7 +74,7 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     #Seleccionar el calendari impartir.
     hores = Impartir.objects.filter(
         horari__grup_id=grup_id,
-        dia_impartir__range=(dillunsSetmana.isoformat(), divendresSetmana.isoformat())).order_by(
+        dia_impartir__range=[dillunsSetmana, divendresSetmana]).order_by(
             'horari__dia_de_la_setmana__n_dia_ca', 'horari__hora__hora_inici')
 
     #Expresssio per consultar els l'assistencia dels alumnes entre una data d'inici i una data de fi.
@@ -95,8 +98,8 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     '''
 
     assistencies=ControlAssistencia.objects.filter( 
-        impartir__dia_impartir__gte=dillunsSetmana.isoformat(), 
-        impartir__dia_impartir__lte=divendresSetmana.isoformat(),  
+        impartir__dia_impartir__gte=dillunsSetmana, 
+        impartir__dia_impartir__lte=divendresSetmana,  
         impartir__horari__grup_id=grup_id,
     ).order_by('alumne__cognoms', 'impartir__horari__dia_de_la_setmana__n_dia_ca', 'impartir__horari__hora__hora_inici')
 
@@ -171,6 +174,7 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     return render(request, 'presenciaSetmanal/detallgrup.html', context)
 
 @login_required
+@group_required(['professors'])
 def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
     '''
     Modifica el control d'assistència d'un sol resistre.
@@ -228,6 +232,7 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
 
 
 @login_required
+@group_required(['professors'])
 def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
     '''
     Modifica el control d'assistència de tot un grup.
@@ -480,13 +485,6 @@ class LlistaEstats:
             raise Exception("Error no existeix l'estat a cercar.")
 
         return estat
-
-def convertDateToDjangoDate(dataPython):
-    #type: (datetime.date) -> django.utils.datetime_safe.date
-    '''
-    Converteix una data de python a data de django real_date (modul datetime_safe)
-    '''
-    return date(year=dataPython.year, month=dataPython.month, day=dataPython.day)
 
 #Classe alumne en memòria.
 class AlumneMemoria:
