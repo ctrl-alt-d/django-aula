@@ -18,7 +18,7 @@ Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el r
 
 ```text
 cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2019 
-sudo chown :www-data djau2019  #opcionalment canviar tambe l'usuari propietari per no treballar amb root.
+sudo chown -R :www-data djau2019  #opcionalment canviar tambe l'usuari propietari per no treballar amb root.
 cd djau2019
 ```
 
