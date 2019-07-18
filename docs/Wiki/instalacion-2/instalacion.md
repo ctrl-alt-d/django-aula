@@ -9,7 +9,7 @@ Todas las instrucciones de este documento se deben ejecutar con permisos elevado
 El primer paso es preparar un entorno de desarrollo [`Python`](https://www.python.org/) en nuestro sistema, para ello instalamos los siguientes paquetes:
 
 ```text
-apt-get update && apt-get install python-virtualenv python-pip libxml2-dev libxslt-dev python-libxml2 python-dev lib32z1-dev git
+apt-get update && apt-get install libxml2-dev libxslt-dev python3-libxml2 python3-dev lib32z1-dev git 
 ```
 
 Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/).
@@ -57,7 +57,7 @@ Además instalaremos la base de datos que usará django-aula y su conector pytho
 **Postgresql  (recomenat):**
 
 ```text
-apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql 
+apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql postgresql-server-dev-10
 pip3 install psycopg2
 ```
 
@@ -402,8 +402,9 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 **CronTab**
 
 ```text
-0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2019.sh42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&141 
-00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2019.sh
+42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
