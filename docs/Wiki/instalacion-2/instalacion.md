@@ -9,7 +9,9 @@ Todas las instrucciones de este documento se deben ejecutar con permisos elevado
 El primer paso es preparar un entorno de desarrollo [`Python`](https://www.python.org/) en nuestro sistema, para ello instalamos los siguientes paquetes:
 
 ```text
-apt-get update && apt-get install python3-venv libxml2-dev libxslt-dev python3-libxml2 python3-dev lib32z1-dev git 
+apt-get update  
+apt-get upgrade
+apt-get install python3-venv libxml2-dev libxslt-dev python3-libxml2 python3-dev lib32z1-dev git 
 ```
 
 Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/).
@@ -45,6 +47,7 @@ _**`(venv) djau@djau:/opt/djau2019$`**_
 Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias [**pip3**](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)
 
 ```text
+(venv) djau@djau:/opt/djau2019# pip3 install wheel
 (venv) djau@djau:/opt/djau2019# pip3 install -r requirements.txt
 ```
 
