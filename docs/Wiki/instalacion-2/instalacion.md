@@ -58,7 +58,7 @@ Además instalaremos la base de datos que usará django-aula y su conector pytho
 
 ```text
 apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql postgresql-server-dev-10
-pip3 install psycopg2
+pip3 install wheel psycopg2
 ```
 
 **Mysql (no recomenat):**
