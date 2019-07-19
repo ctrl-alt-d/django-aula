@@ -182,6 +182,8 @@ INSTALLED_APPS_DJANGO = [
     'django_extensions',
     'django_tables2',
     'django.contrib.humanize',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
     
 INSTALLED_APPS_AULA = [
@@ -205,6 +207,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.baixes',
     'aula.apps.BI',
     'aula.apps.aules',
+    'aula.apps.presenciaRest',
     'aula.utils',
 ]
 

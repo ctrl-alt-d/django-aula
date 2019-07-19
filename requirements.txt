@@ -20,4 +20,5 @@ XlsxWriter
 typing
 selenium
 pisa
+djangorestframework
 

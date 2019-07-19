@@ -73,6 +73,16 @@ class TestUtils():
                 alumne = alumne,
                 impartir = horaAImpartir)
 
+    def obtenirDataLaborableAnterior(self, dataDiaActual):
+        #type: (TestUtils, date) -> None
+        if dataDiaActual.weekday == 0:
+            dataDiaAnterior = dataDiaActual + timedelta(days=-3)
+        elif dataDiaActual.weekday == 6:
+            dataDiaAnterior = dataDiaActual + timedelta(days=-2)
+        else:
+            dataDiaAnterior = dataDiaActual + timedelta(days=-1)
+        return dataDiaAnterior
+
     @staticmethod
     def llancaPostMortem():
         import ipdb, sys, traceback
