@@ -259,6 +259,19 @@ Esto generará un directorio llamado **static** donde se alojarán todos los ass
 
 Si se ha seguido al pie de la letra este manual, simplemente hay que crear un nuevo Virtualhost en Apache que sirva nuestra app por el protocolo WSGI.
 
+Es importante comprobar que tenemos la configuración regional correcta.
+Verificación:
+
+```text
+locale -a
+```
+
+Generación del locale adecuado para nuestro caso, por ejemplo:
+
+```text
+sudo locale-gen ca_ES.utf8
+```
+
 El primer escenario es para servir la app por el puerto 80 \(http\),
 
 El segundo escenario sirve la app por SSL \(https\)
@@ -273,7 +286,8 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019 locale="ca_ES.utf8"
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv python-path=/opt/djau2019 \
+			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
@@ -333,7 +347,8 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019 locale="ca_ES.utf8"
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv python-path=/opt/djau2019 \
+			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
