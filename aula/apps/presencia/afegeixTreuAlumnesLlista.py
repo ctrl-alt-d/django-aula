@@ -15,6 +15,7 @@ from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import User2Professor
 from django.contrib.auth.models import Group
 import traceback
+from aula.utils.tools import unicode
 
 class afegeixThread(Thread):
     
@@ -158,7 +159,7 @@ class treuThread(Thread):
                         
                 self.flagPrimerDiaFet = ( i.dia_impartir >= self.impartir.dia_impartir )
                 
-        except Exception, e:
+        except Exception as e:
                 errors.append(unicode(e))
         
         finally:
@@ -230,7 +231,7 @@ class marcaSenseAlumnesThread(Thread):
                         
                 self.flagPrimerDiaFet = ( i.dia_impartir >= self.impartir.dia_impartir )
                 
-        except Exception, e:
+        except Exception as e:
                 errors.append(unicode(e))
         
         finally:

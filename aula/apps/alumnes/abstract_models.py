@@ -22,13 +22,13 @@ class AbstractNivell(models.Model):
         ordering = ['ordre_nivell']
         verbose_name = u'Nivell'
         verbose_name_plural = u'Nivells'
-    def __unicode__(self):
+    def __str__(self):
         return self.nom_nivell + ' (' + self.descripcio_nivell + ')'
     def save(self, *args, **kwargs):
         super(AbstractNivell, self).save(*args, **kwargs) # Call the "real" save() method.
 
 class AbstractCurs(models.Model):
-    nivell = models.ForeignKey("alumnes.Nivell")
+    nivell = models.ForeignKey("alumnes.Nivell", on_delete=models.CASCADE)
     nom_curs = models.CharField("Nom curs",max_length=45, help_text=u"Un número que representa el curs (Ex: 3)")
     nom_curs_complert = models.CharField(max_length=45, blank=True, unique=True, help_text=u"Dades que es mostraran (Ex: 1r ESO)")
     data_inici_curs = models.DateField("Comencen", null=True, blank=True, help_text=u"Dia que comencen les classes (cal informar aquest cap per poder fer control de presència)")
@@ -44,7 +44,7 @@ class AbstractCurs(models.Model):
     def save(self, *args, **kwargs):
         super(AbstractCurs, self).save(*args, **kwargs) # Call the "real" save() method.
     
-    def __unicode__(self):
+    def __str__(self):
         return self.nom_curs_complert
     
     def dies(self):
@@ -60,7 +60,7 @@ class AbstractCurs(models.Model):
         return totsElsDies    
 
 class AbstractGrup(models.Model):
-    curs = models.ForeignKey("alumnes.Curs")
+    curs = models.ForeignKey("alumnes.Curs", on_delete=models.CASCADE)
     nom_grup = models.CharField(max_length=45, help_text=u'''Això normalment serà una lletra. Ex 'A' ''')
     descripcio_grup = models.CharField(max_length=240, blank=True)
     class Meta:
@@ -68,7 +68,7 @@ class AbstractGrup(models.Model):
         ordering = ['curs','curs__nivell__nom_nivell', 'curs__nom_curs', 'nom_grup']
         verbose_name = u'Grup'
         verbose_name_plural = u'Grups'
-    def __unicode__(self):
+    def __str__(self):
         return self.descripcio_grup if self.descripcio_grup else self.curs.nom_curs_complert + ' ' + self.nom_grup
 
     def save(self, *args, **kwargs):
@@ -111,7 +111,7 @@ class AbstractAlumne(models.Model):
             )
         
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
-    grup = models.ForeignKey("alumnes.Grup")
+    grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
     nom = models.CharField("Nom",max_length=240)
     cognoms = models.CharField("Cognoms",max_length=240)
     data_neixement = models.DateField("Data naixement",null=True)
@@ -164,7 +164,7 @@ class AbstractAlumne(models.Model):
         verbose_name_plural = u'Alumnes'
         unique_together = [] #("nom", "cognoms",  "data_neixement", "grup__curs__nivell"),("ralc","grup__curs__nivell"))
 
-    def __unicode__(self):
+    def __str__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom 
 
     def delete(self):
@@ -189,7 +189,7 @@ class AbstractAlumne(models.Model):
         return Professor.objects.filter(tutor__grup=self.grup).distinct()
 
     def tutorsDeLAlumne_display(self):
-        return u", ".join( [unicode(tutor) for tutor in self.tutorsDeLAlumne() ])
+        return u", ".join( [str(tutor) for tutor in self.tutorsDeLAlumne() ])
 
     def force_delete(self):
         super(AbstractAlumne,self).delete()

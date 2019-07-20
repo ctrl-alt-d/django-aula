@@ -4,12 +4,18 @@ from django.contrib.auth import logout
 from aula.utils.tools import calculate_my_time_off
 
 
-class MultipleProxyMiddleware(object):
+class MultipleProxyMiddleware:
     FORWARDED_FOR_FIELDS = [
         'HTTP_X_FORWARDED_FOR',
         'HTTP_X_FORWARDED_HOST',
         'HTTP_X_FORWARDED_SERVER',
     ]
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
 
     def process_request(self, request):
         """
@@ -23,7 +29,13 @@ class MultipleProxyMiddleware(object):
                     request.META[field] = parts[-1].strip()
 
 
-class NoCacheMiddleware(object):
+class NoCacheMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
 
     def process_response(self, request, response):
         if response and type( response ) != type:
@@ -33,10 +45,16 @@ class NoCacheMiddleware(object):
         return response
     
 
-class timeOutMiddleware(object):
+class timeOutMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
 
     def process_request(self, request):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             if 'lastRequest' in request.session:            
                 elapsedTime = datetime.datetime.now() - request.session['lastRequest']
                 maxim_timeout = calculate_my_time_off(request.user)
@@ -51,7 +69,14 @@ class timeOutMiddleware(object):
 
         return None
 
-class IncludeLoginInErrors(object):  
+class IncludeLoginInErrors:  
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
     #http://stackoverflow.com/questions/9294043/include-django-logged-user-in-django-traceback-error
     def process_exception(self, request, exception):
         """
@@ -60,7 +85,7 @@ class IncludeLoginInErrors(object):
 
         # Add other details about the user to the META CGI variables.
         try:
-            if request.user.is_anonymous():
+            if request.user.is_anonymous:
                 request.META['AUTH_NAME'] = "Anonymous User"
                 request.META['AUTH_USER'] = "Anonymous User"
                 request.META['AUTH_USER_EMAIL'] = ""

@@ -5,7 +5,7 @@ from time import strptime, strftime
 from django import forms
 #from django.db import models
 from django.forms import fields
-from utils.widgets import JqSplitDateTimeWidget
+from .widgets import JqSplitDateTimeWidget
 
 #exemple: 
 #some_date_field = JqSplitDateTimeField(label=u'Data regeneració',widget=JqSplitDateTimeWidget())

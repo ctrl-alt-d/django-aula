@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('codi_assignatura', models.CharField(max_length=45)),
                 ('nom_assignatura', models.CharField(max_length=250, blank=True)),
-                ('curs', models.ForeignKey(blank=True, to='alumnes.Curs', null=True)),
+                ('curs', models.ForeignKey(blank=True, to='alumnes.Curs', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -41,6 +41,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assignatura',
             name='tipus_assignatura',
-            field=models.ForeignKey(blank=True, to='assignatures.TipusDAssignatura', null=True),
+            field=models.ForeignKey(blank=True, to='assignatures.TipusDAssignatura', null=True, on_delete=models.CASCADE),
         ),
     ]

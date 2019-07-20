@@ -7,7 +7,7 @@ from django.template.context import RequestContext
 from aula.apps.alumnes.models import  Grup
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.assignatures.models import Assignatura
-from aula.utils.tools import write_pdf
+from aula.utils.tools import write_pdf, unicode
 from django.conf import settings
 
 def reportCalendariCursEscolarTutor( professor ):
@@ -218,7 +218,7 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
         docFile.close()
         os.remove(resultat)
         
-    except Exception, e:
+    except Exception as e:
         excepcio = unicode( e )
         
     if not excepcio:

@@ -29,7 +29,8 @@ class SimpleTest(TestCase):
         c = Client()
         response = c.post(self.url + '/usuaris/login/', {'usuari':'SrProgramador', 'paraulaDePas':'patata'})
         response = c.get( self.url + '/presencia/passaLlista/' + str(self.db.programacioDiaAnterior.pk) + '/')
-        nBotonsPresent = response.content.count("btn btn-default btnPresent")
+        c:bytes = response.content
+        nBotonsPresent = c.count(b"btn btn-default btnPresent")
         self.assertTrue(nBotonsPresent == self.db.nAlumnesGrup, "Error falten usuaris en el llistat")
 
     def test_passarLlistaModificaBD(self):
@@ -37,7 +38,7 @@ class SimpleTest(TestCase):
         response = c.post(self.url + '/usuaris/login/', {'usuari':'SrProgramador', 'paraulaDePas':'patata'})
         response = c.get(self.url + '/presencia/passaLlista/' + str(self.db.programacioDiaAnterior.pk) + '/')
         #Localitzar els CA's que cal enviar.
-        estatsAEnviar=self.obtenirEstats(response.content)
+        estatsAEnviar=self.obtenirEstats(response.content.decode('utf-8'))
         
         response = c.post(self.url + '/presencia/passaLlista/' + str(self.db.programacioDiaAnterior.pk) + '/', 
          estatsAEnviar)
@@ -48,7 +49,7 @@ class SimpleTest(TestCase):
             "Error el número de controls d'assisència marcats com a present hauria de ser " + str(self.db.nAlumnesGrup) + 
             "i és:" + str(len(controlsAssistencia)))
     
-    def obtenirEstats(self, html):
+    def obtenirEstats(self, html:str):
         valorsAEnviar={}
         
         matches=re.findall('name="[0-9]+-estat"', html)
@@ -125,7 +126,7 @@ class MySeleniumTests(SeleniumLiveServerTestCase):
         self.assertTrue(len(cas)==0)
 
         #Seleccionar dos usuaris.
-        for i in xrange(0,2):
+        for i in range(0,2):
             js = """ x = document.evaluate('//input[@type=\\\'checkbox\\\' and @value="""+str(self.db.alumnes[i].pk)+"""]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null );
                     x.singleNodeValue.click();
                 """

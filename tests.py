@@ -5,7 +5,7 @@
 
 import subprocess
 driver = subprocess.check_output("whereis -b geckodriver", shell=True)
-camps = driver.split(' ')
+camps = driver.decode('utf-8').split(' ')
 if len(camps) <= 1:
   #instala driver
   resultat = subprocess.call("wget https://github.com/mozilla/geckodriver/releases/download/v0.23.0/geckodriver-v0.23.0-linux64.tar.gz --directory-prefix=/tmp/", shell=True)
