@@ -273,7 +273,7 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019 locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
@@ -333,7 +333,7 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019 locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
