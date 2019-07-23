@@ -89,15 +89,20 @@
 				</div>
              {% else %}
 	            {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
+
+                {% if camp.buto %}<a class="btn btn-primary" href="{% url camp.buto camp.id %}" role="button">{%endif%}
 	            	
 	            {% if camp.negreta %}<strong>{%endif%}
 	            	
 	            {{camp.contingut|linebreaksbr}}
 	            
 	            {% if camp.negreta %}</strong>{%endif%}
+
 	            
-	            
-	            {% if camp.enllac %}</a>{%endif%}
+	            {% if camp.enllac or camp.buto%}</a>{%endif%}
+
+
+
              {% endif %}
              
              {% if camp.multipleContingut %}

@@ -922,23 +922,10 @@ def elMeuInforme( request, pk = None ):
             # ----------------------------------------------
             if sortida.sortida.tipus_de_pagament == 'ON':
                 camp = tools.classebuida()
-                camp.enllac = None
-                camp.modal = {}
-                camp.modal['id'] = sortida.id + 1
-                camp.modal['txtboto'] = u'Pagar'
-                camp.modal['tittle'] = u"{0} ({1})".format(
-                    sortida.sortida.titol_de_la_sortida,
-                    naturalday(sortida.sortida.calendari_desde),
-                )
-                camp.modal['body'] = u'''{0} a {1} \n\nPreu: {2} €\n'''.format(
-                    sortida.sortida.calendari_desde.strftime('%d/%m/%Y %H:%M'),
-                    sortida.sortida.calendari_finsa.strftime('%d/%m/%Y %H:%M'),
-                    sortida.sortida.preu_per_alumne,
-                )
-                camp.modal['enllac'] = u'pagamentOnLine/'
-                camp.modal['text_enllac'] = u'Pagar'
-                camp.modal['checkbox'] = u'He llegit i accepto la política de vendes i devolucions.'
-                camp.modal['checkbox_enllac'] = u'/utils/pagamentOnLine/'
+                camp.buto = u'sortides__sortides__pago_on_line'
+                camp.contingut = "Pago Online"
+                camp.id = sortida.id
+
                 filera.append(camp)
 
 

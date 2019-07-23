@@ -45,5 +45,6 @@ urlpatterns = [
 
     url(r'^imprimir/(?P<pk>\d+)/(?P<din>\d+)$', sortides_views.imprimir, name = 'sortides__sortides__imprimir' ),
 
+    url(r'^pagoOnline/(?P<pk>\d+)/$', sortides_views.pagoOnline, name='sortides__sortides__pago_on_line'),
 
 ]

@@ -112,7 +112,7 @@ def clean_sortida(instance):
 
     # només direcció o grup sortides pot tocar. Tenim tres missatges diferents
 
-    if ( instance.informacio_pagament not in [settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA,settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE,'']) :
+    if ( instance.informacio_pagament not in [settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE,'']) :
         if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot posar informació de pagament." )
 

@@ -305,9 +305,9 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
         exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'data_inici', 'franja_inici', 'data_fi',
                    'franja_fi', 'codi_de_barres', 'empresa_de_transport', 'pagament_a_empresa_de_transport',
-                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula')
+                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula', 'pagaments')
     else:
-        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio',)
+        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments')
 
     formIncidenciaF = modelform_factory(Sortida, exclude=exclude)
 
@@ -504,6 +504,8 @@ def alumnesConvocats( request, pk , origen ):
                     #aquest if no caldria però per algun motiu falla per clau duplicada.
                     try:
                         instance.alumnes_convocats.add( alumne )
+                        if instance.tipus_de_pagament == 'ON':
+                            instance.pagaments.add(alumne)
                     except IntegrityError:
                         pass
                     
@@ -512,6 +514,8 @@ def alumnesConvocats( request, pk , origen ):
                     #aquest if no caldria. és només per seguretat.
                     try:
                         instance.alumnes_convocats.remove( alumne )
+                        if instance.tipus_de_pagament == 'ON':
+                            instance.pagaments.remove(alumne)
                     except IntegrityError:
                         pass
 
@@ -1036,9 +1040,18 @@ def sortidaExcel( request, pk ):
     
     
 #-----------------
-    
-    
 
+
+@login_required
+def pagoOnline(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    instance = get_object_or_404(Sortida, pk=pk)
+
+
+    nexturl = r'/sortides/sortides{origen}'.format(origen=origen)
+    return HttpResponseRedirect(nexturl)
     
     
     
