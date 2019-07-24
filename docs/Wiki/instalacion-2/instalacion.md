@@ -1,7 +1,8 @@
 # Instalación en Ubuntu Server 18.04 LTS
 
-{{warning|1=Todas las instrucciones de este documento se deben ejecutar con permisos elevados}}
-{{warning}} Todas las instrucciones de este documento se deben ejecutar con permisos elevados
+{% hint style="warning" %}
+Todas las instrucciones de este documento se deben ejecutar con permisos elevados
+{% endhint %}
 ### Preparando el Entorno
 
 El primer paso es preparar un entorno de desarrollo [`Python`](https://www.python.org/) en nuestro sistema, para ello instalamos los siguientes paquetes:
