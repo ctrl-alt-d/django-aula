@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load extres %}
+
+{% block extrahead %}
+<script>
+function clickBotoAssistencia(idAlumne, idImpartir)
+{
+    var boto = document.getElementById(idAlumne + "_" + idImpartir);
+    lletraEstat = boto.value;
+    //console.error ("Intent petició " + idAlumne + ", " + idImpartir + " boto:" + encodeURIComponent(lletraEstat));
+
+    var xmlhttp;
+    if (window.XMLHttpRequest)
+    {   // code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+
+        //Funció de tornada AJAX.
+        xmlhttp.onreadystatechange=function()
+        {
+            resposta = xmlhttp.responseText;
+            if (resposta != "")
+            {
+                if (resposta.charAt(0) == "_") {
+                    pintarError(resposta)
+                }
+                else {
+                    netejarError();
+                    pintarBoto(idAlumne + "_" + idImpartir, resposta);
+                }
+            }
+        }
+        var query = '{{request.path}}presenciaSetmanal/modificaEstatControlAssistencia/' + encodeURIComponent(lletraEstat) + '/' + idAlumne + '/' + idImpartir;
+        //Fa una petició sincrona.
+        //console.error ("Intent petició " + query);
+        xmlhttp.open("GET",query, false);
+        xmlhttp.send();
+    }
+    else
+    {
+        alert('Versió del navegador massa antiga. Contacta amb l\'administrador.');
+    }
+}
+
+function clickBotoAssistenciaMultiple(idImpartir, idGrup)
+{
+    var xmlhttp;
+
+    console.error ("Intent petició grup" + idGrup + ", " + idImpartir + " boto:");
+
+    var potsContinuar = false;
+    if (existeixAlgunBoto(idImpartir)) {
+        var r = confirm("Vols modificar tots els estats a present, actualment ja has passat llista. Si confirmes perdràs els canvis anteriors.");
+        if (r==true)
+            potsContinuar=true;
+    }
+    else {
+        potsContinuar=true;
+    }
+
+    if (potsContinuar)
+    {
+        if (window.XMLHttpRequest)
+        {
+            xmlhttp=new XMLHttpRequest();
+
+            //Funció de tornada AJAX.
+            xmlhttp.onreadystatechange=function()
+            {
+                var str = xmlhttp.responseText;
+                resposta = xmlhttp.responseText;
+                if (resposta != "") {
+                    if (resposta.charAt(0) == "_") {
+                        pintarError(resposta)
+                    }
+                    else {
+                        netejarError();
+                        //Processem la llista d'alumnes que s'han de modificar.
+                        var arrayAlumnes = str.split(",");
+                        if (arrayAlumnes.length > 0)
+                        {
+                            //console.error("debug" + arrayAlumnes);
+                            for (i=0;i<arrayAlumnes.length;i++) {
+                                //console.error ("Pintar boto" + arrayAlumnes[i] + "_" + idImpartir);
+                                pintarBoto(arrayAlumnes[i] + "_" + idImpartir, 'P');
+                            }
+
+                        }
+                    }
+                }
+            }
+            var query = '/presenciaSetmanal/modificaEstatControlAssistenciaGrup/P/' + idImpartir;
+            //Fa una petició sincrona.
+            //console.error ("Intent petició " + query);
+            xmlhttp.open("GET",query, false);
+            xmlhttp.send();
+        }
+        else
+        {
+            alert('Versió del navegador massa antiga. Contacta amb l\'administrador.');
+        }
+    }
+}
+
+function pintarError(msg)
+{
+    var element = document.getElementById("errorblock");
+    element.innerHTML = msg;
+    element.className="alert alert-danger";
+    return element;
+}
+
+function netejarError()
+{
+    var element = document.getElementById("errorblock");
+    element.innerHTML = "";
+    element.className="";
+    return element;
+}
+
+function existeixAlgunBoto(idImpartir)
+{
+    var elements = document.querySelectorAll('input[id$="_' + idImpartir + '"]');
+    i =0; trobat=false;
+    while (i<elements.length && !trobat)
+    {
+        if (elements[i].value!=" ")
+            trobat = true;
+        i++;
+    }
+    return trobat;
+}
+
+function pintarBoto(idBoto, value)
+{
+    var boto = document.getElementById(idBoto);
+    boto.value = value;
+    if (boto.value == 'P')
+        boto.style.backgroundColor="green";
+    else if (boto.value == 'F')
+        boto.style.backgroundColor="red";
+    else if (boto.value == 'J')
+        boto.style.backgroundColor="blue";
+    else if (boto.value == 'R')
+        boto.style.backgroundColor="orange";
+    else
+        boto.style.backgroundColor="transparent";
+}
+
+</script>
+<style type="text/css">
+
+p.lletraVertical { 
+    writing-mode: tb-rl;
+    white-space: nowrap;
+    display: block;
+    bottom: 0px;
+    width: 2em;
+    padding-top: 1em; 
+    font-family:"Courier New,Courier,monospace; font-size:10px; line-height:90%;" 
+}
+td.celaMatriu { width: 20px; font-size:10px; padding:0px; spacing:0px; }
+input.botoMatriu { width: 20px; height: 100%; vertical-align:top; padding:0px; spacing: 0px; border: 0; box-shadow: none; }
+input.botoSuperior { width: 20px; height: 14px; vertical-align:top; border: 0; box-shadow: none; }
+
+</style>
+{% endblock %}
+
+{% block content  %}
+<p class="" id="errorblock"></p>
+<table border="1" cellspacing="0" style="table-layout:auto; width:100%;">
+    <tr>
+        <!-- Títols i capçaleres -->
+        <th width="18%">{{grup.descripcio_grup}}</th>
+        {% for data,val in ddies.items %}
+                <th colspan="{{val}}">{{data|date:"j-M" }}</th>
+        {% endfor %}
+        <th></th>
+    </tr>
+    <tr>
+        <!-- Títols i capçaleres -->
+        <td>
+            <p>Setmana del {{monday_date}}</p>
+            <a href="/presenciaSetmanal/{{grup.id}}/{{previous_date}}" name="previousweek">&lt; &lt; Ant</a>
+            |
+            <a href="/presenciaSetmanal/{{grup.id}}/{{next_date}}" name="nextweek">Seg &gt; &gt;</a>
+        </td>
+        {% for hora in hores %}
+        <td valign="top" class="celaMatriu">
+          <p class="lletraVertical" >
+            {% for lletra in hora.horari.assignatura.nom_assignatura %}
+                {{lletra}}
+            {% endfor %}
+            </p>
+        </td>
+        {% endfor %}
+        <td></td>
+    </tr>
+    <tr>
+        <!-- Títols i capçaleres -->
+        <td>.</td>
+        {% for hora in hores %}
+            <td class="celaMatriu">
+                <input type="button" id="{{hora.id}}" value="P" class="botoSuperior"
+                       onclick="clickBotoAssistenciaMultiple({{hora.id}}, {{grup.id}})">
+            </td>
+        {% endfor %}
+        <td></td>
+    </tr>
+
+    {% for fila in mvisualitza %}
+    <tr>
+        <!-- Columnes convencionals -->
+        <td class="celaMatriu">{% get_value_from_key alumnes forloop.counter %}</td>
+        {% for columna in fila %}
+        <td class="celaMatriu">
+            {% if columna %}
+            <input type="button" id="{{ columna.getStringRepr }}"
+                   value="{{ columna }}" onclick="clickBotoAssistencia({{columna.getStringCommaSepValues}})"
+                   class="botoMatriu"
+                   style="background-color: {{columna.getColor}}">
+            {% else %}
+            <input type="button"
+                   value="." class="botoMatriu">
+            {% endif %}
+        </td>
+        {% endfor %}
+        <td></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
