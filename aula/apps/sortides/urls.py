@@ -43,7 +43,7 @@ urlpatterns = [
 
     url(r'^sortidaiCal/', sortides_views.sortidaiCal, name = 'sortides__sortides__ical'),
 
-    url(r'^imprimir/(?P<pk>\d+)/$', sortides_views.imprimir, name = 'sortides__sortides__imprimir' ),
+    url(r'^imprimir/(?P<pk>\d+)/(?P<din>\d+)$', sortides_views.imprimir, name = 'sortides__sortides__imprimir' ),
 
 
 ]

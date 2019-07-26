@@ -7,6 +7,7 @@ from aula.utils.decorators import group_required
 
 #helpers
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.presencia.models import Impartir
 from aula.apps.horaris.models import FranjaHoraria
@@ -27,7 +28,7 @@ from icalendar import vCalAddress, vText
 from django.http.response import HttpResponse, Http404
 from django.utils.datetime_safe import datetime
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom
 from django.contrib import messages
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
@@ -45,7 +46,7 @@ from django.db.utils import IntegrityError
 
 @login_required
 @group_required(['professors'])  
-def imprimir( request, pk ):
+def imprimir( request, pk, din = '4'):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -118,9 +119,9 @@ def imprimir( request, pk ):
     #resultat = StringIO.StringIO( )
     resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
     #context = Context( {'reports' : reports, } )
-    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt')
+    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt') if din=='4' else os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2-A5.odt')
     if not os.path.isfile(path):
-        path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt')
+        path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt') if din=='4' else os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2-A5.odt')
 
     renderer = Renderer(path, {'report' :report, }, resultat)  
     renderer.run()
@@ -132,7 +133,7 @@ def imprimir( request, pk ):
     #barcode
     os.remove(barres)
         
-#     except Exception, e:
+#     except Exception as e:
 #         excepcio = unicode( e )
         
     if True: #not excepcio:
@@ -168,7 +169,7 @@ def sortidesMevesList( request ):
     table = Table2_Sortides( list( sortides ), origen="Meves" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     return render(
                   request, 
@@ -196,7 +197,7 @@ def sortidesAllList( request ):
     table = Table2_Sortides( data=sortides, origen="All" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
         
@@ -240,7 +241,7 @@ def sortidesGestioList( request ):
     table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 
     table.order_by = '-calendari_desde' 
     
-    RequestConfig(request, paginate={"klass":DiggPaginator , "per_page": 10}).configure(table)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
     url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
         
@@ -320,48 +321,38 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         if form.is_valid():
             # Omplir camps de classes afectades
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
-                # Mirar si el dia d'inici de la sortida és lectiu
-                if instance.calendari_desde.date() == (Impartir.objects.filter(dia_impartir__gte =instance.calendari_desde.date())
-                                                               .values_list("dia_impartir", flat=True).first()):
-                    # Mirar si encara queden hores per impartir
-                    if instance.calendari_desde.time() < (Impartir.objects.filter(dia_impartir__gte=instance.calendari_desde.date())
-                                                                  .order_by('horari__hora__hora_fi').values_list('horari__hora__hora_fi', flat=True).last()):
-                        instance.data_inici = instance.calendari_desde.date()
-                        instance.franja_inici = (FranjaHoraria.objects.filter(hora_inici__gte=instance.calendari_desde.time())
-                                                 .order_by('hora_inici').first())
-                        # El dia i hora d'inici de la sortida no queden hores per impartir, per tant serà el següent dia lectiu
-                    else:
-                        instance.data_inici = (Impartir.objects.filter(dia_impartir__gt=instance.calendari_desde.date())
-                                               .order_by('dia_impartir').values_list('dia_impartir', flat=True).first())
-                        instance.franja_inici = (FranjaHoraria.objects.order_by('hora_inici').first())
-                else:
-                    instance.data_inici = (Impartir.objects.filter(dia_impartir__gt=instance.calendari_desde.date())
-                                           .order_by('dia_impartir').values_list('dia_impartir', flat=True).first())
-                    instance.franja_inici = (FranjaHoraria.objects.order_by('hora_inici').first())
 
-                # Mirar si el dia final de la sortida és lectiu
-                if instance.calendari_finsa.date() == (Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date())
-                                                               .values_list("dia_impartir", flat=True).last()):
-                    # Mirar si encara queden hores per impartir
-                    if instance.calendari_finsa.time() < (Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date())
-                                                                  .order_by('horari__hora__hora_inici').values_list('horari__hora__hora_inici', flat=True).last()):
+                #Buscar primera impartició afectada
+                primeraimparticio = Impartir.objects.filter(dia_impartir__gte=instance.calendari_desde.date(),
+                                                            horari__hora__hora_inici__gte=instance.calendari_desde.time()).order_by(
+                                                            'dia_impartir', 'horari__hora__hora_inici').first()
 
-                        instance.data_fi = instance.calendari_finsa.date()
-                        instance.franja_fi = (FranjaHoraria.objects.filter(hora_fi__lte=instance.calendari_finsa.time())
-                                              .order_by('hora_fi').last())
+                try:
+                    instance.data_inici = primeraimparticio.dia_impartir
+                    instance.franja_inici = primeraimparticio.horari.hora
+                # Si no hi ha primera impartició afectada s'agafa la del primer dia lectiu posterior
+                except:
+                    instance.data_inici = Impartir.objects.filter(
+                        dia_impartir__gt=instance.calendari_desde.date()).order_by(
+                        'dia_impartir').first().dia_impartir
+                    instance.franja_inici = FranjaHoraria.objects.order_by('hora_inici').first()
 
-                    # El dia i hora de fi de la sortida no queden hores per impartir, per tant serà la darrera impartició del dia
-                    else:
-                        instance.data_fi = (
-                            Impartir.objects.filter(dia_impartir = instance.calendari_finsa.date()).values_list('dia_impartir', flat=True).last())
-                        instance.franja_fi = (
-                            FranjaHoraria.objects.order_by(
-                                'hora_fi').last())
-                else:
-                    instance.data_fi = (
-                        Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date())
-                            .order_by('dia_impartir').values_list('dia_impartir', flat=True).last())
-                    instance.franja_fi = (FranjaHoraria.objects.order_by('hora_fi').last())
+                # Buscar darrera impartició afectada
+                darreraimparticio = Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date(),
+                                                            horari__hora__hora_fi__lte=instance.calendari_finsa.time()).order_by(
+                                                            'dia_impartir', 'horari__hora__hora_fi').last()
+
+                try:
+                    instance.data_fi = darreraimparticio.dia_impartir
+                    instance.franja_fi = darreraimparticio.horari.hora
+                # Si no hi ha darrera impartició afectada s'agafa la del primer dia lectiu anterior
+                except:
+                    instance.data_fi = Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date()).order_by(
+                                                            'dia_impartir').last().dia_impartir
+                    instance.franja_fi = FranjaHoraria.objects.order_by('hora_inici').last()
+
+
+
 
                 # Comprovem si la sortida en realitat no afecta cap hora d'impartició, això passa quan la data inicial > data final
                 if (instance.data_fi < instance.data_inici):
@@ -511,7 +502,7 @@ def alumnesConvocats( request, pk , origen ):
 
                 nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
             
     else:
@@ -607,12 +598,12 @@ def alumnesFallen( request, pk , origen ):
                 
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
 
@@ -691,7 +682,7 @@ def alumnesJustificats( request, pk , origen ):
                 
                 nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
     else:
@@ -797,7 +788,7 @@ def professorsAcompanyants( request, pk , origen ):
                                     
                 nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )                
                 return HttpResponseRedirect( nexturl )
-            except ValidationError, e:
+            except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
     else:

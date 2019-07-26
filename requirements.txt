@@ -1,21 +1,24 @@
+wheel
 openpyxl
 # Development
-appy==0.9.9 #==0.8.4
-Django>=1.11,<2.0
+git+https://github.com/lino-framework/appypod.git#egg=appy
+Django
 #django-debug-toolbar
-django-extensions==1.8.1
+django-extensions
 lxml
 django-appypod
-#python-dateutil>=2.1
+#python-dateutil
 six
 django-debug-toolbar
 #python-lxml
 python-dateutil
-django-tables2==1.16
-icalendar>=3.8.4
+django-tables2
+icalendar
 django-appconf
-Pillow==4.2.1
-viivakoodi==0.8.0
-XlsxWriter==1.0.2
+Pillow
+viivakoodi
+XlsxWriter
 typing
 selenium
+pisa
+

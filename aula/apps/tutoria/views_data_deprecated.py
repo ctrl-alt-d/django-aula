@@ -28,6 +28,7 @@ from aula.apps.tutoria.forms import  justificaFaltesW1Form, informeSetmanalForm,
 
 #helpers
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.presencia.models import  ControlAssistencia, EstatControlAssistencia,\
     Impartir
 from django.utils.datetime_safe import  date, datetime
@@ -59,7 +60,7 @@ from aula.apps.tutoria.rpt_gestioCartes import gestioCartesRpt
 from aula.apps.tutoria import report_carta_absentisme
 from aula.apps.tutoria.report_carta_absentisme import report_cartaAbsentisme
 from aula.apps.tutoria.rpt_totesLesCartes import totesLesCartesRpt
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from aula.apps.sortides.models import Sortida
 from aula.apps.sortides.table2_models import Table2_Sortides
 from django_tables2.config import RequestConfig

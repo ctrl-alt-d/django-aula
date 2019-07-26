@@ -7,6 +7,7 @@ from aula.apps.tutoria.models import Tutor
 from django.apps import apps
 from datetime import timedelta
 from django.conf import settings
+from aula.utils.tools import unicode
 
 
 def clean_sortida(instance):
@@ -190,7 +191,7 @@ def sortida_m2m_changed(sender, instance, action, reverse, model, pk_set, *args,
 
         # actualitzem tutors alumnes  #TODO: falten tutors individualitzats
         tutors = Tutor.objects.filter(grup__id__in=instance.alumnes_convocats.values_list('grup', flat=True).distinct())
-        instance.tutors_alumnes_convocats = [t.professor for t in tutors]
+        instance.tutors_alumnes_convocats.set([t.professor for t in tutors])
 
         # marco que cal sincronitzar ( posar alumnes que no han de ser a classe )
         instance.__class__.objects.filter(id=instance.id).update(estat_sincronitzacio=instance.NO_SINCRONITZADA)

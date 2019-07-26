@@ -6,6 +6,7 @@
     {% for missatge,color in missatges.items %}
         <a href="{% url 'varis__elmur__veure' missatge|lower %}" class="btn btn-{{ color }} btn-xs"> {{ missatge }} </a>
     {% endfor %}
+    <br>
     {% render_table table %}
 {% endblock %}
 

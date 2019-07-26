@@ -3,7 +3,7 @@
 from aula.apps.alumnes.models import  Nivell
 from aula.apps.avaluacioQualitativa.models import  RespostaAvaluacioQualitativa
 from django.db.models import Q
-from aula.utils import tools
+from aula.utils.tools import unicode
 from django.template.context import RequestContext
 from django.conf import settings
 import os
@@ -33,11 +33,12 @@ def report_cartaAbsentisme( request, carta ):
         # amorilla@xtec.cat  
         try:
             datafmt = settings.CUSTOM_DATE_FORMAT
-        except AttributeError:
-            datafmt = "%d %B de %Y"
+            carta_data=carta.data_carta.strftime( datafmt )
+        except:
+            datafmt = "%-d %B de %Y"
+            carta_data=carta.data_carta.strftime( datafmt )
 
         try:
-            # fa falta fer makemigrations i migrate per fer servir des_de_data
             des_de_data = carta.faltes_des_de_data.strftime( '%d/%m/%Y' )
         except:
             des_de_data = ''
@@ -56,7 +57,7 @@ def report_cartaAbsentisme( request, carta ):
                         'tipus3D': carta.tipus_carta == 'tipus3D',
                         # amorilla@xtec.cat  
                         # nous elements per personalitzar la carta
-                        'data': carta.data_carta.strftime( datafmt ),
+                        'data': carta_data,
                         'des_de_data': des_de_data,
                         'adreca': carta.alumne.adreca,
                         'cp': carta.alumne.cp,
@@ -76,7 +77,7 @@ def report_cartaAbsentisme( request, carta ):
         docFile.close()
         os.remove(resultat)
         
-    except Exception, e:
+    except Exception as e:
         excepcio = unicode( e )
         
     if not excepcio:

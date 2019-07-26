@@ -112,8 +112,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
 
 
 def tipusMissatge(missatge):
-    for tipus, valors in MISSATGES.iteritems():
-        for estat,frases in valors.iteritems():
+    for tipus, valors in iter(MISSATGES.items()):
+        for estat,frases in iter(valors.items()):
             if missatge in frases:
                 return tipus
     return None

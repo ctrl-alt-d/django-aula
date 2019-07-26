@@ -3,7 +3,7 @@ import django_tables2 as tables
 from django_tables2.utils import A
 
 from django.utils.safestring import mark_safe
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from aula.apps.sortides.models import Sortida
 
@@ -68,8 +68,14 @@ class Table2_Sortides(tables.Table):
                           </li>
 
                           <li>
-                            <a href="/sortides/imprimir/{{record.id}}">
-                            Imprimir fulls autorització<br>
+                            <a href="/sortides/imprimir/{{record.id}}/4">
+                            Imprimir fulls autorització i pagament<br>
+                            </a>
+                          </li>
+                          
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}/5">
+                            Imprimir fulls de pagament<br>
                             </a>
                           </li>
                                                                                                             
@@ -128,8 +134,14 @@ class Table2_Sortides(tables.Table):
                       </li>            
                       
                           <li>
-                            <a href="/sortides/imprimir/{{record.id}}">
-                            Imprimir fulls autorització<br>
+                            <a href="/sortides/imprimir/{{record.id}}/4">
+                            Imprimir fulls autorització i pagament<br>
+                            </a>
+                          </li>
+                          
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}/5">
+                            Imprimir fulls de pagament<br>
                             </a>
                           </li>
                                                               
@@ -195,8 +207,14 @@ class Table2_Sortides(tables.Table):
                           </li>
                                               
                           <li>
-                            <a href="/sortides/imprimir/{{record.id}}">
-                            Imprimir fulls autorització<br>
+                            <a href="/sortides/imprimir/{{record.id}}/4">
+                            Imprimir fulls autorització i pagament<br>
+                            </a>
+                          </li>
+                          
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}/5">
+                            Imprimir fulls de pagament<br>
                             </a>
                           </li>
                                               

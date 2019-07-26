@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('estat', models.CharField(default=b'P', max_length=2, choices=[(b'P', b'Pendent'), (b'R', b'Realitzat')])),
                 ('prioritat', models.CharField(blank=True, max_length=2, choices=[(b'V', b'Molt Important'), (b'P', b'Poc Inportant')])),
                 ('enllac', models.URLField(blank=True)),
-                ('propietari', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('propietari', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['-data'],

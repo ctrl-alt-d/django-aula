@@ -2,6 +2,7 @@
 from aula.apps.tutoria.models import Tutor, SeguimentTutorialRespostes, ResumAnualAlumne,\
     CartaAbsentisme
 from aula.utils import tools
+from aula.utils.tools import unicode
 from django.db.models import Min, Max, Q
 from django.utils.datetime_safe import  date, datetime
 from aula.apps.alumnes.models import Alumne, Grup
@@ -174,9 +175,9 @@ def gestioCartesRpt(professor, l4):
                 llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta, 
                                                                              settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA )
                 cal_imprimir_carta = carta.nfaltes >= llindar
-            except ValidationError, e:
-                print e
-                msg = e.message
+            except ValidationError as e:
+                print (e)
+                msg = e.messages
             
             camp.contingut = msg if bool( msg ) else carta.nfaltes 
 

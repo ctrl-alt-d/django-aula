@@ -89,7 +89,7 @@ def cartaabsentisme_clean( instance ):
         # Decideix el màxim de cartes i les faltes per carta segons el nivell i el número de la carta.
         # Fa falta CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA
         # No fa falta definir el tipus de carta en aquest moment, es farà al document odt
-        try:
+        if len(settings.CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA)>0:
             faltes = settings.CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA.get(instance.alumne.getNivellCustom())
             if faltes is not None:
                 maxCartes = len(faltes)
@@ -100,7 +100,7 @@ def cartaabsentisme_clean( instance ):
             else:
                 llindar=0
             perNivell=True
-        except:
+        else:
             perNivell=False  # si False, no fa servir CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA 
 
         #calculo tipus de carta    

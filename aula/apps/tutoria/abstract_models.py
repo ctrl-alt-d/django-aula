@@ -4,7 +4,7 @@ from django.db import models
 from django.template.defaultfilters import date
 
 class AbstractSeguimentTutorial(models.Model):
-    alumne = models.OneToOneField('alumnes.Alumne', null=True)
+    alumne = models.OneToOneField('alumnes.Alumne', null=True, on_delete=models.CASCADE)
     nom = models.CharField(max_length=240)
     cognoms = models.CharField(max_length=240)
     datadarreraactualitzacio = models.DateTimeField(null=True, blank=True)
@@ -17,7 +17,7 @@ class AbstractSeguimentTutorial(models.Model):
         unique_together = (("nom", "cognoms","data_neixement"))
         
 class AbstractResumAnualAlumne(models.Model):
-    seguiment_tutorial = models.ForeignKey( 'tutoria.SeguimentTutorial', )
+    seguiment_tutorial = models.ForeignKey( 'tutoria.SeguimentTutorial', on_delete=models.CASCADE )
     curs_any_inici = models.IntegerField(   )
     text_resum = models.TextField(blank=True)
     class Meta:
@@ -37,7 +37,7 @@ class AbstractSeguimentTutorialPreguntes(models.Model):
 
 
 class AbstractSeguimentTutorialRespostes(models.Model):
-    seguiment_tutorial = models.ForeignKey('tutoria.SeguimentTutorial')
+    seguiment_tutorial = models.ForeignKey('tutoria.SeguimentTutorial', on_delete=models.CASCADE)
     any_curs_academic = models.IntegerField()
     pregunta = models.CharField(max_length=250)
     resposta = models.TextField()
@@ -64,8 +64,8 @@ class AbstractActuacio(models.Model):
             ('F', u'''Familia''',),
             ('T', u'''Altres''',),
                    )
-    alumne = models.ForeignKey('alumnes.Alumne', help_text=u"Alumne sobre el qual es fa l'actuació", db_index = True )
-    professional = models.ForeignKey('usuaris.Professional', null=True, blank=True, help_text=u"Professional que fa l'actuacio", db_index=True )
+    alumne = models.ForeignKey('alumnes.Alumne', help_text=u"Alumne sobre el qual es fa l'actuació", db_index = True, on_delete=models.CASCADE )
+    professional = models.ForeignKey('usuaris.Professional', null=True, blank=True, help_text=u"Professional que fa l'actuacio", db_index=True, on_delete=models.CASCADE )
     moment_actuacio = models.DateTimeField(help_text=u"Data i Hora de l'actuació. Format: 2011-06-01 9:05")
     qui_fa_actuacio = models.CharField(choices = QUI_CHOICES, max_length=1, help_text=u"Qui realitza l'actuació")
     amb_qui_es_actuacio = models.CharField(choices = AMB_QUI_CHOICES, max_length=1, help_text=u"Sobre qui es realitza l'actuació")
@@ -77,10 +77,10 @@ class AbstractActuacio(models.Model):
         verbose_name_plural = u'Actuacions'
 
 class AbstractTutor(models.Model):
-    professor = models.ForeignKey('usuaris.Professor', )
-    grup = models.ForeignKey('alumnes.Grup', )
+    professor = models.ForeignKey('usuaris.Professor', on_delete=models.CASCADE )
+    grup = models.ForeignKey('alumnes.Grup', on_delete=models.CASCADE )
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{professor} tutoritza {grup}'.format(professor = self.professor, grup = self.grup )
             
     class Meta:
@@ -90,8 +90,8 @@ class AbstractTutor(models.Model):
         unique_together = (("professor", "grup"),)
 
 class AbstractTutorIndividualitzat(models.Model):
-    professor = models.ForeignKey('usuaris.Professor', )
-    alumne = models.ForeignKey('alumnes.Alumne', )
+    professor = models.ForeignKey('usuaris.Professor', on_delete=models.CASCADE )
+    alumne = models.ForeignKey('alumnes.Alumne', on_delete=models.CASCADE )
     class Meta:
         abstract = True
         verbose_name = u'Entrada Tutors Individualitzats'
@@ -101,14 +101,13 @@ class AbstractTutorIndividualitzat(models.Model):
 
 class AbstractCartaAbsentisme(models.Model):
     
-    alumne = models.ForeignKey( to='alumnes.Alumne', verbose_name=  u'Alumne' )
+    alumne = models.ForeignKey( to='alumnes.Alumne', verbose_name=  u'Alumne', on_delete=models.CASCADE )
     carta_numero = models.IntegerField( editable=False, verbose_name = u'Avís número' )
     tipus_carta = models.CharField( editable = False, max_length = 10 )
     faltes_fins_a_data = models.DateField( editable = False, verbose_name = 'Faltes fins a data' )
     # amorilla@xtec.cat  per a poder mostrar la data 'des de' a les cartes
-    # fa falta fer 'python manage.py makemigrations' i 'python manage.py migrate' per fer servir des_de_data
-    faltes_des_de_data = models.DateField( editable = False, verbose_name = 'Faltes des de data', default='2018-09-17' )
-    professor = models.ForeignKey( to = 'usuaris.Professor', verbose_name = 'Professor que signa la carta' )
+    faltes_des_de_data = models.DateField( editable = False, verbose_name = 'Faltes des de data', blank=True, null =True )
+    professor = models.ForeignKey( to = 'usuaris.Professor', verbose_name = 'Professor que signa la carta', on_delete=models.CASCADE )
     data_carta = models.DateField( verbose_name = 'Data de la carta' )
     faltes_incloses = models.TextField( editable = False, blank=True, verbose_name = 'Faltes incloses a la carta' )
     carta_esborrada_moment = models.DateTimeField( editable = False, blank=True, null =True  )
@@ -118,7 +117,7 @@ class AbstractCartaAbsentisme(models.Model):
         abstract = True
         ordering = [ 'alumne', 'carta_numero' ]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Carta núm {0} ({1}) de {2}'.format( self.carta_numero, date( self.data_carta, 'j N'), self.alumne  )        
 
 

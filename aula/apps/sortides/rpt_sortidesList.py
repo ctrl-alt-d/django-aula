@@ -6,7 +6,7 @@ from django.utils.datetime_safe import  date, datetime
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
 from aula.apps.sortides.models import Sortida
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.models import User
 
 def sortidesListRpt( user ):    

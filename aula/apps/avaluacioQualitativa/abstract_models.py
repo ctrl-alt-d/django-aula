@@ -12,7 +12,7 @@ class AbstractItemQualitativa(models.Model):
         ordering = ['codi_agrupacio','text']
         verbose_name = u"Frase aval. qualitativa"
         verbose_name_plural = u"Frases aval. qualitativa"
-    def __unicode__(self):
+    def __str__(self):
         return  u"{0}.-{1}".format( self.codi_agrupacio, self.text )
 
 class AbstractAvaluacioQualitativa(models.Model):
@@ -27,15 +27,15 @@ class AbstractAvaluacioQualitativa(models.Model):
         ordering = ['data_obrir_avaluacio']  
         verbose_name = u"Avaluació Qualitativa"
         verbose_name_plural = u"Avaluacions Qualitatives"
-    def __unicode__(self):
+    def __str__(self):
         return  self.nom_avaluacio    
     
 class AbstractRespostaAvaluacioQualitativa(models.Model):
-    qualitativa = models.ForeignKey( "avaluacioQualitativa.AvaluacioQualitativa" )
-    alumne = models.ForeignKey( 'alumnes.Alumne' )
-    professor = models.ForeignKey('usuaris.Professor')
-    assignatura = models.ForeignKey('assignatures.Assignatura')
-    item = models.ForeignKey( "avaluacioQualitativa.ItemQualitativa", blank=True, null=True )
+    qualitativa = models.ForeignKey( "avaluacioQualitativa.AvaluacioQualitativa", on_delete=models.CASCADE )
+    alumne = models.ForeignKey( 'alumnes.Alumne' , on_delete=models.CASCADE)
+    professor = models.ForeignKey('usuaris.Professor', on_delete=models.CASCADE)
+    assignatura = models.ForeignKey('assignatures.Assignatura', on_delete=models.CASCADE)
+    item = models.ForeignKey( "avaluacioQualitativa.ItemQualitativa", blank=True, null=True , on_delete=models.CASCADE)
     frase_oberta = models.CharField(u'Frase oberta', max_length=120,  help_text = u'Frase oberta', blank=True)
     
     relacio_familia_revisada = models.DateTimeField( null=True, editable=False )    

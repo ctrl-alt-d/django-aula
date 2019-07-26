@@ -12,20 +12,22 @@ School Attendance Software
 Quick demo
 =========
 
-On Ubuntu Server 14.04 LTS 64 bits:
+On Ubuntu Server 18.04 LTS 64 bits:
 
 ```bash
-apt-get install python-virtualenv python-pip libxml2-dev 
-apt-get install libxslt-dev python-libxml2 python-dev lib32z1-dev git
+sudo apt-get update
+sudo apt-get install python3 python3-venv python-dev git
+sudo apt-get install python3-lxml python3-libxml2 libxml2-dev libxslt-dev lib32z1-dev
 mkdir djau
 cd djau
-virtualenv venv
-source venv/bin/activate
-git clone https://github.com/ctrl-alt-d/django-aula.git
+git clone --single-branch --branch master https://github.com/ctrl-alt-d/django-aula.git django-aula
 cd django-aula
-pip install -r requirements.txt
-./scripts/create_demo_data.sh  #this take for a while ( > 7 minutes of fake data )
-python manage.py runserver 127.0.0.1:8000   # or your 
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+./scripts/create_demo_data.sh
+python manage.py runserver
+
 ```
 
 Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd 'dAju' )
@@ -33,9 +35,7 @@ Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd
 Deployment Docs
 =============
 
-Documentació pas a pas per a fer el desplegament.
-
-[Documentació instal·lació django-aula a gitbook](https://django-aula.gitbook.io/documentation/) (Recurs extern)
+[Documentació pas a pas per a fer el desplegament.](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/Wiki/README.md)
 
 Vols col·laborar-hi?
 =============

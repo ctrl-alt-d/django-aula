@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils.tools import classebuida
-from django.core.urlresolvers import resolve, reverse
+from django.urls import resolve, reverse
 from django.contrib.auth.models import Group, User
 from aula.apps.usuaris.models import User2Professor, AlumneUser
 from django.db.models.aggregates import Count
@@ -14,7 +14,7 @@ from aula.apps.sortides.models import Sortida
 
 def calcula_menu( user , path ):
     
-    if not user.is_authenticated():
+    if not user.is_authenticated:
         return
 
     #mire a quins grups està aquest usuari:
@@ -113,8 +113,10 @@ def calcula_menu( user , path ):
                       ),                                      
                     )
 
-
-
+    activarModulPresenciaSetmanal=False
+    if hasattr(settings, 'CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU' ) and settings.CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU:
+        activarModulPresenciaSetmanal=True
+    
     
     arbre1 = (
 
@@ -133,7 +135,6 @@ def calcula_menu( user , path ):
                   (
                       ("Presencia", 'aula__horari__horari', pr, None, None ),
                       #("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None, None ),
-
                       ("Alumnes", 'aula__alumnes__blanc', pr, None,
                           ( 
                             ("Els meus alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None),
@@ -154,6 +155,7 @@ def calcula_menu( user , path ):
                           )
                       ),         
                       ("Qualitativa", 'aula__qualitativa__les_meves_avaulacions_qualitatives', pr, ( u'!', 'info' ) if hiHaUnaQualitativaOberta else None, None ),
+                      ("Pres. Setmanal", 'aula__presencia_setmanal__index', pr and activarModulPresenciaSetmanal, None, None ),
                    )
                ),
 

@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
+from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 from django.db.models.aggregates import Count
 from django.db.models import Q, F, Case, When, IntegerField
@@ -81,13 +82,10 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
     q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
 
     #amorilla@xtec.cat
-    try:
-        if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
-            # té en compte tots els dies encara que no s'hagi passat llista
-            q_p = q_controls.order_by().values_list( 'id','alumne__id' ).distinct()
-        else:
-            q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
-    except:
+    if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+        # té en compte tots els dies encara que no s'hagi passat llista
+        q_p = q_controls.order_by().values_list( 'id','alumne__id' ).distinct()
+    else:
         q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
 
     q_j = q_controls.filter( estat__codi_estat = 'J' ).order_by().values_list( 'id','alumne__id' ).distinct()
@@ -189,18 +187,15 @@ def indicadorAbsentisme( data_inici, data_fi, nivell, tpc):
     q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
     
     # calcula el 'total' de dies per alumne i les 'faltes' per alumne.
-    try:
-        if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
-            # té en compte tots els dies encara que no s'hagi passat llista
-            q_p = q_controls.values('alumne__id').annotate(total=Count('id'), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
-        else:
-            q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
-    except:
+    if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+        # té en compte tots els dies encara que no s'hagi passat llista
+        q_p = q_controls.values('alumne__id').annotate(total=Count('id'), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
+    else:
         q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
 
     quantitat=q_p.count()
     # Calcula el percentatge d'absentisme per alumne i compta els que superen el límit indicat
-    superen = q_p.annotate(per=F('faltes')/F('total')*100).filter(per__gt=tpc).count() if quantitat > 0 else 0
+    superen = q_p.annotate(per=F('faltes')*100.0/F('total')).filter(per__gt=tpc).count() if quantitat > 0 else 0
 
     # Percentatge d'alumnes que superen el límit
     IND=float(superen)/float(quantitat) * 100.0 if quantitat > 0 else 0
@@ -254,26 +249,21 @@ def indicadorsReport():
     capcelera.contingut = u'Curs'
     taula.capceleres.append( capcelera )
 
-    # Report per defecte si no n'hi ha cap indicador
-    taula.fileres = []
-    filera = []
-    camp = tools.classebuida()
-    camp.contingut="No n'hi ha indicadors definits"
-    filera.append(camp)
-    taula.fileres.append( filera )
-    filera = []
-    camp = tools.classebuida()
-    camp.contingut="S'han de definir a CUSTOM_INDICADORS"
-    filera.append(camp)
-    taula.fileres.append( filera )
-
-    try:
-        if len(settings.CUSTOM_INDICADORS)==0:
-            report.append(taula)
-            return report
-    except:
+    if len(settings.CUSTOM_INDICADORS)==0:
+        # Report per defecte si no n'hi ha cap indicador
+        taula.fileres = []
+        filera = []
+        camp = tools.classebuida()
+        camp.contingut="No n'hi ha indicadors definits"
+        filera.append(camp)
+        taula.fileres.append( filera )
+        filera = []
+        camp = tools.classebuida()
+        camp.contingut="S'han de definir a CUSTOM_INDICADORS"
+        filera.append(camp)
+        taula.fileres.append( filera )
         report.append(taula)
-        return report
+        return (report, None)
 
     taula.fileres = []
 

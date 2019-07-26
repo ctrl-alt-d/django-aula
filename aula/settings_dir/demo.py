@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
 
-from dev import *
+from .dev import *
 location = lambda x: os.path.join(PROJECT_DIR, x)
 
 TEMPLATES[0]['DIRS'] = [location('../demo/templates')]+TEMPLATES[0]['DIRS']

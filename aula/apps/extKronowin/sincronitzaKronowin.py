@@ -15,6 +15,7 @@ import traceback
 import csv
 from aula.apps.alumnes.models import Nivell, Grup, Curs
 
+from aula.utils.tools import unicode
 
 def sincronitza(file, usuari):
     _, _ = Group.objects.get_or_create(name=u'direcció')
@@ -195,7 +196,7 @@ def sincronitza(file, usuari):
             if created:
                 nHorarisModificats += 1
 
-        except Exception, e:
+        except Exception as e:
             warnings.append('Horari no importat, [' + unicode(e) + '] :' + unicode(row))
             warnings.append( traceback.format_exc() )
 
@@ -295,10 +296,10 @@ def creaNivellCursGrupDesDeKronowin(file, dia_inici_curs, dia_fi_curs):
         #
         # comprovar existència franges horàries Kronowin
         #
-        nivell = unicode(row['nivell'], 'iso-8859-1')
-        curs = unicode(row['curs'], 'iso-8859-1')
-        lletra = unicode(row['lletra'], 'iso-8859-1')
-        grup = unicode(row['grup'], 'iso-8859-1')
+        nivell = row['nivell']
+        curs = row['curs']
+        lletra = row['lletra']
+        grup = row['grup']
 
         n, _ = Nivell.objects.get_or_create(nom_nivell=nivell, descripcio_nivell=nivell)
         c, _ = Curs.objects.get_or_create(nom_curs=curs,
