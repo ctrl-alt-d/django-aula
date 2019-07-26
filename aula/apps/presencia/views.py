@@ -1022,7 +1022,6 @@ def alertaAssistencia(request):
 @login_required
 @group_required(['direcció'])
 def indicadors(request):
-
     (report, dades) = indicadorsReport()
     if dades is None:
         menuCTX=False
