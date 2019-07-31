@@ -19,8 +19,10 @@ from aula.utils.decorators import group_required
 
 #Models
 from aula.apps.presencia.models import Impartir, ControlAssistencia, EstatControlAssistencia
+from aula.apps.presencia.business_rules.impartir import impartir_despres_de_passar_llista
 from aula.apps.alumnes.models import Grup
 from aula.apps.usuaris.models import User2Professor, Professor
+from aula.utils.presencia import utils as presenciaUtils
 
 CONST_ERROR_CODE = '_'
 
@@ -180,9 +182,9 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
     Modifica el control d'assistència d'un sol resistre.
     '''
     try:
-        profeActual = User2Professor( request.user )
         credentials = getImpersonateUser(request) 
-        (user, l4) = credentials   
+        (user, l4) = credentials
+        profeActual = User2Professor(user)
 
         estats = LlistaEstats()
         segEstat = estats.obtenirSeguentEstatAPartirCodi(codiEstat)
@@ -192,21 +194,17 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
             if segEstat.codi == 'J':
                 segEstat = estats.obtenirSeguentEstatAPartirCodi(segEstat.codi)
 
-        #Comprovar que sigui el profe assignat a l'hora o error.
         impartir = Impartir.objects.get(id=idImpartir)
         
         #Controlem que el profe tingui permisos per modificar la hora.
-        _comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir)
+        presenciaUtils.comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir)
 
         ca = ControlAssistencia.objects.get(impartir_id=idImpartir, alumne_id=idAlumne)
-        codiResultat = _modificaEstatControlAssistencia(
-            segEstat, ca, profeActual, user, credentials)
+        codiResultat = presenciaUtils.modificaEstatControlAssistencia(
+            segEstat.getIdOrNone(), ca, profeActual, credentials)
 
         #Actualitzar el control impartir.
-        impartir.dia_passa_llista = datetime.datetime.now()
-        impartir.professor_passa_llista = profeActual
-        impartir.currentUser = user
-        impartir.save()
+        presenciaUtils.modificaImpartir(impartir, user, profeActual)
 
         #Log
         from aula.apps.usuaris.models import Accio
@@ -217,6 +215,9 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
             impersonated_from=request.user if request.user != user else None,
             text=u"""Passar llista, presenciaSetmanal: {0}.""".format(impartir)
         )
+
+        #Notificar als altres profes
+        impartir_despres_de_passar_llista(impartir)
 
         #print ("Retorno correctament ", codiResultat)
         return HttpResponse(codiResultat)
@@ -239,15 +240,15 @@ def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
     '''
     llistaAlumnes=''
     try:
-        profeActual = User2Professor( request.user )
         credentials = getImpersonateUser(request) 
-        (user, l4) = credentials   
+        (user, l4) = credentials
+        profeActual = User2Professor(user)   
         
         #Comprovar que sigui el profe assignat a l'hora o error.
         impartir = Impartir.objects.get(id=idImpartir)
         
         #Controlem que el profe tingui permisos per modificar la hora.
-        _comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir)
+        presenciaUtils.comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir)
         
         assistencies = impartir.controlassistencia_set.order_by('alumne')
         estats = LlistaEstats()
@@ -256,15 +257,12 @@ def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
         for assistencia in assistencies:
             if (llistaAlumnes != ''):
                 llistaAlumnes = llistaAlumnes + u','
-            _modificaEstatControlAssistencia(nouEstat, assistencia, \
-                profeActual, user, credentials)
+            presenciaUtils.modificaEstatControlAssistencia(
+                nouEstat.getIdOrNone(), assistencia, profeActual, credentials)
             llistaAlumnes = llistaAlumnes + str(assistencia.alumne_id)
 
         #Actualitzar el control impartir.
-        impartir.dia_passa_llista = datetime.datetime.now()
-        impartir.professor_passa_llista = profeActual
-        impartir.currentUser = user
-        impartir.save()
+        presenciaUtils.modificaImpartir(impartir, user, profeActual)
 
         #Log
         Accio.objects.create(
@@ -274,6 +272,10 @@ def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
             impersonated_from=request.user if request.user != user else None,
             text=u"""Passar llista, presenciaSetmanal: {0}.""".format(impartir)
         )
+
+        #Notificar als altres profes
+        impartir_despres_de_passar_llista(impartir)
+
         return HttpResponse(llistaAlumnes)
     except ValidationError as e:
         cadenaError = u''
@@ -284,29 +286,6 @@ def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
         #print (CONST_ERROR_CODE, str(traceback.format_exc()))
         return HttpResponse(CONST_ERROR_CODE + str(e), status=500)       
 #        return HttpResponse(CONST_ERROR_CODE + unicode(e) + u"-" + unicode(traceback.format_exc(), 'utf-8'))
-
-
-def _modificaEstatControlAssistencia(nouEstat, controlAssistencia, profeActual, user, credentials):
-    #type: (Estat, ControlAssistencia, Professor, User ,tuple) -> int
-    #Assignem les credencials de l'usuari que fa la feina.
-    controlAssistencia.currentUser = user
-    controlAssistencia.professor = profeActual
-    controlAssistencia.credentials = credentials
-    controlAssistencia.estat_id = nouEstat.getIdOrNone()
-    controlAssistencia.save()
-    if not controlAssistencia.estat:
-        return ' '
-    else:
-        return controlAssistencia.estat.codi_estat
-    
-
-def _comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir):
-    (user, l4) = credentials
-    pertany_al_professor = user.pk in [impartir.horari.professor.pk, \
-                                impartir.professor_guardia.pk if impartir.professor_guardia else -1]
-    if not (l4 or pertany_al_professor):
-        raise Exception(u"Error al modificar l'assistència del grup, el profe no és propietari de l'hora assignada")
-
 
 #Realitza el recompte d'hores per cada dia.
 def _recompteHores(hores):

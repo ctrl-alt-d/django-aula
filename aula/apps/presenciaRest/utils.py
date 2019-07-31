@@ -21,33 +21,6 @@ def add_secs_to_time(timeval, secs_to_add):
     added_datetime = full_datetime + datetime.timedelta(seconds=secs_to_add)
     return added_datetime.time()
 
-def PresenciaQuerySetGetCode(qs):
-    #type: (QuerySet)-> None ; QuerySet de tipus assistència
-    '''
-    Passar un conjunt d'assistencies, determina si en alguna hi ha un present o retard.
-    Si és així, vol dir que tenim un assistència durant aquest període.
-    '''
-    assistenciaCode = 'N'
-    if qs is not None and qs.filter( estat__isnull = False  ).exists():
-        if qs.filter( estat__codi_estat__in = ['P','R'] ):
-            assistenciaCode = 'P'
-        elif qs.filter( estat__codi_estat__in = ['J'] ):
-            assistenciaCode = 'J'
-        else:
-            assistenciaCode = 'F'
-    return assistenciaCode
-
-def PresenciaQuerySet( qs ):
-    #type: (QuerySet); QuerySet de tipus assistència
-    if qs is not None and qs.filter( estat__isnull = False  ).exists():
-        if qs.filter( estat__codi_estat__in = ['P','R'] ):
-            esFaltaAnterior = 'Present'
-        else:
-            esFaltaAnterior = 'Absent'
-    else:
-        esFaltaAnterior = 'NA'
-    return esFaltaAnterior
-
 def convertirData(stringData):
     "Passem una data en format Y-M-D, comprova si és correcte i retorna una llista amb 3 enters."
     camps = stringData.split('-')
@@ -87,7 +60,11 @@ class ControlAssistenciaIHoraAnterior(ControlAssistencia):
             impartir__dia_impartir = self.impartir.dia_impartir  )
 
         if controls_anteriors:
-            return controls_anteriors.all()[0].estat.codi_estat
+            estatAnterior = controls_anteriors.all()[0].estat
+            if estatAnterior:
+                return estatAnterior.codi_estat
+            else:
+                return None
         else:
             return None
 

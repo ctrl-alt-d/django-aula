@@ -18,6 +18,7 @@ from aula.apps.usuaris.models import Professor, User2Professor, Accio
 from aula.apps.presencia.models import Impartir, ControlAssistencia, EstatControlAssistencia
 from aula.apps.horaris.models import FranjaHoraria, Horari
 from aula.apps.presencia.business_rules.impartir import impartir_despres_de_passar_llista
+from aula.utils.presencia import utils as presenciaUtils
 
 from . import serializers as mySerializers
 from . import utils
@@ -127,11 +128,7 @@ class PutControlAssistencia(APIViewAutenticadaAmbToken):
             utils.comprovarUsuarisIguals(request.user, usuari)
 
             impartir = Impartir.objects.get(pk=idImpartir)
-            pertany_al_professor = usuari.pk in [impartir.horari.professor.pk, \
-                                        impartir.professor_guardia.pk if impartir.professor_guardia else -1]
-            if not (pertany_al_professor):
-                return Response('No tens permisos per passar llista', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            
             #Comprovar que no sigui una assignatura prohibida de passar a través de WebService, cas per exemple que calgui marcar UF's. Com a Montilivi.
             if impartir.horari.assignatura.tipus_assignatura in (settings.CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES):
                 return Response("No pots actualitzar assignatures de tipus: " + unicode(settings.CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES), 
@@ -144,27 +141,26 @@ class PutControlAssistencia(APIViewAutenticadaAmbToken):
             if len(controlsAssistencia) == 0:
                 return Response("No hi han dades a actualitzar", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+            #Controlem que el profe tingui permisos per modificar la hora.
+            presenciaUtils.comprovarQueLaHoraPertanyAlProfessorOError(
+                (usuari, False), impartir)
+
             #Modifica tots els controls d'assistència.
             #Només modifiquem l'estat de cada control d'assistència.
-            #Si falla quelcom no modifiquem impartir.
+            professor:Professor = User2Professor(usuari)
             retornIdsCAsModificats = ''
             for caEnviatPerXarxa in controlsAssistencia:
                 ca = ControlAssistencia.objects.get(pk=caEnviatPerXarxa['pk']) #type: ControlAssistencia
-                ca.estat = EstatControlAssistencia.objects.get(pk=caEnviatPerXarxa['estat'])
-                ca.currentUser = usuari
-                ca.professor = User2Professor(usuari)
-                ca.credentials = (usuari, False) #Usuari i L4.
-                ca.save()
+                presenciaUtils.modificaEstatControlAssistencia(
+                    caEnviatPerXarxa['estat'], ca, professor, (usuari, False))
                 if (retornIdsCAsModificats != ''):
                     retornIdsCAsModificats += ', '
                 retornIdsCAsModificats += str(ca.pk)
 
-            impartir.dia_passa_llista = datetime.datetime.now()
-            impartir.professor_passa_llista = User2Professor(usuari)
-            impartir.currentUser = usuari
-            impartir.save()
+            #Modifica impartir.
+            presenciaUtils.modificaImpartir(impartir, usuari, professor)
 
-            # LOGGING
+            # Logging.
             Accio.objects.create(
                 tipus='PL',
                 usuari=usuari,
@@ -174,12 +170,14 @@ class PutControlAssistencia(APIViewAutenticadaAmbToken):
             )
                                 
             msg = '{"ids": "' + str(retornIdsCAsModificats) + '"}'
+            
+            #Notificar als altres profes
             impartir_despres_de_passar_llista(impartir)
 
             return Response(msg)
         except Exception as excpt:
             traceback.print_exc()
-            return Response('Error API' + str(excpt), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response('Error API:' + str(excpt), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GetFrangesHoraries(APIViewAutenticadaAmbToken):
     

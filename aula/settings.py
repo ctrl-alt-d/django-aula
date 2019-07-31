@@ -78,7 +78,7 @@ CUSTOM_INDICADORS = [
           ]
 
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
-CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
+CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = True
 #Activa o desactiva el mòdul rest, que permet passar faltes des d'Android.
 CUSTOM_MODUL_PRESENCIA_REST_ACTIU = True
 #Assignatures en les quals no es pot passar llista mitjançant API rest.
