@@ -1,3 +1,4 @@
+wheel
 openpyxl
 # Development
 git+https://github.com/lino-framework/appypod.git#egg=appy

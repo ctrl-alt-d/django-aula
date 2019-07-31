@@ -1,24 +1,24 @@
 # Instalación en Ubuntu Server 18.04 LTS
 
-{% hint style="warning" %}
-Todas las instrucciones de este documento se deben ejecutar con permisos elevados
-{% endhint %}
+> **Atención:**  Todas las instrucciones de este documento se deben ejecutar con permisos elevados
 
 ### Preparando el Entorno
 
-El primer paso es preparar un entorno de desarrollo [`Python`](https://www.python.org/) en nuestro sistema, para ello instalamos los siguientes paquetes:
+El primer paso es preparar un entorno de desarrollo **[Python](https://www.python.org/)** en nuestro sistema, para ello instalamos los siguientes paquetes:
 
-```text
-apt-get update && apt-get install python-virtualenv python-pip libxml2-dev libxslt-dev python-libxml2 python-dev lib32z1-dev git
+```bash
+apt-get update  
+apt-get upgrade
+apt-get install python3-venv libxml2-dev libxslt-dev python3-libxml2 python3-dev lib32z1-dev git 
 ```
 
 Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/).
 
 Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el repositorio del proyecto.
 
-```text
+```bash
 cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2019 
-sudo chown :www-data djau2019  #opcionalment canviar tambe l'usuari propietari per no treballar amb root.
+sudo chown -R :www-data djau2019  #opcionalment canviar tambe l'usuari propietari per no treballar amb root.
 cd djau2019
 ```
 
@@ -26,7 +26,7 @@ cd djau2019
 >Es recomendable que la carpeta contenga el año del curso, ya que la aplicación esta diseñada para ser instalada de nuevo en cada curso \(Decisión de diseño\).
 
 
-El siguiente paso es montar nuestro **entorno virtual Python** sobre la carpeta del proyecto, este comando creará un entorno virtual en un directorio llamado _**venv.**_
+El siguiente paso es montar nuestro **entorno virtual Python** sobre la carpeta del proyecto, este comando creará un entorno virtual en un directorio llamado **venv**.
 
 ```text
 djau@djau:/opt/djau2019#  python3 -m venv venv
@@ -38,13 +38,14 @@ Una vez creado el entorno virtual debemos activarlo, para ello ejecutamos:
 djau@djau:/opt/djau2019# source venv/bin/activate
 ```
 
-Si todo ha ido bien el [**prompt**](https://es.wikipedia.org/wiki/Prompt) debería haber cambiado a algo parecido a:
+Si todo ha ido bien el **[prompt](https://es.wikipedia.org/wiki/Prompt)** debería haber cambiado a algo parecido a:
 
-_**`(venv) djau@djau:/opt/djau2019$`**_
+**(venv) djau@djau:/opt/djau2019$**
 
-Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias [**pip3**](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)
+Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias **[pip3](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)**.
 
 ```text
+(venv) djau@djau:/opt/djau2019# pip3 install wheel
 (venv) djau@djau:/opt/djau2019# pip3 install -r requirements.txt
 ```
 
@@ -56,15 +57,16 @@ Además instalaremos la base de datos que usará django-aula y su conector pytho
 
 **Postgresql  (recomenat):**
 
-```text
-apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql 
-pip3 install psycopg2
+```bash
+apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql postgresql-server-dev-10
+pip3 install wheel psycopg2
 ```
 
 **Mysql (no recomenat):**
 
-```text
+```bash
 apt-get install apache2 libapache2-mod-wsgi-py3 python-mysqldb mysql-server  
+pip3 install wheel mysqlclient
 ```
 
 Una vez elegido el motor de base de datos, hay que crear la base de datos de la aplicación, y crear un usuario que la pueda administrar.
@@ -76,10 +78,9 @@ Una vez elegido el motor de base de datos, hay que crear la base de datos de la 
 sudo su postgres
 psql
 CREATE DATABASE djau2019;
- 
 CREATE USER djau2019 WITH PASSWORD 'XXXXXXXXXX';
- 
 GRANT ALL PRIVILEGES ON DATABASE djau2019 TO djau2019;
+\q
 ```
 
 **Para Mysql**
@@ -93,16 +94,14 @@ USE djau2019;
 SET storage-engine=INNODB;
 QUIT
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
 
 ### Configurando Aplicación
 
 Django Aula tiene 3 archivos principales de configuración
 
-* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más info.** [**aqui**](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/manuals/parametritzacions.txt)
-* **`settings_local.py` (Aquí esta la configuración principal )**
-* **`wsgi.py` (Es el script que se encargará de levantar la aplicación, Apache utilizará este archivo para servir la app a través de él).**
+* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más [info](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/manuals/parametritzacions.txt)**.
+* **`settings_local.py` (Aquí esta la configuración principal )**.
+* **`wsgi.py` (Es el script que se encargará de levantar la aplicación, Apache utilizará este archivo para servir la app a través de él)**.
 
 A continuación dejo una configuración válida para los 2 archivos citados anteriormente, simplemente copia, pega y adáptalo a tus necesidades.
 
@@ -207,13 +206,14 @@ application = get_wsgi_application()
 Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/2.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
 
 ```text
- djau@djau:/opt/djau2019# python manage.py migrate
+djau@djau:/opt/djau2019# source venv/bin/activate
+(venv) djau@djau:/opt/djau2019# python manage.py migrate
 ```
 
 Ahora que tenemos las tablas creadas, hay que llenarlas con algunos datos esenciales para que la app arranque, para ello ejecutamos el siguiente script:
 
 ```text
-djau@djau:/opt/djau2019# bash scripts/fixtures.sh
+(venv) djau@djau:/opt/djau2019# bash scripts/fixtures.sh
 ```
 
 
@@ -223,7 +223,8 @@ djau@djau:/opt/djau2019# bash scripts/fixtures.sh
 Ahora debemos crear un usuario administrador que pueda gestionar la app, para ello ejecutamos:
 
 ```text
-djau@djau:/opt/djau2019# python manage.py createsuperuser
+djau@djau:/opt/djau2019# source venv/bin/activate
+(venv) djau@djau:/opt/djau2019# python manage.py createsuperuser
 ```
 
 Nos pedirá el nombre del usuario y su contraseña \(en este ejemplo lo he llamado **admin**\).
@@ -231,7 +232,8 @@ Nos pedirá el nombre del usuario y su contraseña \(en este ejemplo lo he llama
 Para que nuestro administrador pueda iniciar sesión en la aplicación, debe de estar en el grupo de **dirección,profesores y profesional** de la base de datos, para ello abrimos una shell de django y escribimos línea a línea lo siguiente:
 
 ```text
-djau@djau:/opt/djau2019# python manage.py shell
+djau@djau:/opt/djau2019# source venv/bin/activate
+(venv) djau@djau:/opt/djau2019# python manage.py shell
 
 from django.contrib.auth.models import User, Group
 g1 = Group.objects.get( name = 'direcció' )
@@ -241,13 +243,13 @@ a = User.objects.get( username = 'admin' )
 a.groups.set( [ g1,g2,g3 ] )
 a.save()
 quit()
-
 ```
 
 Como paso final de configuración, vamos a juntar todo el contenido estático \(js,css..etc\) del proyecto a un solo directorio, para que la instalación sea mas limpia. Más información sobre el contenido estático en django [aqui](https://docs.djangoproject.com/en/2.0/howto/static-files/).
 
 ```text
-djau@djau:/opt/djau2019# python manage.py collectstatic
+djau@djau:/opt/djau2019# source venv/bin/activate
+(venv) djau@djau:/opt/djau2019# python manage.py collectstatic
 ```
 
 Esto generará un directorio llamado **static** donde se alojarán todos los assets de la aplicación.
@@ -256,21 +258,35 @@ Esto generará un directorio llamado **static** donde se alojarán todos los ass
 
 Si se ha seguido al pie de la letra este manual, simplemente hay que crear un nuevo Virtualhost en Apache que sirva nuestra app por el protocolo WSGI.
 
+Es importante comprobar que tenemos la configuración regional correcta.
+Verificación:
+
+```bash
+locale -a
+```
+
+Generación del locale adecuado para nuestro caso, por ejemplo:
+
+```bash
+sudo locale-gen ca_ES.utf8
+```
+
 El primer escenario es para servir la app por el puerto 80 \(http\),
 
 El segundo escenario sirve la app por SSL \(https\)
 
 **Primer Escenario `/etc/apache2/sites-available/djau.conf`**
 
->El djau hauria de funcionar en mode `https`, aquesta seria la configuració sense `https`, un cop funcioni per `https` el millor es treure aquesta configuració i posar una redirecció cap al servidor `https`:
+>El djau debe funcionar en modo `https`, esta configuración corresponde a `http`. Una vez comprobado el correcto funcionamiento lo más adecuado es redireccionar al servidor `https`:
 
-```text
+```apache
 
 <VirtualHost *:80>
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv python-path=/opt/djau2019 \
+			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
@@ -309,9 +325,9 @@ El segundo escenario sirve la app por SSL \(https\)
 </VirtualHost>
 ```
 
->Exemple de redirecció cap a `https`:
+>Ejemplo de redirección hacia `https`:
 
-```
+```apache
 <VirtualHost *:80>
 	ServerName el_teu_domini.cat
 	RedirectMatch permanent ^(.*)$ https://el_teu_domini.cat/$1
@@ -319,7 +335,8 @@ El segundo escenario sirve la app por SSL \(https\)
 ```
 
 **Segundo Escenario `/etc/apache2/sites-available/djau_ssl.conf`**
-```
+
+```apache
 #Recuerda cambiar lo necesario en el archivo /opt/djau2019/aula/settings_local.py
 #Para que la app pueda ir por SSL (TLS)
 #Tambien activa si no lo esta el modulo ssl:
@@ -330,7 +347,8 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv  python-path=/opt/djau2019
+        WSGIDaemonProcess djau python-home=/opt/djau2019/venv python-path=/opt/djau2019 \
+			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
@@ -402,15 +420,17 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 **CronTab**
 
 ```text
-0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2019.sh42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&141 
-00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2019.sh
+42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
 
 >Están creados todos los scripts menos el siguiente, créalo y dale permisos de ejecución.
 
-**`/opt/django/backup-bdd-2019.sh`**
+**/opt/django/backup-bdd-2019.sh**
+
 ```bash
 #!/bin/bash
 ara=`/bin/date +%Y%m%d%H%M`
@@ -428,8 +448,5 @@ cat "${copia}${extensio}" > "${directori}bdd-dia-${dia}.sql${extensio}"
 cat "${copia}${extensio}" > "${directori}bdd-mes-${mes}.sql${extensio}" 
 rm $copia${extensio}
 ```
-{% endcode-tabs-item %}
-{% endcode-tabs %}
-
 
 

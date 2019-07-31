@@ -6,9 +6,7 @@ description: >-
 
 # Instalación
 
-Django-Aula puede instalarse en cualquier Distribución Linux que sea capaz de ejecutar Python 2.7 sin demasiados problemas, pero recomendamos que se instale sobre Ubuntu Server. Si has instalado satisfactoriamente la aplicación en tu distribución favorita no dudes en colaborar en este libro con el proceso que has seguido, estaremos muy agradecidos.
+Django-Aula puede instalarse en cualquier Distribución Linux que sea capaz de ejecutar Python 3.5 o superior sin demasiados problemas, pero recomendamos que se instale sobre Ubuntu Server. Si has instalado satisfactoriamente la aplicación en tu distribución favorita no dudes en colaborar en este libro con el proceso que has seguido, estaremos muy agradecidos.
 
-{% page-ref page="instalacion.md" %}
-
-
+[Instalación en Ubuntu Server 18.04 LTS](instalacion.md)
 

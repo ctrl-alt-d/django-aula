@@ -209,6 +209,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.aules',
     'aula.apps.presenciaRest',
     'aula.utils',
+    'aula.apps.presenciaSetmanal',
 ]
 
 #select2

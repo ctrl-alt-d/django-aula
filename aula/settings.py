@@ -77,13 +77,16 @@ CUSTOM_INDICADORS = [
             # [inici_curs,    Final 1Trim,  Final 2Trim,   Final 3Trim,  nivell,  % ],
           ]
 
+#Permet veure una graella amb les diferents faltes setmanals d'un curs.
+CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 #Activa o desactiva el mòdul rest, que permet passar faltes des d'Android.
-CUSTOM_MODUL_PRESENCIA_REST_ACTIU=True
+CUSTOM_MODUL_PRESENCIA_REST_ACTIU = True
 #Assignatures en les quals no es pot passar llista mitjançant API rest.
-#Per exemple assignatures amb Unitats formatives assignades a cada classe.
+#Per exemple assignatures amb Unitats formatives assignades a cada classe i per cada alumne.
 CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES = ['UFdiscontinuada']
 #Només per propòsits de debug, sempre ha d'estar a False en producció.
 CUSTOM_PRESENCIA_REST_VIEW_DESACTIVA_AUTH_TOKEN = False
+
 
 try:
     from .settings_local import *
