@@ -8,11 +8,12 @@ from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseServerError
 from typing import List
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from aula.apps.presencia.models import ControlAssistencia
 from typing import Dict
-
 
 def add_secs_to_time(timeval, secs_to_add):
     dummy_date = datetime.date(1, 1, 1)
@@ -47,12 +48,6 @@ def PresenciaQuerySet( qs ):
         esFaltaAnterior = 'NA'
     return esFaltaAnterior
 
-def gen_password(length=50, charset="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"):
-    random_bytes = os.urandom(length)
-    len_charset = len(charset)
-    indices = [int(len_charset * (ord(byte) / 256.0)) for byte in random_bytes]
-    return "".join([charset[index] for index in indices])
-
 def convertirData(stringData):
     "Passem una data en format Y-M-D, comprova si és correcte i retorna una llista amb 3 enters."
     camps = stringData.split('-')
@@ -64,49 +59,21 @@ def obtenirUsuari(nomUsuari):
     except ObjectDoesNotExist as ex:
         return None
 
-def tokenCorrecte(request, usuariTokens, pkUsuari):
-    #type: (HttpRequest, List[TokenICaducitat], str) -> None
-    if not pkUsuari in usuariTokens:
-        return False
-    if 'token' in request.COOKIES:
-        tokenICaducitat = usuariTokens[pkUsuari] 
-        if request.COOKIES.get('token') == tokenICaducitat.token \
-            and datetime.datetime.now() < tokenICaducitat.caducitat: 
-            return True
-    return False
-
-def deserialitzarUnElement(objecteSerialitzat):
-    return serializers.deserialize('json', u'[' + objecteSerialitzat + u']').next()
-
-def deserialitzarUnElementAPartirObjectePython(objectePythonSerialitzat):
-    return serializers.deserialize('json', u'[' + 
-        json.dumps(objectePythonSerialitzat, ensure_ascii=False).encode('utf-8') + u']').next()
-
-def serialitzarUnElement(objecte):
-    #type: (Object)->string
-    return serializers.serialize('json', [objecte])[1:-1], 
-
-def comprovarUsuariIPermisos(request, idUsuari, usuariTokens):
-    #type: (HttpRequest, String, Dict[str])->HttpResponse
-    usuari = obtenirUsuari(idUsuari) #type: str
-    
-    if not usuari:
-        return False, HttpResponseNotFound('Usuari no localitzat')
-
-    if not tokenCorrecte(request, usuariTokens, usuari.pk):
-        return False, HttpResponseBadRequest("Token no trobat")
-    return True, None
-
-class TokenICaducitat:
-    def __init__(self,token, caducitat):
-        self.token = token
-        self.caducitat = caducitat
+def comprovarUsuarisIguals(usuariSistema, usuari):
+    if (not settings.CUSTOM_PRESENCIA_REST_VIEW_DESACTIVA_AUTH_TOKEN):
+        if usuariSistema != usuari:
+            raise Exception("Usuari que fa la petició, no coincideix amb el del token.")
 
 class ControlAssistenciaIHoraAnterior(ControlAssistencia):
     #Model que incorpora l'estat de la hora anterior. 
     #Ens va bé perque així el programa client(Android?) coneix estat de l'hora anterior directament.
+    
     class Meta:
         proxy = True
+        #El test falla si no faig això.
+        #https://stackoverflow.com/questions/30267237/invalidbaseserror-cannot-resolve-bases-for-modelstate-users-groupproxy
+        auto_created = True
+        
     def estatHoraAnterior(self):
         #     Comprova el codi de l'hora anterior, 2 Modes de retorn ('C', 'W'):
         #     Torna: Present, Absent o bé NA. (Mode paraula original='W')
