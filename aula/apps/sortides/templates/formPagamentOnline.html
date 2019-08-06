@@ -1,0 +1,25 @@
+
+{% extends "table2.html" %}
+
+{% block content  %}
+
+	<form action="https://sis-t.redsys.es:25443/sis/realizarPago" method="post" target=”_blank”>
+        {% csrf_token %}
+        Alumne: {{ form.alumne }} <br>
+        Activitat: {{ form.sortida }}<br>
+        {{ form.Ds_MerchantParameters}}
+        {{ form.Ds_Signature}}
+        Preu (€): {{ form.preu }} <br>
+        {{ form.acceptar_condicions }} He llegit i accepto la <a target = _blank href="{% url  'varis__pagament__pagament_online' %}">política de venda/devolucions</a>
+        <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1"/>
+        <input type="submit" value="Pagar">
+    </form>
+
+{% endblock %}
+
+
+
+
+
+
+

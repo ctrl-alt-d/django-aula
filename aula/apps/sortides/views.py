@@ -1,5 +1,12 @@
 # This Python file uses the following encoding: utf-8
+import base64
+import hashlib
+import hmac
+import json
+from Crypto.Cipher import DES3
+
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT
+from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
@@ -8,13 +15,13 @@ from aula.utils.decorators import group_required
 #helpers
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.usuaris.models import User2Professor
+from aula.apps.usuaris.models import User2Professor, AlumneUser
 from aula.apps.presencia.models import Impartir
 from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida
+from aula.apps.sortides.models import Sortida, Pagament
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -42,7 +49,7 @@ from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
-
+from .forms import PagamentForm
 
 @login_required
 @group_required(['professors'])  
@@ -1047,11 +1054,88 @@ def pagoOnline(request, pk):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
-    instance = get_object_or_404(Sortida, pk=pk)
+    pagament = get_object_or_404(Pagament, pk=pk)
+    sortida = pagament.sortida
+    preu = sortida.preu_per_alumne
+    alumne = pagament.alumne
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+
+    potEntrar = (alumne.user_associat.getUser() == user or fEsDireccioOrGrupSortides)
+    if not potEntrar:
+        raise Http404
+
+    #preparar parametres per redsys   --------------------------------------------
+
+    values = {
+        'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
+        'DS_MERCHANT_ORDER': '151029142221',
+        'DS_MERCHANT_MERCHANTCODE': CUSTOM_CODI_COMERÇ,
+        'DS_MERCHANT_CURRENCY': '978',
+        'DS_MERCHANT_TRANSACTIONTYPE': '0',
+        'DS_MERCHANT_TERMINAL': '1',
+
+        # 'Ds_Merchant_Titular': 'xx',
+        # 'Ds_Merchant_MerchantName': 'xx',
+        'DS_MERCHANT_MERCHANTURL': 'http:\/\/www.webdelcomercio.com\/urldenotificacion.php',
+        # 'Ds_Merchant_MerchantData': 'xx',
+        'Ds_Merchant_ProductDescription': 'AAAAAAA!!!!!!!!!!!!!!!!!!',
+        'DS_MERCHANT_URLOK': 'http:\/\/www.webdelcomercio.com\/urlok.php',
+        'DS_MERCHANT_URLKO':'http:\/\/www.webdelcomercio.com\/urlko.php',
+        #'Ds_Merchant_Paymethods': self.redsys_pay_method or 'T',
+    }
+    data = json.dumps(values)
+    data = base64.b64encode(data.encode())
+    params = data.decode("utf-8")
+    #-----------------------------------------------------------------------------
 
 
-    nexturl = r'/sortides/sortides{origen}'.format(origen=origen)
-    return HttpResponseRedirect(nexturl)
+    # preparar firma per redsys -------------------------------------------
+
+    params_dic = json.loads(base64.b64decode(params).decode())
+
+    cipher = DES3.new(
+        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        mode=DES3.MODE_CBC,
+        IV=b'\0\0\0\0\0\0\0\0')
+    ordre = str(params_dic['DS_MERCHANT_ORDER'])
+    diff_block = len(ordre) % 8
+    zeros = diff_block and (b'\0' * (8 - diff_block)) or b''
+    key = cipher.encrypt(str.encode(ordre + zeros.decode()))
+    params64 = params.encode()
+    dig = hmac.new(
+        key=key,
+        msg=params64,
+        digestmod=hashlib.sha256).digest()
+    signature = base64.b64encode(dig).decode()
+    # ----------------------------------------------------------------------------
+
+
+    if request.method == 'POST':
+        form = PagamentForm(request.POST, initial={
+            'alumne': alumne,
+            'sortida': sortida,
+            'preu': preu,
+            'Ds_MerchantParameters': params,
+            'Ds_Signature': signature,
+        })
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect('/thanks/')
+
+    else:
+        form = PagamentForm(initial = {
+            'alumne': alumne,
+            'sortida': sortida,
+            'preu': preu,
+            'Ds_MerchantParameters': params,
+            'Ds_Signature': signature,
+            'acceptar_condicions': False
+        })
+
+
+    return render(request, 'formPagamentOnline.html', {'form': form})
     
     
     

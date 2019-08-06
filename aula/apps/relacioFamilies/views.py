@@ -16,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
-from aula.apps.sortides.models import Sortida, NotificaSortida
+from aula.apps.sortides.models import Sortida, NotificaSortida, Pagament
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
@@ -923,8 +923,10 @@ def elMeuInforme( request, pk = None ):
             if sortida.sortida.tipus_de_pagament == 'ON':
                 camp = tools.classebuida()
                 camp.buto = u'sortides__sortides__pago_on_line'
-                camp.contingut = "Pago Online"
-                camp.id = sortida.id
+                camp.contingut = "Pagar Online"
+                #pagament corresponent a una sortida i un alumne
+                pagament_sortida_alumne = get_object_or_404(Pagament, alumne=alumne, sortida=sortida.sortida)
+                camp.id = pagament_sortida_alumne.id
 
                 filera.append(camp)
 
