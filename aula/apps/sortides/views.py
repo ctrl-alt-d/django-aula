@@ -6,7 +6,7 @@ import json
 from Crypto.Cipher import DES3
 
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT
-from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ
+from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
@@ -1057,6 +1057,7 @@ def pagoOnline(request, pk):
     pagament = get_object_or_404(Pagament, pk=pk)
     sortida = pagament.sortida
     preu = sortida.preu_per_alumne
+    descripcio_sortida = sortida.programa_de_la_sortida
     alumne = pagament.alumne
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
 
@@ -1068,20 +1069,16 @@ def pagoOnline(request, pk):
 
     values = {
         'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
-        'DS_MERCHANT_ORDER': '151029142221',
+        'DS_MERCHANT_ORDER': '15102911290',
         'DS_MERCHANT_MERCHANTCODE': CUSTOM_CODI_COMERÇ,
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',
         'DS_MERCHANT_TERMINAL': '1',
-
-        # 'Ds_Merchant_Titular': 'xx',
-        # 'Ds_Merchant_MerchantName': 'xx',
         'DS_MERCHANT_MERCHANTURL': 'http:\/\/www.webdelcomercio.com\/urldenotificacion.php',
-        # 'Ds_Merchant_MerchantData': 'xx',
-        'Ds_Merchant_ProductDescription': 'AAAAAAA!!!!!!!!!!!!!!!!!!',
-        'DS_MERCHANT_URLOK': 'http:\/\/www.webdelcomercio.com\/urlok.php',
+        'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
+        'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('relacio_families__informe__el_meu_informe'),
         'DS_MERCHANT_URLKO':'http:\/\/www.webdelcomercio.com\/urlko.php',
-        #'Ds_Merchant_Paymethods': self.redsys_pay_method or 'T',
+        #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
     data = base64.b64encode(data.encode())
@@ -1112,9 +1109,7 @@ def pagoOnline(request, pk):
 
     if request.method == 'POST':
         form = PagamentForm(request.POST, initial={
-            'alumne': alumne,
             'sortida': sortida,
-            'preu': preu,
             'Ds_MerchantParameters': params,
             'Ds_Signature': signature,
         })
@@ -1125,17 +1120,15 @@ def pagoOnline(request, pk):
             return HttpResponseRedirect('/thanks/')
 
     else:
-        form = PagamentForm(initial = {
-            'alumne': alumne,
+        form = PagamentForm(initial={
             'sortida': sortida,
-            'preu': preu,
             'Ds_MerchantParameters': params,
             'Ds_Signature': signature,
             'acceptar_condicions': False
         })
 
 
-    return render(request, 'formPagamentOnline.html', {'form': form})
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu})
     
     
     
