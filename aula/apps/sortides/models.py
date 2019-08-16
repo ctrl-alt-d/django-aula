@@ -199,8 +199,9 @@ class Sortida(models.Model):
 class Pagament(models.Model):
     alumne = models.ForeignKey(Alumne, on_delete=models.CASCADE)
     sortida = models.ForeignKey(Sortida, on_delete=models.CASCADE)
-    data_hora_pagament = models.DateTimeField(null=True)
-    pagament_realitzat = models.BooleanField(null=True)
+    data_hora_pagament = models.CharField(max_length=50, null=True)
+    pagament_realitzat = models.BooleanField(null=True, default=False )
+    ordre_pagament = models.CharField(max_length=12, unique=True, null=True)
 
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )

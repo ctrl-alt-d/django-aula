@@ -41,7 +41,7 @@
     </div>
 
 
-	<form action="https://sis-t.redsys.es:25443/sis/realizarPago" method="post" target=”_blank”>
+	<form action="https://sis-t.redsys.es:25443/sis/realizarPago" method="post" >
         {% csrf_token %}
         {{ form.Ds_MerchantParameters}}
         {{ form.Ds_Signature}}

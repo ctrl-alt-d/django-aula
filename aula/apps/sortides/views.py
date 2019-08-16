@@ -3,7 +3,11 @@ import base64
 import hashlib
 import hmac
 import json
+import random
+import urllib
+
 from Crypto.Cipher import DES3
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT
 from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
@@ -32,7 +36,7 @@ from django.shortcuts import render
 
 from icalendar import Calendar, Event
 from icalendar import vCalAddress, vText
-from django.http.response import HttpResponse, Http404
+from django.http.response import HttpResponse, Http404, HttpResponseServerError
 from django.utils.datetime_safe import datetime
 from django.conf import settings
 from django.urls import reverse
@@ -1069,15 +1073,15 @@ def pagoOnline(request, pk):
 
     values = {
         'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
-        'DS_MERCHANT_ORDER': '15102911290',
+        'DS_MERCHANT_ORDER': str(random.randint(100000000000, 999999999999)),
         'DS_MERCHANT_MERCHANTCODE': CUSTOM_CODI_COMERÇ,
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',
         'DS_MERCHANT_TERMINAL': '1',
-        'DS_MERCHANT_MERCHANTURL': 'http:\/\/www.webdelcomercio.com\/urldenotificacion.php',
+        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__retorn_transaccio'),
         'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
         'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('relacio_families__informe__el_meu_informe'),
-        'DS_MERCHANT_URLKO':'http:\/\/www.webdelcomercio.com\/urlko.php',
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('relacio_families__informe__el_meu_informe'),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -1085,6 +1089,8 @@ def pagoOnline(request, pk):
     params = data.decode("utf-8")
     #-----------------------------------------------------------------------------
 
+    pagament.ordre_pagament = values['DS_MERCHANT_ORDER']
+    pagament.save()
 
     # preparar firma per redsys -------------------------------------------
 
@@ -1113,11 +1119,6 @@ def pagoOnline(request, pk):
             'Ds_MerchantParameters': params,
             'Ds_Signature': signature,
         })
-        if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-            return HttpResponseRedirect('/thanks/')
 
     else:
         form = PagamentForm(initial={
@@ -1129,6 +1130,73 @@ def pagoOnline(request, pk):
 
 
     return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu})
-    
-    
-    
+
+@csrf_exempt
+def retornTransaccio(request):
+    ips_permeses = ['195.76.9.117',
+                    '195.76.9.149',
+                    '193.16.243.13',
+                    '193.16.243.173',
+                    '195.76.9.187',
+                    '195.76.9.222',
+                    '194.224.159.47',
+                    '194.224.159.57']  # ip's Banc Sabadell
+    ip = request.META.get('REMOTE_ADDR')
+    if ip not in ips_permeses:
+        return HttpResponseServerError()
+    else:
+
+        # rebent dades de redsys   --------------------------------------------
+
+        version = request.POST.get('Ds_SignatureVersion', '')
+        parameters = request.POST.get('Ds_MerchantParameters', '')
+        firma_rebuda = request.POST.get('Ds_Signature', '')
+
+        error_msg=''
+
+        parameters_dic = json.loads(base64.b64decode(parameters).decode())
+        reference = urllib.parse.unquote(parameters_dic.get('Ds_Order', ''))
+        pay_id = parameters_dic.get('Ds_AuthorisationCode')
+        shasign = firma_rebuda.replace('_', '/').replace('-', '+')
+        if not reference or not pay_id or not shasign:
+            error_msg = "Redsys: falta nombre d'ordre (%s) o codi autorització (%s) o firma (%s)" % (reference, pay_id, shasign)
+
+        # -------------------------------------------------------------------------
+
+        # verificant conincidència signatures --------------------------------------
+
+        cipher = DES3.new(
+            key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+            mode=DES3.MODE_CBC,
+            IV=b'\0\0\0\0\0\0\0\0')
+        ordre = str(parameters_dic['Ds_Order'])
+        diff_block = len(ordre) % 8
+        zeros = diff_block and (b'\0' * (8 - diff_block)) or b''
+        key = cipher.encrypt(str.encode(ordre + zeros.decode()))
+        params64 = parameters.encode()
+        dig = hmac.new(
+            key=key,
+            msg=params64,
+            digestmod=hashlib.sha256).digest()
+        shasign_check = base64.b64encode(dig).decode()
+
+        if shasign_check != shasign:
+            error_msg = (
+                    'Redsys: No hi ha coincidència entre firma rebuda %s, i calculada %s, '
+                    'en dades %s' % (shasign, shasign_check, request.POST)
+            )
+
+        # -------------------------------------------------------------------------
+
+        if error_msg:
+            print('Error en pagament: ' + error_msg)  # s'ha de comunicar error
+        else:
+            pagament = get_object_or_404(Pagament, ordre_pagament=reference)
+            pagament.pagament_realitzat = True
+            data = parameters_dic['Ds_Date']
+            hora = parameters_dic['Ds_Hour']
+            pagament.data_hora_pagament = data + ' ' + hora
+            pagament.save()
+        return HttpResponse('')
+
+

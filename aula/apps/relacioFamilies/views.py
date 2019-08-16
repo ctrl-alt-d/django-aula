@@ -920,16 +920,19 @@ def elMeuInforme( request, pk = None ):
             filera.append(camp)
 
             # ----------------------------------------------
-            if sortida.sortida.tipus_de_pagament == 'ON':
+            if sortida.sortida.tipus_de_pagament == 'ON' and sortida.sortida.termini_pagament >= datetime.now():
                 camp = tools.classebuida()
-                camp.buto = u'sortides__sortides__pago_on_line'
-                camp.contingut = "Pagar Online"
                 #pagament corresponent a una sortida i un alumne
                 pagament_sortida_alumne = get_object_or_404(Pagament, alumne=alumne, sortida=sortida.sortida)
                 camp.id = pagament_sortida_alumne.id
 
+                if pagament_sortida_alumne.pagament_realitzat:
+                    camp.negreta = True
+                    camp.contingut = "Pagat"
+                else:
+                    camp.buto = u'sortides__sortides__pago_on_line'
+                    camp.contingut = "Pagar Online"
                 filera.append(camp)
-
 
             #--
             taula.fileres.append( filera )
