@@ -1200,3 +1200,69 @@ def retornTransaccio(request):
         return HttpResponse('')
 
 
+@login_required()
+@group_required(['professors'])
+def detallPagament(request, pk):
+
+
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+    professor = User2Professor(user)
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+    sortida = get_object_or_404(Sortida, pk=pk)
+    potEntrar = (professor in sortida.professors_responsables.all() or  fEsDireccioOrGrupSortides)
+    if not potEntrar:
+        raise Http404
+
+    head = 'Sortida: {0}  ({1} €)'.format(sortida.titol_de_la_sortida, str(sortida.preu_per_alumne))
+
+
+    report = []
+
+    taula = tools.classebuida()
+
+    # taula.titol = tools.classebuida()
+    # taula.titol.contingut = 'Sortida: ' + sortida.titol_de_la_sortida
+    # taula.titol.enllac = None
+
+    taula.capceleres = []
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 40
+    capcelera.contingut = 'Alumne'
+    capcelera.enllac = ""
+    taula.capceleres.append(capcelera)
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 60
+    capcelera.contingut = u'Pagat'
+    taula.capceleres.append(capcelera)
+
+    taula.fileres = []
+
+    for pagament in Pagament.objects.filter(sortida=sortida).order_by('alumne'):
+        filera = []
+
+        # -Alumne--------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = pagament.alumne
+        filera.append(camp)
+
+        # -Pagat--------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = pagament.data_hora_pagament if pagament.data_hora_pagament else 'No'
+        filera.append(camp)
+
+        # --
+        taula.fileres.append(filera)
+    report.append(taula)
+
+    return render(
+        request,
+        'report_detall_pagament_sortida.html',
+        {'report': report,
+          'head': head,
+         },
+    )

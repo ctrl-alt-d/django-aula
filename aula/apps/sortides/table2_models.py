@@ -60,7 +60,15 @@ class Table2_Sortides(tables.Table):
                             Professors acompanyants<br>
                             </a>
                           </li>
-                                              
+                                 
+                          {% if record.tipus_de_pagament == "ON" %}
+                            <li>
+                                <a href="/sortides/detallPagament/{{record.id}}">
+                                Dades pagament<br>
+                                </a>
+                            </li>
+                          {% endif %}   
+                                          
                           <li>
                             <a href="/sortides/sortidaExcel/{{record.id}}">
                             Descarregar dades en Excel<br>
@@ -125,8 +133,16 @@ class Table2_Sortides(tables.Table):
                         <a href="/sortides/professorsAcompanyants/{{record.id}}">
                         Professors acompanyants<br>
                         </a>
-                      </li>
-                                              
+                      </li>  
+                             
+                      {% if record.tipus_de_pagament == "ON" %}
+                        <li>
+                            <a href="/sortides/detallPagament/{{record.id}}">
+                            Dades pagament<br>
+                            </a>
+                        </li>
+                      {% endif %}    
+                        
                       <li>
                         <a href="/sortides/sortidaExcel/{{record.id}}">
                         Descarregar dades en Excel<br>
@@ -199,13 +215,22 @@ class Table2_Sortides(tables.Table):
                             Professors acompanyants<br>
                             </a>
                           </li>
-                                              
+                          
+                          {% if record.tipus_de_pagament == "ON" %}
+                            <li>
+                                <a href="/sortides/detallPagament/{{record.id}}">
+                                    Dades pagament<br>
+                                </a>
+                            </li>
+                           {% endif %}   
+                                          
                           <li>
                             <a href="/sortides/sortidaExcel/{{record.id}}">
                             Descarregar dades en Excel<br>
                             </a>
                           </li>
-                                              
+                          
+            
                           <li>
                             <a href="/sortides/imprimir/{{record.id}}/4">
                             Imprimir fulls autorització i pagament<br>

@@ -49,4 +49,5 @@ urlpatterns = [
 
     url(r'^retornTransaccio/$', sortides_views.retornTransaccio, name='sortides__sortides__retorn_transaccio'),
 
+    url(r'^detallPagament/(?P<pk>\d+)/$', sortides_views.detallPagament, name='sortides__sortides__detall_pagament'),
 ]
