@@ -35,7 +35,8 @@ class Test(TestCase):
         # Crear un profe.
         self.profe = tUtils.crearProfessor('SrProgramador','patata')
         self.profe2 = tUtils.crearProfessor('Profe2', 'patata')
-        
+        self.professional = tUtils.crearUsuari('Professional', 'patata')
+
         #Crear un horari, 
         dataDiaActual = date.today() #type: date
         dataDiaAnterior = tUtils.obtenirDataLaborableAnterior(dataDiaActual)
@@ -110,7 +111,9 @@ class Test(TestCase):
 
     def _getToken(self, response):
         #Obtenir el token a partir de la response.
-        if settings.CUSTOM_PRESENCIA_REST_VIEW_DESACTIVA_AUTH_TOKEN:
+        #Desactivo el token només per efectes de facilitar la programació i el 
+        #debug de l'aplicació.
+        if settings.CUSTOM_MODUL_EXTAULADROID_VIEW_DESACTIVA_AUTH_TOKEN:
             return 'fakeToken'
         else:
             return json.loads(response.content)['token']
@@ -128,22 +131,22 @@ class Test(TestCase):
 
     def test_login(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', data={'username': 'SrProgramador', 'password': 'patata'})
+        response = c.post('/extAulaDroid/login/', data={'username': 'SrProgramador', 'password': 'patata'})
         self.assertTrue(response.status_code==200)
 
     def test_ajuda(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         #Agafa el token i passal a la següent petició.
         header = header = self._getTokenAndPutInHeader(response)
-        response = c.get('/presenciaRest/ajuda/', **header)
+        response = c.get('/extAulaDroid/ajuda/', **header)
         self.assertTrue(response.status_code==200)
 
     def test_putGuardia(self):
         #Hauria de petar la API indicant que no tens permisos per fer el canvi.
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         #Agafa el token i passal a la següent petició.
         header = self._getTokenAndPutInHeader(response)
@@ -161,25 +164,25 @@ class Test(TestCase):
             self.dataTest.strftime("%Y-%m-%d"))
 
         response = c.put(
-            '/presenciaRest/putGuardia/', 
+            '/extAulaDroid/putGuardia/', 
             data=jsonAEnviar,
             content_type="application/json", **header)
         
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'Profe2', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
-        response = c.get('/presenciaRest/getImpartirPerData/{}/Profe2/'.format(
+        response = c.get('/extAulaDroid/getImpartirPerData/{}/Profe2/'.format(
             self.dataTest.strftime('%Y-%m-%d')), **header)
         dades = json.loads(response.content.decode('utf-8'))
         self.assertTrue(str(dades[0]['professor_guardia'])==str(self.profe.pk))
 
     def test_impartirPerData(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         token = self._getToken(response)
         header = self._putTokenInHeader(token)
-        url = '/presenciaRest/getImpartirPerData/{}/SrProgramador/'.format(
+        url = '/extAulaDroid/getImpartirPerData/{}/SrProgramador/'.format(
             self.dataTest.strftime('%Y-%m-%d'))
         #print (url)
         response = c.get(url, **header)
@@ -189,10 +192,10 @@ class Test(TestCase):
 
     def test_getControlAssistencia(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
-        response = c.get('/presenciaRest/getControlAssistencia/{}/{}/'.format(
+        response = c.get('/extAulaDroid/getControlAssistencia/{}/{}/'.format(
             self.classesAImpartir[0].pk, 'SrProgramador'), **header)
         dades = response.content.decode('utf-8')
         #print (dades)
@@ -201,26 +204,25 @@ class Test(TestCase):
 
     def test_putControlAssistenciaManual(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
-        response: Response = c.get('/presenciaRest/getControlAssistencia/{}/{}/'.format(
+        response: Response = c.get('/extAulaDroid/getControlAssistencia/{}/{}/'.format(
             self.classesAImpartir[0].pk, 'SrProgramador'), **header)
         
         assistenciesJSON = json.loads(response.content.decode('utf-8'))
         ca: ControlAssistenciaIHoraAnterior = assistenciesJSON[0]
         
         #Doblo els {}
-        caMinim = """
-        [{{
-            "pk": {}, 
-            "estat": {}
-        }}]""".format(ca['id'], self.estats['f'].pk)
+        caMinim = [{ 
+            "pk": ca['id'],
+            "estat": self.estats['f'].pk,
+        }]
         response = c.put(
-            '/presenciaRest/putControlAssistencia/{}/{}/'.format(self.classesAImpartir[0].pk, 'SrProgramador'), 
-            data=caMinim, 
+            '/extAulaDroid/putControlAssistencia/{}/{}/'.format(self.classesAImpartir[0].pk, 'SrProgramador'), 
+            data=json.dumps(caMinim), 
             content_type="application/json", **header)
-        response = c.get('/presenciaRest/getControlAssistencia/{}/{}/'.format(
+        response = c.get('/extAulaDroid/getControlAssistencia/{}/{}/'.format(
             self.classesAImpartir[0].pk, 'SrProgramador'), **header)
         #print ("--------------------------------------")
         assistenciesJSON = json.loads(response.content.decode('utf-8'))
@@ -229,7 +231,7 @@ class Test(TestCase):
 
     def test_postControlAssistenciaSensePermisos(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'Profe2', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
         
@@ -238,24 +240,23 @@ class Test(TestCase):
                 impartir__id=self.classesAImpartirProfe[0].pk) \
                 .order_by('alumne__cognoms')[0]
         #Doblo els {}
-        caMinim = """
-        [{{
-            "pk": {}, 
-            "estat": {}
-        }}]""".format(ca.id, self.estats['p'].pk)
+        caMinim = [{
+            "pk": ca.id,
+            "estat": self.estats['p'].pk
+        }]
         response = c.put(
-            '/presenciaRest/putControlAssistencia/{}/{}/'.format(
+            '/extAulaDroid/putControlAssistencia/{}/{}/'.format(
             self.classesAImpartir[0].pk, 'Profe2'), 
-            data=caMinim, 
+            data=json.dumps(caMinim), 
             content_type="application/json", **header)
         self.assertNotEqual(response.status_code, 200)
 
     def test_getFrangesHoraries(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
-        response = c.get('/presenciaRest/getFrangesHoraries/', **header)
+        response = c.get('/extAulaDroid/getFrangesHoraries/', **header)
         franges = json.loads(response.content.decode('utf-8'))
         
         count = 0
@@ -265,25 +266,34 @@ class Test(TestCase):
 
     def test_getEstatsControlAssistencia(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
-        response = c.get('/presenciaRest/getEstatsControlAssistencia/', **header)
+        response = c.get('/extAulaDroid/getEstatsControlAssistencia/', **header)
         estats = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(estats), 4)
 
     def test_getProfes(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
         header = self._getTokenAndPutInHeader(response)
-        response = c.get('/presenciaRest/getProfes/', **header)
+        response = c.get('/extAulaDroid/getProfes/', **header)
         profes = json.loads(response.content.decode('utf-8')) 
         self.assertEqual(len(profes), 2)
 
+    def test_getProfesAmbUsuariSensePermisos(self):
+        c = Client()
+        response = c.post('/extAulaDroid/login/', 
+            data={'username': 'Professional', 'password': 'patata'})
+        header = self._getTokenAndPutInHeader(response)
+        response: Response = c.get('/extAulaDroid/getProfes/', **header)
+        #Ha de donar error perque no és un profe, no pot usar aquesta funció.
+        self.assertEqual(response.status_code, 403)
+
     def test_comprovaSeguretatToken(self):
         c = Client()
-        response = c.post('/presenciaRest/login/', 
+        response = c.post('/extAulaDroid/login/', 
             data={'username': 'SrProgramador', 'password': 'patata'})
-        response: Response = c.get('/presenciaRest/getProfes/')
+        response: Response = c.get('/extAulaDroid/getProfes/')
         self.assertNotEqual(response.status_code, 200, "Protecció token no activada, bé si estàs en debug.")

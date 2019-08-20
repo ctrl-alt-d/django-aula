@@ -33,7 +33,7 @@ def obtenirUsuari(nomUsuari):
         return None
 
 def comprovarUsuarisIguals(usuariSistema, usuari):
-    if (not settings.CUSTOM_PRESENCIA_REST_VIEW_DESACTIVA_AUTH_TOKEN):
+    if (not settings.CUSTOM_MODUL_EXTAULADROID_VIEW_DESACTIVA_AUTH_TOKEN):
         if usuariSistema != usuari:
             raise Exception("Usuari que fa la petició, no coincideix amb el del token.")
 

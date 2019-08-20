@@ -8,6 +8,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from typing import List, Dict, Union
 from datetime import date, time, datetime, timedelta
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import LiveServerTestCase
 
 import random
@@ -29,8 +30,18 @@ class TestUtils():
         profe1.last_name = "cognom_" + nomUsuari
         profe1.email = mail
         profe1.save()
-        
         return profe1
+
+    def crearUsuari(self, nomUsuari, passwordUsuari, mail="mail@mailserver.com"):
+        grupProfessionals, _ = Group.objects.get_or_create(name='professional')
+        user1 = User.objects.create(username=nomUsuari, password=passwordUsuari) #type: User
+        user1.groups.add(grupProfessionals)
+        user1.set_password(passwordUsuari)
+        user1.first_name = nomUsuari
+        user1.last_name = "cognom_" + nomUsuari
+        user1.email = mail
+        user1.save()
+        return user1
 
     def generaAlumnesDinsUnGrup(self, grupAlumnes, nAlumnesAGenerar):
         #type:(Grup,int) -> List[Alumne]

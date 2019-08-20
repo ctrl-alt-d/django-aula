@@ -5,7 +5,7 @@ from . import views
 
 from rest_framework.routers import DefaultRouter
 
-if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_PRESENCIA_REST_ACTIU:
+if hasattr(settings, 'CUSTOM_MODUL_EXTAULADROID_ACTIU' ) and settings.CUSTOM_MODUL_EXTAULADROID_ACTIU:
     urlpatterns = [
         url(r'^login/', authViews.obtain_auth_token),
         url(r'^ajuda/$', views.Ajuda.as_view()),

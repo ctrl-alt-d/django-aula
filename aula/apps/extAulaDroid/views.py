@@ -22,6 +22,7 @@ from aula.utils.presencia import utils as presenciaUtils
 
 from . import serializers as mySerializers
 from . import utils
+from .customPermissions import ProfesAccessPermission
 
 #Versió de la API, per tal que el client Android la comprovi i 
 #Sàpiga si és compatible.
@@ -29,11 +30,11 @@ API_LEVEL = "2"
 
 class APIViewAutenticadaAmbToken(APIView):
     #Activar això per tal de protegir la API.
-    if settings.CUSTOM_PRESENCIA_REST_VIEW_DESACTIVA_AUTH_TOKEN:
+    if settings.CUSTOM_MODUL_EXTAULADROID_VIEW_DESACTIVA_AUTH_TOKEN:
         pass
     else:
         authentication_classes = [authentication.TokenAuthentication]
-        permission_classes = [IsAuthenticated]
+        permission_classes = [IsAuthenticated, ProfesAccessPermission]
 
 class Ajuda(APIViewAutenticadaAmbToken):
     
@@ -47,6 +48,9 @@ class PutGuardia(APIViewAutenticadaAmbToken):
             dadesJSON = json.loads(request.body) #type: Dict
             usuariASubstituir = utils.obtenirUsuari(dadesJSON['idUsuariASubstituir'])
             usuari = utils.obtenirUsuari(dadesJSON['idUsuari'])
+            #Comprovo que els usuaris son iguals, l'usuari actual sempre serà l'autenticat.
+            #si el que ens envien diu una cosa diferent, és un error.
+            utils.comprovarUsuarisIguals(request.user, usuari)
             idFranja = dadesJSON['idFranja']
             professor_guardia = User2Professor( usuari )
             professor = User2Professor( usuariASubstituir )
@@ -61,8 +65,8 @@ class PutGuardia(APIViewAutenticadaAmbToken):
                 return Response("Error, no existeix aquesta guàrdia", 
                     status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            if dadesAModificar[0].horari.assignatura.tipus_assignatura in (settings.CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES):
-                return Response(u"No pots actualitzar assignatures de tipus: " + unicode(settings.CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES))
+            if dadesAModificar[0].horari.assignatura.tipus_assignatura in (settings.CUSTOM_MODUL_EXTAULADROID_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES):
+                return Response(u"No pots actualitzar assignatures de tipus: " + unicode(settings.CUSTOM_MODUL_EXTAULADROID_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES))
 
             dadesAModificar.update( professor_guardia = professor_guardia  )
             return Response("ok")
@@ -130,8 +134,8 @@ class PutControlAssistencia(APIViewAutenticadaAmbToken):
             impartir = Impartir.objects.get(pk=idImpartir)
             
             #Comprovar que no sigui una assignatura prohibida de passar a través de WebService, cas per exemple que calgui marcar UF's. Com a Montilivi.
-            if impartir.horari.assignatura.tipus_assignatura in (settings.CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES):
-                return Response("No pots actualitzar assignatures de tipus: " + unicode(settings.CUSTOM_PRESENCIA_REST_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES), 
+            if impartir.horari.assignatura.tipus_assignatura in (settings.CUSTOM_MODUL_EXTAULADROID_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES):
+                return Response("No pots actualitzar assignatures de tipus: " + unicode(settings.CUSTOM_MODUL_EXTAULADROID_VIEW_TIPUS_ASSIGNATURES_PROHIBIDES), 
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             #Retorna una llista de controls d'assistència.
