@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content  %}
+{% if grup_list %}
+    <ul>
+    {% for grup in grup_list %}
+        <li><a href="/presenciaSetmanal/{{ grup.id }}/">{{ grup.descripcio_grup }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No hi ha grups disponibles.</p>
+{% endif %}
+{% endblock %}

@@ -114,8 +114,10 @@ def calcula_menu( user , path ):
                       ),                                      
                     )
 
-
-
+    activarModulPresenciaSetmanal=False
+    if hasattr(settings, 'CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU' ) and settings.CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU:
+        activarModulPresenciaSetmanal=True
+    
     
     arbre1 = (
 
@@ -134,7 +136,6 @@ def calcula_menu( user , path ):
                   (
                       ("Presencia", 'aula__horari__horari', pr, None, None ),
                       #("Alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None, None ),
-
                       ("Alumnes", 'aula__alumnes__blanc', pr, None,
                           ( 
                             ("Els meus alumnes", 'aula__alumnes__alumnes_i_assignatures', pr, None),
@@ -155,6 +156,7 @@ def calcula_menu( user , path ):
                           )
                       ),         
                       ("Qualitativa", 'aula__qualitativa__les_meves_avaulacions_qualitatives', pr, ( u'!', 'info' ) if hiHaUnaQualitativaOberta else None, None ),
+                      ("Pres. Setmanal", 'aula__presencia_setmanal__index', pr and activarModulPresenciaSetmanal, None, None ),
                    )
                ),
 
