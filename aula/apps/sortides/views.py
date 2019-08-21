@@ -1129,7 +1129,7 @@ def pagoOnline(request, pk):
         })
 
 
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu})
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'pagat':pagament.pagament_realitzat})
 
 @csrf_exempt
 def retornTransaccio(request):
