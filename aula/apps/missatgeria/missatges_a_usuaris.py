@@ -75,6 +75,11 @@ IMPORTACIO_SAGA_FINALITZADA = u"Importació Saga finalitzada."
 
 IMPORTACIO_ESFERA_FINALITZADA = u"Importació Esfer@ finalitzada."
 
+ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE = u"Redsys: No hi ha coincidència entre firma rebuda {0}, i calculada {1}, en dades corresponents a report de transacció online"
+
+ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE = u"Redsys: Falta nombre d'ordre ({0}) o codi autorització ({1}) o firma ({2}) en report de transacció online"
+
+ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE =u"Redsys: Intent de reportar transacció online desde IP no permesa {0}"
 
 MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_AFEGIR_ALUMNES,
@@ -94,6 +99,9 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 ERROR_SINCRONITZANT_SORTIDES,
                                 IMPORTACIO_SAGA_FINALITZADA,
                                 IMPORTACIO_ESFERA_FINALITZADA,
+                                ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE,
+                                ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
+                                ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
                                 }},
              'DISCIPLINA': {'danger': {EXPULSIO_PER_ACUMULACIO_INCIDENCIES,
                                        EXPULSIO_PER_ACUMULACIO_INCIDENCIES_FORA_AULA,

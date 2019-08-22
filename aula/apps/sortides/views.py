@@ -9,7 +9,9 @@ import urllib
 from Crypto.Cipher import DES3
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
-from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT
+from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
+    ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
+    ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
 from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
@@ -46,7 +48,7 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.templatetags.tz import localtime
 from django.utils.safestring import SafeText
 from aula.apps.missatgeria.models import Missatge
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django.template import loader
 from django.template.defaultfilters import slugify
@@ -1118,6 +1120,7 @@ def pagoOnline(request, pk):
 
 @csrf_exempt
 def retornTransaccio(request):
+
     ips_permeses = ['195.76.9.117',
                     '195.76.9.149',
                     '193.16.243.13',
@@ -1128,67 +1131,78 @@ def retornTransaccio(request):
                     '194.224.159.57']  # ip's Banc Sabadell
     ip = request.META.get('REMOTE_ADDR')
     if ip not in ips_permeses:
+        missatge = ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
+        txt = missatge.format(ip)
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia)
         return HttpResponseServerError()
-    else:
 
-        # rebent dades de redsys   --------------------------------------------
+    # rebent dades de redsys   --------------------------------------------
 
-        version = request.POST.get('Ds_SignatureVersion', '')
-        parameters = request.POST.get('Ds_MerchantParameters', '')
-        firma_rebuda = request.POST.get('Ds_Signature', '')
+    version = request.POST.get('Ds_SignatureVersion', '')
+    parameters = request.POST.get('Ds_MerchantParameters', '')
+    firma_rebuda = request.POST.get('Ds_Signature', '')
 
-        error_msg=''
+    parameters_dic = json.loads(base64.b64decode(parameters).decode())
+    reference = urllib.parse.unquote(parameters_dic.get('Ds_Order', ''))
+    pay_id = parameters_dic.get('Ds_AuthorisationCode')
+    shasign = firma_rebuda.replace('_', '/').replace('-', '+')
+    if not reference or not pay_id or not shasign:
+        missatge = ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE
+        txt = missatge.format(reference, pay_id, shasign)
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia=importancia)
+        return HttpResponseServerError()
 
-        parameters_dic = json.loads(base64.b64decode(parameters).decode())
-        reference = urllib.parse.unquote(parameters_dic.get('Ds_Order', ''))
-        pay_id = parameters_dic.get('Ds_AuthorisationCode')
-        shasign = firma_rebuda.replace('_', '/').replace('-', '+')
-        if not reference or not pay_id or not shasign:
-            error_msg = "Redsys: falta nombre d'ordre (%s) o codi autorització (%s) o firma (%s)" % (reference, pay_id, shasign)
+    # -------------------------------------------------------------------------
 
-        # -------------------------------------------------------------------------
+    # verificant conincidència signatures --------------------------------------
 
-        # verificant conincidència signatures --------------------------------------
+    cipher = DES3.new(
+        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        mode=DES3.MODE_CBC,
+        IV=b'\0\0\0\0\0\0\0\0')
+    ordre = str(parameters_dic['Ds_Order'])
+    diff_block = len(ordre) % 8
+    zeros = diff_block and (b'\0' * (8 - diff_block)) or b''
+    key = cipher.encrypt(str.encode(ordre + zeros.decode()))
+    params64 = parameters.encode()
+    dig = hmac.new(
+        key=key,
+        msg=params64,
+        digestmod=hashlib.sha256).digest()
+    shasign_check = base64.b64encode(dig).decode()
 
-        cipher = DES3.new(
-            key=base64.b64decode(CUSTOM_KEY_COMERÇ),
-            mode=DES3.MODE_CBC,
-            IV=b'\0\0\0\0\0\0\0\0')
-        ordre = str(parameters_dic['Ds_Order'])
-        diff_block = len(ordre) % 8
-        zeros = diff_block and (b'\0' * (8 - diff_block)) or b''
-        key = cipher.encrypt(str.encode(ordre + zeros.decode()))
-        params64 = parameters.encode()
-        dig = hmac.new(
-            key=key,
-            msg=params64,
-            digestmod=hashlib.sha256).digest()
-        shasign_check = base64.b64encode(dig).decode()
+    if shasign_check != shasign:
+        missatge = ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE
+        txt = missatge.format(shasign, shasign_check, request.POST)
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia=importancia)
+        return HttpResponseServerError()
 
-        if shasign_check != shasign:
-            error_msg = (
-                    'Redsys: No hi ha coincidència entre firma rebuda %s, i calculada %s, '
-                    'en dades %s' % (shasign, shasign_check, request.POST)
-            )
+    # -------------------------------------------------------------------------
 
-        # -------------------------------------------------------------------------
-
-        if error_msg:
-            print('Error en pagament: ' + error_msg)  # s'ha de comunicar error
-        else:
-            pagament = get_object_or_404(Pagament, ordre_pagament=reference)
-            pagament.pagament_realitzat = True
-            data = parameters_dic['Ds_Date']
-            hora = parameters_dic['Ds_Hour']
-            pagament.data_hora_pagament = data + ' ' + hora
-            pagament.save()
-        return HttpResponse('')
+    pagament = get_object_or_404(Pagament, ordre_pagament=reference)
+    pagament.pagament_realitzat = True
+    data = parameters_dic['Ds_Date']
+    hora = parameters_dic['Ds_Hour']
+    pagament.data_hora_pagament = data + ' ' + hora
+    pagament.save()
+    return HttpResponse('')
 
 
 @login_required()
 @group_required(['professors'])
 def detallPagament(request, pk):
-
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
