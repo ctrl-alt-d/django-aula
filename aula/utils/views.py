@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #templates
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, JsonResponse, Http404
 from django.template import RequestContext
 from django.shortcuts import render
 from aula.apps.extKronowin.models import ParametreKronowin
@@ -14,6 +14,8 @@ from django.contrib.auth.models import Group
 
 #auth
 from django.contrib.auth.decorators import login_required
+
+from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
@@ -240,6 +242,10 @@ def about(request):
 
 @login_required
 def pagamentOnLine(request):
+
+    if not CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+        raise Http404()
+
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 

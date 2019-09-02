@@ -12,6 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
     ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
+from aula.settings import CUSTOM_REDSYS_ENTORN_REAL
 from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
@@ -1057,6 +1058,7 @@ def pagoOnline(request, pk):
         raise Http404
 
     #preparar parametres per redsys   --------------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
 
     values = {
         'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
@@ -1080,6 +1082,7 @@ def pagoOnline(request, pk):
     pagament.save()
 
     # preparar firma per redsys -------------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
 
     params_dic = json.loads(base64.b64decode(params).decode())
 
@@ -1115,8 +1118,8 @@ def pagoOnline(request, pk):
             'acceptar_condicions': False
         })
 
-
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'pagat':pagament.pagament_realitzat})
+    entorn_real = CUSTOM_REDSYS_ENTORN_REAL
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
 
 @csrf_exempt
 def retornTransaccio(request):
@@ -1141,6 +1144,7 @@ def retornTransaccio(request):
         return HttpResponseServerError()
 
     # rebent dades de redsys   --------------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
 
     version = request.POST.get('Ds_SignatureVersion', '')
     parameters = request.POST.get('Ds_MerchantParameters', '')
@@ -1163,6 +1167,7 @@ def retornTransaccio(request):
     # -------------------------------------------------------------------------
 
     # verificant conincidència signatures --------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
 
     cipher = DES3.new(
         key=base64.b64decode(CUSTOM_KEY_COMERÇ),
@@ -1209,7 +1214,7 @@ def detallPagament(request, pk):
     professor = User2Professor(user)
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
     sortida = get_object_or_404(Sortida, pk=pk)
-    potEntrar = (professor in sortida.professors_responsables.all() or  fEsDireccioOrGrupSortides)
+    potEntrar = (sortida.tipus_de_pagament == 'ON' and (professor in sortida.professors_responsables.all() or fEsDireccioOrGrupSortides))
     if not potEntrar:
         raise Http404
 

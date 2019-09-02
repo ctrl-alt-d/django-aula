@@ -197,8 +197,8 @@ class Sortida(models.Model):
 
 @python_2_unicode_compatible
 class Pagament(models.Model):
-    alumne = models.ForeignKey(Alumne, on_delete=models.CASCADE)
-    sortida = models.ForeignKey(Sortida, on_delete=models.CASCADE)
+    alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT)
+    sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT)
     data_hora_pagament = models.CharField(max_length=50, null=True)
     pagament_realitzat = models.BooleanField(null=True, default=False )
     ordre_pagament = models.CharField(max_length=12, unique=True, null=True)

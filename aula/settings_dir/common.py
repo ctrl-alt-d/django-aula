@@ -17,8 +17,8 @@ ADMINS = (
 LOGIN_URL="/usuaris/login/"
 
 LICENSE_FILE = location( r'../LICENSE' )
-DADES_FISCALS_FILE = location( r'../aula/assets/DADESFISCALS' )
-POLITICA_VENDA_FILE = location( r'../aula/assets/POLITICAVENDA' )
+DADES_FISCALS_FILE = location( r'../customising/docs/DADESFISCALS' )
+POLITICA_VENDA_FILE = location( r'../customising/docs/POLITICAVENDA' )
 
 MANAGERS = ADMINS
 

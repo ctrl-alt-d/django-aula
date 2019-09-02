@@ -45,7 +45,12 @@
 	          <p> <label>Sembla que aquesta sortida ja s'ha pagat anteriorment</label></p>
         </div>
     {% else %}
-        <form action="https://sis-t.redsys.es:25443/sis/realizarPago" method="post" >
+        <form action= {% if entorn_real %}
+                            "https://sis.redsys.es/sis/realizarPago"
+                      {% else %}
+                            "https://sis-t.redsys.es:25443/sis/realizarPago"
+                      {% endif %}
+              method="post" >
             {% csrf_token %}
             {{ form.Ds_MerchantParameters}}
             {{ form.Ds_Signature}}
