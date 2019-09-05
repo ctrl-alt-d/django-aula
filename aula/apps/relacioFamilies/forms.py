@@ -2,5 +2,9 @@
 from django import forms as forms
 
 
+class AlumneFormSet(forms.Form):
+    foto = forms.FileField(
+        label='Tria una foto',
+    )
     
     

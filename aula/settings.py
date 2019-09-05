@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*- 
+import os
 
 CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
 CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
@@ -80,12 +81,20 @@ CUSTOM_INDICADORS = [
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
 CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 
+
+
+
 try:
     from .settings_local import *
 except ImportError:
     from .settings_dir.demo import *
 
-
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+REPOSITORY_ROOT = os.path.dirname(BASE_DIR)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(REPOSITORY_ROOT, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
     
 
 

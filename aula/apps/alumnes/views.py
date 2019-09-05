@@ -347,7 +347,11 @@ def elsMeusAlumnesAndAssignatures( request ):
         
         taula.titol = tools.classebuida()
         taula.titol.contingut = ""
-        
+
+        capcelera_foto = tools.classebuida()
+        capcelera_foto.amplade = 10
+        #capcelera_nom.contingut = u'{0} - {1}'.format(unicode(assignatura), unicode(grup))
+
         capcelera_nom = tools.classebuida()
         capcelera_nom.amplade = 25
         capcelera_nom.contingut = u'{0} - {1}'.format(unicode( assignatura ) , unicode( grup ) )
@@ -376,10 +380,10 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 45
+        capcelera_contacte.amplade = 35
         capcelera_contacte.contingut = u'Dades de contacte Tutors.'
         
-        taula.capceleres = [capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]
+        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]
         
         taula.fileres = []
         for alumne in Alumne.objects.filter( 
@@ -388,7 +392,18 @@ def elsMeusAlumnesAndAssignatures( request ):
                             controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms'):
             
             filera = []
-            
+
+            # -foto------------
+            camp_foto = tools.classebuida()
+            camp_foto.enllac = None
+
+            if alumne.foto:
+                camp_foto.imatge = u'{0}'.format(alumne.foto)
+                filera.append(camp_foto)
+            else:
+                camp_foto.imatge = u"nofoto.png"
+                filera.append(camp_foto)
+
             #-nom--------------------------------------------
             camp_nom = tools.classebuida()
             camp_nom.enllac = None

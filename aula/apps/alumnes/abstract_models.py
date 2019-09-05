@@ -155,6 +155,10 @@ class AbstractAlumne(models.Model):
                                                help_text = u'Periodicitat en la notificació de les incidències.'
                                                 )
 
+    def user_directory_path(self,filename=None):
+        return 'alumne_{0}/{1}'.format(self.ralc, filename)
+
+    foto = models.ImageField(upload_to=user_directory_path, max_length=1024, blank=True, null=True)
 
     
     class Meta:
@@ -266,4 +270,5 @@ class AbstractAlumne(models.Model):
             data = date.today()
         dnaix = self.data_neixement
         return  (( data.month,  data.day) == (dnaix.month, dnaix.day)) or (not calendar.isleap(data.year) and (dnaix.month, dnaix.day) ==(2,29) and ( data.month,  data.day)==(2,28) )
+
 

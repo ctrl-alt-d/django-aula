@@ -1,0 +1,22 @@
+{% extends "form.html" %}
+
+{% block preform %}
+
+    <div class="row">
+          <div class="col-sm-2 col-xs-12">
+          {% if alumne.foto.url != ''  %}
+             <img src="{{ alumne.foto.url }}" width=120 class="center" >
+          {% else %}
+             <img src="/media/nofoto.png" width=120 class="center">
+          {% endif %}
+           </div>
+
+    </div>
+
+{% endblock %}
+
+
+
+
+
+
