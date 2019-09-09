@@ -158,10 +158,17 @@ def creaNivellCursGrupDesDeKronowin(request):
     if request.method == 'POST':
         form = creaNivellCursGrupDesDeKronowinForm(request.POST, request.FILES)
         if form.is_valid():
-            resultat=s.creaNivellCursGrupDesDeKronowin(request.FILES['fitxer_kronowin'],  
-                                                       form.cleaned_data["dia_inici_curs"], 
-                                                       form.cleaned_data["dia_fi_curs"])
-            
+
+            f = request.FILES['fitxer_kronowin']
+            path = default_storage.save('tmp/kronowin.txt', ContentFile(f.read()))
+            tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+            with open(tmp_file, 'r', encoding="utf-8") as f1:
+                resultat = s.creaNivellCursGrupDesDeKronowin(f1,
+                                                        form.cleaned_data["dia_inici_curs"],
+                                                        form.cleaned_data["dia_fi_curs"])
+            default_storage.delete(path)
+
+
         return render(
                         request,
                         'resultat.html', 
