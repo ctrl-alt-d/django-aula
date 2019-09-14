@@ -34,7 +34,10 @@ urlpatterns = [
      name="gestio__professor__cerca"),
               
     url(r'^detallProfessorHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', usuaris_views.detallProfessorHorari,
-     name="gestio__professor__cercaresultat"),              
+     name="gestio__professor__cercaresultat"),  
+
+    url(r'^integraCalendari/$', usuaris_views.integraCalendari,
+     name="gestio__calendari__integra"),
 
     url(r'^detallProfessorHorari/$', usuaris_views.blanc,
      name="gestio__blanc__blanc"),

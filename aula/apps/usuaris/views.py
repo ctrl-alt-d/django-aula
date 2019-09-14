@@ -33,6 +33,7 @@ from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth.models import User
 from aula.apps.usuaris.tools import enviaOneTimePasswd
+from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
 
 from django.contrib import messages
@@ -536,6 +537,20 @@ def cercaProfessor(request):
          }
         )
 
+@login_required
+@group_required(['professors','professional'])
+def integraCalendari(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    professor =  User2Professor(user)
+    dades_addicionals = GetDadesAddicionalsProfessor(professor)
+    return render(
+        request,
+        'integraCalendari.html',
+        {
+         'head': 'Triar usuari'
+         }
+        )    
 
 
 @login_required
