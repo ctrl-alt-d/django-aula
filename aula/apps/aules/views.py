@@ -2,7 +2,11 @@
 from __future__ import unicode_literals
 
 #workflow
+import os
+
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.shortcuts import render, get_object_or_404
 from django import forms
 from django.http import HttpResponseRedirect
@@ -13,6 +17,8 @@ from django.contrib.auth.decorators import login_required
 #tables
 from django.utils.safestring import SafeText
 from django_tables2 import RequestConfig
+
+from aula import settings
 from aula.apps.aules.tables2_models import HorariAulaTable, Table2_ReservaAula
 from aula.utils.my_paginator import DiggPaginator
 
@@ -457,35 +463,38 @@ def assignaComentarisAAules(request):
         form = carregaComentarisAulaForm(request.POST, request.FILES)
 
         if form.is_valid():
-            f = request.FILES['fitxerComentaris']
-
-            reader = csv.DictReader(f)
             info_nAulesLlegides = 0
             info_nAulesCreades = 0
             info_nComentarisAfegits = 0
             AulesCreades = []
             ComentarisAfegits = []
 
-            f.seek(0)
-            for row in reader:
-                info_nAulesLlegides += 1
-                nom_aula = unicode(row['CODI'],'iso-8859-1')
-                descripcio_aula = unicode(row['NOM'],'iso-8859-1')
-                if nom_aula !='':
-                    a, created = Aula.objects.get_or_create(nom_aula=nom_aula,
-                                                            defaults={
-                                                                'horari_lliure': False,
-                                                                'reservable': True})
-                    if created:
-                        info_nAulesCreades += 1
-                        AulesCreades.append(a.nom_aula)
-                        warnings.append(u'{0}: Aula creada nova'.format(a.nom_aula))
-                    a.descripcio_aula = descripcio_aula
-                    info_nComentarisAfegits += 1
-                    ComentarisAfegits.append(descripcio_aula)
-                    a.save()
-                else:
-                    errors.append('S\'han trobat aules sense nom!!!')
+            f = request.FILES['fitxerComentaris']
+            path = default_storage.save('tmp/comentarisaules.txt', ContentFile(f.read()))
+            tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+            with open(tmp_file, 'r', encoding="latin-1") as f1:
+                reader = csv.DictReader(f1)
+                f.seek(0)
+                for row in reader:
+                    info_nAulesLlegides += 1
+                    nom_aula = unicode(row['CODI'],'iso-8859-1')
+                    descripcio_aula = unicode(row['NOM'],'iso-8859-1')
+                    if nom_aula !='':
+                        a, created = Aula.objects.get_or_create(nom_aula=nom_aula,
+                                                                defaults={
+                                                                    'horari_lliure': False,
+                                                                    'reservable': True})
+                        if created:
+                            info_nAulesCreades += 1
+                            AulesCreades.append(a.nom_aula)
+                            warnings.append(u'{0}: Aula creada nova'.format(a.nom_aula))
+                        a.descripcio_aula = descripcio_aula
+                        info_nComentarisAfegits += 1
+                        ComentarisAfegits.append(descripcio_aula)
+                        a.save()
+                    else:
+                        errors.append('S\'han trobat aules sense nom!!!')
+            default_storage.delete(path)
             warnings.append(u'Total aules noves creades: {0}'.format(info_nAulesCreades))
             infos.append(u'Total comentaris afegits: {0}'.format(info_nComentarisAfegits))
             resultat = {'errors': errors, 'warnings': warnings, 'infos': infos}

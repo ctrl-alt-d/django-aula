@@ -20,3 +20,4 @@ aula/settings_local.py
 2tot.sh
 .idea/*
 .idea
+aula/static

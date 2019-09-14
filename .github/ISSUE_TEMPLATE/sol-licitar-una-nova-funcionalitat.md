@@ -1,6 +1,9 @@
 ---
 name: Sol·licitar una nova funcionalitat
 about: Suggerir una idea per aquest projecte
+title: ''
+labels: ''
+assignees: ''
 
 ---
 
