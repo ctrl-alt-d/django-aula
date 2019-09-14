@@ -39,6 +39,9 @@ urlpatterns = [
     url(r'^integraCalendari/$', usuaris_views.integraCalendari,
      name="gestio__calendari__integra"),
 
+    url(r'^ElMeuCalendari/(?P<clau>[0-9a-f-]+)/$', usuaris_views.comparteixCalendari,
+     name="gestio__calendari__comparteix"),
+
     url(r'^detallProfessorHorari/$', usuaris_views.blanc,
      name="gestio__blanc__blanc"),
 ]

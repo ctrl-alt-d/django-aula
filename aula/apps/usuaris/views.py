@@ -3,6 +3,7 @@
 #templates
 from django.template import RequestContext
 from django_tables2 import RequestConfig
+from django.urls import reverse
 
 from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuariForm, \
     recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form
@@ -19,6 +20,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import  get_object_or_404, render
 
 #helpers
+from django.http import HttpResponseNotFound, HttpResponse
+
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.utils.forms import ckbxForm
@@ -33,11 +36,15 @@ from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth.models import User
 from aula.apps.usuaris.tools import enviaOneTimePasswd
-from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor
+from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
 
 from django.contrib import messages
 from django.conf import settings
+
+from icalendar import Calendar, Event
+from icalendar import vCalAddress, vText
+from django.templatetags.tz import localtime
 
 @login_required
 def canviDadesUsuari( request):
@@ -544,13 +551,61 @@ def integraCalendari(request):
     (user, l4) = credentials
     professor =  User2Professor(user)
     dades_addicionals = GetDadesAddicionalsProfessor(professor)
+    url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'gestio__calendari__comparteix', kwargs={'clau': str( dades_addicionals.clauDeCalendari) } ) )    
     return render(
         request,
         'integraCalendari.html',
         {
-         'head': 'Triar usuari'
+         'url_calendari': url,
          }
         )    
+
+def comparteixCalendari(request, clauCalendari):
+    cal = Calendar()
+    cal.add('method','PUBLISH' ) # IE/Outlook needs this
+
+    try:
+        dades_adicionals_professor = DadesAddicionalsProfessor.objects.get( clauDeCalendari = clauCalendari )
+        professor = dades_adicionals_professor.professor
+    except:
+        return HttpResponseNotFound("")         
+    else:
+
+        for instance in Impartir.objects.filter( horari__professor = professor  ).select_related("horari").select_related("horari__hora"):
+            event = Event()
+            
+    #         d=instance.data_inici
+    #         t=instance.franja_inici.hora_inici
+    #         dtstart = datetime( d.year, d.month, d.day, t.hour, t.minute  )
+    #         d=instance.data_fi
+    #         t=instance.franja_fi.hora_fi
+    #         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
+            
+            
+            summary = u"{classe}: {grup}".format(classe=instance.ambit ,
+                                                    titol= instance.titol_de_la_sortida)
+            d = instance.dia_impartir
+            h = instance.horari.hora
+            event.add('dtstart',localtime( datetime( d.year, d.month, d.day, h.hora_inici.hour, h.hora_inici.minute, h.hora_inici.second ) ) )
+            event.add('dtend' ,localtime( datetime( d.year, d.month, d.day, h.hora_fi.hour, h.hora_fi.minute, h.hora_fi.second ) ) )
+            event.add('summary',summary)
+            organitzador = u"\nOrganitza: "
+            organitzador += u"{0}".format( u"Departament" + instance.departament_que_organitza.nom if instance.departament_que_organitza_id else u"" )
+            organitzador += " " + instance.comentari_organitza
+            event.add('organizer',  vText( u"{0} {1}".format( u"Departament " + instance.departament_que_organitza.nom  if instance.departament_que_organitza_id else u"" , instance.comentari_organitza )))
+            event.add('description',instance.programa_de_la_sortida + organitzador)
+            event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
+            event['location'] = vText( instance.ciutat )
+
+            
+            cal.add_component(event)
+
+    #     response = HttpResponse( cal.to_ical() , content_type='text/calendar')
+    #     response['Filename'] = 'shifts.ics'  # IE needs this
+    #     response['Content-Disposition'] = 'attachment; filename=shifts.ics'
+    #     return response
+
+            return HttpResponse( cal.to_ical() )
 
 
 @login_required
