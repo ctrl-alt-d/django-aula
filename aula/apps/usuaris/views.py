@@ -560,17 +560,17 @@ def integraCalendari(request):
          }
         )    
 
-def comparteixCalendari(request, clauCalendari):
+def comparteixCalendari(request, clau):
     cal = Calendar()
     cal.add('method','PUBLISH' ) # IE/Outlook needs this
 
     try:
-        dades_adicionals_professor = DadesAddicionalsProfessor.objects.get( clauDeCalendari = clauCalendari )
+        dades_adicionals_professor = DadesAddicionalsProfessor.objects.get( clauDeCalendari = clau )
         professor = dades_adicionals_professor.professor
     except:
         return HttpResponseNotFound("")         
     else:
-        imparticions = (
+        imparticions = list(
             Impartir
             .objects
             .filter( horari__professor = professor  )
@@ -580,21 +580,18 @@ def comparteixCalendari(request, clauCalendari):
             .select_related("horari__hora")
             .select_related("horari__assignatura")
         )
+
         for instance in imparticions:
             event = Event()
-            
-    #         d=instance.data_inici
-    #         t=instance.franja_inici.hora_inici
-    #         dtstart = datetime( d.year, d.month, d.day, t.hour, t.minute  )
-    #         d=instance.data_fi
-    #         t=instance.franja_fi.hora_fi
-    #         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
-            
-            
+
+            assignatura = instance.horari.assignatura.nom_assignatura
+            aula = instance.reserva.aula.nom_aula if hasattr(instance,"reserva") and instance.reserva is not None else ""
+            grup = instance.horari.grup.descripcio_grup if hasattr(instance.horari, "grup") and instance.horari.grup is not None else ""
+
             summary = u"{assignatura} {aula} {grup}".format(
-                assignatura=instance.horari.assignatura.nom_assignatura ,
-                aula = instance.reserva.aula.nom_aula,
-                grup = instance.horari.grup.descripcio_grup,
+                assignatura=assignatura ,
+                aula = aula,
+                grup = grup,
                 )
             d = instance.dia_impartir
             h = instance.horari.hora
@@ -602,16 +599,11 @@ def comparteixCalendari(request, clauCalendari):
             event.add('dtend' ,localtime( datetime( d.year, d.month, d.day, h.hora_fi.hour, h.hora_fi.minute, h.hora_fi.second ) ) )
             event.add('summary',summary)
             event.add('uid', 'djau-ical-impartir-{0}'.format( instance.id ) )
-            event['location'] = vText( instance.reserva.aula.nom_aula )
+            event['location'] = vText( aula )
             
             cal.add_component(event)
 
-    #     response = HttpResponse( cal.to_ical() , content_type='text/calendar')
-    #     response['Filename'] = 'shifts.ics'  # IE needs this
-    #     response['Content-Disposition'] = 'attachment; filename=shifts.ics'
-    #     return response
-
-            return HttpResponse( cal.to_ical() )
+        return HttpResponse( cal.to_ical() )
 
 
 @login_required

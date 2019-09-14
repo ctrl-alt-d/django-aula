@@ -2,7 +2,9 @@
 
 {% block content  %}
 
-<div class="input-group">
+<div class="jumbotron">
+  <p>Amb aquest enllaç podràs integrar el teu calendari de classes a la teva agenda. Amb informació del dia, hora, grup i aula.</p>
+  <div class="input-group">
     <input type="text" class="form-control" readonly="readonly"
         value="{{ url_calendari }}" placeholder="URL del Calendari" id="copy-input">
     <span class="input-group-btn">
@@ -13,6 +15,10 @@
       </button>
     </span>
   </div>
+  <hr class="my-4">
+  <h6>Aprèn com <a href="https://support.google.com/calendar/answer/37118?hl=ca">Importar esdeveniments a Google Calendar</a></h6>
+</div>
+
 
 {% endblock %}
 
