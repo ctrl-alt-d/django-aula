@@ -570,8 +570,17 @@ def comparteixCalendari(request, clauCalendari):
     except:
         return HttpResponseNotFound("")         
     else:
-
-        for instance in Impartir.objects.filter( horari__professor = professor  ).select_related("horari").select_related("horari__hora"):
+        imparticions = (
+            Impartir
+            .objects
+            .filter( horari__professor = professor  )
+            .select_related("reserva")
+            .select_related("reserva__aula")
+            .select_related("horari")
+            .select_related("horari__hora")
+            .select_related("horari__assignatura")
+        )
+        for instance in imparticions:
             event = Event()
             
     #         d=instance.data_inici
@@ -582,21 +591,18 @@ def comparteixCalendari(request, clauCalendari):
     #         dtend = datetime( d.year, d.month, d.day, t.hour, t.minute  )
             
             
-            summary = u"{classe}: {grup}".format(classe=instance.ambit ,
-                                                    titol= instance.titol_de_la_sortida)
+            summary = u"{assignatura} {aula} {grup}".format(
+                assignatura=instance.horari.assignatura.nom_assignatura ,
+                aula = instance.reserva.aula.nom_aula,
+                grup = instance.horari.grup.descripcio_grup,
+                )
             d = instance.dia_impartir
             h = instance.horari.hora
             event.add('dtstart',localtime( datetime( d.year, d.month, d.day, h.hora_inici.hour, h.hora_inici.minute, h.hora_inici.second ) ) )
             event.add('dtend' ,localtime( datetime( d.year, d.month, d.day, h.hora_fi.hour, h.hora_fi.minute, h.hora_fi.second ) ) )
             event.add('summary',summary)
-            organitzador = u"\nOrganitza: "
-            organitzador += u"{0}".format( u"Departament" + instance.departament_que_organitza.nom if instance.departament_que_organitza_id else u"" )
-            organitzador += " " + instance.comentari_organitza
-            event.add('organizer',  vText( u"{0} {1}".format( u"Departament " + instance.departament_que_organitza.nom  if instance.departament_que_organitza_id else u"" , instance.comentari_organitza )))
-            event.add('description',instance.programa_de_la_sortida + organitzador)
-            event.add('uid', 'djau-ical-{0}'.format( instance.id ) )
-            event['location'] = vText( instance.ciutat )
-
+            event.add('uid', 'djau-ical-impartir-{0}'.format( instance.id ) )
+            event['location'] = vText( instance.reserva.aula.nom_aula )
             
             cal.add_component(event)
 
