@@ -170,6 +170,7 @@ def calcula_menu( user , path ):
                       ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),                                        
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
+                      ("iCal", 'gestio__calendari__integra', pl, None, None),  
                    )
                ),
                             

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content  %}
+
+<div class="jumbotron">
+  <p>Amb aquest enllaç podràs integrar el teu calendari de classes a la teva agenda. Amb informació del dia, hora, grup i aula.</p>
+  <div class="input-group">
+    <input type="text" class="form-control" readonly="readonly"
+        value="{{ url_calendari }}" placeholder="URL del Calendari" id="copy-input">
+    <span class="input-group-btn">
+      <button class="btn btn-default" type="button" id="copy-button"
+          data-toggle="tooltip" data-placement="button"
+          title="Copiar al porta papers">
+        Copiar
+      </button>
+    </span>
+  </div>
+  <hr class="my-4">
+  <h6>Aprèn com <a href="https://support.google.com/calendar/answer/37118?hl=ca">Importar esdeveniments a Google Calendar</a></h6>
+</div>
+
+
+{% endblock %}
+
+{% block afterscripts %} 
+    <script>
+        $(document).ready(function() {
+        // Initialize the tooltip.
+        $('#copy-button').tooltip();
+    
+        $('#copy-button').bind('click', function() {
+        var input = document.querySelector('#copy-input');
+        input.setSelectionRange(0, input.value.length + 1);
+        try {
+            alert("copiat");
+            var success = document.execCommand('copy');
+            if (success) {
+            $('#copy-button').trigger('copied', ['Copiat!']);
+            } else {
+            $('#copy-button').trigger('copied', ['Copiar amb Ctrl-c']);
+            }
+        } catch (err) {
+            $('#copy-button').trigger('copied', ['Copiar amb Ctrl-c']);
+        }
+        });
+    
+        // Handler for updating the tooltip message.
+        $('#copy-button').bind('copied', function(event, message) {
+        $(this).attr('title', message)
+            .tooltip('fixTitle')
+            .tooltip('show')
+            .attr('title', "Copiar al porta papers")
+            .tooltip('fixTitle');
+        });
+    });
+    </script>
+{% endblock %}
+

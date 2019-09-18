@@ -449,4 +449,3 @@ cat "${copia}${extensio}" > "${directori}bdd-mes-${mes}.sql${extensio}"
 rm $copia${extensio}
 ```
 
-
