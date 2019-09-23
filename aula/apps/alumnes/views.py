@@ -396,14 +396,11 @@ def elsMeusAlumnesAndAssignatures( request ):
             # -foto------------
             camp_foto = tools.classebuida()
             camp_foto.enllac = None
-
             if alumne.foto:
-                camp_foto.imatge = u'{0}'.format(alumne.foto)
-                filera.append(camp_foto)
+                camp_foto.imatge = u'private-media/{0}'.format(alumne.foto)
             else:
-                camp_foto.imatge = u"nofoto.png"
-                filera.append(camp_foto)
-
+                camp_foto.imatge = u"private-media/nofoto.png"
+            filera.append(camp_foto)
             #-nom--------------------------------------------
             camp_nom = tools.classebuida()
             camp_nom.enllac = None

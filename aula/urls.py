@@ -13,6 +13,7 @@ from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 admin.autodiscover()
 
 import os.path
+import private_storage.urls
 site_media_site_css = os.path.join(os.path.dirname(__file__), 'site-css' )
 site_media_web_demo = os.path.join(os.path.dirname(__file__), '../demo/static-web/demo' )
 
@@ -53,6 +54,7 @@ urlpatterns = [
     #fitxers estàtics:
     url(r'^site-css/(?P<path>.*)$', serve,{'document_root': site_media_site_css}),
     url(r'^error500$', TemplateView.as_view(template_name='500.html') ),
+    url('^private-media/', include(private_storage.urls)),
 
 ]
 

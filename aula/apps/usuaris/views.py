@@ -31,7 +31,7 @@ from aula.apps.presencia.models import Impartir
 
 from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd
 from aula.utils.tools import getClientAdress
 
@@ -587,3 +587,14 @@ def blanc( request ):
                 'blanc.html',
                     {},
                     )
+
+
+def allow_foto(private_file):
+    request = private_file.request
+    grups_poden_veure_fotos = Group.objects.filter(name__in=['direcció', 'professors', 'professional', 'consergeria'])
+    pertany_al_grup_permes = False
+    for grup in request.user.groups.all():
+        if grup in grups_poden_veure_fotos:
+            pertany_al_grup_permes = True
+            break
+    return (request.user.is_authenticated and pertany_al_grup_permes)

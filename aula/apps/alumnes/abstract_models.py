@@ -3,6 +3,8 @@
 from django.db import models
 from datetime import date
 from django.utils.datetime_safe import datetime
+from private_storage.fields import PrivateFileField
+
 from aula.apps.usuaris.models import Professor, AlumneUser
 from aula.apps.tutoria.models import SeguimentTutorial
 from aula.apps.alumnes.named_instances import Nivells_no_obligatoris, Cursa_nivell
@@ -158,7 +160,7 @@ class AbstractAlumne(models.Model):
     def user_directory_path(self,filename=None):
         return 'alumne_{0}/{1}'.format(self.ralc, filename)
 
-    foto = models.ImageField(upload_to=user_directory_path, max_length=1024, blank=True, null=True)
+    foto = PrivateFileField("File", upload_to='alumnes/fotos', content_types=['image/jpeg','image/png'], max_file_size=500000)
 
     
     class Meta:
