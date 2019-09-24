@@ -35,7 +35,8 @@ class AbstractAccio(models.Model):
         ('MT','Envia missatge a tutors' ),
         ('SK','Sincronitza Kronowin'),
         ('JF','Justificar Faltes'),        
-        ('NF','Notificacio Families'),        
+        ('NF','Notificacio Families'),
+        ('AS','Accés a dades sensibles'),
     )
     tipus = models.CharField(max_length=2, choices=TIPUS_ACCIO_CHOICES)
     usuari = models.ForeignKey( User, db_index = True, related_name = 'usuari', on_delete=models.CASCADE )
@@ -49,7 +50,7 @@ class AbstractAccio(models.Model):
         verbose_name_plural = u"Accions d'usuari"
     def __str__(self):
         txt_imp = u'({0})'.format(self.impersonated_from) if self.impersonated_from else ''
-        return u'{0} {1} {2} {3} {4}'.format( self.moment, self.tipus, self.data, self.user, txt_imp )
+        return u'{0} {1} {2} {3}'.format( self.moment, self.tipus, self.usuari, txt_imp )
     
 #----------------------------------------------------------------------------------------------
 

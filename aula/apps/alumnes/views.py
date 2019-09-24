@@ -12,7 +12,7 @@ from django_tables2 import RequestConfig
 
 #from django import forms as forms
 from aula.apps.alumnes.models import Alumne,  Curs, Grup
-from aula.apps.usuaris.models import Professor
+from aula.apps.usuaris.models import Professor, Accio
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
@@ -398,6 +398,14 @@ def elsMeusAlumnesAndAssignatures( request ):
             camp_foto.enllac = None
             if alumne.foto:
                 camp_foto.imatge = u'private-media/{0}'.format(alumne.foto)
+                Accio.objects.create(
+                    tipus='AS',
+                    usuari=user,
+                    l4=l4,
+                    impersonated_from=request.user if request.user != user else None,
+                    moment = datetime.now(),
+                    text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne,user)
+                )
             else:
                 camp_foto.imatge = u"private-media/nofoto.png"
             filera.append(camp_foto)
@@ -658,6 +666,15 @@ def detallAlumneHorari(request, pk, detall='all'):
     table.order_by = 'hora_inici'
 
     RequestConfig(request).configure(table)
+    if alumne.foto:
+        Accio.objects.create(
+            tipus='AS',
+            usuari=user,
+            l4=l4,
+            impersonated_from=request.user if request.user != user else None,
+            moment=datetime.now(),
+            text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne, user)
+        )
 
     return render(
         request,

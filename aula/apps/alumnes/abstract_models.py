@@ -160,7 +160,7 @@ class AbstractAlumne(models.Model):
     def user_directory_path(self,filename=None):
         return 'alumne_{0}/{1}'.format(self.ralc, filename)
 
-    foto = PrivateFileField("File", upload_to='alumnes/fotos', content_types=['image/jpeg','image/png'], max_file_size=500000)
+    foto = PrivateFileField("File", upload_to='alumnes/fotos', content_types=['image/jpeg','image/png'], max_file_size=500000, null=True)
 
     
     class Meta:
