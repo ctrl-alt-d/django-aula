@@ -7,6 +7,7 @@ from django.template import RequestContext
 #tables
 from django.utils.safestring import mark_safe
 
+from aula.settings_dir.common import STATIC_URL
 from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
@@ -395,6 +396,7 @@ def elsMeusAlumnesAndAssignatures( request ):
             # -foto------------
             camp_foto = tools.classebuida()
             camp_foto.enllac = None
+            camp_foto.imatge = STATIC_URL + u"nofoto.png"
             if alumne.foto:
                 camp_foto.imatge = u'private-media/{0}'.format(alumne.foto)
                 Accio.objects.create(
@@ -405,8 +407,7 @@ def elsMeusAlumnesAndAssignatures( request ):
                     moment = datetime.now(),
                     text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne,user)
                 )
-            else:
-                camp_foto.imatge = u"/private-media/nofoto.png"
+
             filera.append(camp_foto)
             #-nom--------------------------------------------
             camp_nom = tools.classebuida()

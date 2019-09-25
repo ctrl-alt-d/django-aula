@@ -1,4 +1,5 @@
 {% extends "table2.html" %}
+{% load static %}
 
 {% block pretaula %}
 
@@ -7,7 +8,7 @@
             {% if alumne.foto.url != '' %}
                 <img src="/private-media/{{ alumne.foto }}" width=120 >
             {% else %}
-                <img src= "/private-media/nofoto.png" width=120 >
+                <img src="{% static "nofoto.png" %}" width=120 >
             {% endif %}
           </div>
 		  <div class="col-sm-8 col-xs-12">
