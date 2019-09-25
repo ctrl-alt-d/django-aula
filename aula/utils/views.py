@@ -14,6 +14,8 @@ from django.contrib.auth.models import Group
 
 #auth
 from django.contrib.auth.decorators import login_required
+
+from aula.settings import CUSTOM_GRUPS_PODEN_VEURE_FOTOS
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
@@ -259,4 +261,13 @@ def blanc( request ):
                 )
     
     
-         
+def allow_foto(private_file):
+    request = private_file.request
+    grups_poden_veure_fotos = Group.objects.filter(
+        name__in=CUSTOM_GRUPS_PODEN_VEURE_FOTOS)
+    pertany_al_grup_permes = False
+    for grup in request.user.groups.all():
+        if grup in grups_poden_veure_fotos:
+            pertany_al_grup_permes = True
+            break
+    return (request.user.is_authenticated and pertany_al_grup_permes)

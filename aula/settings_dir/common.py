@@ -253,4 +253,4 @@ LOGGING = {
 }
 
 PRIVATE_STORAGE_ROOT = 'private-media/'
-PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_foto'
+PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_foto'

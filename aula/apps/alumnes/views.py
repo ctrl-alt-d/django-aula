@@ -398,7 +398,7 @@ def elsMeusAlumnesAndAssignatures( request ):
             camp_foto.enllac = None
             camp_foto.imatge = STATIC_URL + u"nofoto.png"
             if alumne.foto:
-                camp_foto.imatge = u'private-media/{0}'.format(alumne.foto)
+                camp_foto.imatge = u'/private-media/{0}'.format(alumne.foto)
                 Accio.objects.create(
                     tipus='AS',
                     usuari=user,

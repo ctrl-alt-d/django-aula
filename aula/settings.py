@@ -80,6 +80,7 @@ CUSTOM_INDICADORS = [
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
 CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 
+CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
 
 
 
