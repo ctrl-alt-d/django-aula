@@ -4,6 +4,7 @@ from itertools import groupby
 from django.conf import settings
 
 #templates
+from django.forms import FileInput
 from django.template import RequestContext
 
 #workflow
@@ -176,7 +177,7 @@ def configuraConnexio( request , pk ):
     except:
         pass
 
-    imageUrl = '/media/nofoto.png'
+    imageUrl = '/private-media/nofoto.png'
     try:
         imageUrl = alumne.foto.url
     except:
@@ -191,16 +192,17 @@ def configuraConnexio( request , pk ):
           #('Correu tutors (Saga)', alumne.correu_tutors),
           ('Correu tutors (Saga)', alumne.rp1_correu + u', ' + alumne.rp2_correu),
           ( 'Edat alumne', edatAlumne ),
-          ('url Fotografia alumne', imageUrl),
                 ]
     
     AlumneFormSet = modelform_factory(Alumne,
                                       fields = ( 'correu_relacio_familia_pare', 'correu_relacio_familia_mare' ,
                                                     'periodicitat_faltes', 'periodicitat_incidencies', 'foto'),
+                                      widgets={
+                                          'foto': FileInput,}
                                          )    
     
     if request.method == 'POST':
-        form = AlumneFormSet(  request.POST ,request.FILES,  instance=alumne )
+        form = AlumneFormSet(  request.POST , request.FILES, instance=alumne )
         if form.is_valid(  ):
             form.save()
             url_next = '/open/dadesRelacioFamilies#{0}'.format(alumne.pk  ) 
@@ -213,7 +215,7 @@ def configuraConnexio( request , pk ):
                 request,
                 'configuraConnexio.html',
                     {'form': form,
-                     'alumne': alumne,
+                     'image': imageUrl,
                      'infoForm': infoForm,
                      'head': u'Gestió relació familia amb empreses' ,
                      'formSetDelimited':True},

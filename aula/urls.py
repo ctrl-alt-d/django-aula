@@ -7,9 +7,7 @@ from aula.utils.views import keepalive,menu,logout_page
 from aula.apps.alumnes.views import mostraGrupPromocionar,nouAlumnePromocionar,llistaGrupsPromocionar
 from django.contrib.auth.views import PasswordChangeView
 from django.views.static import serve
-from . import settings
 
-from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 admin.autodiscover()
 
 import os.path
@@ -59,8 +57,6 @@ urlpatterns = [
 ]
 
 
-urlpatterns += staticfiles_urlpatterns()
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 try:
     

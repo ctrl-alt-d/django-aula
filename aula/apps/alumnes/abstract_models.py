@@ -157,14 +157,12 @@ class AbstractAlumne(models.Model):
                                                help_text = u'Periodicitat en la notificació de les incidències.'
                                                 )
 
-    def user_directory_path(self,filename=None):
-        return 'alumne_{0}/{1}'.format(self.ralc, filename)
 
-    foto = PrivateFileField("File", upload_to='alumnes/fotos', content_types=['image/jpeg','image/png'], max_file_size=500000, null=True)
+    foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=['image/jpeg','image/png'], max_file_size=500000, null=True)
 
     
     class Meta:
-        abstract = True        
+        abstract = True
         ordering = ['grup','cognoms','nom']
         verbose_name = u'Alumne'
         verbose_name_plural = u'Alumnes'

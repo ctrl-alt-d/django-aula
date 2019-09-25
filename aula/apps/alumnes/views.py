@@ -350,7 +350,6 @@ def elsMeusAlumnesAndAssignatures( request ):
 
         capcelera_foto = tools.classebuida()
         capcelera_foto.amplade = 10
-        #capcelera_nom.contingut = u'{0} - {1}'.format(unicode(assignatura), unicode(grup))
 
         capcelera_nom = tools.classebuida()
         capcelera_nom.amplade = 25
@@ -407,7 +406,7 @@ def elsMeusAlumnesAndAssignatures( request ):
                     text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne,user)
                 )
             else:
-                camp_foto.imatge = u"private-media/nofoto.png"
+                camp_foto.imatge = u"/private-media/nofoto.png"
             filera.append(camp_foto)
             #-nom--------------------------------------------
             camp_nom = tools.classebuida()
