@@ -7,7 +7,7 @@ from django.template import RequestContext
 #tables
 from django.utils.safestring import mark_safe
 
-from aula.settings_dir.common import STATIC_URL
+from aula.settings_dir.common import STATIC_URL, PRIVATE_STORAGE_ROOT
 from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
@@ -398,7 +398,7 @@ def elsMeusAlumnesAndAssignatures( request ):
             camp_foto.enllac = None
             camp_foto.imatge = STATIC_URL + u"nofoto.png"
             if alumne.foto:
-                camp_foto.imatge = u'/private-media/{0}'.format(alumne.foto)
+                camp_foto.imatge = u'/{0}{1}'.format(PRIVATE_STORAGE_ROOT, alumne.foto)
                 Accio.objects.create(
                     tipus='AS',
                     usuari=user,
@@ -686,6 +686,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
          'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
          'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
+         'ruta_fotos': PRIVATE_STORAGE_ROOT,
          },
     )
 

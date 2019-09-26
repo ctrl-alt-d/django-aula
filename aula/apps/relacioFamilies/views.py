@@ -6,6 +6,7 @@ from django.conf import settings
 #templates
 from django.forms import FileInput
 from django.template import RequestContext
+from django.templatetags.static import static
 
 #workflow
 from django.shortcuts import render, get_object_or_404
@@ -18,7 +19,6 @@ from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida
-from aula.settings_dir.common import STATIC_URL
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
@@ -178,7 +178,7 @@ def configuraConnexio( request , pk ):
     except:
         pass
 
-    imageUrl = STATIC_URL + 'nofoto.png'
+    imageUrl = static('nofoto.jpg')
     try:
         imageUrl = alumne.foto.url
     except:
