@@ -5,7 +5,7 @@
 
     <div class="row">
           <div class="col-sm-2 col-xs-12">
-            <img src="/{{ ruta_fotos }}{{alumne.foto|default:'../site-css/nofoto.png'}}"  width=120 >
+              <img src="{{ alumne.get_foto_or_default }}"  width=120 >
           </div>
 		  <div class="col-sm-8 col-xs-12">
 	      <p class="well well-small">

@@ -263,11 +263,11 @@ def blanc( request ):
     
 def allow_foto(private_file):
     request = private_file.request
-    grups_poden_veure_fotos = Group.objects.filter(
-        name__in=CUSTOM_GRUPS_PODEN_VEURE_FOTOS)
-    pertany_al_grup_permes = False
-    for grup in request.user.groups.all():
-        if grup in grups_poden_veure_fotos:
-            pertany_al_grup_permes = True
-            break
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    pertany_al_grup_permes = (user
+                              .groups
+                              .filter(name__in=CUSTOM_GRUPS_PODEN_VEURE_FOTOS)
+                              .exists()
+                              )
     return (request.user.is_authenticated and pertany_al_grup_permes)
