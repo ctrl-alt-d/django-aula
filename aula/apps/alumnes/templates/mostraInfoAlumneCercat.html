@@ -1,8 +1,12 @@
 {% extends "table2.html" %}
+{% load static %}
 
 {% block pretaula %}
 
     <div class="row">
+          <div class="col-sm-2 col-xs-12">
+              <img src="{{ alumne.get_foto_or_default }}"  width=120 >
+          </div>
 		  <div class="col-sm-8 col-xs-12">
 	      <p class="well well-small">
       	  <span class="glyphicon glyphicon-user"> </span> {{ alumne }}<br />

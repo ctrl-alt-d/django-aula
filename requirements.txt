@@ -21,4 +21,5 @@ XlsxWriter
 typing
 selenium
 pisa
+django-private-storage
 

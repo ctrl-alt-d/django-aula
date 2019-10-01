@@ -216,7 +216,7 @@ AUTO_RENDER_SELECT2_STATICS=False
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
+INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA + ['private_storage',]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -252,4 +252,5 @@ LOGGING = {
     }
 }
 
-
+PRIVATE_STORAGE_ROOT = 'private-media/'
+PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_foto'
