@@ -81,7 +81,7 @@ CUSTOM_INDICADORS = [
 CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 
 CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
-
+CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
 
 
 try:
