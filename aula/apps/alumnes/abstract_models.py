@@ -163,7 +163,7 @@ class AbstractAlumne(models.Model):
                                                 )
 
 
-    foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True)
+    foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
     
     class Meta:
         abstract = True
