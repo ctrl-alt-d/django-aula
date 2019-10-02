@@ -17,7 +17,6 @@ import calendar
 from dateutil.relativedelta import relativedelta
 
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
-from aula.settings_dir.common import PRIVATE_STORAGE_ROOT
 
 
 class AbstractNivell(models.Model):
