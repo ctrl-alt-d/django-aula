@@ -17,7 +17,6 @@ import calendar
 from dateutil.relativedelta import relativedelta
 
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
-from aula.settings_dir.common import PRIVATE_STORAGE_ROOT
 
 
 class AbstractNivell(models.Model):
@@ -164,7 +163,7 @@ class AbstractAlumne(models.Model):
                                                 )
 
 
-    foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True)
+    foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
     
     class Meta:
         abstract = True

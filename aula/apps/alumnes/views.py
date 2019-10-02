@@ -7,7 +7,7 @@ from django.template import RequestContext
 #tables
 from django.utils.safestring import mark_safe
 
-from aula.settings_dir.common import STATIC_URL, PRIVATE_STORAGE_ROOT
+from aula.settings_local import PRIVATE_STORAGE_ROOT
 from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 

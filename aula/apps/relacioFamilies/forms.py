@@ -25,16 +25,18 @@ class AlumneModelForm(forms.ModelForm):
 
     def save(self):
         #redimensionar i utilitzar ralc com a nom de foto
-        img = Image.open(self.files['foto'])
-        img.thumbnail((150, 150), Image.ANTIALIAS)
-        thumb_io = io.BytesIO()
-        img.save(thumb_io, self.files['foto'].content_type.split('/')[-1].upper())
-        new_file_name ='alumne_' + str(self.instance.ralc) + os.path.splitext(self.instance.foto.name)[1]
-        file = InMemoryUploadedFile(thumb_io,
-                                    u"foto",
-                                    new_file_name,
-                                    self.files['foto'].content_type,
-                                    thumb_io.getbuffer().nbytes,
-                                    None)
-        self.instance.foto = file
+        try:
+            img = Image.open(self.files['foto'])
+            img.thumbnail((150, 150), Image.ANTIALIAS)
+            thumb_io = io.BytesIO()
+            img.save(thumb_io, self.files['foto'].content_type.split('/')[-1].upper())
+            new_file_name ='alumne_' + str(self.instance.ralc) + os.path.splitext(self.instance.foto.name)[1]
+            file = InMemoryUploadedFile(thumb_io,
+                                        u"foto",
+                                        new_file_name,
+                                        self.files['foto'].content_type,
+                                        thumb_io.getbuffer().nbytes,
+                                        None)
+            self.instance.foto = file
+        except: pass
         super(AlumneModelForm, self).save()
