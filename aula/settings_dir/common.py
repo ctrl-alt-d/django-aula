@@ -252,5 +252,5 @@ LOGGING = {
     }
 }
 
-PRIVATE_STORAGE_ROOT = 'private-media/'
+PRIVATE_STORAGE_ROOT = os.path.join( os.path.dirname(__file__), '../../../private-media/')
 PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_foto'

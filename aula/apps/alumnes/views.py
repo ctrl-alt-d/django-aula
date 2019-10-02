@@ -396,9 +396,8 @@ def elsMeusAlumnesAndAssignatures( request ):
             # -foto------------
             camp_foto = tools.classebuida()
             camp_foto.enllac = None
-            camp_foto.imatge = STATIC_URL + u"nofoto.png"
+            camp_foto.imatge = alumne.get_foto_or_default
             if alumne.foto:
-                camp_foto.imatge = u'/{0}{1}'.format(PRIVATE_STORAGE_ROOT, alumne.foto)
                 Accio.objects.create(
                     tipus='AS',
                     usuari=user,
