@@ -28,7 +28,7 @@ def assignatura_clean( instance ):
             try:
                 op = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Opcional' )    
                 instance.tipus_assignatura = op
-            except TipusDAssignatura.DoesNotExists:
+            except TipusDAssignatura.DoesNotExist:
                 pass
         
         #si el grup és aula d'acolloda poso nivell tot el centre, ...            
@@ -36,7 +36,7 @@ def assignatura_clean( instance ):
             try:
                 ao = TipusDAssignatura.objects.get( tipus_assignatura__startswith = 'Aula Oberta' )    
                 instance.tipus_assignatura = ao
-            except TipusDAssignatura.DoesNotExists:
+            except TipusDAssignatura.DoesNotExist:
                 pass    
     #rules
     

@@ -4,6 +4,7 @@ from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
 from aula.apps.presencia.models import ControlAssistencia
 from django.db.models import Q
+from django.conf import settings
 
 
 def faltesAssistenciaEntreDatesGrupRpt( 
@@ -91,7 +92,12 @@ def faltesAssistenciaEntreDatesGrupRpt(
         filera.append(camp)
 
         #-controls--------------------------------------------
-        ca = controls.filter( alumne = alumne, estat__codi_estat__isnull = False ).distinct().count()
+                # calcula el 'total' de dies per alumne
+        if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+            # té en compte tots els dies encara que no s'hagi passat llista
+            ca = controls.filter( alumne = alumne).distinct().count()
+        else:
+            ca = controls.filter( alumne = alumne, estat__codi_estat__isnull = False ).distinct().count()
         camp = tools.classebuida()
         camp.contingut = unicode(ca) 
         filera.append(camp)
@@ -103,7 +109,11 @@ def faltesAssistenciaEntreDatesGrupRpt(
         filera.append(camp)
         
         #-present--------------------------------------------
-        p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count()
+        if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+            # té en compte tots els dies encara que no s'hagi passat llista
+            p = controls.filter( alumne = alumne).filter(Q(estat__codi_estat = 'P') | Q(estat__codi_estat__isnull=True) ).distinct().count()
+        else:
+            p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count()
         camp = tools.classebuida()
         camp.contingut = unicode(p) 
         filera.append(camp)

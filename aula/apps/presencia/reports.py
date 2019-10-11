@@ -182,16 +182,21 @@ def indicadorAbsentisme( data_inici, data_fi, nivell, tpc):
     q_alumnes = Alumne.objects.filter( grup__curs__nivell__nom_nivell__in = settings.CUSTOM_NIVELLS[nivell]).filter(data_baixa__isnull=True )    
     # Selecciona en les dates indicades
     q_data_inici = Q( impartir__dia_impartir__gte = data_inici  )
-    q_data_fi = Q( impartir__dia_impartir__lte = data_fi  )
+    q_data_fi = Q( impartir__dia_impartir__lt = data_fi  )
     q_filtre = q_data_inici & q_data_fi
     q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
+    
+    if nivell=='ESO':
+        recerca=('F')
+    else:
+        recerca=('J','F')
     
     # calcula el 'total' de dies per alumne i les 'faltes' per alumne.
     if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
         # té en compte tots els dies encara que no s'hagi passat llista
-        q_p = q_controls.values('alumne__id').annotate(total=Count('id'), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
+        q_p = q_controls.values('alumne__id').annotate(total=Count('id'), faltes=Count(Case(When(estat__codi_estat__in = recerca, then=1),output_field=IntegerField())))
     else:
-        q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = ('J','F' ), then=1),output_field=IntegerField())))
+        q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = recerca, then=1),output_field=IntegerField())))
 
     quantitat=q_p.count()
     # Calcula el percentatge d'absentisme per alumne i compta els que superen el límit indicat

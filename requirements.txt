@@ -21,4 +21,4 @@ XlsxWriter
 typing
 selenium
 pisa
-
+xmltodict

@@ -36,6 +36,7 @@ class AbstractAccio(models.Model):
         ('SK','Sincronitza Kronowin'),
         ('JF','Justificar Faltes'),        
         ('NF','Notificacio Families'),        
+        ('SU','Sincronitza Untis'),
     )
     tipus = models.CharField(max_length=2, choices=TIPUS_ACCIO_CHOICES)
     usuari = models.ForeignKey( User, db_index = True, related_name = 'usuari', on_delete=models.CASCADE )

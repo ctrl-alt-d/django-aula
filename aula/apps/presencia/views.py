@@ -15,6 +15,7 @@ from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsForm
 
 #models
 from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.horaris.gestioGrups import grupsPotencials
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne     , Grup
 from aula.apps.usuaris.models import User2Professor, Accio
@@ -657,7 +658,7 @@ def afegeixAlumnesLlista(request, pk):
     #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
 
     #un formulari per cada grup
-    grups_a_mostrar = impartir.horari.grupsPotencials()
+    grups_a_mostrar = grupsPotencials(impartir.horari)
 
     formset = []
     if request.method == "POST":
@@ -1020,7 +1021,7 @@ def alertaAssistencia(request):
 
 #amorilla@xtec.cat 
 @login_required
-@group_required(['direcció'])
+@group_required(['direcció','administradors'])
 def indicadors(request):
     (report, dades) = indicadorsReport()
     if dades is None:
@@ -1038,7 +1039,7 @@ def indicadors(request):
 
 #amorilla@xtec.cat 
 @login_required
-@group_required(['direcció'])
+@group_required(['direcció','administradors'])
 def indcsv(request):
 
     (_, dades) = indicadorsReport()

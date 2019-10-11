@@ -59,13 +59,16 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
                     report.data_inici = dataInici.strftime( '%d/%m/%Y' )
                     report.data_fi =  dataFi.strftime( '%d/%m/%Y' )  
                     
-                    report.data = dataFi.strftime( '%d de %B de %Y' )
+                    report.data = dataFi.strftime( '%d %B de %Y' )
                     
                     report.alumne = alumne
                     
                     q_desde = Q( impartir__dia_impartir__gte = dataInici )
                     q_finsa = Q( impartir__dia_impartir__lte = dataFi )
-                    q_presencia = Q( estat__codi_estat = 'P' )
+                    if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+                        q_presencia = Q( estat__codi_estat = 'P' ) | Q( estat__codi_estat__isnull=True )
+                    else:
+                        q_presencia = Q( estat__codi_estat = 'P' )
                     q_null = Q( estat__isnull = True )
                     
                     n_faltes = 0

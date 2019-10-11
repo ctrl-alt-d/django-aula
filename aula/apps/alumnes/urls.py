@@ -46,5 +46,10 @@ urlpatterns = [
     url(r'^blanc/$', alumnes_views.blanc,
         name="aula__alumnes__blanc"),                       
 
+    #amorilla@xtec.cat             
+    url(r'^Llista completa/$', alumnes_views.llistaAlumnescsv,
+        name="coordinacio_alumnes__llistaAlumnescsv__llistat" ),  
+
+
 ]
 

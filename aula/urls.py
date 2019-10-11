@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^open/', include('aula.apps.relacioFamilies.urls')),
     url(r'^aules/', include('aula.apps.aules.urls')),
     url(r'^presenciaSetmanal/', include('aula.apps.presenciaSetmanal.urls')),
+    url(r'^extUntis/', include('aula.apps.extUntis.urls')),
     # Uncomment the next line to enable the admin:
     path('admin/', admin.site.urls),
     # Login i logout automàtics

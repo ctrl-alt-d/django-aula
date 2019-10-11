@@ -32,7 +32,7 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
                     report.alumne = alumne
                     capceleres_materies = set()
                     report.respostes = []
-                    report.data = qualitativa.data_tancar_avaluacio.strftime( '%d de %B de %Y' )
+                    report.data = qualitativa.data_tancar_avaluacio.strftime( '%d %B de %Y' )
                     
                     report.tutors = u', '.join( [u'Sr(a) ' + unicode(t) for t in alumne.tutorsDeLAlumne() ] )
                     
@@ -254,7 +254,7 @@ def reportQualitativa2( qualitativa , alumnes = [], grups = [], request = None):
 
                     filera = []
                     camp = tools.classebuida()
-                    camp.contingut = u'Figueres, a {0}'.format( qualitativa.data_tancar_avaluacio.strftime( '%d de %B de %Y' ) )  
+                    camp.contingut = settings.LOCALITAT+ u', a {0}'.format( qualitativa.data_tancar_avaluacio.strftime( '%d %B de %Y' ) )  
                     filera.append(camp)      
                     taula.fileres.append(filera)
 

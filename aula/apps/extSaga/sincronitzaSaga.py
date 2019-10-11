@@ -123,6 +123,8 @@ def sincronitza(f, user = None):
                 a.rp2_nom = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_ADREÇA" ):
                 a.adreca = unicode(value,'iso-8859-1')
+            if columnName.endswith( u"_CP"):
+                a.cp = unicode(value,'iso-8859-1')
 
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):

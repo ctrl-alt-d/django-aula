@@ -10,7 +10,9 @@ class AbstractTipusDAssignatura(models.Model):
         ('N', 'Nivell'),
         ('I', 'Institut'),
         ('X', 'No Admet alumnes (Ex: G)'),
-    )
+        ('A', 'Agrupament'),
+        ('AN', 'Agrupament amb nivells'),
+     )
     tipus_assignatura = models.CharField(max_length=45, unique=True)
     ambit_on_prendre_alumnes = models.CharField(max_length=45,choices=AMBIT_CHOICES, default='G', blank=False, null=False)
     capcelera = models.CharField(max_length=45, default=u"Matèria") #per a la qualitativa

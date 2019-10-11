@@ -13,9 +13,6 @@ from django.conf import settings
 
 #http://xhtml2pdf.appspot.com/static/pisa-en.html
 def reportBaixaCarpeta( request, dia, professors ):
-
-    import locale
-    locale.setlocale(locale.LC_TIME, 'ca_ES.utf8')
     
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -27,7 +24,7 @@ def reportBaixaCarpeta( request, dia, professors ):
     for professor in professors:
         report = tools.classebuida()
         report.professor = professor     
-        report.data = date( dia, "l, d M Y"  )
+        report.data = date( dia, "l, d M \d\e Y"  )
         
         imparticions = ( Impartir
                         .objects.filter( dia_impartir = dia, 
