@@ -2,7 +2,6 @@
 from django.conf import settings
 #templates
 from django.forms.utils import ErrorDict
-from django.template import RequestContext
 
 #formularis
 from aula.apps.aules.models import ReservaAula
@@ -15,7 +14,6 @@ from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsForm
 
 #models
 from aula.apps.horaris.models import FranjaHoraria
-from aula.apps.horaris.gestioGrups import grupsPotencials
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne     , Grup
 from aula.apps.usuaris.models import User2Professor, Accio
@@ -52,6 +50,7 @@ from django.forms.widgets import RadioSelect, HiddenInput, TextInput
 from aula.apps.BI.utils import dades_dissociades
 from aula.apps.BI.prediccio_assistencia import predictTreeModel
 from aula.apps.presencia.business_rules.impartir import impartir_despres_de_passar_llista
+from aula.apps.alumnes.gestioGrups import grupsPotencials
 
 #template filters
 from django.template.defaultfilters import date as _date

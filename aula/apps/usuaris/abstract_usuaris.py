@@ -36,6 +36,7 @@ class AbstractAccio(models.Model):
         ('SK','Sincronitza Kronowin'),
         ('JF','Justificar Faltes'),        
         ('NF','Notificacio Families'),        
+        ('AS','Accés a dades sensibles'),
         ('SU','Sincronitza Untis'),
     )
     tipus = models.CharField(max_length=2, choices=TIPUS_ACCIO_CHOICES)

@@ -2,17 +2,17 @@
 
 ## Introducción
 
-Se puede decir que este es el paso mas critico de la puesta en marcha de Django-Aula, es en este paso donde deberemos cargar todos los alumnos, profesores, aulas, asignaturas, grupos, horarios...
+Se puede decir que este es el paso mas crítico de la puesta en marcha de Django-Aula, es en este paso donde deberemos cargar todos los alumnos, profesores, aulas, asignaturas, grupos, horarios...
 
 La aplicación tiene una serie de módulos para importar todos estos datos  desde diferentes fuentes, esto permite una carga masiva de datos, una carga manual de datos es teóricamente posible pero el proceso se vuelve titánico y nada recomendable.
 
 Si no sabes mucho del tema te preguntaras una cosa, "¿De donde obtengo todos esos datos en un CSV, XML, XLSX, ... ?"
 
-Para la importación masiva de **alumnos** django-aula reconoce el formato de salida que ofrece el software **SAGA**.
+Para la importación masiva de **alumnos** django-aula reconoce el formato de salida que ofrece el software **SAGA** y **Esfera**.
 
-SAGA es un software ofrecido por la **La Generalitat de Cataluña** que permite gestionar y centralizar a nivel Autonomico la historia académica de un Alumno y cualquier centro educativo tiene acceso a este portal y a sus alumnos.
+SAGA y Esfera son software ofrecido por la **La Generalitat de Cataluña** que permite gestionar y centralizar a nivel Autonómico la historia académica de un Alumno y cualquier centro educativo tiene acceso a este portal y a sus alumnos.
 
-Una de las exportaciones de SAGA permite obtener una serie de alumnos junto a toda su información su aspecto es el siguiente:
+Una de las exportaciones de SAGA permite obtener una serie de alumnos junto a toda su información, su aspecto es el siguiente:
 
 ```text
 "#","00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT","03_RESPONSABLE 1","04_TELÈFON RESP. 1","05_MÒBIL RESP. 1","06_ADREÇA ELECTR. RESP. 1","07_RESPONSABLE 2","08_TELÈFON RESP. 2","09_MÒBIL RESP. 2","10_ADREÇA ELECTR. RESP. 2","11_ADREÇA","12_LOCALITAT","13_CORREU ELECTRÒNIC","14_ALTRES TELÈFONS","15_CENTRE PROCEDÈNCIA","16_GRUPSCLASSE""1","92483170093","Torrent Ortiz, Marta","27/11/1998","Salvador Segura, Xavi","+34 XXXXXXX","+34 XXXXXXX","c/ del General Martina Dominguez Llorens","+34 XXXXXYYY","+34 XXXXZZZZ","+34 XXXXLLL","xavi@mailintaor.com","c/ de l'aviador Martina Dominguez Llorens","L'Armentera","marta@mailintaor.com","","La Salle","ESO1A""1","13450532361","Camacho Blanco, Pau","12/12/1990","Aranda Montoya, Carlota","+34 XXXXXXX","+34 XXXXXXX","c/ del General Aitana Guzman Colomer","+34 XXXXXYYY","+34 XXXXZZZZ","+34 XXXXLLL","carlota@mailintaor.com","c/ de l'aviador Aitana Guzman Colomer","L'Armentera","pau@mailintaor.com","","La Salle","ESO1A""1","74944249961","Bautista Mesa, Ana","27/07/1997","Paredes Quesada, Lluc","+34 XXXXXXX","+34 XXXXXXX","c/ del General Mariona Rius Bermudez","+34 XXXXXYYY","+34 XXXXZZZZ","+34 XXXXLLL","lluc@mailintaor.com","c/ de l'aviador Mariona Rius Bermudez","L'Armentera","ana@mailintaor.com","","La Salle","ESO1A"
@@ -79,8 +79,10 @@ Según esta entrada, si suponemos que la primera franja horaria es de 9 a 10, El
 
 ## Para Untis
 
-Se debe elegir el formato de exportación XML. Desde Import/export escoger la opción Untis y luego el formato xml.
-En la siguiente ventana escoger codificación UTF-8 y la carpeta y nombre destino. A continuación click sobre exportar.
+Se debe elegir el formato de exportación XML. Desde Archivo - Archivos:Import/Export escoger la opción Untis y luego Importación/Exportación de tipo XML.
+En la siguiente ventana escoger codificación UTF-8 y la carpeta y nombre destino. A continuación click sobre Exportar.
+
+![Ventana exportación Untis](../../.gitbook/assets/export.png)
 
 Este fichero contiene toda la información del horario de Untis: profesorado, grupos, materias, aulas, franjas, días festivos.
 Al realizar la carga con estos datos, django-aula puede dar de alta todo el profesorado con su código y nombre, aulas con su código y descripción, materias con código y descripción, grupos con su nivel-curso-grupo-descripción, franjas y días festivos si se han definido.
@@ -145,12 +147,12 @@ Por ejemplo:
 
   SMX1C1 y SMX1C2 pueden ser los horarios de dos grupos que en la matrícula corresponden a un único grupo SMX1C.
   
-  BATHUM1A, BATTEC1A y BATCIE1A pueden corresponder realmente a BAT1A y BAT1B.
+  BATHUM1A, BATTEC1A y BATCIE1A son horarios de grupos que corresponden realmente a BAT1A y BAT1B.
   
 Para poder reflejar estos grupos de horario en Django-aula se deben tener en cuenta estas instrucciones:
 Todos los grupos deberán existir aunque no tengan horario, por lo tanto se crearan los grupos reales en Untis pero sin horario, de esta manera el proceso de importación creará los grupos.
 Una vez finalizada la importación se crearán los agrupamientos que le permiten a Django-aula conocer como seleccionar los alumnos de cada grupo.
-En el ejemplo anterior se crearan en Untis los grupos sin horario SMX1C1, SMX1C2, BATHUM1A, BATTEC1A y BATCIE1A.
+En el ejemplo anterior se crearan en Untis los grupos sin horario SMX1C, BAT1A, BAT1B.
 
 Después de la importación se crearán los agrupamientos desde la consola de administración:
 
@@ -170,6 +172,28 @@ BAT1A con BATCIE1A
 
 BAT1B con BATCIE1A
   
+### Importar sobre un horario Kronowin ya existente
+
+Si se realiza una importación con la opción Untis sobre un horario previamente creado con la opción Kronowin, se deben tener en cuenta los siguientes detalles para la primera importación:
+
+Es aconsejable realizar una copia de seguridad de la base de datos.
+
+El horario utilizado correspondiente al fichero xml debe ser el mismo que se utilizó para la importación con la opción Kronowin **sin cambios**.
+Los códigos de profesorado, aulas y materias de Untis deben coincidir con los utilizados en la importación previa de Kronowin. 
+Los nombres de los grupos deben seguir la nomenclatura indicada anteriormente y deben coincidir con los nombres utilizados por Django-aula en la importación ya existente de alumnos. Si los nombres no corresponden a la nomenclatura, se deberían realizar los cambios necesarios desde la consola de administrador y también modificar los nombres en el horario Untis.
+
+Las franjas horarias deben ser correctas y coincidir con Untis, por ejemplo: si tenemos dos franjas con horas 10:00 a 11:00 y otra de 10:00 a 10:30 en Untis, se debe verificar que coincide con las horas guardadas por Django-aula.
+En versiones anteriores no era posible tener dos franjas con la misma hora inicial y en ocasiones se guardaba una con 10:00 a 11:00 y otra con 10:01 a 10:30.
+
+Se debe crear un parámetro en **ParametreKronowin** de nombre 'KronowinToUntis' y valor 'True'.
+Una vez hecha la importación el parámetro se modifica a 'False' automáticamente.
+En posteriores importaciones no debe utilizarse este parámetro.
+
+Se deberá realizar igualmente la reprogramación de horarios. Si los horarios coinciden mostrará que se han insertado 0 horarios.
+Si indica una cantidad diferente de cero quiere decir que ha habido algún cambio en los códigos de algunos elementos. Se debe valorar si se da el horario por correcto o se restaura la copia de seguridad y se revisan los datos.
+
+A partir de este proceso inicial ya se podrá trabajar con la importación Untis directamente.
+
 ------------------------------------------------------- 
   
   

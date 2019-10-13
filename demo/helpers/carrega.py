@@ -17,7 +17,7 @@ from aula.apps.tutoria.models import Tutor
 import random
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
-from aula.apps.horaris.gestioGrups import grupsPotencials
+from aula.apps.alumnes.gestioGrups import grupsPotencials
 from aula.apps.presencia.regeneraImpartir import regeneraThread
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 

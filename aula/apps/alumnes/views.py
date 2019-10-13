@@ -46,7 +46,7 @@ from aula.apps.alumnes.rpt_duplicats import duplicats_rpt
 from aula.apps.alumnes.tools import fusiona_alumnes_by_pk
 from aula.apps.alumnes.forms import promoForm, newAlumne
 from django.conf import settings
-from aula.apps.extUntis.sincronitzaUntis import grupsAmbMatricula
+from aula.apps.alumnes.gestioGrups import grupsAmbMatricula
 
 #duplicats
 @login_required
@@ -705,9 +705,13 @@ def llistaAlumnescsv( request ):
                e.user_associat.username, 
                e.correu,
                e.rp1_correu, 
-               e.rp2_correu ] for e in llistaAlumnes]
+               e.rp2_correu,
+               e.correu_relacio_familia_mare,
+               e.correu_relacio_familia_pare,
+               e.correu_tutors ] for e in llistaAlumnes]
     
-    capcelera = [ 'ralc','alumne', 'grup', 'username', 'correu', 'rp1_correu', 'rp2_correu' ]
+    capcelera = [ 'ralc', 'alumne', 'grup', 'username', 'correu', 'rp1_correu', 'rp2_correu', 
+                 'correu_relacio_mare', 'correu_relacio_pare', 'correu_tutors' ]
 
     template = loader.get_template("export.csv")
     context = {

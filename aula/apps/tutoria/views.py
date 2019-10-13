@@ -27,7 +27,6 @@ from aula.apps.tutoria.forms import  justificaFaltesW1Form, informeSetmanalForm,
 
 #helpers
 from aula.utils import tools
-from aula.utils.tools import unicode
 from aula.apps.presencia.models import  ControlAssistencia, EstatControlAssistencia,\
     Impartir
 from django.utils.datetime_safe import  date, datetime
@@ -69,7 +68,7 @@ from aula.apps.tutoria.table2_models import Table2_Actuacions
 
 from django.contrib import messages
 from django.conf import settings
-from aula.apps.extUntis.sincronitzaUntis import grupsAmbAlumnes
+from aula.apps.alumnes.gestioGrups import grupsAmbAlumnes
 
 
 @login_required

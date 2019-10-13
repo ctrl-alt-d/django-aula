@@ -7,7 +7,7 @@ class Agrupament(models.Model):
     grup_horari = models.ForeignKey(Grup, related_name="grup_horari", on_delete=models.CASCADE)
     class Meta:
         ordering = ['grup_alumnes','grup_horari']
-        verbose_name = u'Parella agrupament N-M entre grups alumnes i grups horari'
-        verbose_name_plural = u'Agrupaments N-M entre grups alumnes i grups horari'
+        verbose_name = u'Agrupament grups alumnes i grups horari'
+        verbose_name_plural = u'Agrupaments grups alumnes i grups horari'
     def __str__(self):
         return str(self.grup_alumnes) + ' -> ' + str(self.grup_horari)

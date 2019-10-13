@@ -1,63 +1,21 @@
-from django.db.models import Q
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from aula.apps.missatgeria.missatges_a_usuaris import RECORDA_REPROGRAMAR_CLASSES, tipusMissatge
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import Horari, DiaDeLaSetmana, FranjaHoraria, Festiu
+'''
+Faig servir els mateixos paràmetres del Kronowin
+TODO Crec que es podrien unificar tots els paràmetres d'importació de dades (saga,esfera,horaris,...)
+'''
 from aula.apps.extKronowin.models import ParametreKronowin
 from aula.apps.assignatures.models import Assignatura, TipusDAssignatura
 from aula.apps.aules.models import Aula
 import traceback
 
 from aula.apps.extUntis.models import Agrupament
-from aula.apps.alumnes.models import Nivell, Grup, Curs, Alumne
+from aula.apps.alumnes.models import Nivell, Grup, Curs
 import xmltodict
 import datetime
-
-def grupsAmbAlumnes(q_llista):
-    '''retorna grups amb alumnes d'un queryset.
-    
-    q_llista queryset de grups que volem verificar
-    Retorna un altre queryset amb només els grups que tenen alumnes
-    
-    '''
-    
-    grups=set()
-    for g in q_llista:
-        if Alumne.objects.filter(grup = g).count()>0:
-            grups.add(g.id)
-    return Grup.objects.filter(id__in = grups).distinct()
-
-def grupsAmbMatricula(q_llista):
-    '''retorna grups de saga o esfera d'un queryset.
-    
-    q_llista queryset de grups que volem verificar
-    Retorna un altre queryset amb només els grups que tenen alumnes matriculats de saga o esfera
-    
-    '''
-    
-    return q_llista.filter(Q(grup2aulasaga_set__isnull = False) | Q(grup2aulaesfera_set__isnull = False)).distinct()
-
-def grupsAgrupament(grup):
-    '''Determina tots els agrupaments d'un grup
-    
-    grup del que volem els seus agrupaments
-    Retorna una llista que conté tots els id de grup que aporten alumnes al grup indicat
-    
-    '''
-    llista=set()
-    q_Agrup=Agrupament.objects.filter(grup_horari=grup).values('grup_alumnes')
-    if q_Agrup.count()==0:
-        llista.add(grup.id)
-        return llista
-    if q_Agrup.count()==1 and q_Agrup.first()['grup_alumnes']==grup.id:
-        llista.add(grup.id)
-        return llista
-    for g in q_Agrup:
-        ng=Grup.objects.get(pk = g['grup_alumnes'])
-        if (ng==grup): continue
-        llista.update(grupsAgrupament(ng))
-    return llista
 
 def esGrupAlumnes(nomgrup, senseGrups):
     """Detecta si és grup d'alumnes o no.  
@@ -507,6 +465,11 @@ def sincronitza(xml, usuari):
     # Si detecto errors plego aquí:
     if errors: return {'errors': errors, 'warnings': warnings, 'infos': infos}
 
+    KronowinToUntis, _ = ParametreKronowin.objects.get_or_create(
+        nom_parametre='KronowinToUntis')
+    assignatures_amb_professor, _ = ParametreKronowin.objects.get_or_create(
+        nom_parametre='assignatures amb professor')
+
     #
     # lliçons
     #
@@ -541,7 +504,8 @@ def sincronitza(xml, usuari):
                 aula=cl.get('assigned_room','')
                 if aula!='':
                     aula=aula['@id'][3:]
-                canvia, warn, compAssig = creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula)
+                canvia, warn, compAssig = creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, 
+                                                     KronowinToUntis, assignatures_amb_professor)
                 for w in warn:
                     warnings.append(w)
                 nLiniesLlegides+=1
@@ -556,7 +520,8 @@ def sincronitza(xml, usuari):
                     aula=h.get('assigned_room','')
                     if aula!='':
                         aula=aula['@id'][3:]
-                    canvia, warn, compAssig = creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula)
+                    canvia, warn, compAssig = creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, 
+                                                     KronowinToUntis, assignatures_amb_professor)
                     for w in warn:
                         warnings.append(w)
                     nLiniesLlegides+=1
@@ -614,10 +579,15 @@ def sincronitza(xml, usuari):
     msg.afegeix_infos(infos)
     msg.envia_a_usuari(usuari)
 
+    KronowinToUntis, _ = ParametreKronowin.objects.get_or_create(
+         nom_parametre='KronowinToUntis')
+    KronowinToUntis.valor_parametre='False'
+    KronowinToUntis.save()
+
     return {'errors': errors.sort(), 'warnings': warnings, 'infos': infos}
 
 
-def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula):
+def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, assignatures_amb_professor):
     
     warnings = []
     compAssig=0
@@ -651,13 +621,22 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula):
         # professor
         horari.professor = Professor.objects.get(username=prof)
 
+        # ---comprovo si cal afegir el codi professor al codi assignatura:
+        cal_afegir_profe = False
+        assignatures_amb_professor_value_list = assignatures_amb_professor.valor_parametre.split(',')
+        for prefixe_assignatura in [x.strip() for x in assignatures_amb_professor_value_list if bool( x.strip() )]:
+            cal_afegir_profe = cal_afegir_profe or mat.startswith(prefixe_assignatura.replace(' ', ''))
+            # ---busco l'assignatura:
+        mat = (mat + '-' + prof) if cal_afegir_profe else mat
+
         # matèria
         novamat=False
         if horari.grup is not None:
             try:
-                materia = Assignatura.objects.get(curs=horari.grup.curs, codi_assignatura=mat,
-                                                  tipus_assignatura__ambit_on_prendre_alumnes=tipus)
+                materia = Assignatura.objects.get(curs=horari.grup.curs, codi_assignatura=mat)#,
+                                                # tipus_assignatura__ambit_on_prendre_alumnes=tipus)
                 materia.nom_assignatura=mat
+                materia.tipus_assignatura=TipusDAssignatura.objects.get(ambit_on_prendre_alumnes=tipus)
                 materia.save()
             except ObjectDoesNotExist:
                 novamat=True
@@ -669,9 +648,10 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula):
                 materia.save()
         else:
             try:
-                materia = Assignatura.objects.get(curs__isnull=True, codi_assignatura=mat,
-                                                  tipus_assignatura__ambit_on_prendre_alumnes=tipus)
+                materia = Assignatura.objects.get(curs__isnull=True, codi_assignatura=mat)#,
+                                                #tipus_assignatura__ambit_on_prendre_alumnes=tipus)
                 materia.nom_assignatura=mat
+                materia.tipus_assignatura=TipusDAssignatura.objects.get(ambit_on_prendre_alumnes=tipus)
                 materia.save()
             except ObjectDoesNotExist:
                 novamat=True
@@ -738,43 +718,92 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula):
         if nommat==nomgrup:
             horari.grup = None
 
-        creaHorari=False
-        try:
-            nouHorari = Horari.objects.get(
-                hora=horari.hora,
-                grup=horari.grup,
-                professor=horari.professor,
-                assignatura=horari.assignatura,
-                dia_de_la_setmana=horari.dia_de_la_setmana,
-                es_actiu=False)
-        except ObjectDoesNotExist:
-            nouHorari = Horari()
-            nouHorari.hora=horari.hora
-            nouHorari.grup=horari.grup
-            nouHorari.professor=horari.professor
+        if KronowinToUntis.valor_parametre=='True':
+            creaHorari=False
+            try:
+                nouHorari = Horari.objects.get(
+                    hora=horari.hora,
+                    professor=horari.professor,
+                    assignatura__codi_assignatura=horari.assignatura.codi_assignatura,
+                    dia_de_la_setmana=horari.dia_de_la_setmana,
+                    es_actiu=False)
+            except ObjectDoesNotExist:
+                nouHorari = Horari()
+                nouHorari.hora=horari.hora
+                nouHorari.grup=horari.grup
+                nouHorari.professor=horari.professor
+                nouHorari.assignatura=horari.assignatura
+                nouHorari.dia_de_la_setmana=horari.dia_de_la_setmana
+                creaHorari=True
+            except MultipleObjectsReturned:
+                nouHorari = Horari.objects.filter(
+                    hora=horari.hora,
+                    professor=horari.professor,
+                    assignatura__codi_assignatura=horari.assignatura.codi_assignatura,
+                    dia_de_la_setmana=horari.dia_de_la_setmana,
+                    es_actiu=False,
+                    impartir_set__isnull = False)
+                if nouHorari.count()>0:
+                    nouHorari= nouHorari.order_by('id').first()
+                else:
+                    nouHorari = Horari.objects.filter(
+                        hora=horari.hora,
+                        professor=horari.professor,
+                        assignatura__codi_assignatura=horari.assignatura.codi_assignatura,
+                        dia_de_la_setmana=horari.dia_de_la_setmana,
+                        es_actiu=False).order_by('id').first()
+                   
+            aulaAntiga=nouHorari.aula
+            if not creaHorari and aulaAntiga==horari.aula:
+                # sense canvis
+                resultat=False
+            else:
+                # nou horari o canvi d'aula
+                resultat=True
+                
             nouHorari.assignatura=horari.assignatura
-            nouHorari.dia_de_la_setmana=horari.dia_de_la_setmana
-            creaHorari=True
-        except MultipleObjectsReturned:
-            nouHorari = Horari.objects.filter(
-                hora=horari.hora,
-                grup=horari.grup,
-                professor=horari.professor,
-                assignatura=horari.assignatura,
-                dia_de_la_setmana=horari.dia_de_la_setmana,
-                es_actiu=False).order_by('id').first()
-               
-        aulaAntiga=nouHorari.aula
-        if not creaHorari and aulaAntiga==horari.aula:
-            # sense canvis
-            resultat=False
+            nouHorari.grup=horari.grup
+            nouHorari.aula = horari.aula
+            nouHorari.es_actiu=True
+            nouHorari.save()
         else:
-            # nou horari o canvi d'aula
-            resultat=True
-            
-        nouHorari.aula = horari.aula
-        nouHorari.es_actiu=True
-        nouHorari.save()
+            creaHorari=False
+            try:
+                nouHorari = Horari.objects.get(
+                    hora=horari.hora,
+                    grup=horari.grup,
+                    professor=horari.professor,
+                    assignatura=horari.assignatura,
+                    dia_de_la_setmana=horari.dia_de_la_setmana,
+                    es_actiu=False)
+            except ObjectDoesNotExist:
+                nouHorari = Horari()
+                nouHorari.hora=horari.hora
+                nouHorari.grup=horari.grup
+                nouHorari.professor=horari.professor
+                nouHorari.assignatura=horari.assignatura
+                nouHorari.dia_de_la_setmana=horari.dia_de_la_setmana
+                creaHorari=True
+            except MultipleObjectsReturned:
+                nouHorari = Horari.objects.filter(
+                    hora=horari.hora,
+                    grup=horari.grup,
+                    professor=horari.professor,
+                    assignatura=horari.assignatura,
+                    dia_de_la_setmana=horari.dia_de_la_setmana,
+                    es_actiu=False).order_by('id').first()
+                   
+            aulaAntiga=nouHorari.aula
+            if not creaHorari and aulaAntiga==horari.aula:
+                # sense canvis
+                resultat=False
+            else:
+                # nou horari o canvi d'aula
+                resultat=True
+                
+            nouHorari.aula = horari.aula
+            nouHorari.es_actiu=True
+            nouHorari.save()
         
         return resultat,warnings,compAssig
         

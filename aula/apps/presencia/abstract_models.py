@@ -8,7 +8,7 @@ from django.db.models import Q
 from aula.utils.tools import unicode
 
 class AbstractImpartir(models.Model):
-    horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
+    horari = models.ForeignKey('horaris.Horari', db_index=True, related_name="impartir_set", on_delete=models.CASCADE)
     professor_guardia = models.ForeignKey('usuaris.Professor', null=True,  blank=True, related_name='professor_guardia', on_delete=models.CASCADE)
     professor_passa_llista = models.ForeignKey('usuaris.Professor', null=True,  blank=True, db_index=True, related_name='professor_passa_llista', on_delete=models.CASCADE)
     dia_impartir = models.DateField(db_index=True)
