@@ -34,6 +34,7 @@ def grupsAgrupament(grup):
     Retorna una llista que conté tots els id de grup que aporten alumnes al grup indicat
     
     '''
+    #Grup.objects.none()
     llista=set()
     q_Agrup=Agrupament.objects.filter(grup_horari=grup).values('grup_alumnes')
     if q_Agrup.count()==0:
