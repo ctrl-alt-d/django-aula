@@ -68,8 +68,6 @@ from aula.apps.tutoria.table2_models import Table2_Actuacions
 
 from django.contrib import messages
 from django.conf import settings
-from aula.apps.alumnes.gestioGrups import grupsAmbAlumnes
-
 
 @login_required
 @group_required(['professors'] )
@@ -1209,7 +1207,7 @@ def elsMeusAlumnesTutoratsEntreDates(request):
     professor = User2Professor( user )     
     
     if user.groups.filter(name='direcció'):
-        possibles_grups = [ ( t.pk, unicode( t) ) for t in   grupsAmbAlumnes(Grup.objects.all()).order_by('descripcio_grup') ]
+        possibles_grups = [ ( t.pk, unicode( t) ) for t in Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup") ]
     else:
         possibles_grups = [ ( t.grup.pk, unicode( t.grup) ) for t in  Tutor.objects.filter( professor = professor )]
         

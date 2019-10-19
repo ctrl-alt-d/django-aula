@@ -1,55 +1,44 @@
 from django.apps import apps
-from django.db.models import Q
-from aula.apps.alumnes.models import Grup, Alumne
+from django.db.models import F
+from aula.apps.alumnes.models import Grup
 from aula.apps.extUntis.models import Agrupament
 
-def grupsAmbAlumnes(q_llista):
-    '''retorna grups amb alumnes d'un queryset.
+def grupsPromocionar():
+    '''Determina els grups que són susceptibles de promoció
     
-    q_llista queryset de grups que volem verificar
-    Retorna un altre queryset amb només els grups que tenen alumnes
-    
+    Els grups de desdoblaments no han d'apareixer a la llista de grups a Promocionar
+    Retorna queryset dels grups
     '''
     
-    grups=set()
-    for g in q_llista:
-        if Alumne.objects.filter(grup = g).count()>0:
-            grups.add(g.id)
-    return Grup.objects.filter(id__in = grups).distinct()
-
-def grupsAmbMatricula(q_llista):
-    '''retorna grups de saga o esfera d'un queryset.
-    
-    q_llista queryset de grups que volem verificar
-    Retorna un altre queryset amb només els grups que tenen alumnes matriculats de saga o esfera
-    
-    '''
-    
-    return q_llista.filter(Q(grup2aulasaga_set__isnull = False) | Q(grup2aulaesfera_set__isnull = False)).distinct()
+    idsgrupsDesdoblaments=Agrupament.objects.annotate(grupValue=F('grup_horari__id')).values('grupValue').difference( \
+                        Agrupament.objects.annotate(grupValue=F('grup_alumnes__id')).values('grupValue'))
+    return Grup.objects.exclude(id__in = idsgrupsDesdoblaments).order_by('descripcio_grup')
 
 def grupsAgrupament(grup):
     '''Determina tots els agrupaments d'un grup
     
     grup del que volem els seus agrupaments
-    Retorna una llista que conté tots els id de grup que aporten alumnes al grup indicat
-    
+    Retorna un queryset que conté tots els grups que aporten alumnes al grup indicat
+
     '''
-    #Grup.objects.none()
-    llista=set()
+    
     q_Agrup=Agrupament.objects.filter(grup_horari=grup).values('grup_alumnes')
-    if q_Agrup.count()==0:
-        llista.add(grup.id)
-        return llista
+    if not(q_Agrup.exists()):
+        # No hi ha agrupament
+        return Grup.objects.filter(pk = grup.pk)
     if q_Agrup.count()==1 and q_Agrup.first()['grup_alumnes']==grup.id:
-        llista.add(grup.id)
-        return llista
+        # Agrupament és el mateix grup
+        return Grup.objects.filter(pk = grup.pk)
+    # Agrupament de dos o més elements
+    query=Grup.objects.none()
     for g in q_Agrup:
         ng=Grup.objects.get(pk = g['grup_alumnes'])
+        # No es tenen en compte els elements que siguin el mateix grup 
         if (ng==grup): continue
-        llista.update(grupsAgrupament(ng))
-    return llista
+        query=query.union(grupsAgrupament(ng))
+    return query
 
-#
+#  amorilla@xtec.cat
 #  He canviat la ubicació d'aquesta funció.
 #  Amb els canvis realitzats donava error en el migrate (referència circular)
 def grupsPotencials(horari):
@@ -57,21 +46,20 @@ def grupsPotencials(horari):
     codi_ambit = horari.assignatura.tipus_assignatura.ambit_on_prendre_alumnes if horari.assignatura.tipus_assignatura is not None else 'G'
     Grup = apps.get_model( 'alumnes','Grup')
     if codi_ambit == 'I':
-        grups_potencials= grupsAmbAlumnes(Grup.objects.all())
+        grups_potencials= Grup.objects.filter(alumne__isnull = False)
     elif codi_ambit == 'N':
-        grups_potencials= grupsAmbAlumnes(Grup.objects.filter( curs__nivell = horari.grup.curs.nivell  ))
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs__nivell = horari.grup.curs.nivell  )
     elif codi_ambit == 'C':
-        grups_potencials= grupsAmbAlumnes(Grup.objects.filter( curs = horari.grup.curs  ))
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs = horari.grup.curs  )
         # Nous àmbits on escollir alumnes
         # 'A'  Agrupament. Llista de grups concreta
         # 'AN' Agrupament amb nivell. La llista i altres grups dels mateixos nivells.
     elif codi_ambit[0] == 'A':
-        q_Agrup=grupsAgrupament(horari.grup)
-        q_grups=Grup.objects.filter(id__in = q_Agrup).distinct()
+        q_grups=grupsAgrupament(horari.grup)
         if codi_ambit=='AN':
-            q_grups1=Grup.objects.filter( curs__nivell__nom_nivell__in = q_grups.values('curs__nivell__nom_nivell')).distinct()
-            q_grups=q_grups.union(q_grups1)
-        grups_potencials= grupsAmbAlumnes(q_grups)
+            q_grupsN=Grup.objects.filter( curs__nivell__nom_nivell__in = q_grups.values('curs__nivell__nom_nivell')).distinct()
+            q_grups=q_grups.union(q_grupsN)
+        grups_potencials= q_grups.filter(alumne__isnull = False)
     elif codi_ambit == 'G':
         if horari.grup:
             grups_potencials=Grup.objects.filter( pk = horari.grup.pk  )

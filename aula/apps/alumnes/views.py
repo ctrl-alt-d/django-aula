@@ -46,7 +46,7 @@ from aula.apps.alumnes.rpt_duplicats import duplicats_rpt
 from aula.apps.alumnes.tools import fusiona_alumnes_by_pk
 from aula.apps.alumnes.forms import promoForm, newAlumne
 from django.conf import settings
-from aula.apps.alumnes.gestioGrups import grupsAmbMatricula
+from aula.apps.alumnes.gestioGrups import grupsPromocionar
 
 #duplicats
 @login_required
@@ -105,7 +105,7 @@ def assignaTutors( request ):
         #un formulari per cada grup
         #totBe = True
         parellesProfessorGrup=set()
-        for grup in grupsAmbMatricula(Grup.objects.all()).order_by("descripcio_grup"):
+        for grup in Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup"):
             form=tutorsForm(
                                     request.POST,
                                     prefix=str( grup.pk )
@@ -131,7 +131,7 @@ def assignaTutors( request ):
 
                 
     else:
-        for grup in grupsAmbMatricula(Grup.objects.all()).order_by("descripcio_grup"):
+        for grup in Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup"):
             tutor1 = tutor2 = tutor3 = None
             if len( grup.tutor_set.all() ) > 0: tutor1 = grup.tutor_set.all()[0].professor
             if len( grup.tutor_set.all() ) > 1: tutor2 = grup.tutor_set.all()[1].professor
@@ -500,7 +500,7 @@ def blanc( request ):
 @login_required
 @group_required(['direcció'])
 def llistaGrupsPromocionar(request):
-    grups = grupsAmbMatricula(Grup.objects.all()).order_by("descripcio_grup")
+    grups = grupsPromocionar()
     return render(request,'mostraGrupsPromocionar.html', {"grups" : grups})
 
 @login_required
@@ -548,7 +548,7 @@ def mostraGrupPromocionar(request, grup=""):
 
         pass
 
-    grups = grupsAmbMatricula(Grup.objects.all()).order_by("descripcio_grup")
+    grups = grupsPromocionar()
     grup_actual = Grup.objects.get(id=grup)
     alumnes = Alumne.objects.filter(grup=grup, data_baixa__isnull = True ).order_by("cognoms")
     if (len(alumnes) == 0):
