@@ -4,6 +4,7 @@ from aula.apps.missatgeria.missatges_a_usuaris import RECORDA_REPROGRAMAR_CLASSE
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import Horari, DiaDeLaSetmana, FranjaHoraria, Festiu
 '''
+amorilla@xtec.cat
 Faig servir els mateixos paràmetres del Kronowin
 TODO Crec que es podrien unificar tots els paràmetres d'importació de dades (saga,esfera,horaris,...)
 '''
@@ -54,12 +55,12 @@ def esGrupAlumnes(nomgrup, senseGrups):
             return True, n, c, '-'       
     return False, None, None, None
 
-def creaAgrupaments(grup, llista, di, df, senseGrups):
+def creaAgrupaments(gruph, llista, di, df, senseGrups):
     """Crea els agrupaments necessaris
     
-    grup correspon al nom del grup virtual dels horaris Ex: ESO1ABC
+    gruph correspon al grup virtual dels horaris Ex: <ESO1ABC>
     llista correspon a la llistra d'Untis dels diversos grups que aporten alumnes
-             Ex: CL_ESO1A CL_ESO1B CL_ESO1C
+             Ex: 'CL_ESO1A CL_ESO1B CL_ESO1C'
     di data inici del curs
     df data fi del curs
     senseGrups  indica que s'admeten grups sense lletra
@@ -68,79 +69,63 @@ def creaAgrupaments(grup, llista, di, df, senseGrups):
     """
     
     warnings=[]
-    # Per cada grup de la llista farà 1 o més agrupaments
+    # Per cada grup de la llista farà un agrupament
     for nomg in llista:
         nomg=nomg[3:]
         galum, n, c, g = esGrupAlumnes(nomg,senseGrups)
 
         if (galum):
             # Si és un grup d'alumnes el crea
-            warn=creaGrup(n,c,g,di,df)
-            for w in warn:
-                warnings.append(w)
+            grupnomg, warn=creaGrup(n,c,g,di,df)
+            warnings.extend(warn)  
         else:
-            warnings.append(u'Agrupament amb grup erroni: \'%s\' --> \'%s\'' % (nomg, grup) )
+            warnings.append(u'No es crea Agrupament, grup erroni: \'%s\' --> \'%s\'' % (nomg, str(gruph)) )
             continue
 
-        # Verifica si es tracta d'un grup que ja té agrupaments
-        q_a=Agrupament.objects.filter(grup_horari__descripcio_grup=nomg)
-        if (q_a):
-            # és un grup virtual d'horari
-            # S'han de fer els mateixos agrupaments d'aquest grup virtual
-            gruph=Grup.objects.get(descripcio_grup=grup)
-            # Crea agrupaments amb els grups que té associats
-            for agrup in q_a:
-                grupal=agrup.grup_alumnes
-                c_agrup=Agrupament.objects.filter(grup_alumnes=grupal, grup_horari=gruph).count()
-                if c_agrup==0:
-                    agrup=Agrupament.objects.create(grup_alumnes=grupal, grup_horari=gruph)
-                    agrup.save()
-                    warnings.append(u'Nou agrupament: \'%s\'' % (agrup))
-                
-        # També afegeix l'agrupament d'ell mateix
-        grupal=Grup.objects.get(descripcio_grup=nomg)
-        gruph=Grup.objects.get(descripcio_grup=grup)
-        c_agrup=Agrupament.objects.filter(grup_alumnes=grupal, grup_horari=gruph).count()
-        if c_agrup==0:
-            agrup=Agrupament.objects.create(grup_alumnes=grupal, grup_horari=gruph)
+        c_agrup=Agrupament.objects.filter(grup_alumnes=grupnomg, grup_horari=gruph)
+        if not c_agrup.exists():
+            agrup=Agrupament.objects.create(grup_alumnes=grupnomg, grup_horari=gruph)
             agrup.save()
             warnings.append(u'Nou agrupament: \'%s\'' % (agrup))
             
     return warnings
 
-def fusionaGrups(grup, di, df, senseGrups):
+def fusionaGrups(llgrup, di, df, senseGrups):
     """Fusiona els noms dels grups en cas de desdoblament.
     
-    grup correspon a la llistra d'Untis dels diversos grups que aporten alumnes
+    llgrup correspon a la llistra d'Untis dels diversos grups que aporten alumnes
     di data inici del curs
     df data fi del curs
     Crea el grup i determina el tipus d'assignatura ('G', 'A', 'AN')
     Crea els agrupaments necessaris
     Exemples d'entrada i sortides:
-    'CL_ESO1A CL_ESO1B CL_ESO1C' -->  'ESO1ABC'  tipus 'A'
-    'CL_SMX1A1 CL_SMX1A2' -->  'SMX1A12'  tipus 'AN'
-    'CL_BAT1A CL_BAT2A' -->  'BAT1A2A'  tipus 'A'
-    'CL_ACO1A' -->  'ACO1A'  tipus 'G'
-    'CL_DAW1A CL_ASX1A' -->  'ASX1ADAW1A'  tipus 'A'
+    'CL_ESO1A CL_ESO1B CL_ESO1C' -->  <ESO1ABC>  tipus 'A'
+    'CL_SMX1A1 CL_SMX1A2' -->  <SMX1A12>  tipus 'AN'
+    'CL_BAT1A CL_BAT2A' -->  <BAT1A2A>  tipus 'A'
+    'CL_ACO1A' -->  <ACO1A>  tipus 'G'
+    'CL_DAW1A CL_ASX1A' -->  <ASX1ADAW1A>  tipus 'A'
              ASX1A --> ASX1ADAW1A 
              DAW1A --> ASX1ADAW1A
     
-    Retorna el nom obtingut, tipus i warnings
+    Retorna el grup, tipus i warnings
     
     """
     
     warnings=[]
     
-    llista=sorted(grup.split())
+    llista=sorted(llgrup.split())
     if len(llista)<=1:
-        #  si el grup surt a Agrupaments --> tipus 'A'
-        ng=grup[3:]
+        ng=llgrup[3:]
         tipus='G'
-        agrup=Agrupament.objects.filter(grup_horari__descripcio_grup=ng)
-        if agrup.count()>0:
+        galum, n, c, g = esGrupAlumnes(ng,senseGrups)
+        if not galum:
+            return None, tipus, warnings
+        gruph, _ = creaGrup(n,c,g,di,df)
+        #  si el grup surt a Agrupaments --> tipus 'A'
+        agrup=Agrupament.objects.filter(grup_horari=gruph)
+        if agrup.exists():
             tipus='A'
         # Es tracta de cicles ?
-        _ , n, c, g = esGrupAlumnes(ng,senseGrups)
         try:
             if Nivell.objects.get(nom_nivell=n).getNivellCustom()=='CICLES':
                 if tipus=='A':
@@ -149,7 +134,7 @@ def fusionaGrups(grup, di, df, senseGrups):
                     tipus='N'
         except ObjectDoesNotExist:
             pass
-        return ng, tipus, warnings
+        return gruph, tipus, warnings
     else:
         # Comprova si corresponen al mateix nivell i curs
         prefixe=llista[0][3:len(llista[0])-1]
@@ -168,12 +153,10 @@ def fusionaGrups(grup, di, df, senseGrups):
             if (c.isdigit()):
                 # 'CL_ESO1A CL_ESO1B CL_ESO1C' -->  'ESO1ABC'
                 g=grups
-                warn=creaGrup(n,c,g,di,df)
-                for w in warn:
-                    warnings.append(w)   
-                warn=creaAgrupaments(prefixe+grups, llista, di, df, senseGrups)
-                for w in warn:
-                    warnings.append(w)   
+                grupc, warn=creaGrup(n,c,g,di,df)
+                warnings.extend(warn)  
+                warn=creaAgrupaments(grupc, llista, di, df, senseGrups)
+                warnings.extend(warn)  
                 tipus='A'
                 # Es tracta de cicles ?
                 try:
@@ -181,18 +164,16 @@ def fusionaGrups(grup, di, df, senseGrups):
                         tipus='AN'
                 except ObjectDoesNotExist:
                     pass
-                return prefixe+grups, tipus, warnings
+                return grupc, tipus, warnings
             else:
                 # 'CL_SMX1A1 CL_SMX1A2' -->  'SMX1A12'
                 n=prefixe[:len(prefixe)-2]
                 c=prefixe[len(prefixe)-2]
                 g=prefixe[len(prefixe)-1]+grups
-                warn=creaGrup(n,c,g,di,df)
-                for w in warn:
-                    warnings.append(w)   
-                warn=creaAgrupaments(prefixe+grups, llista, di, df, senseGrups)
-                for w in warn:
-                    warnings.append(w)  
+                grupc, warn=creaGrup(n,c,g,di,df)
+                warnings.extend(warn)  
+                warn=creaAgrupaments(grupc, llista, di, df, senseGrups)
+                warnings.extend(warn)  
                 tipus='A'
                 # Es tracta de cicles ?
                 try:
@@ -200,7 +181,7 @@ def fusionaGrups(grup, di, df, senseGrups):
                         tipus='AN'
                 except ObjectDoesNotExist:
                     pass                
-                return prefixe+grups, tipus, warnings
+                return grupc, tipus, warnings
         else:
             #Grupsubgrup o cursos diferents
             prefixe=llista[0][3:len(llista[0])-2]
@@ -219,13 +200,11 @@ def fusionaGrups(grup, di, df, senseGrups):
                 # 'CL_SMX1A1 CL_SMX1B1' -->  'SMX1A1B1'
                 # 'CL_BAT1A CL_BAT2A' -->  'BAT1A2A'
                 g=grups
-                warn=creaGrup(n,'-',g,di,df)
-                for w in warn:
-                    warnings.append(w)   
+                grupc, warn=creaGrup(n,'-',g,di,df)
+                warnings.extend(warn)  
                 # Es faran agrupaments
-                warn=creaAgrupaments(prefixe+grups, llista, di, df, senseGrups)
-                for w in warn:
-                    warnings.append(w)  
+                warn=creaAgrupaments(grupc, llista, di, df, senseGrups)
+                warnings.extend(warn)  
                 tipus='A'
                 # Es tracta de cicles ?
                 try:
@@ -233,20 +212,18 @@ def fusionaGrups(grup, di, df, senseGrups):
                         tipus='AN'
                 except ObjectDoesNotExist:
                     pass
-                return prefixe+grups, tipus, warnings            
+                return grupc, tipus, warnings            
 
             grups=''
             for g in llista:
                 grups=grups+g[3:]
-            warn=creaGrup('ALL','1',grups,di,df)
-            for w in warn:
-                warnings.append(w)   
+            grupc, warn=creaGrup('ALL','1',grups,di,df)
+            warnings.extend(warn)  
             # Es faran agrupaments 
-            warn=creaAgrupaments(grups, llista, di, df, senseGrups)
-            for w in warn:
-                warnings.append(w)              
+            warn=creaAgrupaments(grupc, llista, di, df, senseGrups)
+            warnings.extend(warn)  
             tipus='A'
-            return grups, tipus, warnings
+            return grupc, tipus, warnings
 
 def creaGrup(n, c, g, di, df):
     '''
@@ -272,10 +249,7 @@ def creaGrup(n, c, g, di, df):
             warnings.append(u'Nou nivell: \'%s\'' % (nivell))
     curs=None
     if c is not None:
-        if c=='-':
-            curs, ncurs=Curs.objects.get_or_create(nivell=nivell, nom_curs_complert=n+'-')
-        else:
-            curs, ncurs=Curs.objects.get_or_create(nivell=nivell, nom_curs=c)
+        curs, ncurs=Curs.objects.get_or_create(nivell=nivell, nom_curs=c)
         if di is not None:
             if curs.data_inici_curs is None or (curs.data_inici_curs<di or curs.data_inici_curs>df ): 
                 curs.data_inici_curs=di
@@ -284,23 +258,23 @@ def creaGrup(n, c, g, di, df):
                 curs.data_fi_curs=df
         if (ncurs):
             curs.nom_curs=c
-            curs.nom_curs_complert=(n+"-"+c) if c !='-' else n+"-" 
+            curs.nom_curs_complert=(n+"-"+c) if c !='-' else (n+"-") 
             warnings.append(u'Nou curs: \'%s\'' % (curs))
         curs.save()
     
     grup, ngrup=Grup.objects.get_or_create(curs=curs, nom_grup=g)
     if (ngrup):
-        warnings.append(u'Nou grup: \'%s\'' % (grup))
-    if (n!='ALL' or g=='-') and c!='-':
-        grup.descripcio_grup=n+c+g
-    else:
-        if c=='-':
-            grup.descripcio_grup=n+g
+        if (n!='ALL' or g=='-') and c!='-':
+            grup.descripcio_grup=n+c+g
         else:
-            grup.descripcio_grup=g
-    grup.save()
+            if c=='-':
+                grup.descripcio_grup=n+g
+            else:
+                grup.descripcio_grup=g
+        warnings.append(u'Nou grup: \'%s\'' % (grup))
+        grup.save()
 
-    return warnings
+    return grup, warnings
 
 def sincronitza(xml, usuari):
     '''
@@ -332,7 +306,10 @@ def sincronitza(xml, usuari):
     nAulesCreades = 0
     nAssignaturesCreades = 0
     
+    #  Només en desenvolupament
     #  Utilitza el paràmetre que indica si es treballa senseGrups
+    #  Si 'True' vol dir que es crean grups addicionals sense lletra, només és necessari si
+    #  a principi de curs encara no s'han definit els grups al Saga i Esfera.
     senseGrups, _ = ParametreKronowin.objects.get_or_create(nom_parametre='senseGrups',
                                                                 defaults={'valor_parametre': 'False', })
     if senseGrups.valor_parametre == 'True': senseGrups = True
@@ -408,41 +385,27 @@ def sincronitza(xml, usuari):
         
         galum, n, c, g = esGrupAlumnes(nomgrup,False)
         if (galum):
-            # Sistema alternatiu per assignar agrupaments
-            # S'indica amb un * a la descripció del grup dins del xml
-            # Ex: '*CL_DAW1A CL_ASX1A'
+            grupc, warn=creaGrup(n,c,g,inicurs,ficurs)
+            warnings.extend(warn)  
             agrupament=gr.get('longname','')
             if agrupament != '' and agrupament[0] == '*':
-                warn=creaGrup(n,c,g,inicurs,ficurs)
-                for w in warn:
-                    warnings.append(w)
+                # Sistema alternatiu per assignar agrupaments
+                # S'indica amb un * a la descripció del grup dins del xml
+                # Ex: '*CL_DAW1A CL_ASX1A'
 
                 llista=agrupament[1:].split()
-                #llista.append('CL_' + nomgrup)
-                warn=creaAgrupaments(nomgrup, llista, inicurs, ficurs, senseGrups)
-                for w in warn:
-                    warnings.append(w)   
+                warn=creaAgrupaments(grupc, llista, inicurs, ficurs, senseGrups)
+                warnings.extend(warn)  
                     
             else:
-                warn=creaGrup(n,c,g,inicurs,ficurs)
-                for w in warn:
-                    warnings.append(w)
                 if senseGrups:
-                    warn=creaGrup(n,c,'-',inicurs,ficurs)
-                    for w in warn:
-                        warnings.append(w)
-                    warn=creaAgrupaments(nomgrup, ['CL_'+n+c+'-', 'CL_' + nomgrup], inicurs, ficurs, senseGrups)
-                    for w in warn:
-                        warnings.append(w)   
-                else:
-                    warn=creaAgrupaments(nomgrup, ['CL_' + nomgrup], inicurs, ficurs, senseGrups)
-                    for w in warn:
-                        warnings.append(w)   
-                   
+                    grupc, warn=creaGrup(n,c,'-',inicurs,ficurs)
+                    warnings.extend(warn)
+                    warn=creaAgrupaments(grupc, ['CL_'+n+c+'-'], inicurs, ficurs, senseGrups)
+                    warnings.extend(warn)
                 
-    warn=creaGrup('ALL','1','altres',inicurs,ficurs)
-    for w in warn:
-        warnings.append(w)   
+    _, warn=creaGrup('ALL','1','altres',inicurs,ficurs)
+    warnings.extend(warn)  
                     
     #
     #  Aules
@@ -488,46 +451,30 @@ def sincronitza(xml, usuari):
         if (prof!=''):
             prof=prof['@id'][3:]
         # Fusiona grups si n'hi ha varis
-        grup=l.get('lesson_classes','')
-        if (grup!=''):
-            grup=grup['@id']
+        ngrup=l.get('lesson_classes','')
+        if (ngrup!=''):
+            ngrup=ngrup['@id']
             #  Crear grupo xxxxxNABCD... 
-            grup, tipus, warn=fusionaGrups(grup, inicurs, ficurs, senseGrups)
-            for w in warn:
-                warnings.append(w)
-        if l['times'] is not None:
+            grup, tipus, warn=fusionaGrups(ngrup, inicurs, ficurs, senseGrups)
+            warnings.extend(warn)  
+        if 'times' in l and l['times'] and 'time' in l['times'] and l['times']['time']:
             cl=l.get('times').get('time')
-            if type(cl)!=list:        
-                dia=cl.get('assigned_day','')
-                hini=cl.get('assigned_starttime','')
-                hfi=cl.get('assigned_endtime','')
-                aula=cl.get('assigned_room','')
+            if type(cl)!=list:
+                cl = [cl]
+            for h in cl:
+                dia=h.get('assigned_day','')
+                hini=h.get('assigned_starttime','')
+                hfi=h.get('assigned_endtime','')
+                aula=h.get('assigned_room','')
                 if aula!='':
                     aula=aula['@id'][3:]
                 canvia, warn, compAssig = creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, 
-                                                     KronowinToUntis, assignatures_amb_professor)
-                for w in warn:
-                    warnings.append(w)
+                                                 KronowinToUntis, assignatures_amb_professor)
+                warnings.extend(warn)  
                 nLiniesLlegides+=1
                 nAssignaturesCreades+=compAssig
                 if canvia:
                     nHorarisModificats+=1
-            else:
-                for h in cl:
-                    dia=h.get('assigned_day','')
-                    hini=h.get('assigned_starttime','')
-                    hfi=h.get('assigned_endtime','')
-                    aula=h.get('assigned_room','')
-                    if aula!='':
-                        aula=aula['@id'][3:]
-                    canvia, warn, compAssig = creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, 
-                                                     KronowinToUntis, assignatures_amb_professor)
-                    for w in warn:
-                        warnings.append(w)
-                    nLiniesLlegides+=1
-                    nAssignaturesCreades+=compAssig
-                    if canvia:
-                        nHorarisModificats+=1
     
     if (('holidays' in dades['document']) and dades['document']['holidays'] and 
         ('holiday' in dades['document']['holidays']) and dades['document']['holidays']['holiday']):
@@ -610,13 +557,7 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, as
 
         
         # grup
-        if grup!='-' and grup is not None:
-            try:
-                horari.grup = Grup.objects.get(descripcio_grup=grup)
-            except ObjectDoesNotExist:
-                horari.grup = None 
-        else:
-            horari.grup=None;
+        horari.grup=grup;
         
         # professor
         horari.professor = Professor.objects.get(username=prof)
@@ -636,7 +577,7 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, as
                 materia = Assignatura.objects.get(curs=horari.grup.curs, codi_assignatura=mat)#,
                                                 # tipus_assignatura__ambit_on_prendre_alumnes=tipus)
                 materia.nom_assignatura=mat
-                materia.tipus_assignatura=TipusDAssignatura.objects.get(ambit_on_prendre_alumnes=tipus)
+                materia.tipus_assignatura=TipusDAssignatura.objects.filter(ambit_on_prendre_alumnes=tipus).first()
                 materia.save()
             except ObjectDoesNotExist:
                 novamat=True
@@ -644,14 +585,20 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, as
                 materia.curs=horari.grup.curs
                 materia.codi_assignatura=mat
                 materia.nom_assignatura=mat
-                materia.tipus_assignatura=TipusDAssignatura.objects.get(ambit_on_prendre_alumnes=tipus)
+                materia.tipus_assignatura=TipusDAssignatura.objects.filter(ambit_on_prendre_alumnes=tipus).first()
                 materia.save()
+            except MultipleObjectsReturned:     
+                materia = Assignatura.objects.filter(curs=horari.grup.curs, codi_assignatura=mat).order_by('id').last()
+                materia.nom_assignatura=mat
+                materia.tipus_assignatura=TipusDAssignatura.objects.filter(ambit_on_prendre_alumnes=tipus).first()
+                materia.save()
+                   
         else:
             try:
                 materia = Assignatura.objects.get(curs__isnull=True, codi_assignatura=mat)#,
                                                 #tipus_assignatura__ambit_on_prendre_alumnes=tipus)
                 materia.nom_assignatura=mat
-                materia.tipus_assignatura=TipusDAssignatura.objects.get(ambit_on_prendre_alumnes=tipus)
+                materia.tipus_assignatura=TipusDAssignatura.objects.filter(ambit_on_prendre_alumnes=tipus).first()
                 materia.save()
             except ObjectDoesNotExist:
                 novamat=True
@@ -659,8 +606,13 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, as
                 materia.curs=None
                 materia.codi_assignatura=mat
                 materia.nom_assignatura=mat
-                materia.tipus_assignatura=TipusDAssignatura.objects.get(ambit_on_prendre_alumnes=tipus)
+                materia.tipus_assignatura=TipusDAssignatura.objects.filter(ambit_on_prendre_alumnes=tipus).first()
                 materia.save()       
+            except MultipleObjectsReturned:     
+                materia = Assignatura.objects.filter(curs__isnull=True, codi_assignatura=mat).order_by('id').last()
+                materia.nom_assignatura=mat
+                materia.tipus_assignatura=TipusDAssignatura.objects.filter(ambit_on_prendre_alumnes=tipus).first()
+                materia.save()
               
         horari.assignatura = materia
         if novamat:
@@ -808,7 +760,7 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, as
         return resultat,warnings,compAssig
         
     except Exception as e:
-        warnings.append('Horari no importat, [' + str(e) + '] :' + mat + ',' + prof + ',' + grup + ',' + dia + ',' + 
+        warnings.append('Horari no importat, [' + str(e) + '] :' + mat + ',' + prof + ',' + str(grup) + ',' + dia + ',' + 
                         str(hini) + ',' + str(hfi) + ',' + str(aula))
         warnings.append( traceback.format_exc() )
         return False, warnings,compAssig
