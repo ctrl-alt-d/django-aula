@@ -1207,7 +1207,7 @@ def elsMeusAlumnesTutoratsEntreDates(request):
     professor = User2Professor( user )     
     
     if user.groups.filter(name='direcció'):
-        possibles_grups = [ ( t.pk, unicode( t) ) for t in Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup") ]
+        possibles_grups = [ ( t.pk, unicode( t) ) for t in Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup") ]
     else:
         possibles_grups = [ ( t.grup.pk, unicode( t.grup) ) for t in  Tutor.objects.filter( professor = professor )]
         

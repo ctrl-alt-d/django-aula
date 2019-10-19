@@ -105,7 +105,7 @@ def assignaTutors( request ):
         #un formulari per cada grup
         #totBe = True
         parellesProfessorGrup=set()
-        for grup in Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup"):
+        for grup in Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup"):
             form=tutorsForm(
                                     request.POST,
                                     prefix=str( grup.pk )
@@ -131,7 +131,7 @@ def assignaTutors( request ):
 
                 
     else:
-        for grup in Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup"):
+        for grup in Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup"):
             tutor1 = tutor2 = tutor3 = None
             if len( grup.tutor_set.all() ) > 0: tutor1 = grup.tutor_set.all()[0].professor
             if len( grup.tutor_set.all() ) > 1: tutor2 = grup.tutor_set.all()[1].professor

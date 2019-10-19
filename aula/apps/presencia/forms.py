@@ -217,7 +217,7 @@ class alertaAssistenciaForm(forms.Form):
 
 
 class passaLlistaGrupDataForm( forms.Form ):
-    grup = forms.ModelChoiceField( queryset = Grup.objects.filter(alumne__isnull = False).order_by("descripcio_grup")  )
+    grup = forms.ModelChoiceField( queryset = Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup")  )
     dia =  forms.DateField(label=u'Dia', 
                                        initial=datetime.today(),
                                        help_text=u'Dia a passar llista.',  
