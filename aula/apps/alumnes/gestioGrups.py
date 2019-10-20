@@ -22,20 +22,25 @@ def grupsAgrupament(grup):
 
     '''
     
-    q_Agrup=Agrupament.objects.filter(grup_horari=grup).values('grup_alumnes')
+    q_Agrup=Agrupament.objects.filter(grup_horari=grup).values('grup_alumnes').distinct()
     if not(q_Agrup.exists()):
         # No hi ha agrupament
-        return Grup.objects.filter(pk = grup.pk)
+        return Grup.objects.filter(pk = grup.pk).filter(alumne__isnull = False).distinct()
     if q_Agrup.count()==1 and q_Agrup.first()['grup_alumnes']==grup.id:
         # Agrupament és el mateix grup
-        return Grup.objects.filter(pk = grup.pk)
+        return Grup.objects.filter(pk = grup.pk).filter(alumne__isnull = False).distinct()
     # Agrupament de dos o més elements
     query=Grup.objects.none()
     for g in q_Agrup:
-        ng=Grup.objects.get(pk = g['grup_alumnes'])
-        # No es tenen en compte els elements que siguin el mateix grup 
-        if (ng==grup): continue
-        query=query.union(grupsAgrupament(ng))
+        ng=Grup.objects.filter(pk = g['grup_alumnes']).filter(alumne__isnull = False).distinct()
+        if not ng:
+            continue
+        if (ng.first()==grup):
+            # Si és el mateix grup, s'afegeix sense fer més recerca
+            query=query.union(ng)
+        else:
+            # Es continua la recerca
+            query=query.union(grupsAgrupament(ng.first()))
     return query
 
 #  amorilla@xtec.cat
@@ -46,23 +51,27 @@ def grupsPotencials(horari):
     codi_ambit = horari.assignatura.tipus_assignatura.ambit_on_prendre_alumnes if horari.assignatura.tipus_assignatura is not None else 'G'
     Grup = apps.get_model( 'alumnes','Grup')
     if codi_ambit == 'I':
-        grups_potencials= Grup.objects.filter(alumne__isnull = False)
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).distinct()
     elif codi_ambit == 'N':
-        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs__nivell = horari.grup.curs.nivell  )
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs__nivell = horari.grup.curs.nivell ).distinct()
     elif codi_ambit == 'C':
-        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs = horari.grup.curs  )
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs = horari.grup.curs ).distinct()
         # Nous àmbits on escollir alumnes
         # 'A'  Agrupament. Llista de grups concreta
-        # 'AN' Agrupament amb nivell. La llista i altres grups dels mateixos nivells.
+        # 'AN' Agrupament amb nivell. Tots els grups dels mateixos nivells.
     elif codi_ambit[0] == 'A':
         q_grups=grupsAgrupament(horari.grup)
         if codi_ambit=='AN':
-            q_grupsN=Grup.objects.filter( curs__nivell__nom_nivell__in = q_grups.values('curs__nivell__nom_nivell')).distinct()
-            q_grups=q_grups.union(q_grupsN)
-        grups_potencials= q_grups.filter(alumne__isnull = False)
+            llista=q_grups.values('curs__nivell__nom_nivell')
+            valors=[]
+            for i in llista: valors.append(i.get('curs__nivell__nom_nivell'))
+            q_grups=Grup.objects.filter( curs__nivell__nom_nivell__in = valors)
+        grups_potencials= q_grups.filter(alumne__isnull = False).distinct()
     elif codi_ambit == 'G':
         if horari.grup:
             grups_potencials=Grup.objects.filter( pk = horari.grup.pk  )
         else:
             grups_potencials=Grup.objects.none()
-    return grups_potencials.distinct().order_by('descripcio_grup')
+    if grups_potencials.count()==1 :
+        return grups_potencials
+    return grups_potencials.order_by('descripcio_grup')
