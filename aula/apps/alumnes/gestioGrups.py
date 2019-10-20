@@ -65,4 +65,4 @@ def grupsPotencials(horari):
             grups_potencials=Grup.objects.filter( pk = horari.grup.pk  )
         else:
             grups_potencials=Grup.objects.none()
-    return grups_potencials.order_by('descripcio_grup')
+    return grups_potencials.distinct().order_by('descripcio_grup')

@@ -694,7 +694,7 @@ def creaHorari(mat, prof, grup, tipus, dia, hini, hfi, aula, KronowinToUntis, as
                     assignatura__codi_assignatura=horari.assignatura.codi_assignatura,
                     dia_de_la_setmana=horari.dia_de_la_setmana,
                     es_actiu=False,
-                    impartir_set__isnull = False)
+                    impartir__isnull = False)
                 if nouHorari.count()>0:
                     nouHorari= nouHorari.order_by('id').first()
                 else:
