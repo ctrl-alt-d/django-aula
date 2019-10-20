@@ -51,14 +51,14 @@ def grupsPotencials(horari):
     codi_ambit = horari.assignatura.tipus_assignatura.ambit_on_prendre_alumnes if horari.assignatura.tipus_assignatura is not None else 'G'
     Grup = apps.get_model( 'alumnes','Grup')
     if codi_ambit == 'I':
-        grups_potencials= Grup.objects.filter(alumne__isnull = False)
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).distinct()
     elif codi_ambit == 'N':
-        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs__nivell = horari.grup.curs.nivell  )
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs__nivell = horari.grup.curs.nivell ).distinct()
     elif codi_ambit == 'C':
-        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs = horari.grup.curs  )
+        grups_potencials= Grup.objects.filter(alumne__isnull = False).filter( curs = horari.grup.curs ).distinct()
         # Nous àmbits on escollir alumnes
         # 'A'  Agrupament. Llista de grups concreta
-        # 'AN' Agrupament amb nivell. La llista i altres grups dels mateixos nivells.
+        # 'AN' Agrupament amb nivell. Tots els grups dels mateixos nivells.
     elif codi_ambit[0] == 'A':
         q_grups=grupsAgrupament(horari.grup)
         if codi_ambit=='AN':
@@ -72,4 +72,6 @@ def grupsPotencials(horari):
             grups_potencials=Grup.objects.filter( pk = horari.grup.pk  )
         else:
             grups_potencials=Grup.objects.none()
-    return grups_potencials.distinct().order_by('descripcio_grup')
+    if grups_potencials.count()==1 :
+        return grups_potencials
+    return grups_potencials.order_by('descripcio_grup')
