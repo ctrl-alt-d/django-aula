@@ -42,6 +42,8 @@ Vols col·laborar-hi?
 
 [FAQs](https://github.com/ctrl-alt-d/django-aula/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+)
 
+Si fas una col·laboració aquest més pots participar a la [hacktoberfest](https://hacktoberfest.digitalocean.com) :)
+
 Necessites ajuda?
 ============
 

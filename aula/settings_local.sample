@@ -36,4 +36,4 @@ SERVER_EMAIL='el-meu-centre@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
-
+PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'

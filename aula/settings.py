@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
 CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
@@ -79,6 +79,10 @@ CUSTOM_INDICADORS = [
 
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
 CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
+
+CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
+CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
+
 
 try:
     from .settings_local import *

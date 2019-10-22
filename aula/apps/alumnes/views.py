@@ -7,12 +7,13 @@ from django.template import RequestContext, loader
 #tables
 from django.utils.safestring import mark_safe
 
+from aula.settings_local import PRIVATE_STORAGE_ROOT
 from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
 #from django import forms as forms
 from aula.apps.alumnes.models import Alumne,  Curs, Grup
-from aula.apps.usuaris.models import Professor
+from aula.apps.usuaris.models import Professor, Accio
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
@@ -349,7 +350,10 @@ def elsMeusAlumnesAndAssignatures( request ):
         
         taula.titol = tools.classebuida()
         taula.titol.contingut = ""
-        
+
+        capcelera_foto = tools.classebuida()
+        capcelera_foto.amplade = 10
+
         capcelera_nom = tools.classebuida()
         capcelera_nom.amplade = 25
         capcelera_nom.contingut = u'{0} - {1}'.format(unicode( assignatura ) , unicode( grup ) )
@@ -378,10 +382,10 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 45
+        capcelera_contacte.amplade = 35
         capcelera_contacte.contingut = u'Dades de contacte Tutors.'
         
-        taula.capceleres = [capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]
+        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]
         
         taula.fileres = []
         for alumne in Alumne.objects.filter( 
@@ -390,7 +394,22 @@ def elsMeusAlumnesAndAssignatures( request ):
                             controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms'):
             
             filera = []
-            
+
+            # -foto------------
+            camp_foto = tools.classebuida()
+            camp_foto.enllac = None
+            camp_foto.imatge = alumne.get_foto_or_default
+            if alumne.foto:
+                Accio.objects.create(
+                    tipus='AS',
+                    usuari=user,
+                    l4=l4,
+                    impersonated_from=request.user if request.user != user else None,
+                    moment = datetime.now(),
+                    text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne,user)
+                )
+
+            filera.append(camp_foto)
             #-nom--------------------------------------------
             camp_nom = tools.classebuida()
             camp_nom.enllac = None
@@ -653,6 +672,15 @@ def detallAlumneHorari(request, pk, detall='all'):
     table.order_by = 'hora_inici'
 
     RequestConfig(request).configure(table)
+    if alumne.foto:
+        Accio.objects.create(
+            tipus='AS',
+            usuari=user,
+            l4=l4,
+            impersonated_from=request.user if request.user != user else None,
+            moment=datetime.now(),
+            text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne, user)
+        )
 
     return render(
         request,
@@ -664,6 +692,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
          'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
          'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
+         'ruta_fotos': PRIVATE_STORAGE_ROOT,
          },
     )
 

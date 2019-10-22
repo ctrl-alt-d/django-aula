@@ -23,7 +23,7 @@
 	
 		{%if titol_formulari %}<h2>{{titol_formulari}}</h2>{%endif%}
 
-	<form action="." method="post" target="{%if target %}{{target}}{%else%}_self{%endif%}">{% csrf_token %}
+	<form action="." method="post" enctype="multipart/form-data"  target="{%if target %}{{target}}{%else%}_self{%endif%}">{% csrf_token %}
 
         {% for hidden in form.hidden_fields %}
           {{ hidden }}

@@ -33,7 +33,7 @@ from django.db.models import Q
 
 from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd
 from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
@@ -695,3 +695,4 @@ def blanc( request ):
                 'blanc.html',
                     {},
                     )
+

@@ -2,7 +2,11 @@
 
 from django.db import models
 from datetime import date
+
+from django.templatetags.static import static
 from django.utils.datetime_safe import datetime
+from private_storage.fields import PrivateFileField
+
 from aula.apps.usuaris.models import Professor, AlumneUser
 from aula.apps.tutoria.models import SeguimentTutorial
 from aula.apps.alumnes.named_instances import Nivells_no_obligatoris, Cursa_nivell
@@ -11,6 +15,9 @@ from django.utils import timezone
 from django.conf import settings
 import calendar
 from dateutil.relativedelta import relativedelta
+
+from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
+
 
 class AbstractNivell(models.Model):
     nom_nivell = models.CharField("Nom nivell",max_length=45, unique=True)
@@ -166,9 +173,10 @@ class AbstractAlumne(models.Model):
                                                 )
 
 
+    foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
     
     class Meta:
-        abstract = True        
+        abstract = True
         ordering = ['grup','cognoms','nom']
         verbose_name = u'Alumne'
         verbose_name_plural = u'Alumnes'
@@ -277,3 +285,7 @@ class AbstractAlumne(models.Model):
         dnaix = self.data_neixement
         return  (( data.month,  data.day) == (dnaix.month, dnaix.day)) or (not calendar.isleap(data.year) and (dnaix.month, dnaix.day) ==(2,29) and ( data.month,  data.day)==(2,28) )
 
+    @property
+    def get_foto_or_default(self):
+        foto = self.foto.url if self.foto else static('nofoto.png')
+        return foto
