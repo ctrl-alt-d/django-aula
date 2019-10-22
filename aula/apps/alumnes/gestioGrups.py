@@ -14,34 +14,39 @@ def grupsPromocionar():
                         Agrupament.objects.annotate(grupValue=F('grup_alumnes__id')).values('grupValue'))
     return Grup.objects.exclude(id__in = idsgrupsDesdoblaments).order_by('descripcio_grup')
 
-def grupsAgrupament(grup):
+def llistaIdsAgrupament(grupid):
     '''Determina tots els agrupaments d'un grup
     
-    grup del que volem els seus agrupaments
-    Retorna un queryset que conté tots els grups que aporten alumnes al grup indicat
+    grupid id del grup que volem els seus agrupaments
+    Retorna una llista que conté tots els id de grup que aporten alumnes al grup indicat
 
     '''
     
-    q_Agrup=Agrupament.objects.filter(grup_horari=grup).values('grup_alumnes').distinct()
+    llista=set()
+    q_Agrup=Agrupament.objects.filter(grup_horari=grupid).values('grup_alumnes').distinct()
     if not(q_Agrup.exists()):
         # No hi ha agrupament
-        return Grup.objects.filter(pk = grup.pk).filter(alumne__isnull = False).distinct()
-    if q_Agrup.count()==1 and q_Agrup.first()['grup_alumnes']==grup.id:
+        return { grupid }
+    if q_Agrup.count()==1 and q_Agrup.first()['grup_alumnes']==grupid:
         # Agrupament és el mateix grup
-        return Grup.objects.filter(pk = grup.pk).filter(alumne__isnull = False).distinct()
-    # Agrupament de dos o més elements
-    query=Grup.objects.none()
+        return { grupid }
+    # Agrupaments dels altres grups
     for g in q_Agrup:
-        ng=Grup.objects.filter(pk = g['grup_alumnes']).filter(alumne__isnull = False).distinct()
-        if not ng:
-            continue
-        if (ng.first()==grup):
+        if (g['grup_alumnes']==grupid):
             # Si és el mateix grup, s'afegeix sense fer més recerca
-            query=query.union(ng)
+            llista.add(grupid)
         else:
             # Es continua la recerca
-            query=query.union(grupsAgrupament(ng.first()))
-    return query
+            llista.update(llistaIdsAgrupament(g['grup_alumnes']))
+    return llista
+
+def grupsAgrupament(grup):
+    '''Retorna queryset dels grups que aporten alumnes a grup.
+    
+    '''
+    
+    q_Agrup=llistaIdsAgrupament(grup.id)
+    return Grup.objects.filter(id__in = q_Agrup).filter(alumne__isnull = False).distinct()
 
 #  amorilla@xtec.cat
 #  He canviat la ubicació d'aquesta funció.
@@ -62,16 +67,12 @@ def grupsPotencials(horari):
     elif codi_ambit[0] == 'A':
         q_grups=grupsAgrupament(horari.grup)
         if codi_ambit=='AN':
-            llista=q_grups.values('curs__nivell__nom_nivell')
-            valors=[]
-            for i in llista: valors.append(i.get('curs__nivell__nom_nivell'))
-            q_grups=Grup.objects.filter( curs__nivell__nom_nivell__in = valors)
-        grups_potencials= q_grups.filter(alumne__isnull = False).distinct()
+            llista=q_grups.values('curs__nivell')
+            q_grups=Grup.objects.filter( curs__nivell__in = llista).filter(alumne__isnull = False).distinct()
+        grups_potencials= q_grups
     elif codi_ambit == 'G':
         if horari.grup:
             grups_potencials=Grup.objects.filter( pk = horari.grup.pk  )
         else:
             grups_potencials=Grup.objects.none()
-    if grups_potencials.count()==1 :
-        return grups_potencials
     return grups_potencials.order_by('descripcio_grup')
