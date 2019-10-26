@@ -63,6 +63,7 @@ def sincronitza(f, user = None):
         a=Alumne()
         a.ralc = ''
         a.telefons = ''
+        dni=''
         #a.tutors = ''
         #a.correu_tutors = ''
 
@@ -125,6 +126,8 @@ def sincronitza(f, user = None):
                 a.adreca = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_CP"):
                 a.cp = unicode(value,'iso-8859-1')
+            if columnName.endswith( u"_DOC. IDENTITAT"):
+                dni = unicode(value,'iso-8859-1')
 
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
@@ -132,6 +135,12 @@ def sincronitza(f, user = None):
 
 
         alumneDadesAnteriors = None
+        
+        if not bool(a.ralc) or a.ralc=='':
+            autoRalc, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'autoRalc' )
+            if bool(autoRalc.valor_parametre):
+                a.ralc= autoRalc.valor_parametre + dni[-9:]
+                
         try:
             q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell )
 
@@ -215,6 +224,11 @@ def sincronitza(f, user = None):
                 a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
                 a.foto = alumneDadesAnteriors.foto
 
+            manteNom, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'mantenirNom' )
+            
+            if manteNom.valor_parametre=='True':
+                a.nom=alumneDadesAnteriors.nom
+
         a.save()
         nivells.add(a.grup.curs.nivell)
     #
@@ -294,17 +308,18 @@ def sincronitza(f, user = None):
                 impartir__dia_impartir__gte = date.today(),
                 alumne__in = AlumnesDonatsDeBaixa ).delete()
 
-    #Treure'ls de les classes: els canvis de grup   #Todo: només si l'àmbit és grup.
-
-    ambit_no_es_el_grup = Q( impartir__horari__assignatura__tipus_assignatura__ambit_on_prendre_alumnes__in = [ 'C', 'N', 'I' ] )
-    ( ControlAssistencia
-      .objects
-      .filter( ambit_no_es_el_grup )
-      .filter( impartir__dia_impartir__gte = date.today() )
-      .filter( alumne__in = AlumnesCanviatsDeGrup )
-      .delete()
-     )
-
+    manteLlista, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'mantenirLlistes' )
+            
+    if manteLlista.valor_parametre!='True':
+        #Treure'ls de les classes: els canvis de grup   #Todo: només si l'àmbit és grup.
+        ambit_no_es_el_grup = Q( impartir__horari__assignatura__tipus_assignatura__ambit_on_prendre_alumnes__in = [ 'C', 'N', 'I' ] )
+        ( ControlAssistencia
+          .objects
+          .filter( ambit_no_es_el_grup )
+          .filter( impartir__dia_impartir__gte = date.today() )
+          .filter( alumne__in = AlumnesCanviatsDeGrup )
+          .delete()
+         )
 
     #Altes: posar-ho als controls d'assistència de les classes (?????????)
 
