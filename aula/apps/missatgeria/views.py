@@ -57,7 +57,9 @@ def elMeuMur( request, pg ,tipus = 'all'):
     for key,value in MISSATGES.items():
         missatges [key] = list(value.keys())[0]
         
+    #Afegeix tipus TOT per opció de veure tots els missatges
     missatges['TOT'] = 'default'
+    # Ordena alfabèticament els tipus
     missatges=collections.OrderedDict(sorted(missatges.items()))
     
     return render(

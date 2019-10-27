@@ -424,7 +424,7 @@ def posaIncidenciaPrimeraHora( request ):
                     messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
                     url = "/incidencies/posaIncidenciaprimerahora"
                     return HttpResponseRedirect( url )
-            except:   
+            except ObjectDoesNotExist:   
                 messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
                 url = "/incidencies/posaIncidenciaprimerahora"
                 return HttpResponseRedirect( url )

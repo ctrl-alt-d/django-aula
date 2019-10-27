@@ -74,7 +74,7 @@ CUSTOM_DATE_FORMAT = "%-d %B de %Y"   #  5 d'abril de 1999, si fem servir 'ca_ES
 CUSTOM_NO_CONTROL_ES_PRESENCIA = False
 
 CUSTOM_INDICADORS = [
-            # [inici_curs,    Final 1Trim,  Final 2Trim,   Final 3Trim,  nivell,  % ],
+            # [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],
           ]
 
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.

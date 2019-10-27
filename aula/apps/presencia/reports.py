@@ -8,6 +8,7 @@ from itertools import chain
 from aula.apps.presencia.models import ControlAssistencia
 #amorilla@xtec.cat
 from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 import csv
 from django.http import HttpResponse
@@ -176,20 +177,18 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
 
 #amorilla@xtec.cat
 # Calcula l'indicador d'absentisme, segons el nivell, percentatge i dates.
-def indicadorAbsentisme( data_inici, data_fi, nivell, tpc):
+def indicadorAbsentisme( data_inici, data_fi, nivell, tpc, recerca):
 
     # Selecciona alumnes del nivell i que no siguin baixa
     q_alumnes = Alumne.objects.filter( grup__curs__nivell__nom_nivell__in = settings.CUSTOM_NIVELLS[nivell]).filter(data_baixa__isnull=True )    
     # Selecciona en les dates indicades
     q_data_inici = Q( impartir__dia_impartir__gte = data_inici  )
-    q_data_fi = Q( impartir__dia_impartir__lt = data_fi  )
+    q_data_fi = Q( impartir__dia_impartir__lte = data_fi  )
     q_filtre = q_data_inici & q_data_fi
     q_controls = ControlAssistencia.objects.filter(  alumne__in = q_alumnes ).filter( q_filtre )
     
-    if nivell=='ESO':
-        recerca=('F')
-    else:
-        recerca=('J','F')
+    if recerca==None:
+        recerca=('J','F')  # Per defecte compta les 'F' i les 'J'
     
     # calcula el 'total' de dies per alumne i les 'faltes' per alumne.
     if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
@@ -289,23 +288,35 @@ def indicadorsReport():
         dtrim1=datetime.strptime(ind[1], '%d/%m/%Y')
         dtrim2=datetime.strptime(ind[2], '%d/%m/%Y')
         dtrim3=datetime.strptime(ind[3], '%d/%m/%Y')
+        undia=relativedelta(days=+1)
         nivell = ind[4]
         tpc = ind[5]
+        # Tipus de controls és opcional
+        if (len(ind)>=7):
+            recerca=ind[6]
+            # Assegura que s'obtingui una tupla, això permet que es pugui
+            # fer servir 'F' o ('F') o ('F',) ... sense que provoqui error
+            if len(recerca)==1:
+                recerca=tuple(recerca[0])
+        else:
+            recerca=None
         trim1=0
         trim2=0
         trim3=0
         curs=0
         sup1=sup2=sup3=quan1=quan2=quan3=0
         if data>dtrim1:
-            (trim1, sup1, quan1)=indicadorAbsentisme( dtrim0, dtrim1, nivell, tpc)
+            (trim1, sup1, quan1)=indicadorAbsentisme( dtrim0, dtrim1, nivell, tpc, recerca)
 
         if data>dtrim2:
-            (trim2, sup2, quan2)=indicadorAbsentisme( dtrim1, dtrim2, nivell, tpc)
+            # Suma un dia per evitar que compti dos cops el final de trimestre
+            (trim2, sup2, quan2)=indicadorAbsentisme( dtrim1+undia, dtrim2, nivell, tpc, recerca)
 
         if data>dtrim3:
-            (trim3, sup3, quan3)=indicadorAbsentisme( dtrim2, dtrim3, nivell, tpc)
+            # Suma un dia per evitar que compti dos cops el final de trimestre
+            (trim3, sup3, quan3)=indicadorAbsentisme( dtrim2+undia, dtrim3, nivell, tpc, recerca)
         
-        (curs, supc, quanc)=indicadorAbsentisme( dtrim0, dtrim3, nivell, tpc)
+        (curs, supc, quanc)=indicadorAbsentisme( dtrim0, dtrim3, nivell, tpc, recerca)
 
     
         filera = []
@@ -347,8 +358,8 @@ def indicadorsReport():
 
         writer.writerow([filera[0].contingut, filera[1].contingut, filera[2].contingut,
                          ind[0], ind[1], sup1, quan1, trim1,
-                         ind[1], ind[2], sup2, quan2, trim2,
-                         ind[2], ind[3], sup3, quan3, trim3,
+                         (dtrim1+undia).strftime('%d/%m/%Y'), ind[2], sup2, quan2, trim2,
+                         (dtrim2+undia).strftime('%d/%m/%Y'), ind[3], sup3, quan3, trim3,
                          ind[0], ind[3], supc, quanc, curs
                          ])
 
