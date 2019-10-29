@@ -1,8 +1,5 @@
----
-description: Este documento contiene información sobre el primer arranque de la aplicación.
----
 
-# Primer Inicio
+[comment]: # (description: Este documento contiene información sobre el primer arranque de la aplicación.)
 
 ### Primer Inicio
 

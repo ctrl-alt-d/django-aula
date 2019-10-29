@@ -11,7 +11,6 @@ from django.utils.datetime_safe import datetime
 from aula.apps.alumnes.models import Nivell, Grup
 from aula.utils.widgets import bootStrapButtonSelect
 
-
 class ControlAssistenciaForm(ModelForm):
     estat = forms.ModelChoiceField( 
                         label = "x",
@@ -218,7 +217,7 @@ class alertaAssistenciaForm(forms.Form):
 
 
 class passaLlistaGrupDataForm( forms.Form ):
-    grup = forms.ModelChoiceField( queryset = Grup.objects.all()  )
+    grup = forms.ModelChoiceField( queryset = Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup")  )
     dia =  forms.DateField(label=u'Dia', 
                                        initial=datetime.today(),
                                        help_text=u'Dia a passar llista.',  

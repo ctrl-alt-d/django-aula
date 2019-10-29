@@ -33,6 +33,16 @@ class AbstractNivell(models.Model):
         return self.nom_nivell + ' (' + self.descripcio_nivell + ')'
     def save(self, *args, **kwargs):
         super(AbstractNivell, self).save(*args, **kwargs) # Call the "real" save() method.
+    
+    #amorilla@xtec.cat
+    # Retorna el nivell que correspon segons CUSTOM_NIVELLS
+    # Si no correspon cap aleshores retorna el nom_nivell original
+    def getNivellCustom(self):
+        for k,v in settings.CUSTOM_NIVELLS.items():
+            if self.nom_nivell in v:
+                return k
+        return self.nom_nivell
+    
 
 class AbstractCurs(models.Model):
     nivell = models.ForeignKey("alumnes.Nivell", on_delete=models.CASCADE)

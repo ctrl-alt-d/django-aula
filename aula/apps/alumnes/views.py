@@ -2,7 +2,7 @@
 
 #templates
 from django.contrib import messages
-from django.template import RequestContext
+from django.template import RequestContext, loader
 
 #tables
 from django.utils.safestring import mark_safe
@@ -46,6 +46,8 @@ from aula.apps.tutoria.models import TutorIndividualitzat
 from aula.apps.alumnes.rpt_duplicats import duplicats_rpt
 from aula.apps.alumnes.tools import fusiona_alumnes_by_pk
 from aula.apps.alumnes.forms import promoForm, newAlumne
+from django.conf import settings
+from aula.apps.alumnes.gestioGrups import grupsPromocionar
 
 #duplicats
 @login_required
@@ -104,7 +106,7 @@ def assignaTutors( request ):
         #un formulari per cada grup
         #totBe = True
         parellesProfessorGrup=set()
-        for grup in Grup.objects.all():
+        for grup in Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup"):
             form=tutorsForm(
                                     request.POST,
                                     prefix=str( grup.pk )
@@ -130,7 +132,7 @@ def assignaTutors( request ):
 
                 
     else:
-        for grup in Grup.objects.all():
+        for grup in Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup"):
             tutor1 = tutor2 = tutor3 = None
             if len( grup.tutor_set.all() ) > 0: tutor1 = grup.tutor_set.all()[0].professor
             if len( grup.tutor_set.all() ) > 1: tutor2 = grup.tutor_set.all()[1].professor
@@ -218,7 +220,7 @@ def gestionaAlumnesTutor( request , pk ):
     if request.method == 'POST':
         totBe = True
         nous_alumnes_tutor = []
-        for grup in Grup.objects.filter( alumne__isnull = False ).distinct():
+        for grup in Grup.objects.filter( alumne__isnull = False ).distinct().order_by('descripcio_grup'):
             #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
             form=triaMultiplesAlumnesForm(
                                     request.POST,
@@ -241,7 +243,7 @@ def gestionaAlumnesTutor( request , pk ):
                
             return HttpResponseRedirect( '/alumnes/llistaTutorsIndividualitzats/' )
     else:
-        for grup in Grup.objects.filter( alumne__isnull = False ).distinct():
+        for grup in Grup.objects.filter( alumne__isnull = False ).distinct().order_by('descripcio_grup'):
             #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
             inicial= [c.pk for c in grup.alumne_set.filter( tutorindividualitzat__professor = professor ) ]
             form=triaMultiplesAlumnesForm(
@@ -454,7 +456,12 @@ def elsMeusAlumnesAndAssignatures( request ):
             nFaltesNoJustificades = controls.filter(  Q(estat__codi_estat = 'F' )  ).count()
             nFaltesJustificades = controls.filter( estat__codi_estat = 'J'  ).count()
             nRetards = controls.filter( estat__codi_estat = 'R'  ).count()
-            nControls = controls.filter(estat__codi_estat__isnull = False ).count( )
+            # calcula el 'total' de dies per alumne
+            if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+                # té en compte tots els dies encara que no s'hagi passat llista
+                nControls = controls.count( )
+            else:
+                nControls = controls.filter(estat__codi_estat__isnull = False ).count( )            
             camp = tools.classebuida()
             camp.enllac = None
             tpc = 100.0 - ( ( 100.0 * float(nFaltesNoJustificades + nFaltesJustificades) ) / float(nControls) ) if nControls > 0 else 'N/A'
@@ -512,7 +519,7 @@ def blanc( request ):
 @login_required
 @group_required(['direcció'])
 def llistaGrupsPromocionar(request):
-    grups = Grup.objects.all().order_by("descripcio_grup")
+    grups = grupsPromocionar()
     return render(request,'mostraGrupsPromocionar.html', {"grups" : grups})
 
 @login_required
@@ -560,7 +567,7 @@ def mostraGrupPromocionar(request, grup=""):
 
         pass
 
-    grups = Grup.objects.all().order_by("descripcio_grup")
+    grups = grupsPromocionar()
     grup_actual = Grup.objects.get(id=grup)
     alumnes = Alumne.objects.filter(grup=grup, data_baixa__isnull = True ).order_by("cognoms")
     if (len(alumnes) == 0):
@@ -712,7 +719,45 @@ def cercaUsuari(request):
          }
         )
 
-
-
-
+#amorilla@xtec.cat 
+@login_required
+@group_required(['direcció'])
+def llistaAlumnescsv( request ):
+    """
+    Generates an Excel spreadsheet for review by a staff member.
+    """
+    llistaAlumnes = Alumne.objects.order_by('cognoms','nom')
     
+    dades = [ [e.ralc, 
+               (unicode( e.grup ) + ' - ' + e.cognoms + ', ' + e.nom) , 
+               e.grup, 
+               e.user_associat.username, 
+               e.correu,
+               e.rp1_correu, 
+               e.rp2_correu,
+               e.correu_relacio_familia_mare,
+               e.correu_relacio_familia_pare,
+               e.correu_tutors ] for e in llistaAlumnes]
+    
+    capcelera = [ 'ralc', 'alumne', 'grup', 'username', 'correu', 'rp1_correu', 'rp2_correu', 
+                 'correu_relacio_mare', 'correu_relacio_pare', 'correu_tutors' ]
+
+    template = loader.get_template("export.csv")
+    context = {
+                         'capcelera':capcelera,
+                         'dades':dades,
+    }
+    
+    response = HttpResponse()  
+    filename = "llistaAlumnes.csv" 
+
+
+    response['Content-Disposition'] = 'attachment; filename='+filename
+    response['Content-Type'] = 'text/csv; charset=utf-8'
+    #response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
+    # Add UTF-8 'BOM' signature, otherwise Excel will assume the CSV file
+    # encoding is ANSI and special characters will be mangled
+    response.write(template.render(context))
+
+
+    return response

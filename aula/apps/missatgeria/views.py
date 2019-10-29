@@ -30,7 +30,7 @@ from aula.utils.my_paginator import DiggPaginator
 from django.contrib import messages
 from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES, CONSERGERIA_A_TUTOR, tipusMissatge, \
     CONSERGERIA_A_CONSERGERIA, ERROR_AL_PROGRAMA, ACUS_REBUT_ERROR_AL_PROGRAMA, ACUS_REBUT_ENVIAT_A_PROFE_O_PAS
-
+import collections
 
 @login_required
 def elMeuMur( request, pg ,tipus = 'all'):
@@ -38,6 +38,10 @@ def elMeuMur( request, pg ,tipus = 'all'):
     credentials = tools.getImpersonateUser(request) 
     (user, l4) = credentials
 
+    #amorilla@xtec.cat
+    #Per veure tots els missatges junts
+    if tipus.upper()=='TOT':
+        tipus='all'
     q = user.destinatari_set.filter(missatge__tipus_de_missatge=tipus.upper()).order_by('-missatge__data') \
         if tipus != 'all' else user.destinatari_set.order_by('-missatge__data')
 
@@ -52,7 +56,12 @@ def elMeuMur( request, pg ,tipus = 'all'):
     missatges = dict()
     for key,value in MISSATGES.items():
         missatges [key] = list(value.keys())[0]
-
+        
+    #Afegeix tipus TOT per opció de veure tots els missatges
+    missatges['TOT'] = 'default'
+    # Ordena alfabèticament els tipus
+    missatges=collections.OrderedDict(sorted(missatges.items()))
+    
     return render(
                     request,
                     'missatges.html',

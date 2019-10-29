@@ -31,19 +31,19 @@ CUSTOM_NO_CONTROL_ES_PRESENCIA = True
 
 # Per al càlcul d'indicadors
 # Aquest indicadors apareixen a Coord.Alumnes / Indicadors
-#  (Alumnes amb absències [justificades o no] de més del <percentatge> de les hores lectives del trimestre / Total alumnes del nivell)*100
+#  (Alumnes amb absències de més del <percentatge> de les hores lectives del trimestre / Total alumnes del nivell)*100
 # els noms dels nivells corresponen a CUSTOM_NIVELLS
 CUSTOM_INDICADORS = [
-            # inici_curs    Final 1Trim   Final 2Trim   Final 3Trim  nivell  %
-            ['13/09/2018', '03/12/2018', '09/03/2019', '05/06/2019', 'ESO', 25],  
-            ['13/09/2018', '03/12/2018', '09/03/2019', '05/06/2019', 'ESO', 10],  
-            ['13/09/2018', '03/12/2018', '09/03/2019', '05/06/2019', 'ESO', 5],  
-            ['17/09/2018', '03/12/2018', '09/03/2019', '07/06/2019', 'BTX', 25],  
-            ['17/09/2018', '03/12/2018', '09/03/2019', '07/06/2019', 'BTX', 10],  
-            ['17/09/2018', '03/12/2018', '09/03/2019', '07/06/2019', 'BTX', 5],  
-            ['17/09/2018', '03/12/2018', '09/03/2019', '31/05/2019', 'CICLES', 25],  
-            ['17/09/2018', '03/12/2018', '09/03/2019', '31/05/2019', 'CICLES', 10],  
-            ['17/09/2018', '03/12/2018', '09/03/2019', '31/05/2019', 'CICLES', 5],  
+            # [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],
+            ['13/09/2019', '29/11/2019', '06/03/2020', '19/06/2020', 'ESO', 25],     # per defecte compta 'F' i 'J'
+            ['13/09/2019', '29/11/2019', '06/03/2020', '19/06/2020', 'ESO', 10],  
+            ['13/09/2019', '29/11/2019', '06/03/2020', '19/06/2020', 'ESO', 5, ('F')],  # Només compta les 'F'
+            ['13/09/2019', '29/11/2019', '06/03/2020', '12/06/2020', 'BAT', 25],  
+            ['13/09/2019', '29/11/2019', '06/03/2020', '12/06/2020', 'BAT', 10],  
+            ['13/09/2019', '29/11/2019', '06/03/2020', '12/06/2020', 'BAT', 5],  
+            ['13/09/2019', '29/11/2019', '06/03/2020', '29/05/2020', 'CICLES', 25, ('F','J','R')], #compta 'F'. 'J' i 'R' 
+            ['13/09/2019', '29/11/2019', '06/03/2020', '29/05/2020', 'CICLES', 10],  
+            ['13/09/2019', '29/11/2019', '06/03/2020', '29/05/2020', 'CICLES', 5],  
           ]
 
 CUSTOM_MOSTRAR_MAJORS_EDAT = False 

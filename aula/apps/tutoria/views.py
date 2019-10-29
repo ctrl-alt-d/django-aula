@@ -27,7 +27,6 @@ from aula.apps.tutoria.forms import  justificaFaltesW1Form, informeSetmanalForm,
 
 #helpers
 from aula.utils import tools
-from aula.utils.tools import unicode
 from aula.apps.presencia.models import  ControlAssistencia, EstatControlAssistencia,\
     Impartir
 from django.utils.datetime_safe import  date, datetime
@@ -69,7 +68,6 @@ from aula.apps.tutoria.table2_models import Table2_Actuacions
 
 from django.contrib import messages
 from django.conf import settings
-
 
 @login_required
 @group_required(['professors'] )
@@ -1209,7 +1207,7 @@ def elsMeusAlumnesTutoratsEntreDates(request):
     professor = User2Professor( user )     
     
     if user.groups.filter(name='direcció'):
-        possibles_grups = [ ( t.pk, unicode( t) ) for t in   Grup.objects.all() ]
+        possibles_grups = [ ( t.pk, unicode( t) ) for t in Grup.objects.filter(alumne__isnull = False).distinct().order_by("descripcio_grup") ]
     else:
         possibles_grups = [ ( t.grup.pk, unicode( t.grup) ) for t in  Tutor.objects.filter( professor = professor )]
         

@@ -6,6 +6,7 @@ from django.db.models import Min, Max, Q
 from django.utils.datetime_safe import  date, datetime
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None , dataFinsA = date.today() ):    
     
@@ -101,7 +102,10 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
                 #-faltes--------------------------------------------
             f = controls.filter( alumne = alumne, estat__codi_estat = 'F' ).distinct().count() 
             r = controls.filter( alumne = alumne, estat__codi_estat = 'R' ).distinct().count() 
-            p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count() 
+            if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+                p = controls.filter( alumne = alumne).filter( Q(estat__codi_estat = 'P') | Q(estat__codi_estat__isnull=True) ).distinct().count() 
+            else:
+                p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count() 
             j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count() 
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     

@@ -28,6 +28,8 @@ from django.urls import reverse
 
 from aula.utils.tools import calculate_my_time_off
 
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 
 def keepalive(request):
     if request.user.is_authenticated:
@@ -47,7 +49,7 @@ def logout_page(request):
     logout(request)
     return HttpResponseRedirect('/')
 
-
+@ensure_csrf_cookie
 def menu(request):
     #How do I make a variable available to all my templates?
     #http://readthedocs.org/docs/django/1.2.4/faq/usage.html#how-do-i-make-a-variable-available-to-all-my-templates
@@ -56,18 +58,22 @@ def menu(request):
         return HttpResponseRedirect( settings.LOGIN_URL )         
     else:
         #si és un alumne l'envio a mirar el seu informe
-        if Group.objects.get(name='alumne') in request.user.groups.all():
-            return HttpResponseRedirect( '/open/elMeuInforme/')
+        try:
+            if Group.objects.get(name='alumne') in request.user.groups.all():
+                return HttpResponseRedirect( '/open/elMeuInforme/')
+            
+            #comprova que no té passwd per defecte:
+            defaultPasswd, _ = ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
+            if check_password( defaultPasswd.valor_parametre, request.user.password ):
+                return HttpResponseRedirect( reverse( 'usuari__dades__canvi_passwd' ) )
+            
+            #si no té les dades informades:
+            if not request.user.first_name or not request.user.last_name:
+                return HttpResponseRedirect( '/usuaris/canviDadesUsuari/')
         
-        #comprova que no té passwd per defecte:
-        defaultPasswd, _ = ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
-        if check_password( defaultPasswd.valor_parametre, request.user.password ):
-            return HttpResponseRedirect( reverse( 'usuari__dades__canvi_passwd' ) )
-        
-        #si no té les dades informades:
-        if not request.user.first_name or not request.user.last_name:
-            return HttpResponseRedirect( '/usuaris/canviDadesUsuari/')
-
+        except:
+            pass  
+          
         #prenc impersonate user:
         (user, _) = tools.getImpersonateUser(request)    
         

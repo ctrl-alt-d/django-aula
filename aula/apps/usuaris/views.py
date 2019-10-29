@@ -395,6 +395,9 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                                                                   reintents__lt = 3 )
             except AlumneUser.DoesNotExist:
                 alumneOK = False
+            except  AttributeError:
+                alumneOK = False
+                
             if not alumneOK:
                 errors.append( u'Dades incorrectes. Demaneu un altre codi de recuperació. Si el problema persisteix parleu amb el tutor.')
             elif codiOK and not dataOK:

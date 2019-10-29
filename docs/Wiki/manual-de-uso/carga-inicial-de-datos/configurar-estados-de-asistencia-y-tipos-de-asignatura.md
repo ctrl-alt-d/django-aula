@@ -11,8 +11,8 @@ Podemos modificar estos estados desde la URL:
 ![](../../.gitbook/assets/image%20%2830%29.png)
 
 
-
 De la misma forma podemos personalizar los tipos de asignaturas que vamos a tener en el curso desde:
+(Esta opción no és necesaria con Untis)
 
 [\[URL DJANGO-AULA\]](https://djau.local/admin/presencia/estatcontrolassistencia/)[/admin/assignatures/tipusdassignatura/](https://djau.local/admin/assignatures/tipusdassignatura/)
 

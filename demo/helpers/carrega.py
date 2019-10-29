@@ -17,6 +17,7 @@ from aula.apps.tutoria.models import Tutor
 import random
 from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.alumnes.gestioGrups import grupsPotencials
 from aula.apps.presencia.regeneraImpartir import regeneraThread
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
@@ -132,7 +133,7 @@ def fesCarrega( ):
         print ('Dia', dia, u' ( ompliré 5 dies )', sep=" ")
         for impartir in Impartir.objects.filter( dia_impartir = dia['dia_impartir'] ):
             if not impartir.controlassistencia_set.exists():
-                alumnes =  [ alumne for grup in impartir.horari.grupsPotencials() for alumne in grup.alumne_set.all() ] 
+                alumnes =  [ alumne for grup in grupsPotencials(impartir.horari) for alumne in grup.alumne_set.all() ] 
                 random.shuffle( alumnes )
                 n_alumnes = random.randint( 1,4 )
                 afegeix=afegeixThread(expandir = False, alumnes=alumnes[:n_alumnes], impartir=impartir, usuari = impartir.horari.professor, matmulla = False)

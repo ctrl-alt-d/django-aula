@@ -2,9 +2,8 @@
 # This Python file uses the following encoding: utf-8
 
 from django.db import models
-from django.apps import apps
 from aula.utils.tools import unicode
-
+from django.db.models.constraints import UniqueConstraint
 
 class AbstractDiaDeLaSetmana(models.Model):
     n_dia_uk = models.IntegerField(u'Número de dia de la setmana a UK (0=diumenge)', unique=True) 
@@ -21,12 +20,16 @@ class AbstractDiaDeLaSetmana(models.Model):
         return self.dia_de_la_setmana
 
 class AbstractFranjaHoraria(models.Model):
-    hora_inici = models.TimeField(unique=True) 
-    hora_fi = models.TimeField(unique=True)
+    hora_inici = models.TimeField() 
+    hora_fi = models.TimeField()
     nom_franja = models.CharField(max_length=45, blank=True)  
     class Meta:
         abstract = True
-        ordering = ['hora_inici']
+        ordering = ['hora_inici', 'hora_fi']
+        constraints=[
+            # Detecta les franjes repetides
+            UniqueConstraint(fields=['hora_inici', 'hora_fi'], name='Franjes úniques'),
+            ]
         verbose_name = u'Franja Horària'
         verbose_name_plural = u'Franges Horàries'
     def __str__(self):
@@ -62,25 +65,6 @@ class AbstractHorari(models.Model):
         aula = u" a l'aula " + self.get_nom_aula if self.get_nom_aula else ''
         grup = u' al grup ' + unicode( self.grup) if self.grup else ''
         return obsolet + u'El professor ' + unicode( self.professor) + u' imparteix ' + unicode(self.assignatura) + ' el ' + unicode( self.dia_de_la_setmana) + ' de ' +  unicode(self.hora) + aula + grup
-
-    def grupsPotencials(self):
-        grups_potencials = None
-        codi_ambit = self.assignatura.tipus_assignatura.ambit_on_prendre_alumnes if self.assignatura.tipus_assignatura is not None else 'G'
-        Grup = apps.get_model( 'alumnes','Grup')
-        if codi_ambit == 'I':
-            grups_potencials= Grup.objects.all( )
-        elif codi_ambit == 'N':
-            grups_potencials= Grup.objects.filter( curs__nivell = self.grup.curs.nivell  )
-        elif codi_ambit == 'C':
-            grups_potencials= Grup.objects.filter( curs = self.grup.curs  )
-        elif codi_ambit == 'G':
-            if self.grup:
-                grups_potencials=Grup.objects.filter( pk = self.grup.pk  )
-            else:
-                grups_potencials=Grup.objects.none()
-        return grups_potencials
-
-
 
 #------------------------------------------------------------------------------------------------
 

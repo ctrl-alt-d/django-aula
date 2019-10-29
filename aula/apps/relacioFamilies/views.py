@@ -417,7 +417,10 @@ def elMeuInforme( request, pk = None ):
         tePermis = professor in alumne.tutorsDeLAlumne() 
         semiImpersonat = True
     else:
-        alumne = Alumne.objects.get( user_associat = user )
+        try:
+            alumne = Alumne.objects.get( user_associat = user )
+        except Exception as e:
+            alumne = None
     
     if not alumne or not tePermis:
         raise Http404 

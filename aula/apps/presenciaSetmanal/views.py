@@ -223,7 +223,7 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
     except ValidationError as e:
         cadenaError = u''
         for v in e.message_dict[NON_FIELD_ERRORS]:
-            cadenaError += unicode(v) + u"<br>"
+            cadenaError += str(v) + u"<br>"
         return HttpResponse(CONST_ERROR_CODE + cadenaError, status=500)
     except Exception as e:
         #print (CONST_ERROR_CODE, str(traceback.format_exc()))
