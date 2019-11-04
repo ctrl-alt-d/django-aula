@@ -7,7 +7,6 @@ from django.template import RequestContext, loader
 #tables
 from django.utils.safestring import mark_safe
 
-from aula.settings_local import PRIVATE_STORAGE_ROOT
 from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
@@ -692,7 +691,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
          'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
          'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
-         'ruta_fotos': PRIVATE_STORAGE_ROOT,
+         'ruta_fotos': settings.PRIVATE_STORAGE_ROOT,
          },
     )
 
