@@ -82,6 +82,7 @@ CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 
 CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
 CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
+PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
 
 
 try:
