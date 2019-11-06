@@ -94,7 +94,7 @@ class Sortida(models.Model):
 
     materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a l'activitat. Escriu el nom complet.")
 
-    preu_per_alumne = models.DecimalField(max_digits=5, decimal_places=2, help_text=u"Preu per alumne. Indica el preu que apareixerà a l'autorització.")
+    preu_per_alumne = models.DecimalField(max_digits=5, decimal_places=2, help_text=u"Preu per alumne. Indica el preu que apareixerà a l'autorització ( el posa secretaria / coordinador(a) activitats )")
 
     codi_de_barres = models.CharField(u"Codi de barres pagament", blank=True, default=u"", max_length=100,help_text=u"Codi de barres pagament caixer ( el posa secretaria / coordinador(a) activitats )")
 

@@ -443,6 +443,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         if not settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
             form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
         form.fields["informacio_pagament"].widget.attrs['disabled'] = u"disabled"
+        form.fields["preu_per_alumne"].widget.attrs['disabled'] = u"disabled"
 
     # si no és propietari tot a disabled
     deshabilitat = (instance.id and
