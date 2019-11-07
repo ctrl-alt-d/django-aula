@@ -39,6 +39,15 @@
 	            {{ preu }}
       		</div>
     </div>
+    <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+            <div class="col-sm-1 col-xs-12 label_tag" >
+	          <p class="text-right hidden-xs"><label>Data límit</label></p>
+              <p class="visible-xs"><label>Data límit pagament</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">
+	            {{ limit }}
+      		</div>
+    </div>
 
     {% if pagat  %}
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">

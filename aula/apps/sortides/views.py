@@ -1051,6 +1051,7 @@ def pagoOnline(request, pk):
     sortida = pagament.sortida
     preu = sortida.preu_per_alumne
     descripcio_sortida = sortida.programa_de_la_sortida
+    data_limit_pagament = sortida.termini_pagament
     alumne = pagament.alumne
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
 
@@ -1120,7 +1121,7 @@ def pagoOnline(request, pk):
         })
 
     entorn_real = CUSTOM_REDSYS_ENTORN_REAL
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
 
 @csrf_exempt
 def retornTransaccio(request):
