@@ -51,7 +51,10 @@
 
     {% if pagat  %}
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
-	          <p> <label>Sembla que aquesta sortida ja s'ha pagat anteriorment</label></p>
+                <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
+                    <p> <b><h4>Pagament Realitzat!!!</h4></b>  </p>
+                    <button type="button" class="btn btn-primary" onclick="location.href='{% url 'relacio_families__informe__el_meu_informe' %}'">Tornar</button>
+                </div>
         </div>
     {% else %}
         <form action= {% if entorn_real %}

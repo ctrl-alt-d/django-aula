@@ -1071,8 +1071,8 @@ def pagoOnline(request, pk):
         'DS_MERCHANT_TERMINAL': '1',
         'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__retorn_transaccio'),
         'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
-        'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('relacio_families__informe__el_meu_informe'),
-        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('relacio_families__informe__el_meu_informe'),
+        'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line', kwargs={'pk':pk}),
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line', kwargs={'pk':pk}),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
