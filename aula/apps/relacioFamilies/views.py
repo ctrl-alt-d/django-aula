@@ -457,10 +457,20 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 75
+        capcelera.amplade = 40
         capcelera.contingut = u'Falta, assignatura i franja horària.'
         taula.capceleres.append(capcelera)
-        
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         tots_els_controls = list( controls.select_related('impartir', 'estat').order_by( '-impartir__dia_impartir' , '-impartir__horari__hora') )
         
         assistencia_calendari = []  #{"date":"2016-04-02","badge":true,"title":"Example 2"}
@@ -503,6 +513,19 @@ def elMeuInforme( request, pk = None ):
                                     )        
             camp.negreta = False if control.relacio_familia_revisada else True      
             filera.append(camp)
+
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(control.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if control.relacio_familia_notificada else ''
+            camp.negreta = False if control.relacio_familia_revisada else True
+            filera.append(camp)
+
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(control.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if control.relacio_familia_revisada else ''
+            camp.negreta = False if control.relacio_familia_revisada else True
+            filera.append(camp)
+
 #             assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
 #                                              'badge': control.estat.codi_estat == 'F', 
 #                                              'title': escapejs( camp.contingut )
@@ -532,16 +555,26 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 25
+        capcelera.amplade = 15
         capcelera.contingut = u'Dia'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 75
+        capcelera.amplade = 50
         capcelera.contingut = u'Professor i observació.'
         taula.capceleres.append(capcelera)
-        
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         taula.fileres = []
     
         for incidencia in observacions.order_by( '-dia_incidencia', '-franja_incidencia' ):
@@ -557,11 +590,22 @@ def elMeuInforme( request, pk = None ):
             camp.enllac = None
             camp.negreta = False if incidencia.relacio_familia_revisada else True
             camp.contingut = u'Sr(a): {0} - {1}'.format(incidencia.professional , 
-                                                        incidencia.descripcio_incidencia )        
+                                                        incidencia.descripcio_incidencia )
             camp.negreta = False if incidencia.relacio_familia_revisada else True
             filera.append(camp)
-    
-            #--
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(incidencia.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_notificada else ''
+            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(incidencia.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_revisada else ''
+            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            filera.append(camp)
+            # ----------------------------------------------
             taula.fileres.append( filera )
         
         report.append(taula)
@@ -583,16 +627,27 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 30
+        capcelera.amplade = 15
         capcelera.contingut = u'Dia i estat'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 70
+        capcelera.amplade = 50
         capcelera.contingut = u'Professor i Incidència'
         taula.capceleres.append(capcelera)
-        
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         taula.fileres = []
     
         for incidencia in incidencies.order_by( '-dia_incidencia', '-franja_incidencia' ):
@@ -611,8 +666,22 @@ def elMeuInforme( request, pk = None ):
                                                         incidencia.descripcio_incidencia )        
             camp.negreta = False if incidencia.relacio_familia_revisada else True      
             filera.append(camp)
-    
-            #--
+
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(incidencia.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_notificada else ''
+            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            filera.append(camp)
+
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(incidencia.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_revisada else ''
+            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            filera.append(camp)
+
+        #--
             taula.fileres.append( filera )            
     
         report.append(taula)
@@ -635,13 +704,13 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 20
+        capcelera.amplade = 10
         capcelera.contingut = u'Dia'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 20
+        capcelera.amplade = 10
         capcelera.contingut = u'Data comunicació'
         taula.capceleres.append(capcelera)
             
@@ -649,7 +718,17 @@ def elMeuInforme( request, pk = None ):
         capcelera.amplade = 60
         capcelera.contingut = u'Professor i motiu'
         taula.capceleres.append(capcelera)
-        
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         taula.fileres = []
         
         for expulsio in expulsions.order_by( '-dia_expulsio', '-franja_expulsio' ):
@@ -677,6 +756,21 @@ def elMeuInforme( request, pk = None ):
                                                expulsio.motiu if expulsio.motiu else u'Pendent redactar motiu.')        
             camp.negreta = False if expulsio.relacio_familia_revisada else True                      
             filera.append(camp)
+
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(expulsio.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if expulsio.relacio_familia_notificada else ''
+            camp.negreta = False if expulsio.relacio_familia_revisada else True
+            filera.append(camp)
+
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(expulsio.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if expulsio.relacio_familia_revisada else ''
+            camp.negreta = False if expulsio.relacio_familia_revisada else True
+            filera.append(camp)
+
             #--
             taula.fileres.append( filera )
             
@@ -700,16 +794,26 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 25
+        capcelera.amplade = 15
         capcelera.contingut = u'Dates'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 75
+        capcelera.amplade = 60
         capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
-                
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         taula.fileres = []
             
         for sancio in sancions.order_by( '-data_inici' ):
@@ -724,7 +828,19 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0} {1} {2}'.format( sancio.tipus , ' - ' if sancio.motiu else '', sancio.motiu )        
-            camp.negreta = False if sancio.relacio_familia_revisada else True                
+            camp.negreta = False if sancio.relacio_familia_revisada else True
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(sancio.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if sancio.relacio_familia_notificada else ''
+            camp.negreta = False if sancio.relacio_familia_revisada else True
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(sancio.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if sancio.relacio_familia_revisada else ''
+            camp.negreta = False if sancio.relacio_familia_revisada else True
             filera.append(camp)
             #--
             taula.fileres.append( filera )
@@ -859,22 +975,32 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres = []
         
         capcelera = tools.classebuida()
-        capcelera.amplade = 20
+        capcelera.amplade = 15
         capcelera.contingut = u'Dates'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 35
+        capcelera.amplade = 25
         capcelera.contingut = u' '
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 35
+        capcelera.amplade = 25
         capcelera.contingut = u'Detall'
         taula.capceleres.append(capcelera)
-                
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         capcelera = tools.classebuida()
         capcelera.amplade = 10
         capcelera.contingut = u' '
@@ -909,7 +1035,19 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0}'.format( sortida.sortida.titol_de_la_sortida )        
-            camp.negreta = False if sortida.relacio_familia_revisada else True                
+            camp.negreta = False if sortida.relacio_familia_revisada else True
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(sortida.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if sortida.relacio_familia_notificada else ''
+            camp.negreta = False if bool(sortida.relacio_familia_revisada) else True
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(sortida.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if sortida.relacio_familia_revisada else ''
+            camp.negreta = False if bool(sortida.relacio_familia_revisada) else True
             filera.append(camp)
             
             #----------------------------------------------
@@ -982,10 +1120,20 @@ def elMeuInforme( request, pk = None ):
         taula.capceleres.append(capcelera)
     
         capcelera = tools.classebuida()
-        capcelera.amplade = 65
+        capcelera.amplade = 45
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
-                
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Notificada'
+        taula.capceleres.append(capcelera)
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Revisada'
+        taula.capceleres.append(capcelera)
+
         taula.fileres = []
 
         respostes_pre = ( respostes
@@ -1020,7 +1168,19 @@ def elMeuInforme( request, pk = None ):
                 camp.multipleContingut.append( ( u'{0}'.format( resposta.get_resposta_display() ), None, ) )        
             camp.negreta = False if respostes[0].relacio_familia_revisada else True                
             filera.append(camp)
-            
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(respostes[0].relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if respostes[0].relacio_familia_notificada else ''
+            camp.negreta = False if bool(respostes[0].relacio_familia_revisada) else True
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(respostes[0].relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if respostes[0].relacio_familia_revisada else ''
+            camp.negreta = False if bool(respostes[0].relacio_familia_revisada) else True
+            filera.append(camp)
+
             #--
             taula.fileres.append( filera )
     
