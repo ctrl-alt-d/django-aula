@@ -237,6 +237,7 @@ def sortidesGestioList( request ):
     filtre = []
     socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
     socCoordinador = User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides'] ).exists()
+    socSecretari = User.objects.filter(pk=user.pk, groups__name__in=['secretaria']).exists()
 
     #si sóc equip directiu només les que tinguin estat 'R' (Revisada pel coordinador)
     if socEquipDirectiu:
@@ -244,14 +245,18 @@ def sortidesGestioList( request ):
     #si sóc coordinador de sortides només les que tinguin estat 'P' (Proposada)
     if socCoordinador:
         filtre.append('P')
-    
+
     sortides = ( Sortida
                    .objects
                    .exclude( estat = 'E' )
                    .filter( estat__in = filtre )
                    .distinct()
-                  )    
-    
+                  )
+
+    # si sóc secretari i es pot pagar online, només les que tinguin tipus de pagament 'ON' (ONline)
+    if socSecretari and settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+        sortides = sortides.filter(tipus_de_pagament = 'ON')
+
     table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 
     table.order_by = '-calendari_desde' 
     
