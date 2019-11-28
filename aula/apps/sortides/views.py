@@ -333,6 +333,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         form = formIncidenciaF(post_mutable, instance=instance)
 
         if form.is_valid():
+            if form.cleaned_data['tipus_de_pagament']=='NO': instance.preu_per_alumne=0
             # Omplir camps de classes afectades
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
 

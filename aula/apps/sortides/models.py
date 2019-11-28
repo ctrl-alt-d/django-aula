@@ -94,15 +94,17 @@ class Sortida(models.Model):
 
     materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a l'activitat. Escriu el nom complet.")
 
-    preu_per_alumne = models.DecimalField(max_digits=5, decimal_places=2, help_text=u"Preu per alumne. Indica el preu que apareixerà a l'autorització ( el posa secretaria / coordinador(a) activitats )")
+    tipus_de_pagament = models.CharField(max_length=2, choices=TIPUS_PAGAMENT_CHOICES,
+                                         help_text=u"Quin serà el tipus de pagament predominant", default="ON" if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else "NO",
+                                         null=False)
+
+    preu_per_alumne = models.DecimalField(max_digits=5, blank=True, null=True, decimal_places=2, help_text=u"Preu per alumne. Indica el preu que apareixerà a l'autorització ( el posa secretaria / coordinador(a) activitats )")
 
     codi_de_barres = models.CharField(u"Codi de barres pagament", blank=True, default=u"", max_length=100,help_text=u"Codi de barres pagament caixer ( el posa secretaria / coordinador(a) activitats )")
 
     informacio_pagament = models.TextField(u"Informació pagament", blank=True,
                                            default=u"",
                                            help_text=u"Instruccions de pagament: entitat, concepte, import, ... ( el posa secretaria / coordinador(a) activitats )")
-
-    tipus_de_pagament = models.CharField(max_length=2,choices= TIPUS_PAGAMENT_CHOICES, help_text = u"Quin serà el tipus de pagament predominant", default="EB", null=False)
 
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
