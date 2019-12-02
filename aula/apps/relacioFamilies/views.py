@@ -912,10 +912,13 @@ def elMeuInforme( request, pk = None ):
                                         sortida.sortida.titol_de_la_sortida,
                                         naturalday(sortida.sortida.calendari_desde),
                                         )
-            camp.modal['body'] =  u'{0} a {1} \n\n{2}\n{3}'.format(
+            camp.modal['body'] =  u'Del {0} al {1} \n\n{2}\n{3}\n{4}\n{5}\n{6}'.format(
                                         sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
                                         sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),                                        
                                         sortida.sortida.programa_de_la_sortida,
+                                        sortida.sortida.condicions_generals,
+                                        sortida.sortida.informacio_pagament,
+                                        u'Preu: {0} €'.format(str(sortida.sortida.preu_per_alumne)) if sortida.sortida.preu_per_alumne else u'Preu: 0 €',
                                         u'Data límit pagament: {0}'.format(str(sortida.sortida.termini_pagament)) if sortida.sortida.termini_pagament else ''
                                         )
             filera.append(camp)
