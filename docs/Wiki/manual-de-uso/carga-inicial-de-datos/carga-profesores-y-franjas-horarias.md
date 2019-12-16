@@ -1,5 +1,7 @@
 # Carga Profesores y Franjas Horarias
 
+Este paso no es necesario con la importación desde Untis.
+
 Para la carga de Profes y Franjas Horarias hay que utilizar el mismo fichero que se utilizo para cargar los Grupos del curso, ya que ese fichero también contenía la información que necesitamos ahora.
 
 {% page-ref page="creacion-de-niveles-cursos-y-grupos.md" %}

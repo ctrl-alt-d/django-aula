@@ -1,6 +1,9 @@
 ---
 name: Sol·licitar ajuda
 about: Quina ajuda necessites
+title: ''
+labels: ''
+assignees: ''
 
 ---
 

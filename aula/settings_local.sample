@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
 
-from settings_dir.common import *
+from .settings_dir.common import *
 
 NOM_CENTRE = 'Centre de Demo'
 LOCALITAT = u"L'Escala"
@@ -36,4 +36,4 @@ SERVER_EMAIL='el-meu-centre@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
-
+PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'

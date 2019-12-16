@@ -2,7 +2,6 @@
 from django.conf import settings
 #templates
 from django.forms.utils import ErrorDict
-from django.template import RequestContext
 
 #formularis
 from aula.apps.aules.models import ReservaAula
@@ -51,6 +50,7 @@ from django.forms.widgets import RadioSelect, HiddenInput, TextInput
 from aula.apps.BI.utils import dades_dissociades
 from aula.apps.BI.prediccio_assistencia import predictTreeModel
 from aula.apps.presencia.business_rules.impartir import impartir_despres_de_passar_llista
+from aula.apps.alumnes.gestioGrups import grupsPotencials
 
 #template filters
 from django.template.defaultfilters import date as _date
@@ -657,7 +657,7 @@ def afegeixAlumnesLlista(request, pk):
     #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
 
     #un formulari per cada grup
-    grups_a_mostrar = impartir.horari.grupsPotencials()
+    grups_a_mostrar = grupsPotencials(impartir.horari)
 
     formset = []
     if request.method == "POST":
@@ -1020,7 +1020,7 @@ def alertaAssistencia(request):
 
 #amorilla@xtec.cat 
 @login_required
-@group_required(['direcció'])
+@group_required(['direcció','administradors'])
 def indicadors(request):
     (report, dades) = indicadorsReport()
     if dades is None:
@@ -1038,7 +1038,7 @@ def indicadors(request):
 
 #amorilla@xtec.cat 
 @login_required
-@group_required(['direcció'])
+@group_required(['direcció','administradors'])
 def indcsv(request):
 
     (_, dades) = indicadorsReport()

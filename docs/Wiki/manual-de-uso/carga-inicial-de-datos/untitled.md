@@ -1,6 +1,7 @@
-# Configurar Franjas Horarias y Dias de la semana
+# Configurar Franjas Horarias y Días de la semana
 
 Antes de empezar a cargar datos hay que hacer una serie de cosas, en este documento explicare como crear las franjas horarias, y Días de la semana, Out the Box todo esto ya viene creado pero podemos añadir mas o editar e incluso eliminar lo que queramos.
+Utilizando la importación desde Untis no hace falta crear las franjas ni los días.
 
 Una franja horaria es un intervalo de tiempo en el que se imparten Asignaturas en un centro escolar, un día de la semana no creo que tenga que explicarlo :\)
 

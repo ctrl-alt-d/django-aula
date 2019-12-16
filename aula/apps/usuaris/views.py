@@ -3,6 +3,7 @@
 #templates
 from django.template import RequestContext
 from django_tables2 import RequestConfig
+from django.urls import reverse
 
 from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuariForm, \
     recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form
@@ -19,6 +20,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import  get_object_or_404, render
 
 #helpers
+from django.http import HttpResponseNotFound, HttpResponse
+
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.utils.forms import ckbxForm
@@ -27,16 +30,23 @@ from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTime
 from django.utils.datetime_safe import datetime
 from datetime import timedelta
 from django.db.models import Q
-from aula.apps.presencia.models import Impartir
 
 from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd
+from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
 
 from django.contrib import messages
 from django.conf import settings
+
+#-- ical:
+from aula.apps.presencia.models import Impartir
+from aula.apps.sortides.models import Sortida
+from icalendar import Calendar, Event
+from icalendar import vCalAddress, vText
+from django.templatetags.tz import localtime
 
 @login_required
 def canviDadesUsuari( request):
@@ -385,6 +395,9 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                                                                   reintents__lt = 3 )
             except AlumneUser.DoesNotExist:
                 alumneOK = False
+            except  AttributeError:
+                alumneOK = False
+                
             if not alumneOK:
                 errors.append( u'Dades incorrectes. Demaneu un altre codi de recuperació. Si el problema persisteix parleu amb el tutor.')
             elif codiOK and not dataOK:
@@ -536,6 +549,101 @@ def cercaProfessor(request):
          }
         )
 
+@login_required
+@group_required(['professors','professional'])
+def integraCalendari(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    professor =  User2Professor(user)
+    dades_addicionals = GetDadesAddicionalsProfessor(professor)
+    url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'gestio__calendari__comparteix', kwargs={'clau': str( dades_addicionals.clauDeCalendari) } ) )    
+    return render(
+        request,
+        'integraCalendari.html',
+        {
+         'url_calendari': url,
+         }
+        )    
+
+def comparteixCalendari(request, clau):
+    cal = Calendar()
+    cal.add('method','PUBLISH' ) # IE/Outlook needs this
+
+    try:
+        dades_adicionals_professor = DadesAddicionalsProfessor.objects.get( clauDeCalendari = clau )
+        professor = dades_adicionals_professor.professor
+    except:
+        return HttpResponseNotFound("")         
+    else:
+
+        #-- imparticions
+        imparticions = list(
+            Impartir
+            .objects
+            .filter( horari__professor = professor  )
+            .select_related("reserva")
+            .select_related("reserva__aula")
+            .select_related("horari")
+            .select_related("horari__hora")
+            .select_related("horari__assignatura")
+        )
+
+        for instance in imparticions:
+            event = Event()
+
+            assignatura = instance.horari.assignatura.nom_assignatura
+            aula = instance.reserva.aula.nom_aula if hasattr(instance,"reserva") and instance.reserva is not None else ""
+            grup = instance.horari.grup.descripcio_grup if hasattr(instance.horari, "grup") and instance.horari.grup is not None else ""
+
+            summary = u"{assignatura} {aula} {grup}".format(
+                assignatura=assignatura ,
+                aula = aula,
+                grup = grup,
+                )
+            d = instance.dia_impartir
+            h = instance.horari.hora
+            event.add('dtstart',localtime( datetime( d.year, d.month, d.day, h.hora_inici.hour, h.hora_inici.minute, h.hora_inici.second ) ) )
+            event.add('dtend' ,localtime( datetime( d.year, d.month, d.day, h.hora_fi.hour, h.hora_fi.minute, h.hora_fi.second ) ) )
+            event.add('summary',summary)
+            event.add('uid', 'djau-ical-impartir-{0}'.format( instance.id ) )
+            event['location'] = vText( aula )
+            
+            cal.add_component(event)
+
+        #-- sortides
+        q_professor = Q( professor_que_proposa = professor )
+        q_professor |= Q(altres_professors_acompanyants = professor ) 
+        q_professor |= Q(professors_responsables = professor ) 
+        sortides = list (
+            Sortida
+            .objects
+            .filter( q_professor )
+            .filter( calendari_desde__isnull = False )
+            .exclude(estat__in = ['E', 'P', ])
+            .distinct()
+                )
+        for instance in sortides:
+            event = Event()
+            
+            summary = u"{ambit}: {titol}".format(ambit=instance.ambit ,
+                                                    titol= instance.titol_de_la_sortida)
+            
+            event.add('dtstart',localtime(instance.calendari_desde) )
+            event.add('dtend' ,localtime(instance.calendari_finsa) )
+            event.add('summary',summary)
+            organitzador = u"\nOrganitza: "
+            organitzador += u"{0}".format( u"Departament" + instance.departament_que_organitza.nom if instance.departament_que_organitza_id else u"" )
+            organitzador += " " + instance.comentari_organitza
+            event.add('organizer',  vText( u"{0} {1}".format( u"Departament " + instance.departament_que_organitza.nom  if instance.departament_que_organitza_id else u"" , instance.comentari_organitza )))
+            event.add('description',instance.programa_de_la_sortida + organitzador)
+            event.add('uid', 'djau-ical-sortida-{0}'.format( instance.id ) )
+            event['location'] = vText( instance.ciutat )
+
+            
+            cal.add_component(event)
+
+
+        return HttpResponse( cal.to_ical() )
 
 
 @login_required
@@ -587,3 +695,4 @@ def blanc( request ):
                 'blanc.html',
                     {},
                     )
+

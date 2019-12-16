@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
 CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
@@ -75,11 +75,16 @@ CUSTOM_DATE_FORMAT = "%-d %B de %Y"   #  5 d'abril de 1999, si fem servir 'ca_ES
 CUSTOM_NO_CONTROL_ES_PRESENCIA = False
 
 CUSTOM_INDICADORS = [
-            # [inici_curs,    Final 1Trim,  Final 2Trim,   Final 3Trim,  nivell,  % ],
+            # [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],
           ]
 
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
 CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
+
+CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
+CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
+PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+
 
 try:
     from .settings_local import *

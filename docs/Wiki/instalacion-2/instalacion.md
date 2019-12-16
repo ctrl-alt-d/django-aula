@@ -18,7 +18,7 @@ Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el r
 
 ```bash
 cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2019 
-sudo chown -R :www-data djau2019  #opcionalment canviar tambe l'usuari propietari per no treballar amb root.
+sudo chown -R :www-data djau2019  #opcionalmente se puede cambiar el propietario para no utilizar root.
 cd djau2019
 ```
 
@@ -236,9 +236,9 @@ djau@djau:/opt/djau2019# source venv/bin/activate
 (venv) djau@djau:/opt/djau2019# python manage.py shell
 
 from django.contrib.auth.models import User, Group
-g1 = Group.objects.get( name = 'direcció' )
-g2 = Group.objects.get( name = 'professors' )
-g3 = Group.objects.get( name = 'professional' )
+g1, _ = Group.objects.get_or_create( name = 'direcció' )
+g2, _ = Group.objects.get_or_create( name = 'professors' )
+g3, _ = Group.objects.get_or_create( name = 'professional' )
 a = User.objects.get( username = 'admin' )
 a.groups.set( [ g1,g2,g3 ] )
 a.save()
@@ -448,5 +448,4 @@ cat "${copia}${extensio}" > "${directori}bdd-dia-${dia}.sql${extensio}"
 cat "${copia}${extensio}" > "${directori}bdd-mes-${mes}.sql${extensio}" 
 rm $copia${extensio}
 ```
-
 

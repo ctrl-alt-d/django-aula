@@ -1,6 +1,8 @@
 # Carga De Niveles, Cursos y Grupos
 
-Llego el momento de hacer una de las primeras cargas de datos, es el momento de crear la estructura de cursos de nuestro centro, para ello utilizaremos la exportación de datos que nos ha proporcionado Kronowin, si no lo recuerdas lee [esto](https://django-aula.gitbook.io/documentation/~/edit/primary/manual-de-uso/carga-inicial-de-datos).
+Llego el momento de hacer una de las primeras cargas de datos, es el momento de crear la estructura de cursos de nuestro centro, para ello utilizaremos la exportación de datos que nos ha proporcionado Kronowin, si no lo recuerdas lee [esto](../README.md)
+
+Este paso no es necesario con la importación desde Untis, solamente se deberían repasar las fechas de inicio y final de curso en la consola de administrador. 
 
 Te recuerdo que el formato que debe de tener el fichero es el siguiente:
 

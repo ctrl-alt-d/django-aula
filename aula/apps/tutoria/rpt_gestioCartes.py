@@ -131,7 +131,10 @@ def gestioCartesRpt(professor, l4):
                 #-faltes--------------------------------------------
             f = controls.filter( alumne = alumne, estat__codi_estat = 'F' ).distinct().count()
             r = controls.filter( alumne = alumne, estat__codi_estat = 'R' ).distinct().count()
-            p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count()
+            if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
+                p = controls.filter( alumne = alumne).filter( Q(estat__codi_estat = 'P') | Q(estat__codi_estat__isnull=True) ).distinct().count() 
+            else:
+                p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count() 
             j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count()
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     

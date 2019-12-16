@@ -16,6 +16,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 
 from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE
+from aula.settings import CUSTOM_GRUPS_PODEN_VEURE_FOTOS
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
@@ -27,6 +28,8 @@ from django.conf import settings
 from django.urls import reverse
 
 from aula.utils.tools import calculate_my_time_off
+
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 def keepalive(request):
@@ -47,7 +50,7 @@ def logout_page(request):
     logout(request)
     return HttpResponseRedirect('/')
 
-
+@ensure_csrf_cookie
 def menu(request):
     #How do I make a variable available to all my templates?
     #http://readthedocs.org/docs/django/1.2.4/faq/usage.html#how-do-i-make-a-variable-available-to-all-my-templates
@@ -56,18 +59,22 @@ def menu(request):
         return HttpResponseRedirect( settings.LOGIN_URL )         
     else:
         #si és un alumne l'envio a mirar el seu informe
-        if Group.objects.get(name='alumne') in request.user.groups.all():
-            return HttpResponseRedirect( '/open/elMeuInforme/')
+        try:
+            if Group.objects.get(name='alumne') in request.user.groups.all():
+                return HttpResponseRedirect( '/open/elMeuInforme/')
+            
+            #comprova que no té passwd per defecte:
+            defaultPasswd, _ = ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
+            if check_password( defaultPasswd.valor_parametre, request.user.password ):
+                return HttpResponseRedirect( reverse( 'usuari__dades__canvi_passwd' ) )
+            
+            #si no té les dades informades:
+            if not request.user.first_name or not request.user.last_name:
+                return HttpResponseRedirect( '/usuaris/canviDadesUsuari/')
         
-        #comprova que no té passwd per defecte:
-        defaultPasswd, _ = ParametreKronowin.objects.get_or_create( nom_parametre = 'passwd', defaults={'valor_parametre':'1234'}  )
-        if check_password( defaultPasswd.valor_parametre, request.user.password ):
-            return HttpResponseRedirect( reverse( 'usuari__dades__canvi_passwd' ) )
-        
-        #si no té les dades informades:
-        if not request.user.first_name or not request.user.last_name:
-            return HttpResponseRedirect( '/usuaris/canviDadesUsuari/')
-
+        except:
+            pass  
+          
         #prenc impersonate user:
         (user, _) = tools.getImpersonateUser(request)    
         
@@ -348,4 +355,13 @@ def blanc( request ):
                 )
     
     
-         
+def allow_foto(private_file):
+    request = private_file.request
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    pertany_al_grup_permes = (user
+                              .groups
+                              .filter(name__in=CUSTOM_GRUPS_PODEN_VEURE_FOTOS)
+                              .exists()
+                              )
+    return (request.user.is_authenticated and pertany_al_grup_permes)

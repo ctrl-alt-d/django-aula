@@ -30,10 +30,10 @@ Llicència:
     You should have received a copy of the GNU General Public License
     along with django-aula ('djAu').  If not, see <http://www.gnu.org/licenses/>.
     
-    Crèdits:
+    Crèdits, col·laboradors i special thanks:
     
        Daniel Herrera ( ctrl.alt.d@gmail.com )
-       'All time, Some code
+       'Some time, Some code
 
        Joan Rodríguez ( jrodr236@gmail.com ) 2013-2015
        'Migració UI a Bootstrap3 i Responsive design.
@@ -45,19 +45,25 @@ Llicència:
        JaumeI ( JaumeI@gmail.com ) & David Llop ( d.lloople@gmail.com ) 2014
        'workflow de promoció/canvi manual de grup
 
-       Xevi Terradellas ( xeviterr@gmail.com ) 2014
+       Xevi Terradellas ( xeviterr@gmail.com ) 2014 -
        'Millores en gestió d'alumnes i grups
+       'Testos
        
        Juaky Rubio ( juaky73@gmail.com ) 2017-
        'Migració a django 1.11
        'Mòdul reserva d'aules
        'Buscadors de persones ( alumnes, professors )
        'Adaptació a Esfer@
+       'Fotos alumnes
        
        Quim Saurina ( jsaurina@xtec.cat ) 2018 -
        'Aportacions a la documentació.
        
        Jordi Subias ( jsubias6@xtec.cat ) 2018
        'Millores parametritzacions
+
+       Toni Morillas (amorilla@xtec.cat) 2019
+       'Migració Python3
+       'Extensió Untis
        
 

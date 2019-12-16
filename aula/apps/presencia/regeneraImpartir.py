@@ -45,7 +45,7 @@ class regeneraThread(Thread):
             dia_inici_curs = dates['data_inici_curs__min']
             data_fi_curs   = dates['data_fi_curs__max']
             if not self.franja_inici:
-                self.franja_inici = FranjaHoraria.objects.all()[0]
+                self.franja_inici = FranjaHoraria.objects.order_by('hora_inici','hora_fi').first()
             import datetime as t
 
             #calculo rang de dates a refer               

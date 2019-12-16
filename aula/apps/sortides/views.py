@@ -343,43 +343,66 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
 
                 #Buscar primera impartició afectada
-                primeraimparticio = Impartir.objects.filter(dia_impartir__gte=instance.calendari_desde.date(),
-                                                            horari__hora__hora_inici__gte=instance.calendari_desde.time()).order_by(
-                                                            'dia_impartir', 'horari__hora__hora_inici').first()
+                primeraimparticio = ( 
+                    Impartir
+                    .objects
+                    .filter(dia_impartir__gte=instance.calendari_desde.date(),
+                            horari__hora__hora_inici__gte=instance.calendari_desde.time()).order_by(
+                            'dia_impartir', 'horari__hora__hora_inici')
+                    .first() )
+                primerafranja = primeraimparticio.horari if primeraimparticio else None
 
-                try:
+                if primeraimparticio is None:
+                    primeraimparticio = (
+                        Impartir
+                        .objects.filter(
+                            dia_impartir__gt=instance.calendari_desde.date()).order_by(
+                            'dia_impartir')
+                        .first() )
+                    primerafranja = (
+                        FranjaHoraria
+                        .objects
+                        .order_by('hora_inici')
+                        .first()
+                    )
+
+                if primeraimparticio is not None:
                     instance.data_inici = primeraimparticio.dia_impartir
-                    instance.franja_inici = primeraimparticio.horari.hora
-                # Si no hi ha primera impartició afectada s'agafa la del primer dia lectiu posterior
-                except:
-                    instance.data_inici = Impartir.objects.filter(
-                        dia_impartir__gt=instance.calendari_desde.date()).order_by(
-                        'dia_impartir').first().dia_impartir
-                    instance.franja_inici = FranjaHoraria.objects.order_by('hora_inici').first()
+                    instance.franja_inici = primerafranja.hora
+
 
                 # Buscar darrera impartició afectada
-                darreraimparticio = Impartir.objects.filter(dia_impartir__lte=instance.calendari_finsa.date(),
-                                                            horari__hora__hora_fi__lte=instance.calendari_finsa.time()).order_by(
-                                                            'dia_impartir', 'horari__hora__hora_fi').last()
+                darreraimparticio = (
+                    Impartir
+                    .objects
+                    .filter(dia_impartir__lte=instance.calendari_finsa.date(),
+                            horari__hora__hora_fi__lte=instance.calendari_finsa.time()).order_by(
+                            'dia_impartir', 'horari__hora__hora_fi')
+                    .last()
+                )
+                darrerafranja = darreraimparticio.horari if darreraimparticio else None
 
-                try:
+                if darreraimparticio is None:
+                    darreraimparticio = (
+                        Impartir
+                        .objects
+                        .filter(dia_impartir__lt=instance.calendari_finsa.date())
+                        .order_by('dia_impartir')
+                        .last()
+                    )
+                    darrerafranja = FranjaHoraria.objects.order_by('hora_inici').last()
+
+                if darreraimparticio is not None:
                     instance.data_fi = darreraimparticio.dia_impartir
-                    instance.franja_fi = darreraimparticio.horari.hora
-                # Si no hi ha darrera impartició afectada s'agafa la del primer dia lectiu anterior
-                except:
-                    instance.data_fi = Impartir.objects.filter(dia_impartir__lt=instance.calendari_finsa.date()).order_by(
-                                                            'dia_impartir').last().dia_impartir
-                    instance.franja_fi = FranjaHoraria.objects.order_by('hora_inici').last()
-
-
-
+                    instance.franja_fi = darrerafranja.hora
 
                 # Comprovem si la sortida en realitat no afecta cap hora d'impartició, això passa quan la data inicial > data final
-                if (instance.data_fi < instance.data_inici):
+                if ( instance.data_fi and instance.data_inici and instance.data_fi < instance.data_inici):
                     instance.data_inici = None
                     instance.data_fi = None
                     instance.franja_inici = None
                     instance.franja_fi = None
+
             form.save()
 
             if origen == "Meves":

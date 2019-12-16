@@ -209,6 +209,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.aules',
     'aula.utils',
     'aula.apps.presenciaSetmanal',
+    'aula.apps.extUntis',
 ]
 
 #select2
@@ -218,7 +219,7 @@ AUTO_RENDER_SELECT2_STATICS=False
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA
+INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA + ['private_storage',]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -255,3 +256,4 @@ LOGGING = {
 }
 
 
+PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_foto'

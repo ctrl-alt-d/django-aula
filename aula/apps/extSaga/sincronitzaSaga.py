@@ -123,6 +123,8 @@ def sincronitza(f, user = None):
                 a.rp2_nom = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_ADREÇA" ):
                 a.adreca = unicode(value,'iso-8859-1')
+            if columnName.endswith( u"_CP"):
+                a.cp = unicode(value,'iso-8859-1')
 
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
@@ -202,6 +204,7 @@ def sincronitza(f, user = None):
                 a.data_alta = date.today()
                 a.motiu_bloqueig = u'No sol·licitat'
                 a.tutors_volen_rebre_correu = False
+                a.foto = alumneDadesAnteriors.foto
             else:
                 a.correu_relacio_familia_pare         = alumneDadesAnteriors.correu_relacio_familia_pare
                 a.correu_relacio_familia_mare         = alumneDadesAnteriors.correu_relacio_familia_mare
@@ -210,6 +213,7 @@ def sincronitza(f, user = None):
                 a.periodicitat_faltes                 = alumneDadesAnteriors.periodicitat_faltes
                 a.periodicitat_incidencies            = alumneDadesAnteriors.periodicitat_incidencies
                 a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
+                a.foto = alumneDadesAnteriors.foto
 
         a.save()
         nivells.add(a.grup.curs.nivell)

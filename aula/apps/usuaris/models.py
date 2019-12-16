@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-
+import uuid
 from django.db import models
 #from django.db.models import get_model
 from django.contrib.auth.models import User, Group
@@ -74,6 +74,21 @@ def User2Professor(user):
     except:
         pass
     return professor
+
+class DadesAddicionalsProfessor(models.Model):
+    clauDeCalendari = models.UUIDField(default=uuid.uuid4)
+    professor = models.OneToOneField(Professor, on_delete=models.CASCADE)
+
+def GetDadesAddicionalsProfessor(professor):
+    dadesAddicionals, created = DadesAddicionalsProfessor.objects.get_or_create(
+        professor = professor, 
+        defaults={ },
+        )
+    if created:
+        professor.refresh_from_db()
+    return dadesAddicionals
+
+
 
 # ----------------  ------------------------------------------------------------------------------
 

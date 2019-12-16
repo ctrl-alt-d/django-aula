@@ -124,12 +124,18 @@ def clean_sortida(instance):
                     u"Preu mínim per poder fer el pagament online: {0} €".format(settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE))
 
 
+
     dades_presencia = [bool(instance.data_inici),
                        bool(instance.franja_inici),
                        bool(instance.data_fi),
                        bool(instance.franja_fi), ]
-    if len(set(dades_presencia)) > 1:
-        errors.append(u"Dates i franges de control de presencia cal entrar-les totes o cap")
+    entrat_a_mitges = len(set(dades_presencia)) > 1
+    if entrat_a_mitges:
+        instance.data_inici = None
+        instance.data_fi = None
+        instance.franja_inici = None
+        instance.franja_fi = None
+        #errors.append(u"Dates i franges de control de presencia cal entrar-les totes o cap")
 
     if l4:
         pass

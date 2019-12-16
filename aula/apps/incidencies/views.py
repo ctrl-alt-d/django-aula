@@ -419,10 +419,15 @@ def posaIncidenciaPrimeraHora( request ):
             incidencia.alumne = alumne
             incidencia.professional = alumne.tutorsDelGrupDeLAlumne().first()
 
-            if not bool(incidencia.professional):
+            try:
+                if not bool(incidencia.professional):
+                    messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
+                    url = "/incidencies/posaIncidenciaprimerahora"
+                    return HttpResponseRedirect( url )
+            except ObjectDoesNotExist:   
                 messages.error(request,  u"No s'han trobat tutors per aquest alumne" )
                 url = "/incidencies/posaIncidenciaprimerahora"
-                return HttpResponseRedirect( url )   
+                return HttpResponseRedirect( url )
 
             if formIncidencia.is_valid(): 
                     incidencia = formIncidencia.save( )

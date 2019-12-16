@@ -9,14 +9,12 @@
 
    	Càrrega Inicial
 	<ol> 
-	 <li>Obtenir una llicència d'ús: ctrl.alt.d@gmail.com</li>
+	 <li>Si es fa servir Kronowin:
+	 <ol>
 	 <li><a href="/admin/horaris/diadelasetmana/">Comprova dies de la Setmana (cal haver importat des de fixtures)</a></li>
 	 <li><a href="/admin/horaris/franjahoraria/">Comprova i adapta franges horàries (cal haver importat des de fixtures)</a></li>
-	 <li><a href="/admin/presencia/estatcontrolassistencia/">Comprova estats control assistència (cal haver importat des de fixtures)</a></li>
 	 <li><a href="/admin/assignatures/tipusdassignatura/">Comprova tipus d'assignatura (cal haver importat des de fixtures)</a></li>
 	 <li><a href="/admin/horaris/festiu/">Comprova i adapta calendari de festius (pots importar exemple des de fixtures)</a></li>
-	 <li><a href="/admin/incidencies/tipusincidencia/">Comprova i adapta tipus d'incidències a l'aula (pots importar exemple des de fixtures)</a></li>
-	 <li><a href="/admin/incidencies/tipussancio/">Comprova i adapta tipus de sancions (pots importar exemple des de fixtures)</a></li>
 	 <li><a href="/admin/extKronowin/parametrekronowin/">Comprova i adapta paràmetres Kronowin (pots importar exemple des de fixtures)</a></li>
 	 <li>Crea nivells, cursos i grups des de kronowin
 	 	<ol>
@@ -29,6 +27,23 @@
 		 <li><a href="/admin/alumnes/grup/">Crea a mà els grups (o per codi)</a></li>
 		</ol>
 	 </li>	 
+	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa professors i franges (Fitxer Soluc.txt generat des d'Access) -> Et surtirà error perquè no sap associar grups, és correcte, fes els tres punts següents.</a></li>
+	 <li><a href="/extKronowin/assignaGrups">Cassa grups Kronowin</a></li>
+	 <li><a href="/extKronowin/assignaFranges">Cassa franges Kronowin</a></li>
+	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa horaris (Fitxer Soluc.txt generat des d'Access) -> Aquí ja no ha de donar errors</a></li>
+	 <li><a href="/admin/assignatures/assignatura/">Assigna tipus d'assignatura (opcional i recomenat, es pot fer de cop, mira el quadre de sota)</a></li>
+	 <li><a href="/aules/assignaComentaris/">Assigna comentaris a les aules</a></li>
+     </ol>
+     </li>
+
+	 <li>Si es fa servir Untis:
+	 <ol>
+	 <li><a href="/extUntis/sincronitzaUntis">Untis: Importa fitxer xml</a></li>
+	 <li><a href="/admin/horaris/franjahoraria/">Opcional. Afegeix altres franges horàries (Per exemple patis o pausa migdia)</a></li>
+	 <li><a href="/admin/horaris/festiu/">Opcional. Comprova i adapta calendari de festius (No fa falta si s'han definit a Untis)</a></li>
+	 <li><a href="/admin/extUntis/agrupament">Crea agrupaments (Només en casos especials, veure manual)</a></li>
+     </ol>
+     </li>
 	 <li><a href="/admin/alumnes/curs/">Recorda comprovar la data d'inici i fi de cada curs (Potser 2nBTX han d'acabar abans ...)</a></li>
 	 <li><a href="{% url 'administracio__sincronitza__saga' %}">Importa alumnes SAGA --> Et donarà error si hi ha grups al Saga que no sap mapejar-los al programa</a></li>
 	 <li><a href="{% url 'administracio__configuracio__assigna_grups_saga' %}">Assigna els grups del Saga al programa</a></li>
@@ -36,21 +51,15 @@
      <li><a href="{% url 'administracio__sincronitza__esfera' %}">Importa alumnes Esfer@ --> Et donarà error si hi ha grups a Esfer@ que no sap mapejar-los al programa</a></li>
 	 <li><a href="{% url 'administracio__configuracio__assigna_grups_esfera' %}">Assigna els grups de Esfer@ al programa</a></li>
 	 <li><a href="{% url 'administracio__sincronitza__esfera' %}">Importa alumnes Esfer@ (Ara no haurien de sortir errors)</a></li>
-	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa professors i franges (Fitxer Soluc.txt generat des d'Access) -> Et surtirà error perquè no sap associar grups, és correcte, fes els tres punts següents.</a></li>
-	 <li><a href="/extKronowin/assignaGrups">Cassa grups Kronowin</a></li>
-	 <li><a href="/extKronowin/assignaFranges">Cassa franges Kronowin</a></li>
-	 <li><a href="/extKronowin/sincronitzaKronowin">Kronowin: Importa horaris (Fitxer Soluc.txt generat des d'Access) -> Aquí ja no ha de donar errors</a></li>
-	 <li><a href="/admin/auth/user/">Assigna el grup 'Direcció' a qui correspongui.</a></li>
-	 <li><a href="/admin/assignatures/assignatura/">Assigna tipus d'assignatura (opcional i recomenat, es pot fer de cop, mira el cuadre de sota)</a></li>
-	 <li><a href="/alumnes/assignaTutors/">Informar dels tutors dels grups (opcional i recomenat)</a></li>
-	 <li><a href="/admin/horaris/festiu/">Posa les festes (i informa com a festa dels grups que comencen el curs unes hores més tard)</a></li>
-	 <li><a href="/presencia/regeneraImpartir">Reprograma classes segons horari actual (el procés triga, tindràs un missatge quan acabi)</a></li>
-	 <li><a href="/admin/auth/user/">Posa dins el grup 'direcció' els usuaris que han de tenir accés a les tasques de direcció (marca'ls com 'es staff')</a></li>
+	 <li><a href="/admin/presencia/estatcontrolassistencia/">Comprova estats control assistència (cal haver importat des de fixtures)</a></li>
+	 <li><a href="/admin/incidencies/tipusincidencia/">Comprova i adapta tipus d'incidències a l'aula (pots importar exemple des de fixtures)</a></li>
+	 <li><a href="/admin/incidencies/tipussancio/">Comprova i adapta tipus de sancions (pots importar exemple des de fixtures)</a></li>
+	 <li><a href="/admin/auth/user/">Posa dins el grup 'direcció' els usuaris que han de tenir accés a les tasques de direcció (marca'ls com 'es staff')</a></li> <li><a href="/alumnes/assignaTutors/">Informar dels tutors dels grups (opcional i recomenat)</a></li>
 	 <li><a href="/admin/auth/user/">Recorda crear els usuaris del grup consergeria.</a></li>
 	 <li><a href="/admin/auth/user/">Posa al grup 'administradors' els usuaris que han de rebre els missatges de seguretat enviats per la resta d'usuaris.</a></li>
      <li><a href="/admin/alumnes/nivell/">Crea l'ordre en que han d'aparèixer els nivells ( ESO = 0, BTX=1, ... )</a></li>
      <li><a href="/admin/usuaris/departament/">Sortides i activitats: crea els departaments que les organitzen</a></li>
-	 <li><a href="/aules/assignaComentaris/">Assigna comentaris a les aules</a></li>
+	 <li><a href="/presencia/regeneraImpartir">Reprograma classes segons horari actual (el procés triga, tindràs un missatge quan acabi)</a></li>
 
 	</ol>
 	
@@ -58,7 +67,7 @@
 	
 	<pre>
 
-EXEMPLES DE CANVIAR DE COP ELS TIPUS D'ASSIGNATURA:
+EXEMPLES DE CANVIAR DE COP ELS TIPUS D'ASSIGNATURA:(només per Kronowin)
 
 (Processos des de la shell: python manage.py shell)
 

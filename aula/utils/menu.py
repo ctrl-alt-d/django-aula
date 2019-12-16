@@ -73,7 +73,10 @@ def calcula_menu( user , path ):
     if al:
         alumneuser = AlumneUser.objects.get( id = user.id )
         alumne = alumneuser.getAlumne()
-        menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom )
+        if alumne:
+            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom )
+        else:
+            menu["nomusuari"]= user.first_name or user.username 
     else:
         menu["nomusuari"]= user.first_name or user.username 
     
@@ -171,6 +174,7 @@ def calcula_menu( user , path ):
                       ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),                                        
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
+                      ("iCal", 'gestio__calendari__integra', pl, None, None),  
                    )
                ),
                             
@@ -207,6 +211,7 @@ def calcula_menu( user , path ):
                       ("Impressió Faltes i Incid.", 'coordinacio_alumnes__alumne__informe_faltes_incidencies', di, None, None ),
                       #amorilla@xtec.cat
                       ("Indicadors", 'coordinacio_alumnes__indicadors__llistat', di, None, None ),
+                      ("Llista completa", 'coordinacio_alumnes__llistaAlumnescsv__llistat', di, None, None ),
                    )
                ),
 
@@ -237,7 +242,8 @@ def calcula_menu( user , path ):
                         (
                           ("Alumnes ESO/BAT", 'administracio__sincronitza__esfera', di , None  ),
                           ("Alumnes Cicles", 'administracio__sincronitza__saga', di, None),
-                          ("Horaris", 'administracio__sincronitza__kronowin', di , None  ),
+                          ("HorarisKronowin", 'administracio__sincronitza__kronowin', di , None  ),
+                          ("HorarisUntis", 'administracio__sincronitza__Untis', di , None  ),
                           ("Aules", 'gestio__aula__assignacomentari', di, None),
                           ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
                         ),
@@ -390,6 +396,7 @@ coordinacio_alumnes__presencia__passa_llista_a_un_grup_tria
 coordinacio_alumnes__ranking__list
 coordinacio_alumnes__seguiment_tutorial__preguntes
 coordinacio_alumnes__indicadors__llistat
+coordinacio_alumnes__llistaAlumnescsv__llistat
 
 administracio__configuracio__assigna_franges_kronowin
 administracio__configuracio__assigna_grups
@@ -398,6 +405,7 @@ administracio__professorat__reset_passwd
 administracio__sincronitza__duplicats
 administracio__sincronitza__fusiona
 administracio__sincronitza__kronowin
+administracio__sincronitza__Untis
 administracio__sincronitza__regenerar_horaris
 administracio__sincronitza__saga
 administracio__sincronitza__esfera
