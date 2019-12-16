@@ -118,8 +118,8 @@ def clean_sortida(instance):
 
     if (User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and
             instance.tipus_de_pagament=='ON' and
-            (instance.preu_per_alumne < settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE) or
-            instance.preu_per_alumne == None):
+            (instance.preu_per_alumne < settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE or
+            instance.preu_per_alumne == None)):
                 errors.append(
                     u"Preu mínim per poder fer el pagament online: {0} €".format(settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE))
 

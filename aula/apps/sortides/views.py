@@ -242,8 +242,8 @@ def sortidesGestioList( request ):
     #si sóc equip directiu només les que tinguin estat 'R' (Revisada pel coordinador)
     if socEquipDirectiu:
         filtre.append('R')
-    #si sóc coordinador de sortides només les que tinguin estat 'P' (Proposada)
-    if socCoordinador:
+    #si sóc coordinador de sortides o secretari només les que tinguin estat 'P' (Proposada)
+    if socCoordinador or socSecretari:
         filtre.append('P')
 
     sortides = ( Sortida
@@ -962,16 +962,24 @@ def sortidaExcel( request, pk ):
     detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència" ], ]
-    alumnes += [
-                        [e,
-                         e.grup.descripcio_grup,
-                         e.grup.curs.nivell,
-                         u"No assisteix a la sortida" if e in no_assisteixen else u"",
-                        ]
-                        for e in sortida.alumnes_convocats.all() 
-                ]
-    
+    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència"], ]
+    if sortida.tipus_de_pagament == 'ON':
+        alumnes[0].extend([u"Pagat", u"Data Pagament", u"Codi Pagament"])
+
+    for alumne in sortida.alumnes_convocats.all():
+        row = [alumne,
+               alumne.grup.descripcio_grup,
+               alumne.grup.curs.nivell,
+               u"No assisteix a la sortida" if alumne in no_assisteixen else u""
+               ]
+        if sortida.tipus_de_pagament=='ON':
+            pagament = Pagament.objects.get(alumne=alumne, sortida=sortida)
+            pagament_realitzat = pagament.pagament_realitzat
+            row.extend([u"Si" if pagament_realitzat else u"No",
+                        pagament.data_hora_pagament if pagament_realitzat else u"",
+                        pagament.ordre_pagament if pagament_realitzat else u""])
+        alumnes += [ row ]
+
     dades_sortida = detall + alumnes
 
     template = loader.get_template("export.csv")
@@ -1075,10 +1083,12 @@ def pagoOnline(request, pk):
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',
         'DS_MERCHANT_TERMINAL': '1',
-        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__retorn_transaccio'),
+        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio'),
         'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
-        'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line', kwargs={'pk':pk}),
-        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line', kwargs={'pk':pk}),
+        'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
+                                                                          kwargs={'pk': pk}),
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
+                                                                          kwargs={'pk': pk}),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -1246,8 +1256,13 @@ def detallPagament(request, pk):
     taula.capceleres.append(capcelera)
 
     capcelera = tools.classebuida()
-    capcelera.amplade = 60
+    capcelera.amplade = 40
     capcelera.contingut = u'Pagat'
+    taula.capceleres.append(capcelera)
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 20
+    capcelera.contingut = u'Codi Pagament'
     taula.capceleres.append(capcelera)
 
     taula.fileres = []
@@ -1265,6 +1280,12 @@ def detallPagament(request, pk):
         camp = tools.classebuida()
         camp.enllac = None
         camp.contingut = pagament.data_hora_pagament if pagament.data_hora_pagament else 'No'
+        filera.append(camp)
+
+        # -Codi--------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = pagament.ordre_pagament if pagament.ordre_pagament else ''
         filera.append(camp)
 
         # --
