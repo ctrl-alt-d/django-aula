@@ -1,5 +1,19 @@
 # This Python file uses the following encoding: utf-8
-from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT
+import base64
+import hashlib
+import hmac
+import json
+import random
+import urllib
+
+from Crypto.Cipher import DES3
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+
+from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
+    ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
+    ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
+from aula.settings import CUSTOM_REDSYS_ENTORN_REAL
+from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
@@ -8,13 +22,13 @@ from aula.utils.decorators import group_required
 #helpers
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.usuaris.models import User2Professor
+from aula.apps.usuaris.models import User2Professor, AlumneUser
 from aula.apps.presencia.models import Impartir
 from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida
+from aula.apps.sortides.models import Sortida, Pagament
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -25,7 +39,7 @@ from django.shortcuts import render
 
 from icalendar import Calendar, Event
 from icalendar import vCalAddress, vText
-from django.http.response import HttpResponse, Http404
+from django.http.response import HttpResponse, Http404, HttpResponseServerError
 from django.utils.datetime_safe import datetime
 from django.conf import settings
 from django.urls import reverse
@@ -35,14 +49,14 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.templatetags.tz import localtime
 from django.utils.safestring import SafeText
 from aula.apps.missatgeria.models import Missatge
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django.template import loader
 from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
-
+from .forms import PagamentForm
 
 @login_required
 @group_required(['professors'])  
@@ -223,21 +237,26 @@ def sortidesGestioList( request ):
     filtre = []
     socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
     socCoordinador = User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides'] ).exists()
+    socSecretari = User.objects.filter(pk=user.pk, groups__name__in=['secretaria']).exists()
 
     #si sóc equip directiu només les que tinguin estat 'R' (Revisada pel coordinador)
     if socEquipDirectiu:
         filtre.append('R')
-    #si sóc coordinador de sortides només les que tinguin estat 'P' (Proposada)
-    if socCoordinador:
+    #si sóc coordinador de sortides o secretari només les que tinguin estat 'P' (Proposada)
+    if socCoordinador or socSecretari:
         filtre.append('P')
-    
+
     sortides = ( Sortida
                    .objects
                    .exclude( estat = 'E' )
                    .filter( estat__in = filtre )
                    .distinct()
-                  )    
-    
+                  )
+
+    # si sóc secretari i es pot pagar online, només les que tinguin tipus de pagament 'ON' (ONline)
+    if socSecretari and settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+        sortides = sortides.filter(tipus_de_pagament = 'ON')
+
     table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 
     table.order_by = '-calendari_desde' 
     
@@ -305,9 +324,9 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
         exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'data_inici', 'franja_inici', 'data_fi',
                    'franja_fi', 'codi_de_barres', 'empresa_de_transport', 'pagament_a_empresa_de_transport',
-                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula')
+                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula', 'pagaments')
     else:
-        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio',)
+        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments')
 
     formIncidenciaF = modelform_factory(Sortida, exclude=exclude)
 
@@ -319,6 +338,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         form = formIncidenciaF(post_mutable, instance=instance)
 
         if form.is_valid():
+            if form.cleaned_data['tipus_de_pagament']=='NO': instance.preu_per_alumne=0
             # Omplir camps de classes afectades
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
 
@@ -452,6 +472,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         if not settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
             form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
         form.fields["informacio_pagament"].widget.attrs['disabled'] = u"disabled"
+        form.fields["preu_per_alumne"].widget.attrs['disabled'] = u"disabled"
 
     # si no és propietari tot a disabled
     deshabilitat = (instance.id and
@@ -512,6 +533,8 @@ def alumnesConvocats( request, pk , origen ):
                     #aquest if no caldria però per algun motiu falla per clau duplicada.
                     try:
                         instance.alumnes_convocats.add( alumne )
+                        if instance.tipus_de_pagament == 'ON':
+                            instance.pagaments.add(alumne)
                     except IntegrityError:
                         pass
                     
@@ -520,6 +543,8 @@ def alumnesConvocats( request, pk , origen ):
                     #aquest if no caldria. és només per seguretat.
                     try:
                         instance.alumnes_convocats.remove( alumne )
+                        if instance.tipus_de_pagament == 'ON':
+                            instance.pagaments.remove(alumne)
                     except IntegrityError:
                         pass
 
@@ -960,16 +985,24 @@ def sortidaExcel( request, pk ):
     detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència" ], ]
-    alumnes += [
-                        [e,
-                         e.grup.descripcio_grup,
-                         e.grup.curs.nivell,
-                         u"No assisteix a la sortida" if e in no_assisteixen else u"",
-                        ]
-                        for e in sortida.alumnes_convocats.all() 
-                ]
-    
+    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència"], ]
+    if sortida.tipus_de_pagament == 'ON':
+        alumnes[0].extend([u"Pagat", u"Data Pagament", u"Codi Pagament"])
+
+    for alumne in sortida.alumnes_convocats.all():
+        row = [alumne,
+               alumne.grup.descripcio_grup,
+               alumne.grup.curs.nivell,
+               u"No assisteix a la sortida" if alumne in no_assisteixen else u""
+               ]
+        if sortida.tipus_de_pagament=='ON':
+            pagament = Pagament.objects.get(alumne=alumne, sortida=sortida)
+            pagament_realitzat = pagament.pagament_realitzat
+            row.extend([u"Si" if pagament_realitzat else u"No",
+                        pagament.data_hora_pagament if pagament_realitzat else u"",
+                        pagament.ordre_pagament if pagament_realitzat else u""])
+        alumnes += [ row ]
+
     dades_sortida = detall + alumnes
 
     template = loader.get_template("export.csv")
@@ -1044,9 +1077,248 @@ def sortidaExcel( request, pk ):
     
     
 #-----------------
-    
-    
 
-    
-    
-    
+
+@login_required
+def pagoOnline(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    pagament = get_object_or_404(Pagament, pk=pk)
+    sortida = pagament.sortida
+    preu = sortida.preu_per_alumne
+    descripcio_sortida = sortida.programa_de_la_sortida
+    data_limit_pagament = sortida.termini_pagament
+    alumne = pagament.alumne
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+
+    potEntrar = (alumne.user_associat.getUser() == user or fEsDireccioOrGrupSortides)
+    if not potEntrar:
+        raise Http404
+
+    #preparar parametres per redsys   --------------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
+
+    values = {
+        'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
+        'DS_MERCHANT_ORDER': str(random.randint(100000000000, 999999999999)),
+        'DS_MERCHANT_MERCHANTCODE': CUSTOM_CODI_COMERÇ,
+        'DS_MERCHANT_CURRENCY': '978',
+        'DS_MERCHANT_TRANSACTIONTYPE': '0',
+        'DS_MERCHANT_TERMINAL': '1',
+        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio'),
+        'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
+        'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
+                                                                          kwargs={'pk': pk}),
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
+                                                                          kwargs={'pk': pk}),
+        #'Ds_Merchant_Paymethods': 'T',
+    }
+    data = json.dumps(values)
+    data = base64.b64encode(data.encode())
+    params = data.decode("utf-8")
+    #-----------------------------------------------------------------------------
+
+    pagament.ordre_pagament = values['DS_MERCHANT_ORDER']
+    pagament.save()
+
+    # preparar firma per redsys -------------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
+
+    params_dic = json.loads(base64.b64decode(params).decode())
+
+    cipher = DES3.new(
+        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        mode=DES3.MODE_CBC,
+        IV=b'\0\0\0\0\0\0\0\0')
+    ordre = str(params_dic['DS_MERCHANT_ORDER'])
+    diff_block = len(ordre) % 8
+    zeros = diff_block and (b'\0' * (8 - diff_block)) or b''
+    key = cipher.encrypt(str.encode(ordre + zeros.decode()))
+    params64 = params.encode()
+    dig = hmac.new(
+        key=key,
+        msg=params64,
+        digestmod=hashlib.sha256).digest()
+    signature = base64.b64encode(dig).decode()
+    # ----------------------------------------------------------------------------
+
+
+    if request.method == 'POST':
+        form = PagamentForm(request.POST, initial={
+            'sortida': sortida,
+            'Ds_MerchantParameters': params,
+            'Ds_Signature': signature,
+        })
+
+    else:
+        form = PagamentForm(initial={
+            'sortida': sortida,
+            'Ds_MerchantParameters': params,
+            'Ds_Signature': signature,
+            'acceptar_condicions': False
+        })
+
+    entorn_real = CUSTOM_REDSYS_ENTORN_REAL
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
+
+@csrf_exempt
+def retornTransaccio(request):
+
+    ips_permeses = ['195.76.9.117',
+                    '195.76.9.149',
+                    '193.16.243.13',
+                    '193.16.243.173',
+                    '195.76.9.187',
+                    '195.76.9.222',
+                    '194.224.159.47',
+                    '194.224.159.57']  # ip's Banc Sabadell
+    ip = request.META.get('REMOTE_ADDR')
+    if ip not in ips_permeses:
+        missatge = ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
+        txt = missatge.format(ip)
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia)
+        return HttpResponseServerError()
+
+    # rebent dades de redsys   --------------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
+
+    version = request.POST.get('Ds_SignatureVersion', '')
+    parameters = request.POST.get('Ds_MerchantParameters', '')
+    firma_rebuda = request.POST.get('Ds_Signature', '')
+
+    parameters_dic = json.loads(base64.b64decode(parameters).decode())
+    reference = urllib.parse.unquote(parameters_dic.get('Ds_Order', ''))
+    pay_id = parameters_dic.get('Ds_AuthorisationCode')
+    shasign = firma_rebuda.replace('_', '/').replace('-', '+')
+    if not reference or not pay_id or not shasign:
+        missatge = ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE
+        txt = missatge.format(reference, pay_id, shasign)
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia=importancia)
+        return HttpResponseServerError()
+
+    # -------------------------------------------------------------------------
+
+    # verificant conincidència signatures --------------------------------------
+    #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
+
+    cipher = DES3.new(
+        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        mode=DES3.MODE_CBC,
+        IV=b'\0\0\0\0\0\0\0\0')
+    ordre = str(parameters_dic['Ds_Order'])
+    diff_block = len(ordre) % 8
+    zeros = diff_block and (b'\0' * (8 - diff_block)) or b''
+    key = cipher.encrypt(str.encode(ordre + zeros.decode()))
+    params64 = parameters.encode()
+    dig = hmac.new(
+        key=key,
+        msg=params64,
+        digestmod=hashlib.sha256).digest()
+    shasign_check = base64.b64encode(dig).decode()
+
+    if shasign_check != shasign:
+        missatge = ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE
+        txt = missatge.format(shasign, shasign_check, request.POST)
+        tipus_de_missatge = tipusMissatge(missatge)
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia=importancia)
+        return HttpResponseServerError()
+
+    # -------------------------------------------------------------------------
+
+    pagament = get_object_or_404(Pagament, ordre_pagament=reference)
+    pagament.pagament_realitzat = True
+    data = parameters_dic['Ds_Date']
+    hora = parameters_dic['Ds_Hour']
+    pagament.data_hora_pagament = data + ' ' + hora
+    pagament.save()
+    return HttpResponse('')
+
+
+@login_required()
+@group_required(['professors'])
+def detallPagament(request, pk):
+
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+    professor = User2Professor(user)
+    fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+    sortida = get_object_or_404(Sortida, pk=pk)
+    potEntrar = (sortida.tipus_de_pagament == 'ON' and (professor in sortida.professors_responsables.all() or fEsDireccioOrGrupSortides))
+    if not potEntrar:
+        raise Http404
+
+    head = 'Sortida: {0}  ({1} €)'.format(sortida.titol_de_la_sortida, str(sortida.preu_per_alumne))
+
+
+    report = []
+
+    taula = tools.classebuida()
+
+    # taula.titol = tools.classebuida()
+    # taula.titol.contingut = 'Sortida: ' + sortida.titol_de_la_sortida
+    # taula.titol.enllac = None
+
+    taula.capceleres = []
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 40
+    capcelera.contingut = 'Alumne'
+    capcelera.enllac = ""
+    taula.capceleres.append(capcelera)
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 40
+    capcelera.contingut = u'Pagat'
+    taula.capceleres.append(capcelera)
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 20
+    capcelera.contingut = u'Codi Pagament'
+    taula.capceleres.append(capcelera)
+
+    taula.fileres = []
+
+    for pagament in Pagament.objects.filter(sortida=sortida).order_by('alumne'):
+        filera = []
+
+        # -Alumne--------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = pagament.alumne
+        filera.append(camp)
+
+        # -Pagat--------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = pagament.data_hora_pagament if pagament.data_hora_pagament else 'No'
+        filera.append(camp)
+
+        # -Codi--------------------------------------------
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = pagament.ordre_pagament if pagament.ordre_pagament else ''
+        filera.append(camp)
+
+        # --
+        taula.fileres.append(filera)
+    report.append(taula)
+
+    return render(
+        request,
+        'report_detall_pagament_sortida.html',
+        {'report': report,
+          'head': head,
+         },
+    )

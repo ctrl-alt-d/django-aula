@@ -42,12 +42,13 @@ CACHES = {
 
 CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT = u"""Podeu fer el pagament amb targeta de crèdit a qualsevol caixer de CaixaBank, amb el codi de barres o amb el codi entitat: XXXXXXXXXX"""
 CUSTOM_SORTIDES_PAGAMENT_ONLINE = False
+CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE = 1
 CUSTOM_SORTIDES_PAGAMENT_CAIXER = True
 CUSTOM_FORMULARI_SORTIDES_REDUIT = True
 CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA = u"""El pagament s'ha de realitzar als Caixers del Banc Sabadell (qualsevol targeta de qualsevol entitat funciona per realitzar el pagament, no cal tenir compte al Banc) a pagament a tercers i posar el codi de pagament: 5805."""
 CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU = u"""El pagament s'ha de realitzar en efectiu al professor organitzador de la sortida o al tutor."""
-CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE = u"""El pagament s'ha de realitzar a través de la web d'informació a les famílies de l'Institut dJau"""
-
+CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE = u"""El pagament s'ha de realitzar a través d'aquesta mateixa plataforma"""
+CUSTOM_REDSYS_ENTORN_REAL = False
 
 #Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 CUSTOM_TUTORS_INFORME = False

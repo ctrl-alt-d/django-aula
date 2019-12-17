@@ -1,0 +1,92 @@
+
+{% extends "base.html" %}
+
+{% block content  %}
+    <h2>Pagament Sortida/Activitat</h2>
+    <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+	        <div class="col-sm-1 col-xs-12 label_tag">
+	          <p class="text-right hidden-xs"><label>Alumne/a</label></p>
+              <p class="visible-xs"><label>Alumne</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">
+	            {{ alumne }}
+      		</div>
+    </div>
+    <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+            <div class="col-sm-1 col-xs-12 label_tag">
+	          <p class="text-right hidden-xs"><label>Activitat</label></p>
+              <p class="visible-xs"><label>Activitat</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">
+	            {{ sortida }}
+      		</div>
+    </div>
+     <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+            <div class="col-sm-1 col-xs-12 label_tag">
+	          <p class="text-right hidden-xs"><label>Descripció</label></p>
+              <p class="visible-xs"><label>Descripció</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">
+	            {{ descripcio }}
+      		</div>
+    </div>
+    <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+            <div class="col-sm-1 col-xs-12 label_tag" >
+	          <p class="text-right hidden-xs"><label>Preu(€)</label></p>
+              <p class="visible-xs"><label>Preu(€)</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">
+	            {{ preu }}
+      		</div>
+    </div>
+    <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+            <div class="col-sm-1 col-xs-12 label_tag" >
+	          <p class="text-right hidden-xs"><label>Data límit</label></p>
+              <p class="visible-xs"><label>Data límit pagament</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">
+	            {{ limit }}
+      		</div>
+    </div>
+
+    {% if pagat  %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+                <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
+                    <p> <b><h4>Pagament Realitzat!!!</h4></b>  </p>
+                    <button type="button" class="btn btn-primary" onclick="location.href='{% url 'relacio_families__informe__el_meu_informe' %}'">Tornar</button>
+                </div>
+        </div>
+    {% else %}
+        <form action= {% if entorn_real %}
+                            "https://sis.redsys.es/sis/realizarPago"
+                      {% else %}
+                            "https://sis-t.redsys.es:25443/sis/realizarPago"
+                      {% endif %}
+              method="post" >
+            {% csrf_token %}
+            {{ form.Ds_MerchantParameters}}
+            {{ form.Ds_Signature}}
+            {{ form.sortida}}
+            <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1"/>
+
+            <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+                <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
+                    {{ form.acceptar_condicions }} He llegit i accepto la <a target = _blank href="{% url  'varis__pagament__pagament_online' %}">política de venda/devolucions</a>
+                </div>
+            </div>
+            <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+                <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
+                    <button type="submit" class="btn btn-primary">Pagar</button>
+                </div>
+            </div>
+        </form>
+
+    {% endif %}
+{% endblock %}
+
+
+
+
+
+
+

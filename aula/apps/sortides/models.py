@@ -49,7 +49,7 @@ class Sortida(models.Model):
         ('NO', u'No cal pagament',),
         ('EF', u'En efectiu',),
     ]
-    if CUSTOM_SORTIDES_PAGAMENT_ONLINE: TIPUS_PAGAMENT_CHOICES.append(('ON', u'Online a través del dJau',))
+    if CUSTOM_SORTIDES_PAGAMENT_ONLINE: TIPUS_PAGAMENT_CHOICES.append(('ON', u'Online a través del djAu',))
     if CUSTOM_SORTIDES_PAGAMENT_CAIXER: TIPUS_PAGAMENT_CHOICES.append(('EB', u'''Al caixer de l'entitat bancària''',))
 
     NO_SINCRONITZADA = 'N'
@@ -94,15 +94,17 @@ class Sortida(models.Model):
 
     materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a l'activitat. Escriu el nom complet.")
 
-    preu_per_alumne = models.CharField(max_length=100,help_text=u"Preu per alumne, escriu el preu que apareixerà a l'autorització. Si és gratuita cal indicar-ho.")
+    tipus_de_pagament = models.CharField(max_length=2, choices=TIPUS_PAGAMENT_CHOICES,
+                                         help_text=u"Quin serà el tipus de pagament predominant", default="ON" if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else "NO",
+                                         null=False)
+
+    preu_per_alumne = models.DecimalField(max_digits=5, blank=True, null=True, decimal_places=2, help_text=u"Preu per alumne. Indica el preu que apareixerà a l'autorització ( el posa secretaria / coordinador(a) activitats )")
 
     codi_de_barres = models.CharField(u"Codi de barres pagament", blank=True, default=u"", max_length=100,help_text=u"Codi de barres pagament caixer ( el posa secretaria / coordinador(a) activitats )")
 
     informacio_pagament = models.TextField(u"Informació pagament", blank=True,
                                            default=u"",
                                            help_text=u"Instruccions de pagament: entitat, concepte, import, ... ( el posa secretaria / coordinador(a) activitats )")
-
-    tipus_de_pagament = models.CharField(max_length=2,choices= TIPUS_PAGAMENT_CHOICES, help_text = u"Quin serà el tipus de pagament predominant", default="EB", null=False)
 
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
@@ -139,6 +141,7 @@ class Sortida(models.Model):
 
     alumnes_justificacio = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que no venen i disposen de justificació per no assistir al Centre el dia de l'activitat.",related_name='sortides_falta_justificat')
 
+    pagaments = models.ManyToManyField(Alumne, through='Pagament')
     @property
     def n_acompanyants(self):
         return self.altres_professors_acompanyants.count()
@@ -194,6 +197,17 @@ class Sortida(models.Model):
 
         return l
 
+@python_2_unicode_compatible
+class Pagament(models.Model):
+    alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT)
+    sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT)
+    data_hora_pagament = models.CharField(max_length=50, null=True)
+    pagament_realitzat = models.BooleanField(null=True, default=False )
+    ordre_pagament = models.CharField(max_length=12, unique=True, null=True)
+
+    def __str__(self):
+        return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
+    
 @python_2_unicode_compatible
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne, on_delete=models.CASCADE )

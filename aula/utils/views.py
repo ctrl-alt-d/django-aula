@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #templates
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, JsonResponse, Http404
 from django.template import RequestContext
 from django.shortcuts import render
 from aula.apps.extKronowin.models import ParametreKronowin
@@ -15,6 +15,7 @@ from django.contrib.auth.models import Group
 #auth
 from django.contrib.auth.decorators import login_required
 
+from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE
 from aula.settings import CUSTOM_GRUPS_PODEN_VEURE_FOTOS
 from aula.utils.decorators import group_required
 from aula.utils import tools
@@ -244,7 +245,94 @@ def about(request):
                      'head': 'About' ,
                     },
                 )
-            
+
+
+@login_required
+def pagamentOnLine(request):
+
+    if not CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+        raise Http404()
+
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+
+    report = []
+    taula = tools.classebuida()
+
+    taula.titol = tools.classebuida()
+    taula.titol.contingut = ''
+    taula.titol.enllac = None
+
+    taula.capceleres = []
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 20
+    capcelera.contingut = u'Informació'
+    capcelera.enllac = None
+    taula.capceleres.append(capcelera)
+
+    capcelera = tools.classebuida()
+    capcelera.amplade = 80
+    capcelera.contingut = u''
+    taula.capceleres.append(capcelera)
+
+    taula.fileres = []
+
+    filera = []
+
+    # -by--------------------------------------------
+    camp = tools.classebuida()
+    camp.enllac = None
+    camp.contingut = u'Dades Fiscals'
+    camp.enllac = ''
+    filera.append(camp)
+
+    # -tip--------------------------------------------
+
+    dadesFiscalsFile = open(settings.DADES_FISCALS_FILE, "r")
+    tip = dadesFiscalsFile.read()
+
+    camp = tools.classebuida()
+    camp.enllac = ''
+    camp.contingut = tip
+    filera.append(camp)
+
+    taula.fileres.append(filera)
+
+    # -1--------------------------------------------
+    filera = []
+
+    camp = tools.classebuida()
+    camp.enllac = None
+    camp.contingut = u'Política de vendes/devolucions'
+    camp.enllac = ''
+    filera.append(camp)
+
+    # -tip--------------------------------------------
+
+    politicaVendesFile = open(settings.POLITICA_VENDA_FILE, "r")
+    tip = politicaVendesFile.read()
+
+    camp = tools.classebuida()
+    camp.enllac = ''
+    camp.contingut = tip
+    filera.append(camp)
+
+    taula.fileres.append(filera)
+
+
+    report.append(taula)
+
+    return render(
+        request,
+        'report.html',
+        {'report': report,
+         'head': 'Pagament Online',
+         },
+    )
+
+
 @login_required    
 def calendariDevelop(request):
     credentials = tools.getImpersonateUser(request) 

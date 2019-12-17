@@ -18,8 +18,8 @@ from django.contrib.auth.decorators import login_required
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
+from aula.apps.sortides.models import Sortida, NotificaSortida, Pagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm
-from aula.apps.sortides.models import Sortida, NotificaSortida
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne
@@ -1060,12 +1060,32 @@ def elMeuInforme( request, pk = None ):
                                         sortida.sortida.titol_de_la_sortida,
                                         naturalday(sortida.sortida.calendari_desde),
                                         )
-            camp.modal['body'] =  u'{0} a {1} \n\n{2}\n'.format( 
+            camp.modal['body'] =  u'Del {0} al {1} \n\n{2}\n{3}\n{4}\n{5}\n{6}'.format(
                                         sortida.sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
                                         sortida.sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),                                        
                                         sortida.sortida.programa_de_la_sortida,
-                                        ) 
+                                        sortida.sortida.condicions_generals,
+                                        sortida.sortida.informacio_pagament,
+                                        u'Preu: {0} €'.format(str(sortida.sortida.preu_per_alumne)) if sortida.sortida.preu_per_alumne else u'Preu: 0 €',
+                                        u'Data límit pagament: {0}'.format(str(sortida.sortida.termini_pagament)) if sortida.sortida.termini_pagament else ''
+                                        )
             filera.append(camp)
+
+            # ----------------------------------------------
+            if sortida.sortida.tipus_de_pagament == 'ON' and sortida.sortida.termini_pagament >= datetime.now():
+                camp = tools.classebuida()
+                #pagament corresponent a una sortida i un alumne
+                pagament_sortida_alumne = get_object_or_404(Pagament, alumne=alumne, sortida=sortida.sortida)
+                camp.id = pagament_sortida_alumne.id
+
+                if pagament_sortida_alumne.pagament_realitzat:
+                    camp.negreta = True
+                    camp.contingut = "Pagat"
+                else:
+                    camp.buto = u'sortides__sortides__pago_on_line'
+                    camp.contingut = "Pagar Online"
+                filera.append(camp)
+
             #--
             taula.fileres.append( filera )
     

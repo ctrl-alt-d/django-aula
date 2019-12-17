@@ -21,5 +21,6 @@ XlsxWriter
 typing
 selenium
 pisa
+pycryptodome
 xmltodict
 django-private-storage
