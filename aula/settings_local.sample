@@ -37,3 +37,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
 PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+CUSTOM_CODI_COMERÇ = 'xxxxxx'
+CUSTOM_KEY_COMERÇ = 'xxxxxx'
