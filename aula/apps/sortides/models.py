@@ -72,7 +72,7 @@ class Sortida(models.Model):
 
     ambit = models.CharField(u"Àmbit", max_length=20,help_text=u"Quins alumnes hi van? Ex: 1r i 2n ESO. Ex: 1r ESO A.")
 
-    ciutat = models.CharField(u"Ciutat", max_length=30,help_text=u"Ciutat(s) destinació. Ex: Girona, Cendrassos")
+    ciutat = models.CharField(u"Lloc", max_length=30,help_text=u"On es fa l'activitat. Ex. Sala polivalent, Aula 201, Teatre el Jardí, Barcelona,,...")
 
     esta_aprovada_pel_consell_escolar = models.CharField( u'Aprovada_pel_consell_escolar?',max_length=1, choices=CONSELL_ESCOLAR_CHOICES, default='P', help_text=u"Marca si aquesta activitat ja ha estat aprovada pel consell escolar" )
 
