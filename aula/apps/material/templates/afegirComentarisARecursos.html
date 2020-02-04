@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+ 
+{% block content  %}
+	<h1>Carregar el fitxer csv de material i comentaris</h1>
+	<form action="." method="post" enctype="multipart/form-data">{% csrf_token %}
+		 {{ form }}
+		 <input type="submit" value="Upload">
+	</form>
+	<h2>Recorda que els camps a enviar són 2</h2>
+	<ul>
+	<li>
+	<pre>
+Camps:		
+	"NOM", <---- Correspon al nom del material (Armari portàtils 1, Armari portàtils 2 , Carro vídeo 1,.....)
+	"DESC",  <---- Correspon a la descripció del material (Armari amb 16 portàtils windows 10, ......)
+
+	</pre>
+	</li>
+	</ul>
+{% endblock %}
