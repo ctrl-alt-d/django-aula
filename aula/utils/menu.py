@@ -171,7 +171,8 @@ def calcula_menu( user , path ):
                #--Gestió--------------------------------------------------------------------------
                ('gestio', 'Gestió', 'gestio__reserva_aula__list', co or pl, None,
                   (
-                      ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),                                        
+                      ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),
+                      ("Reserva Material", 'gestio__reserva_recurs__list', co or pl, None, None),
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
                       ("iCal", 'gestio__calendari__integra', pl, None, None),  

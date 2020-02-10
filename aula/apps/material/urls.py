@@ -4,15 +4,15 @@ from aula.apps.material import views as recursos_views
 
 urlpatterns = [
 
-    # url(r'^lesMevesReservesDAula/$', aula_views.reservaAulaList,
-    #     name="gestio__reserva_aula__list"),
-    #
-    # # wizard per aula
-    # url(r'^consultaAulaPerAula/$', aula_views.consultaAulaPerAula,
-    #     name="gestio__reserva_aula__consulta"),
-    # url(r'^detallAulaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$',
-    #     aula_views.detallAulaReserves,
-    #     name="gestio__reserva_aula__detallaulareserves"),
+     url(r'^lesMevesReservesDeRecurs/$', recursos_views.reservaRecursList,
+         name="gestio__reserva_recurs__list"),
+
+     # wizard per recurs
+     url(r'^consultaRecursPerRecurs/$', recursos_views.consultaRecursPerRecurs,
+         name="gestio__reserva_recurs__consulta"),
+     url(r'^detallRecursReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$',
+         recursos_views.detallRecursReserves,
+         name="gestio__reserva_recurs__detallrecursreserves"),
     #
     # # wizard per franja
     # url(r'^consultaAulaPerFranja/$', aula_views.consultaAulaPerFranja,
@@ -21,11 +21,11 @@ urlpatterns = [
     #     aula_views.detallFranjaReserves,
     #     name="gestio__reserva_aula__detallfranjareserves"),
     #
-    # # wizard last step
-    # url(r'^tramitarReservaAula/(?P<pk_aula>\d+)/(?P<pk_franja>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
-    #     aula_views.tramitarReservaAula,
-    #     name="gestio__reserva_aula__tramitarreservaaula"),
-    #
+     # wizard last step
+     url(r'^tramitarReservaRecurs/(?P<pk_recurs>\d+)/(?P<pk_franja>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$',
+         recursos_views.tramitarReservaRecurs,
+         name="gestio__reserva_recurs__tramitarreservarecurs"),
+
     # # wizard last step
     # url(r'^tramitarReservaAula/$',
     #     aula_views.tramitarReservaAula,

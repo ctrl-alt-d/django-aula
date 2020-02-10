@@ -10,23 +10,23 @@ from aula.django_select2.forms import ModelSelect2Widget
 from django.utils.datetime_safe import datetime
 from aula.utils.widgets import DateTextImput
 
-# class disponibilitatAulaPerAulaForm(forms.Form):
-#
-#     aula = ModelChoiceField(
-#                    widget=ModelSelect2Widget(
-#                                         queryset=Aula.objects.filter(reservable = True),
-#                                         search_fields = ['nom_aula__icontains','descripcio_aula__icontains' ],
-#                                         attrs={'style':"'width': '100%'"},
-#                                         ),
-#                    queryset=Aula.objects.all(),
-#                    required=True,
-#                    help_text="Aula a consultar")
-#
-#     data = forms.DateField(help_text="Data a consultar",
-#             initial=datetime.today(),
-#             required=True,
-#             widget=DateTextImput())
-#
+class disponibilitatRecursPerRecursForm(forms.Form):
+
+    recurs = ModelChoiceField(
+                   widget=ModelSelect2Widget(
+                                        queryset=Recurs.objects.filter(reservable = True),
+                                        search_fields = ['nom_recurs__icontains','descripcio_recurs__icontains' ],
+                                        attrs={'style':"'width': '100%'"},
+                                        ),
+                   queryset=Recurs.objects.all(),
+                   required=True,
+                   help_text="Material a consultar")
+
+    data = forms.DateField(help_text="Data a consultar",
+            initial=datetime.today(),
+            required=True,
+            widget=DateTextImput())
+
 #
 # class disponibilitatAulaPerFranjaForm(forms.Form):
 #
@@ -72,52 +72,43 @@ from aula.utils.widgets import DateTextImput
 #
 #
 #
-# class reservaAulaForm(ModelForm):
-#     mou_alumnes= forms.ChoiceField(
-#                                 label=u"És un canvi d'aula?",
-#                                 help_text= """Pots fer un canvi d'aula o bé pots fer una nova reserva.
-#                                 Canvi d'aula vol dir que deixes lliure la teva aula i portes els alumnes a l'aula que
-#                                 estàs reservant.""",
-#                                 initial="C",
-#                                 required=True,
-#                                 choices=[('C',u"Canvi d'aula"),('N','Nova reserva')],
-#                                 widget=forms.RadioSelect())
-#     aula = ModelChoiceField(
-#                    widget=ModelSelect2Widget(
-#                                         queryset=Aula.objects.all(),
-#                                         search_fields = ['nom_aula__icontains','descripcio_aula__icontains' ],
-#                                         attrs={'style':"'width': '100%'"},
-#                                         ),
-#                    queryset=Aula.objects.all(),
-#                    required=True,
-#                    help_text="Aula a reservar")
-#
-#     def clean_hora(self):
-#
-#         franja = self.cleaned_data['hora']
-#         data = self.cleaned_data['dia_reserva']
-#         franges_del_dia = (FranjaHoraria
-#                            .objects
-#                            .filter(horari__impartir__dia_impartir=data)
-#                            .order_by('hora_inici')
-#                            )
-#         primera_franja = franges_del_dia.first()
-#         darrera_franja = franges_del_dia.last()
-#         if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
-#             raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
-#
-#         return franja
-#
-#     class Meta:
-#         model = ReservaAula
-#         labels = {
-#             "motiu": "Propòsit"
-#         }
-#         fields = ['aula','dia_reserva','hora','motiu']
-#         widgets = {
-#             'motiu': forms.Textarea,
-#             'dia_reserva' : DateTextImput()
-#         }
+class reservaRecursForm(ModelForm):
+    recurs = ModelChoiceField(
+                   widget=ModelSelect2Widget(
+                                        queryset=Recurs.objects.all(),
+                                        search_fields = ['nom_recurs__icontains','descripcio_recurs__icontains' ],
+                                        attrs={'style':"'width': '100%'"},
+                                        ),
+                   queryset=Recurs.objects.all(),
+                   required=True,
+                   help_text="Material a reservar")
+
+    def clean_hora(self):
+
+        franja = self.cleaned_data['hora']
+        data = self.cleaned_data['dia_reserva']
+        franges_del_dia = (FranjaHoraria
+                           .objects
+                           .filter(horari__impartir__dia_impartir=data)
+                           .order_by('hora_inici')
+                           )
+        primera_franja = franges_del_dia.first()
+        darrera_franja = franges_del_dia.last()
+        if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
+            raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
+
+        return franja
+
+    class Meta:
+        model = ReservaRecurs
+        labels = {
+            "motiu": "Propòsit"
+        }
+        fields = ['recurs','dia_reserva','hora','motiu']
+        widgets = {
+            'motiu': forms.Textarea,
+            'dia_reserva' : DateTextImput()
+        }
 
 
 
