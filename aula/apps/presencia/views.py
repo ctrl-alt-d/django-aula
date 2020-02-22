@@ -168,7 +168,8 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                              x.horari.grup if  x.horari.grup else '',       #
                              x.get_nom_aula,                             #
                              x.pk,                                          #
-                             getSoftColor( x.horari.assignatura ),    #
+                             getSoftColor( str(x.horari.grup)+
+                                       (x.horari.assignatura.codi_assignatura if x.horari.assignatura else '')),    #
                              x.color(),                             
                              x.resum(),
                              (x.professor_guardia  and x.professor_guardia.pk == professor.pk),
