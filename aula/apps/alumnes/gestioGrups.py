@@ -15,9 +15,9 @@ def grupsPromocionar():
     return Grup.objects.exclude(id__in = idsgrupsDesdoblaments).order_by('descripcio_grup')
 
 def llistaIdsAgrupament(grupid):
-    '''Determina tots els agrupaments d'un grup
+    '''Determina tots els grups que aporten alumnes a grupid, segons els agrupaments
     
-    grupid id del grup que volem els seus agrupaments
+    grupid id del grup que volem saber d'on treu els alumnes
     Retorna una llista que conté tots els id de grup que aporten alumnes al grup indicat
 
     '''
@@ -42,11 +42,55 @@ def llistaIdsAgrupament(grupid):
 
 def grupsAgrupament(grup):
     '''Retorna queryset dels grups que aporten alumnes a grup.
+
+    grup del que volem saber d'on treu els alumnes
+    Retorna queryset dels grups trobats
     
     '''
     
     q_Agrup=llistaIdsAgrupament(grup.id)
     return Grup.objects.filter(id__in = q_Agrup).filter(alumne__isnull = False).distinct()
+
+def llistaIdsAgrupamentHor(grupid):
+    '''Determina tots els grups que reben alumnes de grupid, segons els agrupaments
+    
+    grupid id del grup que volem els seus agrupaments
+    Retorna una llista que conté tots els id de grup a on el grup indicat aporta alumnes
+
+    '''
+    
+    llista=set()
+    q_Agrup=Agrupament.objects.filter(grup_alumnes=grupid).values('grup_horari').distinct()
+    if not(q_Agrup.exists()):
+        # No hi ha agrupament
+        return { grupid }
+    if q_Agrup.count()==1 and q_Agrup.first()['grup_horari']==grupid:
+        # Agrupament és el mateix grup
+        return { grupid }
+    # Agrupaments dels altres grups
+    for g in q_Agrup:
+        if (g['grup_horari']==grupid):
+            # Si és el mateix grup, s'afegeix sense fer més recerca
+            llista.add(grupid)
+        else:
+            # Es continua la recerca
+            llista.update(llistaIdsAgrupamentHor(g['grup_horari']))
+    return llista
+
+def grupsAgrupamentTots(grup):
+    '''Retorna queryset dels grups relacionats en qualsevol agrupament amb grup.
+
+    grup del que volem els seus agrupaments
+    Retorna queryset amb els grups trobats
+    
+    '''
+    
+    q_Agrup1=llistaIdsAgrupament(grup.id)
+    q_Agrup2=llistaIdsAgrupamentHor(grup.id)
+    q_Agrup1.update(q_Agrup2)
+    return Grup.objects.filter(id__in = q_Agrup1).distinct()
+
+
 
 #  amorilla@xtec.cat
 #  He canviat la ubicació d'aquesta funció.

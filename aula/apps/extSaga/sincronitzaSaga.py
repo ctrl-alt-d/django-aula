@@ -63,6 +63,7 @@ def sincronitza(f, user = None):
         a=Alumne()
         a.ralc = ''
         a.telefons = ''
+        dni = ''
         #a.tutors = ''
         #a.correu_tutors = ''
 
@@ -125,6 +126,8 @@ def sincronitza(f, user = None):
                 a.adreca = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_CP"):
                 a.cp = unicode(value,'iso-8859-1')
+            if columnName.endswith( u"_DOC. IDENTITAT"):
+                dni = unicode(value,'iso-8859-1')
 
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
@@ -132,6 +135,11 @@ def sincronitza(f, user = None):
 
 
         alumneDadesAnteriors = None
+        if not bool(a.ralc) or a.ralc=='':
+            autoRalc, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'autoRalc' )
+            if bool(autoRalc.valor_parametre):
+                a.ralc= autoRalc.valor_parametre + dni[-9:]
+
         try:
             q_mateix_ralc = Q( ralc = a.ralc ) # & Q(  grup__curs__nivell = a.grup.curs.nivell )
 
