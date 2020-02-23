@@ -48,9 +48,9 @@ class Sortida(models.Model):
     TIPUS_PAGAMENT_CHOICES = [
         ('NO', u'No cal pagament',),
         ('EF', u'En efectiu',),
-    ]
-    if CUSTOM_SORTIDES_PAGAMENT_ONLINE: TIPUS_PAGAMENT_CHOICES.append(('ON', u'Online a través del djAu',))
-    if CUSTOM_SORTIDES_PAGAMENT_CAIXER: TIPUS_PAGAMENT_CHOICES.append(('EB', u'''Al caixer de l'entitat bancària''',))
+        ('ON', u'Online a través del djAu',),
+        ('EB', u'''Al caixer de l'entitat bancària''',),
+        ]
 
     NO_SINCRONITZADA = 'N'
     SINCRONITZANT_SE = 'x'
@@ -95,7 +95,7 @@ class Sortida(models.Model):
     materia = models.CharField(max_length=50,help_text=u"Matèria que es treballa a l'activitat. Escriu el nom complet.")
 
     tipus_de_pagament = models.CharField(max_length=2, choices=TIPUS_PAGAMENT_CHOICES,
-                                         help_text=u"Quin serà el tipus de pagament predominant", default="ON" if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else "NO",
+                                         help_text=u"Quin serà el tipus de pagament predominant", default="NO",
                                          null=False)
 
     preu_per_alumne = models.DecimalField(max_digits=5, blank=True, null=True, decimal_places=2, help_text=u"Preu per alumne. Indica el preu que apareixerà a l'autorització ( el posa secretaria / coordinador(a) activitats )")
