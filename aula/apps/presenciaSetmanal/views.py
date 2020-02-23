@@ -1,19 +1,15 @@
 # This Python file uses the following encoding: utf-8
 import datetime
-import logging, traceback, pprint
-from django.shortcuts import  get_object_or_404, render
-from django.http import HttpResponse, HttpRequest
+from django.shortcuts import  render
+from django.http import HttpResponse
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.utils.datetime_safe import date
-from django.template import RequestContext, loader
-from aula.apps.tutoria.forms import seguimentTutorialForm
 from aula.apps.usuaris.models import User2Professor, Accio
 from collections import OrderedDict
 from django.conf import settings
 
 #auth
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from aula.utils.tools import getImpersonateUser
 from aula.utils.decorators import group_required
 
@@ -21,9 +17,6 @@ from aula.utils.decorators import group_required
 from aula.apps.presencia.models import Impartir, ControlAssistencia, EstatControlAssistencia
 from aula.apps.presenciaSetmanal.forms import EscollirGrupForm
 from aula.apps.alumnes.models import Grup
-from aula.apps.usuaris.models import User2Professor, Professor
-from aula.apps.alumnes.gestioGrups import grupsAgrupamentTots
-from libpasteurize.fixes.fix_kwargs import _else_template
 
 CONST_ERROR_CODE = '_'
 
@@ -190,7 +183,6 @@ def detallgrup(request, grup_id, dataReferenciaStr='', nomesPropies=None):
     ddies = _recompteHores(hores)
 
     #assert False, ddies
-    template = loader.get_template('presenciaSetmanal/detallgrup.html')
     context ={
         'mvisualitza': mvisualitza,
         'ddies': ddies,
@@ -240,7 +232,6 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
         impartir.save()
 
         #Log
-        from aula.apps.usuaris.models import Accio
         Accio.objects.create(
             tipus='PL',
             usuari=user,
