@@ -26,6 +26,8 @@ CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
 CUSTOM_RESERVES_API_KEY = '_default_api_aules_password_'
 
 DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
+# Quantitat màxima de destinataris per cada email, depèn del servidor de correu
+CUSTOM_MAX_EMAIL_RECIPIENTS=100
 
 CACHES = {
     'default': {
@@ -84,7 +86,6 @@ CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
 CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
 PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
-
 
 try:
     from .settings_local import *

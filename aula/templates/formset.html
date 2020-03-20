@@ -17,7 +17,7 @@
 	
 	{%if titol_formulari %}<h2>{{titol_formulari}}</h2>{%endif%}
 
-  <form method="post" action="">{% csrf_token %}
+  <form method="post" action="" enctype="multipart/form-data">{% csrf_token %}
     {{ formset.management_form }}
     {% for form in formset %}    
       

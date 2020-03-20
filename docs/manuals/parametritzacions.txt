@@ -4,6 +4,9 @@ PARAMETRITZACIONS DEL DJANGO-AULA
 Al fitxer settings.py (o settings_local.py)
 -------------------------------------------
 
+# Quantitat màxima de destinataris per cada email, depèn del servidor de correu
+CUSTOM_MAX_EMAIL_RECIPIENTS=100
+
 # Permet concretar quantes faltes són necessaries segons el número de la carta
 # Si existeix aquest valor aleshores no es fa servir CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA
 # Si un nivell té assignat zero aleshores es mostrarà el missatge "Error triant la carta a enviar a la família"

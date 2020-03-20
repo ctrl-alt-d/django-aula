@@ -35,6 +35,8 @@ ACUS_REBUT_ERROR_AL_PROGRAMA = u'''Avís a administradors enviat correctament. E
 
 ACUS_REBUT_ENVIAT_A_PROFE_O_PAS = u'''Missatge enviat a {0}. El text del missatge és: "{1}"'''
 
+EMAIL_A_FAMILIES = u'''Email a famílies enviat a {0} adreces. El text del mail és: {1}''' 
+
 HAS_RECOLLIT_EXPULSIO = u'''ha recollit la següent expulsió: {0}'''
 
 CAL_TRAMITAR_EXPULSIO = u'''Cal tramitar expulsió: {0}'''
@@ -109,7 +111,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                        CAL_TRAMITAR_EXPULSIO,}},
              'MISSATGERIA': {'info': {CONSERGERIA_A_TUTOR,
                                       CONSERGERIA_A_CONSERGERIA,
-                                      ACUS_REBUT_ENVIAT_A_PROFE_O_PAS,}},
+                                      ACUS_REBUT_ENVIAT_A_PROFE_O_PAS,
+                                      EMAIL_A_FAMILIES,}},
              'ACTIVITATS': {'success': {ACOMPANYANT_A_ACTIVITAT,
                                         RESPONSABLE_A_ACTIVITAT,}},
              'INFORMATIVES_DISCIPLINA': {'primary': {INCIDENCIA_INFORMATIVA,
