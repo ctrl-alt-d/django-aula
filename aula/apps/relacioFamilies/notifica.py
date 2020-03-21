@@ -218,13 +218,13 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
         except:
             errors=errors + len(destinataris)
     
-    # Enviament provisional per a verificació
     if settings.DEBUG:
+        # Enviament per a verificació si DEBUG
         print (u'Enviant còpia mail famílies als administradors')
-    email.to=[x[1] for x in settings.ADMINS]
-    email.cc=[]
-    email.bcc=[]
-    email.send()
+        email.to=[x[1] for x in settings.ADMINS]
+        email.cc=[]
+        email.bcc=[]
+        email.send()
 
     # tanca la connexió
     connection.close()
