@@ -180,7 +180,7 @@ SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 #Configuracion de la Base de datos
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', #django.db.backends.mysql *para mysql
+        'ENGINE': 'django.db.backends.postgresql', #django.db.backends.mysql *para mysql
         'NAME': 'djau2019',
         'USER': 'djau2019',
         'PASSWORD': "secret",
