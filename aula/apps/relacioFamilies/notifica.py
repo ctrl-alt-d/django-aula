@@ -8,6 +8,7 @@ from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.apps.sortides.models import NotificaSortida
 from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core.mail import EmailMessage
+from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
 
 def notifica():
     from aula.apps.alumnes.models import Alumne
@@ -159,7 +160,17 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
       
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
+    q_no_informat_adreca = Q( correu_relacio_familia_pare = '' ) & Q( correu_relacio_familia_mare = '' ) & \
+                    Q(correu_tutors='') & Q(rp1_correu='')&Q(rp2_correu='')&Q(correu='')
     
+    # Notifica als tutors els alumnes que no tenen cap email
+    alumnesSenseCorreu=Alumne.objects.filter(q_no_es_baixa).filter( q_no_informat_adreca )
+
+    if alumnesSenseCorreu.exists():
+        for a in alumnesSenseCorreu:
+            tutors=a.tutorsDelGrupDeLAlumne()
+            informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
+
     correus_alumnes = Alumne.objects.filter(q_no_es_baixa).values_list(
         'correu_relacio_familia_pare','correu_relacio_familia_mare','correu_tutors', 
         'rp1_correu', 'rp2_correu', 'correu')
