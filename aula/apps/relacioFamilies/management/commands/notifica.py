@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
 from aula.apps.missatgeria.missatges_a_usuaris import ERROR_NOTIFICACIO_FAMILIES, tipusMissatge
 from aula.apps.relacioFamilies.notifica import notifica
+from aula.apps.usuaris.tools import controlDSN
 from aula.utils.tools import unicode
 
 class Command(BaseCommand):
@@ -12,6 +13,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         try:
+            self.stdout.write(u"Iniciant control emails rebutjats" )
+            controlDSN()
+            self.stdout.write(u"Fi procés control emails rebutjats" )
             self.stdout.write(u"Iniciant procés notificacions" )
             notifica()
             self.stdout.write(u"Fi procés notificacions" )

@@ -24,3 +24,4 @@ pisa
 pycryptodome
 xmltodict
 django-private-storage
+dnspython

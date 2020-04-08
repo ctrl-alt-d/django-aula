@@ -27,6 +27,7 @@ ADMINS = (
 )
 
 EMAIL_HOST='smtp.gmail.com'
+EMAIL_HOST_IMAP="imap.gmail.com"
 EMAIL_HOST_USER='el-meu-centre@gmail.com'
 EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
 DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'

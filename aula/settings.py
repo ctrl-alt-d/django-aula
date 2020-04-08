@@ -26,6 +26,9 @@ CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
 CUSTOM_RESERVES_API_KEY = '_default_api_aules_password_'
 
 DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
+# Quantitat màxima de destinataris per cada email, depèn del servidor de correu
+CUSTOM_MAX_EMAIL_RECIPIENTS=100
+EMAIL_HOST_IMAP = "imap.gmail.com"
 
 CACHES = {
     'default': {

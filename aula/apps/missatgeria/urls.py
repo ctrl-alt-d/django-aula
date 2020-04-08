@@ -24,6 +24,9 @@ urlpatterns = [
 
     url(r'^enviaMissatgeProfessorsPas/$', missatgeria_views.enviaMissatgeProfessorsPas,
        name="varis__prof_i_pas__envia_professors_i_pas"),
-
+    
+    url(r'^enviaEmailFamilies/$', missatgeria_views.EmailFamilies,
+       name="varis__mail__enviaEmailFamilies"),
+    
     ]
 
