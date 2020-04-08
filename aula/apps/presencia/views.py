@@ -283,10 +283,11 @@ def passaLlista(request, pk):
                      .order_by('hora_fi')
                      .last()
                       )
-    esUltimaHora = impartir.reserva_id == ultimaReserva.id
-    if esUltimaHora:
-        msg = u" Atenció: És última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes, pujar cadires, etc."
-        messages.error(request, SafeText(msg))
+    if ultimaReserva is not None:
+        esUltimaHora = impartir.reserva_id == ultimaReserva.id
+        if esUltimaHora:
+            msg = u" Atenció: És última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes, pujar cadires, etc."
+            messages.error(request, SafeText(msg))
 
     url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
         impartir.dia_impartir.year,

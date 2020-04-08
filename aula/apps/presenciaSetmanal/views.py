@@ -1,26 +1,22 @@
 # This Python file uses the following encoding: utf-8
 import datetime
-import logging, traceback, pprint
-from django.shortcuts import  get_object_or_404, render
-from django.http import HttpResponse, HttpRequest
+from django.shortcuts import  render
+from django.http import HttpResponse
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.utils.datetime_safe import date
-from django.template import RequestContext, loader
-from aula.apps.tutoria.forms import seguimentTutorialForm
 from aula.apps.usuaris.models import User2Professor, Accio
 from collections import OrderedDict
 from django.conf import settings
 
 #auth
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from aula.utils.tools import getImpersonateUser
 from aula.utils.decorators import group_required
 
 #Models
 from aula.apps.presencia.models import Impartir, ControlAssistencia, EstatControlAssistencia
+from aula.apps.presenciaSetmanal.forms import EscollirGrupForm
 from aula.apps.alumnes.models import Grup
-from aula.apps.usuaris.models import User2Professor, Professor
 
 CONST_ERROR_CODE = '_'
 
@@ -28,25 +24,32 @@ CONST_ERROR_CODE = '_'
 @login_required
 @group_required(['professors'])
 def index(request):
-    # type: (HttpRequest) -> HttpResponse
-    
+
     #Obtenir l'usuari actual.
     credentials = getImpersonateUser(request)
     (user, _ ) = credentials
     professor = User2Professor( user )
-
-    #Relació inversa segons el manual funciona, similar a la relació blog - entradaBlog.
-    #Veure Spanning multi-valued relationships (guia de models)
-    grup_list = Grup.objects.filter(horari__professor = professor).distinct()
-    template = loader.get_template('presenciaSetmanal/index.html')
-    context =  {'grup_list': grup_list }
-    #return HttpResponse(repr(grup_list[0]))
-    return render(request, "presenciaSetmanal/index.html",context)
     
+    if request.method == 'POST':
+        form = EscollirGrupForm(professor, request.POST)
+        if form.is_valid():
+            grup=form.cleaned_data['grup_list']
+            nomesPropies=form.cleaned_data['nomesPropies']
+            if nomesPropies: nomesPropies='True'
+            else: nomesPropies='False'
+            return detallgrup(request, grup.id, dataReferenciaStr='', nomesPropies=nomesPropies)
+    else:
+        form = EscollirGrupForm(professor)
+    return render(
+                request,
+                'form.html', 
+                {'form': form, 
+                 },
+                )
 
 @login_required
 @group_required(['professors'])
-def detallgrup(request, grup_id, dataReferenciaStr=''):
+def detallgrup(request, grup_id, dataReferenciaStr='', nomesPropies=None):
     '''
     Veure els alumnes que entren dins les hores d'un grup i permetre modificar-ne l'estat.
     :param request:
@@ -54,6 +57,11 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     :param string dataReferenciaStr:La data de referència a partir de la qual tindrem la setmana.
     :return:
     '''
+    #Obtenir l'usuari actual.
+    credentials = getImpersonateUser(request)
+    (user, _ ) = credentials
+    professor = User2Professor( user )
+    
     grup = Grup.objects.get(id=grup_id)
 
     dataRef = date.today()
@@ -71,11 +79,12 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     #Consultar els estats del control d'assistencia
     estats = LlistaEstats()
 
-    #Seleccionar el calendari impartir.
-    hores = Impartir.objects.filter(
-        horari__grup_id=grup_id,
-        dia_impartir__range=[dillunsSetmana, divendresSetmana]).order_by(
-            'horari__dia_de_la_setmana__n_dia_ca', 'horari__hora__hora_inici')
+    # Llista amb els alumnes que el professor té al control d'assistència en aquest grup.
+    llalumnes=ControlAssistencia.objects.filter(
+        impartir__horari__grup_id=grup_id,
+        impartir__horari__professor_id=professor,
+        impartir__dia_impartir__range=[dillunsSetmana, divendresSetmana],
+        ).values('alumne')
 
     #Expresssio per consultar els l'assistencia dels alumnes entre una data d'inici i una data de fi.
     '''sqlExpr = \
@@ -97,11 +106,25 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     assistencies = ControlAssistencia.objects.raw(sqlExpr)
     '''
 
-    assistencies=ControlAssistencia.objects.filter( 
-        impartir__dia_impartir__gte=dillunsSetmana, 
-        impartir__dia_impartir__lte=divendresSetmana,  
-        impartir__horari__grup_id=grup_id,
-    ).order_by('alumne__cognoms', 'impartir__horari__dia_de_la_setmana__n_dia_ca', 'impartir__horari__hora__hora_inici')
+    if nomesPropies is not None and nomesPropies=='True':
+        # Selecciona totes les assistències dels alumnes amb aquest professor
+        assistencies=ControlAssistencia.objects.filter( 
+            impartir__horari__professor_id=professor,
+            impartir__dia_impartir__range=[dillunsSetmana, divendresSetmana],  
+            alumne_id__in=llalumnes,
+        ).order_by('alumne__cognoms', 'impartir__horari__dia_de_la_setmana__n_dia_ca', 'impartir__horari__hora__hora_inici')
+    else:
+        # Selecciona totes les assistències dels alumnes encara que no siguin del professor
+        assistencies=ControlAssistencia.objects.filter( 
+            impartir__dia_impartir__range=[dillunsSetmana, divendresSetmana],  
+            alumne_id__in=llalumnes,
+        ).order_by('alumne__cognoms', 'impartir__horari__dia_de_la_setmana__n_dia_ca', 'impartir__horari__hora__hora_inici')
+
+    #Selecciona les hores de les assistències trobades
+    hores = Impartir.objects.filter(
+        pk__in=assistencies.values('impartir')).order_by(
+            'horari__dia_de_la_setmana__n_dia_ca', 'horari__hora__hora_inici')
+    
 
     # mah = Matriu alumnes, hores.
     mah = {}
@@ -160,7 +183,6 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
     ddies = _recompteHores(hores)
 
     #assert False, ddies
-    template = loader.get_template('presenciaSetmanal/detallgrup.html')
     context ={
         'mvisualitza': mvisualitza,
         'ddies': ddies,
@@ -169,7 +191,8 @@ def detallgrup(request, grup_id, dataReferenciaStr=''):
         'next_date': nextDate.strftime('%Y%m%d'),
         'previous_date': previousDate.strftime('%Y%m%d'),
         'monday_date': dillunsSetmana.strftime('%d/%m/%Y'),
-        'grup': grup}
+        'grup': grup,
+        'nomesPropies':nomesPropies}
 
     return render(request, 'presenciaSetmanal/detallgrup.html', context)
 
@@ -209,7 +232,6 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
         impartir.save()
 
         #Log
-        from aula.apps.usuaris.models import Accio
         Accio.objects.create(
             tipus='PL',
             usuari=user,
