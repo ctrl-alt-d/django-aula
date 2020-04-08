@@ -6,7 +6,7 @@ from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne
 from django.apps import apps
 from django.db.models import Q
-from django.utils.encoding import python_2_unicode_compatible
+from six import python_2_unicode_compatible
 from django.conf import settings
 
 from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE, CUSTOM_SORTIDES_PAGAMENT_CAIXER

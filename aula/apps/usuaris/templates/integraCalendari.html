@@ -30,6 +30,7 @@
     
         $('#copy-button').bind('click', function() {
         var input = document.querySelector('#copy-input');
+        input.select();
         input.setSelectionRange(0, input.value.length + 1);
         try {
             alert("copiat");
