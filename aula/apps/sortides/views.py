@@ -56,7 +56,7 @@ from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
-from .forms import PagamentForm
+from .forms import PagamentForm, SortidaForm
 
 @login_required
 @group_required(['professors'])  
@@ -317,6 +317,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     else:
         instance = Sortida()
         instance.professor_que_proposa = professor
+        instance.tipus_de_pagament = "ON" if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else "NO"
 
     instance.credentials = credentials
 
@@ -328,7 +329,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     else:
         exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments')
 
-    formIncidenciaF = modelform_factory(Sortida, exclude=exclude)
+    formIncidenciaF = modelform_factory(Sortida, form=SortidaForm, exclude=exclude)
 
     if request.method == "POST":
         post_mutable = request.POST.copy()
