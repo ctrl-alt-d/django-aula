@@ -19,10 +19,12 @@ CUSTOM_NIVELLS = { u"ESO": [u"ESO"],
                     u"CICLES": [u'GA',u'AF',u'SMX',u'DAW',u'FCT',u"CFA",u"CFI",],
                     u"INFORMATICA": [u'SMX',u'DAW'],
                   }
+
 CUSTOM_TIMEOUT = 15*60
 CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
                          u"professors":    15*60, # 15'
                          }
+
 CUSTOM_RESERVES_API_KEY = '_default_api_aules_password_'
 
 DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
@@ -70,6 +72,8 @@ CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' #Missatge que apareix al costat dels majors
 
 CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA = {  
                     # nivell: [faltes per carta1, faltes per carta 2, ...],
+                    # u"ESO": [10],  
+                    # u"BAT": [10,10,10],
                 }
 
 CUSTOM_LC_TIME = None  # 'ca_ES.utf8'
@@ -79,6 +83,7 @@ CUSTOM_NO_CONTROL_ES_PRESENCIA = False
 
 CUSTOM_INDICADORS = [
             # [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],
+            # ['dd/mm/aaaa', 'dd/mm/aaaa', 'dd/mm/aaaa', 'dd/mm/aaaa', 'NNNN', 5, ('F')],
           ]
 
 #Permet veure una graella amb les diferents faltes setmanals d'un curs.
@@ -87,6 +92,8 @@ CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
 CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
 PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+CUSTOM_CODI_COMERÇ = 'xxxxxx'
+CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
 
 try:

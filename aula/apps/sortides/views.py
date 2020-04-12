@@ -12,8 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
     ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
-from aula.settings import CUSTOM_REDSYS_ENTORN_REAL
-from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
+from aula.settings import CUSTOM_REDSYS_ENTORN_REAL, CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
