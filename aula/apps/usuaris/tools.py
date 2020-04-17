@@ -473,6 +473,7 @@ def controlDSN(dies=15):
                 if (msg.is_multipart() and len(msg.get_payload()) > 1 and 
                     msg.get_payload(1).get_content_type() == 'message/delivery-status'):
                     # email is DSN
+                    text=''
                     for m in msg.get_payload():
                         if m.get_content_type() == 'message/rfc822':
                             text=getEmailText(m)
