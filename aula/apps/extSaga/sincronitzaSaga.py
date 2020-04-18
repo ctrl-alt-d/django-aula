@@ -24,12 +24,16 @@ from aula.utils.tools import unicode
 
 def sincronitza(f, user = None):
 
-    msgs = comprovar_grups( f )
-
-    if msgs["errors"]:
-        return msgs
-
     errors = []
+
+    try:
+        msgs = comprovar_grups( f )
+    
+        if msgs["errors"]:
+            return msgs
+    except:
+        errors.append('Fitxer incorrecte')
+        return {'errors': errors, 'warnings': [], 'infos': []}
 
     #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
     Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
@@ -68,6 +72,8 @@ def sincronitza(f, user = None):
         #a.correu_tutors = ''
 
         for columnName, value in iter(row.items()):
+            if bool(value):
+                value=value.strip()
             columnName = unicode(columnName,'iso-8859-1')
             #columnName = unicode( rawColumnName, 'iso-8859-1'  )
             uvalue =  unicode(value,'iso-8859-1')
@@ -370,7 +376,7 @@ def comprovar_grups( f ):
         return False, { 'errors': errors, 'warnings': warnings, 'infos': infos }
 
     for row in reader:
-        grup_classe =  unicode(row[grup_field],'iso-8859-1')
+        grup_classe =  unicode(row[grup_field],'iso-8859-1').strip()
         _, new = Grup2Aula.objects.get_or_create( grup_saga = grup_classe )
         if new:
             errors.append( u"El grup '{grup_classe}' del Saga no té correspondència al programa. Revisa les correspondències Saga-Aula".format( grup_classe=grup_classe ) )
