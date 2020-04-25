@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from aula.utils.views import carregaInicial, calendariDevelop, blanc, about, pagamentOnLine
+from aula.utils.views import carregaInicial, calendariDevelop, blanc, about, pagamentOnLine, initDB
 
 urlpatterns = [
                        
@@ -18,8 +18,7 @@ urlpatterns = [
     url(r'^opcionsSincro/$', blanc,
         name ="administracio__sincronitza__blanc" )    ,
 
+    url(r'^initDB/$', initDB,
+        name ="administracio__init__inicialitzaDB" )    ,
 
-
-                       
 ]
-

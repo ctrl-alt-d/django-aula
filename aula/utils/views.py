@@ -22,14 +22,17 @@ from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.presencia.models import Impartir
 from django.utils.datetime_safe import datetime
+from datetime import timedelta
 from django.db.models import Q
 
 from django.conf import settings
 from django.urls import reverse
 
-from aula.utils.tools import calculate_my_time_off
+from aula.utils.tools import calculate_my_time_off, processInitComplet, executaAmbOSenseThread
+from aula.utils.forms import initDBForm
 
 from django.views.decorators.csrf import ensure_csrf_cookie
+from aula.apps.alumnes.models import Curs
 
 
 def keepalive(request):
@@ -365,3 +368,49 @@ def allow_foto(private_file):
                               .exists()
                               )
     return (request.user.is_authenticated and pertany_al_grup_permes)
+
+@login_required
+@group_required(['administradors'])
+def initDB(request):
+
+    head=u'Inicialitza base de dades per començar nou curs' 
+
+    if request.method == 'POST':
+        form = initDBForm(request.POST)
+        if form.is_valid():
+
+            data_fi=Curs.objects.exclude(data_fi_curs__isnull=True).order_by( '-data_fi_curs' )
+            if data_fi.exists():
+                data_fi=data_fi[0].data_fi_curs
+            else:
+                data_fi=None
+            
+            if data_fi is None or data_fi + timedelta( days=30 )<datetime.now().date():
+                # Ha passat un mes des del final de curs o no n'hi ha cap data de final de curs
+                r=processInitComplet(user = request.user)
+                executaAmbOSenseThread(r)
+                
+                errors=[]
+                warnings=[]
+                infos=[u'Iniciat procés d\'inicialització']
+            else:
+                # Encara no ha passat un mes des de final de curs
+                errors=[]
+                warnings=[]
+                infos=[u'No es pot fer la inicialització fins un mes després del final de curs']
+                
+            resultat = {   'errors': errors, 'warnings':  warnings, 'infos':  infos }
+            return render(
+                    request,
+                    'resultat.html', 
+                    {'head': head ,
+                     'msgs': resultat },
+            )
+    else:
+        form = initDBForm()
+    return render(
+                request,
+                'form.html', 
+                {'form': form, 
+                 'head': head},
+                )
