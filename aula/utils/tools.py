@@ -192,22 +192,14 @@ def executaAmbOSenseThread(objecteThread):
         objecteThread.start()
 
 def initComplet():
-    from aula.apps.alumnes.models import Alumne,  Curs, Grup, Nivell
+    from aula.apps.alumnes.models import Alumne,  Curs
     from aula.apps.incidencies.models import Sancio, Expulsio, Incidencia
     from aula.apps.presencia.models import Impartir, ControlAssistencia, NoHaDeSerALAula
     from aula.apps.baixes.models import Feina
     from aula.apps.horaris.models import Horari, Festiu
     from aula.apps.aules.models import ReservaAula
-    from aula.apps.avaluacioQualitativa.models import ItemQualitativa, AvaluacioQualitativa, RespostaAvaluacioQualitativa
-    from aula.apps.extEsfera.models import Grup2Aula as esfgrup2aula
-    from aula.apps.extSaga.models import Grup2Aula as saggrup2aula
-    from aula.apps.extKronowin.models import Grup2Aula as krogrup2aula, Franja2Aula
-    from aula.apps.extUntis.models import Agrupament
-    from aula.apps.tutoria.models import SeguimentTutorial, ResumAnualAlumne, SeguimentTutorialPreguntes, SeguimentTutorialRespostes, Actuacio, Tutor, TutorIndividualitzat, CartaAbsentisme
-    from aula.apps.assignatures.models import Assignatura
-    from aula.apps.sortides.models import Sortida, Pagament, NotificaSortida
-    from aula.apps.missatgeria.models import Missatge, DetallMissatge, Destinatari
-    from aula.apps.usuaris.models import Accio
+    from aula.apps.tutoria.models import Tutor, TutorIndividualitzat, CartaAbsentisme
+
     from django.db.models import Q
     
     try:
@@ -224,68 +216,22 @@ def initComplet():
         Horari.objects.all().delete()
         Festiu.objects.all().delete()
         ReservaAula.objects.all().delete()
-        RespostaAvaluacioQualitativa.objects.all().delete()
-        ItemQualitativa.objects.all().delete()
-        AvaluacioQualitativa.objects.all().delete()
-        esfgrup2aula.objects.all().delete()
-        saggrup2aula.objects.all().delete()
-        krogrup2aula.objects.all().delete()
-        Franja2Aula.objects.all().delete()
-        Agrupament.objects.all().delete()
-        NotificaSortida.objects.all().delete()
-        Pagament.objects.all().delete()
-        Sortida.objects.all().delete()
+
         NoHaDeSerALAula.objects.all().delete()
 
-        #Modifica data per evitar restricció per antiguitat
-        Actuacio.objects.update(moment_actuacio=avui)
-        Actuacio.objects.all().delete()
         CartaAbsentisme.objects.all().delete()
-        SeguimentTutorialRespostes.objects.all().delete()
-        SeguimentTutorialPreguntes.objects.all().delete()
-        SeguimentTutorial.objects.all().delete()
-        ResumAnualAlumne.objects.all().delete()
+
         Tutor.objects.all().delete()
         TutorIndividualitzat.objects.all().delete()
-        Assignatura.objects.all().delete()
-        Destinatari.objects.all().delete()
-        DetallMissatge.objects.all().delete()
-        Missatge.objects.all().delete()
-        Accio.objects.all().delete()
+
     except Exception as e:
         return ["Error:"+str(e)]
-    
-    # crea grup altres si no existeix
-    nivell, nnivell=Nivell.objects.get_or_create(nom_nivell='ALL')
-    if (nnivell):
-        nivell.descripcio_nivell='ALL'
-        nivell.save()
-    curs, ncurs=Curs.objects.get_or_create(nivell=nivell, nom_curs='1')
-    if (ncurs):
-        curs.nom_curs_complert="ALL-1"
-    curs.data_inici_curs=None
-    curs.data_fi_curs=None
-    curs.save()
-    grup, ngrup=Grup.objects.get_or_create(curs=curs, nom_grup='altres')
-    if (ngrup):
-        grup.descripcio_grup='altres'
-        grup.save()
 
-
-    alt=Grup.objects.get(descripcio_grup='altres')
-    #Passa tots els alumnes a grup altres
-    Alumne.objects.all().update(grup=alt)
-    
-    #Esborra alumnes que són baixa
-    es_baixa =  Q(data_baixa__isnull = False ) & Q(data_baixa__lt = avui )
-    Alumne.objects.filter(es_baixa).delete()
     # Esborra usuaris alumne sense alumne associat
     User.objects.filter(username__startswith='almn',alumne__isnull=True).delete()
-    
-    #Esborra els grups actuals menys 'altres'
-    Grup.objects.exclude(descripcio_grup='altres').delete()
-    Curs.objects.filter(grup__isnull=True).delete()
-    Nivell.objects.filter(curs__isnull=True).delete()
+
+    # Elimina dates d'inici i final de curs
+    Curs.objects.all().update(data_inici_curs=None, data_fi_curs=None)
     
     return []
  
