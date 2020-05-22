@@ -154,6 +154,7 @@ class AbstractAlumne(models.Model):
     rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
+    primer_responsable = models.IntegerField(default=1)
     altres_telefons = models.CharField(max_length=250, blank=True)
 
     data_alta = models.DateField( default = timezone.now, null=False )
