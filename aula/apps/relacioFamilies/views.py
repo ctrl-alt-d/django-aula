@@ -188,7 +188,7 @@ def configuraConnexio( request , pk ):
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
           ('Telèfons Alumne', ','.join(filter(None,telefons_alumne))),
-          ('Noms responsables', ' - '.join(filter(None,noms_responsables))),
+          ('Noms responsables', ' / '.join(filter(None,noms_responsables))),
           ('Correus responsables (Saga)', ','.join(filter(None,correus_responsables_saga))),
                 ]
     
