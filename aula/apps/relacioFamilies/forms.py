@@ -15,16 +15,16 @@ class AlumneModelForm(forms.ModelForm):
     class Meta:
         model = Alumne
         fields = ['primer_responsable','correu_relacio_familia_pare', 'correu_relacio_familia_mare',
-                  'periodicitat_faltes', 'periodicitat_incidencies', 'foto']
+                  'periodicitat_faltes', 'periodicitat_incidencies', 'foto', 'observacions']
         labels = {
             "correu_relacio_familia_pare": "Correu Notifi. Responsable 1",
             "correu_relacio_familia_mare": "Correu Notifi. Responsable 2",
-            "primer_responsable": "Responsable principal"
         }
         help_texts = {
             "correu_relacio_familia_pare": "Correu notificació d'un responsable",
             "correu_relacio_familia_mare": "Correu notificació d'altre responsable(opcional)"
         }
+
 
     def __init__(self, *args, **kwargs):
         super(AlumneModelForm, self).__init__(*args, **kwargs)

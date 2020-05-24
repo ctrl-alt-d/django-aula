@@ -182,7 +182,8 @@ class AbstractAlumne(models.Model):
 
 
     foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
-    
+    observacions =models.TextField(max_length=150, null=True, blank=True, help_text= u"Informació visible pels seus professors/es")
+
     class Meta:
         abstract = True
         ordering = ['grup','cognoms','nom']
