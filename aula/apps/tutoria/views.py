@@ -1387,7 +1387,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         capcelera = tools.classebuida()
         capcelera.amplade = 15
-        capcelera.contingut = u'Dades Responsable Principal'
+        capcelera.contingut = u'Dades Responsable Preferent'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
