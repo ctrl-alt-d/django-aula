@@ -38,6 +38,7 @@ class AbstractAccio(models.Model):
         ('NF','Notificacio Families'),        
         ('AS','Accés a dades sensibles'),
         ('SU','Sincronitza Untis'),
+        ('DS','Control Delivery Status Notification'),
     )
     tipus = models.CharField(max_length=2, choices=TIPUS_ACCIO_CHOICES)
     usuari = models.ForeignKey( User, db_index = True, related_name = 'usuari', on_delete=models.CASCADE )

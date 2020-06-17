@@ -15,9 +15,9 @@ def grupsPromocionar():
     return Grup.objects.exclude(id__in = idsgrupsDesdoblaments).order_by('descripcio_grup')
 
 def llistaIdsAgrupament(grupid):
-    '''Determina tots els agrupaments d'un grup
+    '''Determina tots els grups que aporten alumnes a grupid, segons els agrupaments
     
-    grupid id del grup que volem els seus agrupaments
+    grupid id del grup que volem saber d'on treu els alumnes
     Retorna una llista que conté tots els id de grup que aporten alumnes al grup indicat
 
     '''
@@ -42,6 +42,9 @@ def llistaIdsAgrupament(grupid):
 
 def grupsAgrupament(grup):
     '''Retorna queryset dels grups que aporten alumnes a grup.
+
+    grup del que volem saber d'on treu els alumnes
+    Retorna queryset dels grups trobats
     
     '''
     

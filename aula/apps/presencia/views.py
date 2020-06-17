@@ -168,7 +168,8 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                              x.horari.grup if  x.horari.grup else '',       #
                              x.get_nom_aula,                             #
                              x.pk,                                          #
-                             getSoftColor( x.horari.assignatura ),    #
+                             getSoftColor( str(x.horari.grup)+
+                                       (x.horari.assignatura.codi_assignatura if x.horari.assignatura else '')),    #
                              x.color(),                             
                              x.resum(),
                              (x.professor_guardia  and x.professor_guardia.pk == professor.pk),
@@ -282,10 +283,11 @@ def passaLlista(request, pk):
                      .order_by('hora_fi')
                      .last()
                       )
-    esUltimaHora = impartir.reserva_id == ultimaReserva.id
-    if esUltimaHora:
-        msg = u" Atenció: És última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes, pujar cadires, etc."
-        messages.error(request, SafeText(msg))
+    if ultimaReserva is not None:
+        esUltimaHora = impartir.reserva_id == ultimaReserva.id
+        if esUltimaHora:
+            msg = u" Atenció: És última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes, pujar cadires, etc."
+            messages.error(request, SafeText(msg))
 
     url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
         impartir.dia_impartir.year,

@@ -19,6 +19,7 @@ from aula.utils import tools
 from aula.utils.tools import unicode
 from django.forms.models import modelform_factory
 from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
+from aula.apps.missatgeria.forms import EmailForm
 from aula.apps.missatgeria.models import Missatge, Destinatari
 from aula.apps.tutoria.models import Tutor
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -29,7 +30,9 @@ from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
 from django.contrib import messages
 from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES, CONSERGERIA_A_TUTOR, tipusMissatge, \
-    CONSERGERIA_A_CONSERGERIA, ERROR_AL_PROGRAMA, ACUS_REBUT_ERROR_AL_PROGRAMA, ACUS_REBUT_ENVIAT_A_PROFE_O_PAS
+    CONSERGERIA_A_CONSERGERIA, ERROR_AL_PROGRAMA, ACUS_REBUT_ERROR_AL_PROGRAMA, ACUS_REBUT_ENVIAT_A_PROFE_O_PAS, \
+    EMAIL_A_FAMILIES
+from aula.apps.relacioFamilies.notifica import enviaEmailFamilies
 import collections
 
 @login_required
@@ -288,8 +291,59 @@ def llegeix( request, pk ):
     
     return HttpResponseRedirect( destinatari.missatge.enllac )  
     
+
+@login_required
+@group_required(['direcció','administradors'])
+def EmailFamilies(request):
+    '''Envia email a totes les famílies
     
+    L'usuari que envia l'email rep un missatge per Django amb una còpia del correu
+    '''
     
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    formset = []
+
+    if request.method == 'POST':
+        msgForm = EmailForm(request.POST,request.FILES)
+
+        if msgForm.is_valid():
+            subject = msgForm.cleaned_data['assumpte']
+            message = msgForm.cleaned_data['missatge']
+            attach = request.FILES.getlist('adjunts')
+            contOk, contErr = enviaEmailFamilies(subject, message, attach)
+
+            # envio al que ho envia:
+            missatge = EMAIL_A_FAMILIES
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge(remitent=user,
+                            text_missatge=missatge.format(contOk, "\n"+subject+":\n"+message+"\n\nadjunts:"+
+                                                          str( [ f.name for f in attach if f.name ])),
+                            tipus_de_missatge= tipus_de_missatge)
+            msg.envia_a_usuari(user, 'PI')
+            msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
+
+            messages.info(request, u"Email a famílies enviat a {0} adreces".format(contOk)+
+                          (", error en {0} adreces".format(contErr) if contErr>0 else ""))
+
+            url = '/missatgeria/elMeuMur/'
+            return HttpResponseRedirect(url)
+    else:
+        msgForm = EmailForm()
+
+    formset.append(msgForm)
     
-          
+    for form in formset:
+        for field in form.fields:
+            form.fields[field].widget.attrs['class'] = "form-control"
+    
+    return render(
+        request,
+        'formset.html',
+        {'formset': formset,
+         'titol_formulari': u"Email per a les famílies",
+         'head': u"Email a totes les famílies",
+         },
+        )
     

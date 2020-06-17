@@ -113,82 +113,91 @@ Los archivos están comentados para entenderlos mejor.
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
 
-from aula.settings_dir.common import *
+from .settings_dir.common import *
 
-#En Producion dejar en False
-DEBUG = False
+#En producción dejar en False
+DEBUG = True
 
-#Informacion del Centro
-NOM_CENTRE = 'Institut Badia'
-LOCALITAT = u"Badia Del Valles"
+#Información del Centro
+NOM_CENTRE = 'Centre de Demo'
+LOCALITAT = u"Badia del Vallés"
 
-#URL Por donde contestara la apliacion (Cambiar schema a https si se activa el trafico TSL)
-URL_DJANGO_AULA = r'http://el_teu_domini.cat'
+#URL Por donde contestará la aplicación (Cambiar schema a https si se activa el tráfico TSL)
+URL_DJANGO_AULA = r'http://elteudomini.cat'
 
-#HOSTS que tendran acceso a la Aplicacion (Por defecto '*' permite a todos los equipos con acceso a la maquina,usar la aplicacion)
-#Puedes colocar direciones en formato CIDR o dominios, tambien se aceptan Wildcards
-ALLOWED_HOSTS = [ '*', ]
+#HOSTS que tendrán acceso a la Aplicación (solo es necesario el servidor y sus alias)
+#Puedes colocar direcciones en formato CIDR o dominios, tambien se aceptan Wildcards
+ALLOWED_HOSTS = [ 'elteudomini.cat', '127.0.0.1', ]
 
-
-ACCES_RESTRINGIT_A_GRUPS = None
+ACCES_RESTRINGIT_A_GRUPS = None # ó be = ['direcció','administradors']  durante las pruebas
 
 #Datos del usuario administrador
 ADMINS = (
-    ('admin', 'juan@xtec.cat'),
+    ('admin', 'ui@mega.cracs.cat'),
 )
 
-#Configuracion del Correo Relay SMTP de la Aplicacion
+#Configuracion del Correo Relay SMTP y IMAP de la Aplicación
 EMAIL_HOST='smtp.gmail.com'
-EMAIL_HOST_USER='juan@xtec.cat'
+EMAIL_HOST_IMAP="imap.gmail.com"
+EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
 EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
-DEFAULT_FROM_EMAIL = 'Institut Badia <no-reply@ibadia.cat>'
+DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-SERVER_EMAIL='ibadia@xtec.cat'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_SUBJECT_PREFIX = '[Comunicacio Institut Badia del Valles] '
+SERVER_EMAIL='el-meu-centre@el-meu-centre.net'
 
-#Activar si se activa el trafico HTTPS
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Per proves, envia a la consola
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+
+EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
+
+#True si se activa el HTTPS
 SESSION_COOKIE_SECURE=False
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-CSRF_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False  #True si se activa el HTTPS
 
-#Configuracion del Arbol de Prediccion (Si no eres experto no lo toques)
+#Si se utiliza un árbol de predicción se define aquí:
 location = lambda x: os.path.join(PROJECT_DIR, x)
-BI_DIR = '/opt/djau2019/aula/apps/BI/PMML'
-#__PREDICTION_TREE_TMP = os.path.join( BI_DIR, 'previsioPresencia.pmml' )
-#from lxml import etree
+BI_DIR = location('path_hasta_el_modelo')
+__PREDICTION_TREE_TMP = os.path.join( BI_DIR, 'previsioPresencia.pmml' )
+from lxml import etree
 #PREDICTION_TREE = etree.parse( __PREDICTION_TREE_TMP )
+PREDICTION_TREE = None
 
-INSTALLED_APPS  = [] + INSTALLED_APPS
-
-#Ruta donde almacenara los assets de la aplicacion
+#Ruta donde almacenará los assets de la aplicación
 STATICFILES_DIRS =  STATICFILES_DIRS
 STATIC_ROOT= os.path.join(PROJECT_DIR,'static/')
 
-#Comprime los assets estaticos de la app False por defecto
+#Comprime los assets estáticos de la app, False por defecto
 COMPRESS_ENABLED = False
 
 #Passphrase que usara la app para cifrar las credenciales
-SECRET_KEY = 'changeit'
+# python manage.py generate_secret_key
+SECRET_KEY = 'changeit ---u&qj0e$ig=&4-b%l23$!ba1gysai5z!aw*5%p_$35)2e9-*@r'
+
 CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 
-#Componente que utilizara  Django para serializar los objetos
+#Componente que utilizará Django para serializar los objetos
 SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 
-#Configuracion de la Base de datos
+PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+CUSTOM_CODI_COMERÇ = 'xxxxxx'
+CUSTOM_KEY_COMERÇ = 'xxxxxx'
+
+#Configuración de la Base de datos
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', #django.db.backends.mysql *para mysql
-        'NAME': 'djau2019',
-        'USER': 'djau2019',
-        'PASSWORD': "secret",
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': location( 'db.sqlite'),
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+        'ATOMIC_REQUESTS': True,
     }
 }
-
 ```
 
 **`/opt/djau2019/aula/wsgi.py`**

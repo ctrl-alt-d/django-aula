@@ -7,6 +7,8 @@ from django.conf import settings
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.apps.sortides.models import NotificaSortida
 from aula.apps.sortides.utils_sortides import notifica_sortides
+from django.core.mail import EmailMessage
+from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
 
 def notifica():
     from aula.apps.alumnes.models import Alumne
@@ -143,3 +145,99 @@ def notifica():
         except ObjectDoesNotExist:
             pass
 
+def enviaEmailFamilies(assumpte, missatge, fitxers=None):
+    '''Envia email a tots els correus d'alumnes
+    
+    Envia a tots el mateix assumpte, missatge i fitxers adjunts.
+    Utilitza la configuració dels settings per al remitent
+    Retorna la quantitat de correus als que s'ha enviat el missatge i la quantitat als que no
+    '''
+    
+    from aula.apps.alumnes.models import Alumne
+    from django.db.models import Q
+    from django.utils.datetime_safe import datetime
+    from django.core import mail
+      
+    ara = datetime.now()
+    q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
+    q_no_informat_adreca = Q( correu_relacio_familia_pare = '' ) & Q( correu_relacio_familia_mare = '' ) & \
+                    Q(correu_tutors='') & Q(rp1_correu='')&Q(rp2_correu='')&Q(correu='')
+    
+    # Notifica als tutors els alumnes que no tenen cap email
+    alumnesSenseCorreu=Alumne.objects.filter(q_no_es_baixa).filter( q_no_informat_adreca )
+
+    if alumnesSenseCorreu.exists():
+        for a in alumnesSenseCorreu:
+            tutors=a.tutorsDelGrupDeLAlumne()
+            informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
+
+    correus_alumnes = Alumne.objects.filter(q_no_es_baixa).values_list(
+        'correu_relacio_familia_pare','correu_relacio_familia_mare','correu_tutors', 
+        'rp1_correu', 'rp2_correu', 'correu')
+    
+    # crea llista de correus
+    correus_alumnes=[item for sublist in list(correus_alumnes) for item in sublist]
+    # elimina repetits
+    correus_alumnes=list(dict.fromkeys(correus_alumnes))
+    # elimina buit
+    correus_alumnes.remove('')
+
+    connection = mail.get_connection()
+    # Obre la connexió
+    connection.open()
+    
+    cont=0
+    total=len(correus_alumnes)
+    correctes=0
+    errors=0
+    maxdest=settings.CUSTOM_MAX_EMAIL_RECIPIENTS
+    if maxdest<=0: maxdest=1
+    
+    subject = u"{0} - {1}".format(assumpte, settings.NOM_CENTRE )
+    body = [u"{0}".format( missatge ),
+                u"",
+                u"",
+                u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
+                u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                u"",
+                ]
+                   
+    fromuser = settings.DEFAULT_FROM_EMAIL
+
+    email = EmailMessage(subject, u'\n'.join( body ),fromuser, 
+                             reply_to=[fromuser], connection=connection)
+    for f in fitxers:
+        f.seek(0) 
+        email.attach(f.name, f.read(), f.content_type)
+
+    while cont<total:
+        if cont+maxdest<=total:
+            destinataris=correus_alumnes[cont:cont+maxdest]
+        else:
+            destinataris=correus_alumnes[cont:total]
+        cont=cont+maxdest
+        
+        try:          
+            if settings.DEBUG:
+                print (u'Enviant mail famílies a {0} adreces'.format(len(destinataris)))
+            email.to=[]
+            email.cc=[]
+            email.bcc=destinataris
+            email.send()
+                 
+            correctes=correctes + len(destinataris)
+        except:
+            errors=errors + len(destinataris)
+    
+    if settings.DEBUG:
+        # Enviament per a verificació si DEBUG
+        print (u'Enviant còpia mail famílies als administradors')
+        email.to=[x[1] for x in settings.ADMINS]
+        email.cc=[]
+        email.bcc=[]
+        email.send()
+
+    # tanca la connexió
+    connection.close()
+    
+    return correctes, errors

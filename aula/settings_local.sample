@@ -3,37 +3,86 @@
 
 from .settings_dir.common import *
 
+#En producción dejar en False
+DEBUG = True
+
+#Información del Centro
 NOM_CENTRE = 'Centre de Demo'
-LOCALITAT = u"L'Escala"
-URL_DJANGO_AULA = r'http://djau.ctrlaltd.webfactional.com'
-ALLOWED_HOSTS = [ 'djau.ctrlaltd.webfactional.com', ]
+LOCALITAT = u"Badia del Vallés"
 
-ACCES_RESTRINGIT_A_GRUPS = None # ó be = ['direcció','administradors']  mentre duran les proves
+#URL Por donde contestará la aplicación (Cambiar schema a https si se activa el tráfico TSL)
+URL_DJANGO_AULA = r'http://elteudomini.cat'
 
-#En cas de tenir un arbre de predicció cal posar-lo aquí:
-# from lxml import etree  
-# PREDICTION_TREE=etree.parse( r'path_fins_el_model' )
-PREDICTION_TREE = None
+#HOSTS que tendrán acceso a la Aplicación (solo es necesario el servidor y sus alias)
+#Puedes colocar direcciones en formato CIDR o dominios, tambien se aceptan Wildcards
+ALLOWED_HOSTS = [ 'elteudomini.cat', '127.0.0.1', ]
 
-STATIC_URL = '{domain}/site-css/'.format( domain=URL_DJANGO_AULA )
-STATIC_ROOT = '/home/ctrlaltd/webapps/djaustatic/'
+ACCES_RESTRINGIT_A_GRUPS = None # ó be = ['direcció','administradors']  durante las pruebas
 
-EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
-
-DEBUG = False
-
+#Datos del usuario administrador
 ADMINS = (
-    ('joan rodriguez', 'ui@mega.cracs.cat'),
+    ('admin', 'ui@mega.cracs.cat'),
 )
 
+#Configuracion del Correo Relay SMTP y IMAP de la Aplicación
 EMAIL_HOST='smtp.gmail.com'
-EMAIL_HOST_USER='el-meu-centre@gmail.com'
+EMAIL_HOST_IMAP="imap.gmail.com"
+EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
 EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
 DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-SERVER_EMAIL='el-meu-centre@gmail.com'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+SERVER_EMAIL='el-meu-centre@el-meu-centre.net'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Per proves, envia a la consola
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+
+EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
+
+#True si se activa el HTTPS
+SESSION_COOKIE_SECURE=False
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+CSRF_COOKIE_SECURE=False  #True si se activa el HTTPS
+
+#Si se utiliza un árbol de predicción se define aquí:
+location = lambda x: os.path.join(PROJECT_DIR, x)
+BI_DIR = location('path_hasta_el_modelo')
+__PREDICTION_TREE_TMP = os.path.join( BI_DIR, 'previsioPresencia.pmml' )
+from lxml import etree
+#PREDICTION_TREE = etree.parse( __PREDICTION_TREE_TMP )
+PREDICTION_TREE = None
+
+#Ruta donde almacenará los assets de la aplicación
+STATICFILES_DIRS =  STATICFILES_DIRS
+STATIC_ROOT= os.path.join(PROJECT_DIR,'static/')
+
+#Comprime los assets estáticos de la app, False por defecto
+COMPRESS_ENABLED = False
+
+#Passphrase que usara la app para cifrar las credenciales
+# python manage.py generate_secret_key
+SECRET_KEY = 'changeit ---u&qj0e$ig=&4-b%l23$!ba1gysai5z!aw*5%p_$35)2e9-*@r'
+
+CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
+
+#Componente que utilizará Django para serializar los objetos
+SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 
 PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+CUSTOM_CODI_COMERÇ = 'xxxxxx'
+CUSTOM_KEY_COMERÇ = 'xxxxxx'
+
+#Configuración de la Base de datos
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': location( 'db.sqlite'),
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+        'ATOMIC_REQUESTS': True,
+    }
+}

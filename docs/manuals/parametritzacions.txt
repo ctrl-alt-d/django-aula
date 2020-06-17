@@ -4,6 +4,104 @@ PARAMETRITZACIONS DEL DJANGO-AULA
 Al fitxer settings.py (o settings_local.py)
 -------------------------------------------
 
+CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
+    Serveix per mostrar com s'ordena l'alumnat a l'hora de passar llista
+    	'alumne': 	Ordena primer per grup i després per cognom de l'alumnat (alumnes de diferents grups)
+	'alumne nom':	Ordena l'alumnat per nom
+	'alumne_cognom':Ordena l'alumant per cognoms
+
+CUSTOM_RETARD_PROVOCA_INCIDENCIA = True
+    Si True, cada retard d'un alumne provoca una incidència
+    
+CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
+    Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, indica el tipus d'incidència
+    Exemple: CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
+
+CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
+    Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, frase amb la incidència que es genera
+    
+CUSTOM_TIPUS_INCIDENCIES = False
+    Utilitza la possibilitat de classificar les incidències per tipus:
+    - A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència.
+    - El valor de les incidències en unicode inclou el seu tipus.
+
+CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA = 90
+    Període (dies) en el que es permet crear o modificar una incidència
+    
+CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO = True
+    Si True, l'acumulació d'incidències obliga al professor que li ha posat a expulsar l'alumne.
+    
+CUSTOM_PERIODE_MODIFICACIO_ASSISTENCIA = 90
+    Dies que es permet modificar un control d'assistència.
+
+CUSTOM_DIES_PRESCRIU_INCIDENCIA = 30
+    Dies en els que les incidencies prescriuen.
+    
+CUSTOM_DIES_PRESCRIU_EXPULSIO = 90
+    Dies en els que les expulsions prescriuen.
+
+CUSTOM_NOMES_TUTOR_POT_JUSTIFICAR = True
+
+CUSTOM_MODUL_SORTIDES_ACTIU = True
+	Si True, activa el mòdul de sortides a l'aplicació.
+
+CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA = False
+	Si True, permet utilitzar la funcionalitat que copia els alumnes d'una hora setmanal a una altra.
+ 
+CUSTOM_RETARD_PRIMERA_HORA_GESTIONAT_PEL_TUTOR = False
+
+CUSTOM_NIVELLS = { u"ESO": [u"ESO"],
+                   u"BTX": [u"BTX"],
+                   u"CICLES": [u'GA',u'AF',u'SMX',u'DAW',u'FCT',u"CFA",u"CFI",],
+                   u"INFORMATICA": [u'SMX',u'DAW'],
+                  }
+
+# Timeout de sessió
+CUSTOM_TIMEOUT = 15*60
+CUSTOM_TIMEOUT_GROUP = { u"consergeria": 4*60*60, # 4h
+                         u"professors":    15*60, # 15'
+                         }
+
+CUSTOM_RESERVES_API_KEY = '_default_api_aules_password_'
+
+DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
+
+# Quantitat màxima de destinataris per cada email, depèn del servidor de correu
+CUSTOM_MAX_EMAIL_RECIPIENTS=100
+
+#Servidor IMAP, permet detectar emails rebutjats
+EMAIL_HOST_IMAP = "imap.gmail.com"
+
+CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT = u"""Podeu fer el pagament amb targeta de crèdit a qualsevol caixer de CaixaBank, amb el codi de barres o amb el codi entitat: XXXXXXXXXX"""
+CUSTOM_SORTIDES_PAGAMENT_ONLINE = False
+CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE = 1
+CUSTOM_SORTIDES_PAGAMENT_CAIXER = True
+CUSTOM_FORMULARI_SORTIDES_REDUIT = True
+CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA = u"""El pagament s'ha de realitzar als Caixers del Banc Sabadell (qualsevol targeta de qualsevol entitat funciona per realitzar el pagament, no cal tenir compte al Banc) a pagament a tercers i posar el codi de pagament: 5805."""
+CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU = u"""El pagament s'ha de realitzar en efectiu al professor organitzador de la sortida o al tutor."""
+CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE = u"""El pagament s'ha de realitzar a través d'aquesta mateixa plataforma"""
+CUSTOM_REDSYS_ENTORN_REAL = False
+
+CUSTOM_TUTORS_INFORME = False
+	Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
+
+CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
+	Indica la descripció i l'adreça del tutorial per a les famílies.
+	Per exemple CUSTOM_PORTAL_FAMILIES_TUTORIAL = u"Tutorial disponible a http://goo.gl/lQrkaG"
+
+CUSTOM_FALTES_ABSENCIA_PER_CARTA = 15
+CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 20 }
+        Número de faltes no justificades per tal de generar carta
+        Els tipus de carta els trobareu a:
+               aula/apps/tutoria/business_rules/cartaaabsentisme.py
+
+CUSTOM_MOSTRAR_MAJORS_EDAT = False 
+	Amb True mostrarà al costat del llistat de l'alumne si és major d'edat o no.
+	El missatge el definim a CUSTOM_MARCA_MAJORS_EDAT 
+CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' 
+	Missatge que apareix al costat dels majors d'edat
+	Cognom1 Cognom2, Nom (^18)
+
 # Permet concretar quantes faltes són necessaries segons el número de la carta
 # Si existeix aquest valor aleshores no es fa servir CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA
 # Si un nivell té assignat zero aleshores es mostrarà el missatge "Error triant la carta a enviar a la família"
@@ -27,7 +125,7 @@ CUSTOM_DATE_FORMAT = "%d %B de %Y"   #  5 d'abril de 1999, si fem servir 'ca_ES.
 # Els dies en que no s'ha fet control d'assistència compten com dies en que tothom ha vingut.
 # Si no existeix o és False aleshores es comporta segons el mecanisme per defecte, no té
 # en compte els dies en que no s'ha passat llista
-CUSTOM_NO_CONTROL_ES_PRESENCIA = True
+CUSTOM_NO_CONTROL_ES_PRESENCIA = False
 
 # Per al càlcul d'indicadors
 # Aquest indicadors apareixen a Coord.Alumnes / Indicadors
@@ -46,68 +144,15 @@ CUSTOM_INDICADORS = [
             ['13/09/2019', '29/11/2019', '06/03/2020', '29/05/2020', 'CICLES', 5],  
           ]
 
-CUSTOM_MOSTRAR_MAJORS_EDAT = False 
-	Amb True mostrarà al costat del llistat de l'alumne si és major d'edat o no.
-	El missatge el definim a CUSTOM_MARCA_MAJORS_EDAT 
-CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' 
-	Missatge que apareix al costat dels majors d'edat
-	Cognom1 Cognom2, Nom (^18)
+#Permet veure una graella amb les diferents faltes setmanals d'un curs.
+CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 
-CUSTOM_ORDER_PRESENCIA = ['alumne'] # Pots triar ['alumne___cognoms','alumne__nom, 'alumne__grup', 'alumne']
-    Serveix per mostrar com s'ordena l'alumnat a l'hora de passar llista
-    	'alumne': 	Ordena primer per grup i després per cognom de l'alumnat (alumnes de diferents grups)
-	'alumne nom':	Ordena l'alumnat per nom
-	'alumne_cognom':Ordena l'alumant per cognoms
+CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
+CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
+PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+CUSTOM_CODI_COMERÇ = 'xxxxxx'
+CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
-CUSTOM_RETARD_PROVOCA_INCIDENCIA
-    Si True, cada retard d'un alumne provoca una incidència
-    
-CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
-    Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, indica el tipus d'incidència
-    Exemple: CUSTOM_RETARD_TIPUS_INCIDENCIA = { 'tipus': u'Incidència', 'es_informativa': False }
-
-CUSTOM_RETARD_FRASE = u'Ha arribat tard a classe.'
-    Quan CUSTOM_RETARD_PROVOCA_INCIDENCIA és True, frase amb la incidència que es genera
-    
-CUSTOM_TIPUS_INCIDENCIES
-    Utilitza la possibilitat de classificar les incidències per tipus:
-    - A la pantalla de "alertesAcumulacioExpulsions", permet ordenar per tipus d'incidència.
-    - El valor de les incidències en unicode inclou el seu tipus.
-
-CUSTOM_PERIODE_CREAR_O_MODIFICAR_INCIDENCIA
-    Període (dies) en el que es permet crear o modificar una incidència
-    
-CUSTOM_INCIDENCIES_PROVOQUEN_EXPULSIO
-    Si True, l'acumulació d'incidències obliga al professor que li ha posat a expulsar l'alumne.
-    
-CUSTOM_PERIODE_MODIFICACIO_ASSISTENCIA = 90
-    Dies que es permet modificar un control d'assistència.
-
-CUSTOM_DIES_PRESCRIU_INCIDENCIA = 30
-    Dies en els que les incidencies prescriuen.
-    
-CUSTOM_DIES_PRESCRIU_EXPULSIO = 60
-    Dies en els que les expulsions prescriuen.
-
-CUSTOM_MODUL_SORTIDES_ACTIU = False
-	Si True, activa el mòdul de sortides a l'aplicació.
-
-CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA = False
-	Si True, permet utilitzar la funcionalitat que copia els alumnes d'una hora setmanal a una altra.
- 
-CUSTOM_TUTORS_INFORME = False
-	Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
-
-CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
-	Indica la descripció i l'adreça del tutorial per a les famílies.
-	Per exemple CUSTOM_PORTAL_FAMILIES_TUTORIAL = u"Tutorial disponible a http://goo.gl/lQrkaG"
-
-
-CUSTOM_FALTES_ABSENCIA_PER_CARTA = 15
-CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 20 }
-        Número de faltes no justificades per tal de generar carta
-        Els tipus de carta els trobareu a:
-               aula/apps/tutoria/business_rules/cartaaabsentisme.py
 
 A la base de dades
 ------------------
@@ -115,6 +160,7 @@ ParametreKronowin.assignatures amb professor
     Assignatures optatives amb el mateix nom però que en realitat son diferents: s'afegeix el codi del professor al nom de l'assignatura.
     Exemple de valor: AO,AC,OP,OE
     L'exemple anterior posa el nom del professor sempre que l'assignatura començi amb AO, AC, OP o OE.
+    Es pot fer servir per Kronowin i Untis
 
 ParametreKronowin.fussionar assignatures
     Si el seu valor és 'S', quan una mateixa assignatura s'imparteix pel mateix professor, dia i hora en diversos grups, només deixa una entrada activa per al primer grup.
@@ -122,7 +168,22 @@ ParametreKronowin.fussionar assignatures
 
 ParametreKronowin.passwd
     Contrasenya per defecte dels nous usuaris.
+    Es fa servir per Kronowin, Untis i al fer reset de la password d'usuari.
+    
+ParametreKronowin.KronowinToUntis
+    Es fa servir amb l'opció d'importació d'horaris Untis. Pot ser 'True' o 'False'.
+    Si 'True' indica que s'està fent un traspàs d'horaris entre Kronowin i Untis, importa un horari 
+    fent servir l'opció Untis i actualitza un horari existent creat abans amb l'opció Kronowin.
+    Automàticament canvia a 'False' quan acaba.
+    Més informació a la documentació "docs/Wiki/manual-de-uso/carga-inicial-de-datos/README.md"
 
 ParametreSaga.grups estatics
     Quan es realitza una importació de SAGA, els alumnes que pertanyen a aquests grups no es canvien.
+    
+ParametreSaga.autoRalc
+    Conté un prefix per generar RALCs. Si no existeix o és '', aleshores no fa res.
+    Genera RALC per als alumnes que no tenen, p.ex: CAM i CIS.
+    El RALC es crea amb el prefix+DNI
 
+ParametreEsfera.grups estatics
+    Quan es realitza una importació d'Esfera, els alumnes que pertanyen a aquests grups no es canvien.

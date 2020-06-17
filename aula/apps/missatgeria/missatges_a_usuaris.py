@@ -35,6 +35,8 @@ ACUS_REBUT_ERROR_AL_PROGRAMA = u'''Avís a administradors enviat correctament. E
 
 ACUS_REBUT_ENVIAT_A_PROFE_O_PAS = u'''Missatge enviat a {0}. El text del missatge és: "{1}"'''
 
+EMAIL_A_FAMILIES = u'''Email a famílies enviat a {0} adreces. El text del mail és: {1}''' 
+
 HAS_RECOLLIT_EXPULSIO = u'''ha recollit la següent expulsió: {0}'''
 
 CAL_TRAMITAR_EXPULSIO = u'''Cal tramitar expulsió: {0}'''
@@ -81,6 +83,10 @@ ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE = u"Redsys: Falta nombre d'ordre ({0})
 
 ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE =u"Redsys: Intent de reportar transacció online desde IP no permesa {0}"
 
+MAIL_REBUTJAT=u"Mail rebutjat per l'usuari: \"{0}\"  adreça: \"{1}\".\nData d'enviament: {2}\nMotiu: {3}"
+
+ALUMNE_SENSE_EMAILS=u"L'usuari: \"{0}\" no té adreça d'email informada"
+
 MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_AFEGIR_ALUMNES,
                                 FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS,
@@ -102,6 +108,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE,
                                 ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
                                 ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
+                                MAIL_REBUTJAT,
+                                ALUMNE_SENSE_EMAILS,
                                 }},
              'DISCIPLINA': {'danger': {EXPULSIO_PER_ACUMULACIO_INCIDENCIES,
                                        EXPULSIO_PER_ACUMULACIO_INCIDENCIES_FORA_AULA,
@@ -109,7 +117,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                        CAL_TRAMITAR_EXPULSIO,}},
              'MISSATGERIA': {'info': {CONSERGERIA_A_TUTOR,
                                       CONSERGERIA_A_CONSERGERIA,
-                                      ACUS_REBUT_ENVIAT_A_PROFE_O_PAS,}},
+                                      ACUS_REBUT_ENVIAT_A_PROFE_O_PAS,
+                                      EMAIL_A_FAMILIES,}},
              'ACTIVITATS': {'success': {ACOMPANYANT_A_ACTIVITAT,
                                         RESPONSABLE_A_ACTIVITAT,}},
              'INFORMATIVES_DISCIPLINA': {'primary': {INCIDENCIA_INFORMATIVA,

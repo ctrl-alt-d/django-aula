@@ -12,8 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
     ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
-from aula.settings import CUSTOM_REDSYS_ENTORN_REAL
-from aula.settings_local import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
+from aula.settings import CUSTOM_REDSYS_ENTORN_REAL, CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
@@ -56,7 +55,7 @@ from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
-from .forms import PagamentForm
+from .forms import PagamentForm, SortidaForm
 
 @login_required
 @group_required(['professors'])  
@@ -317,6 +316,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     else:
         instance = Sortida()
         instance.professor_que_proposa = professor
+        instance.tipus_de_pagament = "ON" if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else "NO"
 
     instance.credentials = credentials
 
@@ -328,7 +328,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     else:
         exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments')
 
-    formIncidenciaF = modelform_factory(Sortida, exclude=exclude)
+    formIncidenciaF = modelform_factory(Sortida, form=SortidaForm, exclude=exclude)
 
     if request.method == "POST":
         post_mutable = request.POST.copy()
@@ -1106,7 +1106,7 @@ def pagoOnline(request, pk):
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',
         'DS_MERCHANT_TERMINAL': '1',
-        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio'),
+        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio', kwargs={'pka':alumne.id, 'pks':sortida.id}),
         'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
         'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
                                                                           kwargs={'pk': pk}),
@@ -1119,8 +1119,8 @@ def pagoOnline(request, pk):
     params = data.decode("utf-8")
     #-----------------------------------------------------------------------------
 
-    pagament.ordre_pagament = values['DS_MERCHANT_ORDER']
-    pagament.save()
+    #pagament.ordre_pagament = values['DS_MERCHANT_ORDER']
+    #pagament.save()
 
     # preparar firma per redsys -------------------------------------------
     #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
@@ -1163,7 +1163,7 @@ def pagoOnline(request, pk):
     return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
 
 @csrf_exempt
-def retornTransaccio(request):
+def retornTransaccio(request,pka,pks):
 
     ips_permeses = ['195.76.9.117',
                     '195.76.9.149',
@@ -1236,13 +1236,17 @@ def retornTransaccio(request):
         return HttpResponseServerError()
 
     # -------------------------------------------------------------------------
-
-    pagament = get_object_or_404(Pagament, ordre_pagament=reference)
-    pagament.pagament_realitzat = True
-    data = parameters_dic['Ds_Date']
-    hora = parameters_dic['Ds_Hour']
-    pagament.data_hora_pagament = data + ' ' + hora
-    pagament.save()
+    ds_response = parameters_dic.get('Ds_Response')
+    if int(ds_response) in range(0,100):
+        alumne = Alumne.objects.get(id=pka)
+        sortida = Sortida.objects.get(id=pks)
+        pagament = get_object_or_404(Pagament, alumne=alumne, sortida=sortida)
+        pagament.pagament_realitzat = True
+        data = parameters_dic['Ds_Date']
+        hora = parameters_dic['Ds_Hour']
+        pagament.data_hora_pagament = data + ' ' + hora
+        pagament.ordre_pagament = reference
+        pagament.save()
     return HttpResponse('')
 
 
