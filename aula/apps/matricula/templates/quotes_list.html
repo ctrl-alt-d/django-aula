@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<table style="width:100%">
+<lu>
+	{% for item in object_list %}
+	  <tr>
+            <td>{{ item.cognoms }}, {{ item.nom }}</td>
+        
+			<td>{{ item.grup }}</td>
+            <td>{{ item.correu_relacio_familia_pare }}</td>
+
+            {%if item.get_pagamentQuota %}
+                <td>{{item.get_pagamentQuota.quota}}</td>
+                <td>
+            	{%if item.get_pagamentQuota.pagament_realitzat %}
+	               <b>Pagament Fet</b>
+	            {%else%}
+	               <b style="color:Tomato;">Pagament no fet</b>
+	            {%endif%}
+	            </td>
+            {%endif%}
+
+		</tr>
+	{% empty %}
+		<li>Curs sense alumnes</li>
+	{% endfor %}
+</lu>
+</table>
+{% endblock %}

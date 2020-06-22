@@ -44,6 +44,8 @@ urlpatterns = [
     url(r'^aules/', include('aula.apps.aules.urls')),
     url(r'^presenciaSetmanal/', include('aula.apps.presenciaSetmanal.urls')),
     url(r'^extUntis/', include('aula.apps.extUntis.urls')),
+    url(r'^matricula/', include('aula.apps.matricula.urls', namespace='matricula')),
+    url(r'^extPreinscripcio/', include('aula.apps.extPreinscripcio.urls')),
     # Uncomment the next line to enable the admin:
     path('admin/', admin.site.urls),
     # Login i logout automàtics
@@ -54,6 +56,7 @@ urlpatterns = [
     url(r'^site-css/(?P<path>.*)$', serve,{'document_root': site_media_site_css}),
     url(r'^error500$', TemplateView.as_view(template_name='500.html') ),
     url('^private-media/', include(private_storage.urls)),
+    url(r'^captcha/', include('captcha.urls')),
 
 ]
 

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block extrahead %}
+<style type="text/css">
+  body {
+    padding-bottom: 40px;
+    background-color: #f5f5f5;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <p class="text-center"><img src="/site-css/logo.png" width="154" heigh="64"></p>
+
+  <h2>Petició de matrícula</h2>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">Envia</button>
+  </form>
+{% endblock %}

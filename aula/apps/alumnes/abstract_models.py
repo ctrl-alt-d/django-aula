@@ -289,3 +289,12 @@ class AbstractAlumne(models.Model):
     def get_foto_or_default(self):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
+    
+    @property
+    def get_pagamentQuota(self):
+        from aula.apps.sortides.models import QuotaPagament
+        q=QuotaPagament.objects.filter(alumne=self, quota__any=timezone.now().year)
+        if q:
+            return q[0]
+        else:
+            return None

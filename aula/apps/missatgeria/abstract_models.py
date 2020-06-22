@@ -6,8 +6,6 @@ from datetime import datetime
 
 from django.shortcuts import get_object_or_404
 
-from aula.apps.alumnes.models import Alumne
-
 import collections
 
 class AbstractMissatge(models.Model):

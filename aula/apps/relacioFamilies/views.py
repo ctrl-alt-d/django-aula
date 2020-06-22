@@ -10,6 +10,7 @@ from django.templatetags.static import static
 
 #workflow
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy
 
 #auth
 from django.contrib.auth.decorators import login_required
@@ -18,7 +19,7 @@ from django.contrib.auth.decorators import login_required
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
-from aula.apps.sortides.models import Sortida, NotificaSortida, Pagament
+from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm
 from aula.utils import tools
 from aula.utils.tools import unicode
@@ -46,6 +47,7 @@ import random
 from django.contrib.humanize.templatetags.humanize import naturalday
 import json
 from django.utils.html import escapejs
+import django.utils.timezone
 
 #@login_required
 #@group_required(['professors'])
@@ -957,8 +959,12 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)
 
+    infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
+    pagquotes = QuotaPagament.objects.filter(alumne=alumne)
+    infQuota=detall in ['all', 'sortides'] and pagquotes
+
     #----Sortides -----------------------------------------------------------------------------   
-    if detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU:
+    if infSortida:
         sortides = alumne.notificasortida_set.all()
         sortidesNoves = sortides.filter(  relacio_familia_revisada__isnull = True )
         sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list( 'id', flat=True ).distinct()           
@@ -1075,9 +1081,9 @@ def elMeuInforme( request, pk = None ):
             if sortida.sortida.tipus_de_pagament == 'ON' and sortida.sortida.termini_pagament >= datetime.now():
                 camp = tools.classebuida()
                 #pagament corresponent a una sortida i un alumne
-                pagament_sortida_alumne = get_object_or_404(Pagament, alumne=alumne, sortida=sortida.sortida)
+                pagament_sortida_alumne = get_object_or_404(SortidaPagament, alumne=alumne, sortida=sortida.sortida)
                 camp.id = pagament_sortida_alumne.id
-
+                camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
                 if pagament_sortida_alumne.pagament_realitzat:
                     camp.negreta = True
                     camp.contingut = "Pagat"
@@ -1089,10 +1095,131 @@ def elMeuInforme( request, pk = None ):
             #--
             taula.fileres.append( filera )
     
-        report.append(taula)
+        if not infQuota: report.append(taula)
         if not semiImpersonat:
             sortidesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
 
+    #----Quotes -----------------------------------------------------------------------------   
+    if infQuota:
+        if not infSortida:
+            taula = tools.classebuida()
+            taula.codi = nTaula; nTaula+=1
+            taula.tabTitle = 'Activitats/Sortides'
+        
+            taula.titol = tools.classebuida()
+            taula.titol.contingut = ''
+            taula.titol.enllac = None
+        
+            taula.capceleres = []
+            
+            capcelera = tools.classebuida()
+            capcelera.amplade = 15
+            capcelera.contingut = u'Dates'
+            capcelera.enllac = ""
+            taula.capceleres.append(capcelera)
+        
+            capcelera = tools.classebuida()
+            capcelera.amplade = 25
+            capcelera.contingut = u' '
+            capcelera.enllac = ""
+            taula.capceleres.append(capcelera)
+        
+            capcelera = tools.classebuida()
+            capcelera.amplade = 25
+            capcelera.contingut = u'Detall'
+            taula.capceleres.append(capcelera)
+    
+            capcelera = tools.classebuida()
+            capcelera.amplade = 20
+            capcelera.contingut = ''
+            taula.capceleres.append(capcelera)
+    
+            capcelera = tools.classebuida()
+            capcelera.amplade = 20
+            capcelera.contingut = u'Revisada'
+            taula.capceleres.append(capcelera)
+    
+            capcelera = tools.classebuida()
+            capcelera.amplade = 10
+            capcelera.contingut = u' '
+            taula.capceleres.append(capcelera)
+                    
+            taula.fileres = []
+
+        for pagquota in pagquotes.order_by( '-quota__any' ):
+            filera = []
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = naturalday(pagquota.quota.any)       
+            camp.negreta = not bool( pagquota.pagament_realitzat )
+            filera.append(camp)
+            
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = ''       
+            camp.negreta = not bool( pagquota.pagament_realitzat )
+            filera.append(camp)
+            
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format( pagquota.quota.descripcio )        
+            camp.negreta = not bool( pagquota.pagament_realitzat )
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = ''
+            camp.negreta = not bool( pagquota.pagament_realitzat )
+            filera.append(camp)
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.contingut = u'{0}'.format(pagquota.data_hora_pagament) if pagquota.data_hora_pagament else ''
+            camp.negreta = not bool( pagquota.pagament_realitzat )
+            filera.append(camp)
+            
+            #----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = None
+            camp.modal = {}
+            camp.modal['id'] = pagquota.id 
+            camp.modal['txtboto'] = u'Detalls' 
+            camp.modal['tittle'] =  u"{0} ({1})".format( 
+                                        pagquota.quota.descripcio,
+                                        naturalday(pagquota.quota.any),
+                                        )
+            camp.modal['body'] =  u'{0}\n{1}\n{2}'.format(
+                                        u'Amb targeta' if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else \
+                                        u'Ingrés en compte' if settings.CUSTOM_SORTIDES_PAGAMENT_CAIXER else '',
+                                        u'Preu: {0} €'.format(str(pagquota.quota.importQuota)) if pagquota.quota.importQuota else u'Preu: 0 €',
+                                        u'Data límit pagament: {0}'.format(str(pagquota.quota.dataLimit)) if pagquota.quota.dataLimit else ''
+                                  )
+            filera.append(camp)
+
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.id = pagquota.id
+            camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
+            if pagquota.pagament_realitzat:
+                camp.negreta = True
+                camp.contingut = "Pagat"
+            else:
+                if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+                    camp.buto = u'sortides__sortides__pago_on_line'
+                    camp.contingut = "Pagar Online"
+                else:
+                    camp.buto = None
+                    camp.contingut = ""
+                    
+            filera.append(camp)
+
+            #--
+            taula.fileres.append( filera )
+    
+        report.append(taula)
 
     #----Qualitativa -----------------------------------------------------------------------------
     qualitatives_alumne= { r.qualitativa for r in alumne.respostaavaluacioqualitativa_set.all() }

@@ -354,11 +354,19 @@ def blanc( request ):
                     {},
                 )
     
+from aula.apps.matricula.models import Dades    
     
-def allow_foto(private_file):
+def allow_private_files(private_file):
     request = private_file.request
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
+    if private_file.relative_name.startswith('matricula'):
+        data=Dades.objects.filter(files=private_file.relative_name)
+        if data:
+            if user.username.startswith('almn') and data[0].peticio.alumne.user_associat==user:
+                return request.user.is_authenticated
+        else:
+            return False
     pertany_al_grup_permes = (user
                               .groups
                               .filter(name__in=CUSTOM_GRUPS_PODEN_VEURE_FOTOS)

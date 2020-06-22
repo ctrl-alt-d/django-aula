@@ -184,6 +184,8 @@ INSTALLED_APPS_DJANGO = [
     'django_extensions',
     'django_tables2',
     'django.contrib.humanize',
+    'captcha',
+    'formtools',
 ]
     
 INSTALLED_APPS_AULA = [
@@ -210,6 +212,8 @@ INSTALLED_APPS_AULA = [
     'aula.utils',
     'aula.apps.presenciaSetmanal',
     'aula.apps.extUntis',
+    'aula.apps.matricula',
+    'aula.apps.extPreinscripcio',
 ]
 
 #select2
@@ -256,4 +260,4 @@ LOGGING = {
 }
 
 
-PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_foto'
+PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_private_files'

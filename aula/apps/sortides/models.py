@@ -3,7 +3,7 @@ from django.db import models
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
-from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.models import Alumne, Curs
 from django.apps import apps
 from django.db.models import Q
 from six import python_2_unicode_compatible
@@ -11,7 +11,20 @@ from django.conf import settings
 
 from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE, CUSTOM_SORTIDES_PAGAMENT_CAIXER
 from aula.utils.tools import unicode
+import django.utils.timezone
 
+
+class Comerç(models.Model):
+    codi=models.CharField(max_length=32, unique=True)
+    key=models.CharField(max_length=64)
+    descripcio=models.CharField(max_length=200, blank=True)
+    
+    class Meta:
+        verbose_name = u'Comerç'
+        verbose_name_plural = u'Comerços' 
+        
+    def __str__(self):
+        return self.descripcio
 
 @python_2_unicode_compatible
 class Sortida(models.Model):
@@ -142,6 +155,9 @@ class Sortida(models.Model):
     alumnes_justificacio = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que no venen i disposen de justificació per no assistir al Centre el dia de l'activitat.",related_name='sortides_falta_justificat')
 
     pagaments = models.ManyToManyField(Alumne, through='Pagament')
+    
+    comerç = models.ForeignKey(Comerç, on_delete=models.PROTECT, null=True)
+        
     @property
     def n_acompanyants(self):
         return self.altres_professors_acompanyants.count()
@@ -197,13 +213,57 @@ class Sortida(models.Model):
 
         return l
 
+class Quota(models.Model):
+    importQuota=models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    dataLimit=models.DateField(null=True)
+    any=models.IntegerField(default=django.utils.timezone.now().year)
+    descripcio=models.CharField(max_length=200, blank=True)
+    curs=models.ForeignKey(Curs, on_delete=models.PROTECT)
+    es_taxa=models.BooleanField(default=False)
+    comerç = models.ForeignKey(Comerç, on_delete=models.PROTECT)
+    
+    class Meta:
+        ordering = ['any','curs']
+        verbose_name = u'Quota'
+        verbose_name_plural = u'Quotes' 
+        
+    def __str__(self):
+        return str(self.importQuota)+' '+self.descripcio+' '+str(self.any)
+
 @python_2_unicode_compatible
 class Pagament(models.Model):
     alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT)
-    sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT)
+    sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT, null=True)
     data_hora_pagament = models.CharField(max_length=50, null=True)
     pagament_realitzat = models.BooleanField(null=True, default=False )
     ordre_pagament = models.CharField(max_length=12, unique=True, null=True)
+    quota = models.ForeignKey(Quota, on_delete=models.PROTECT, null=True)
+    
+    def __str__(self):
+        return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
+
+class QuotaPagamentManager(models.Manager):
+    def get_queryset(self):
+        return super(QuotaPagamentManager, self).get_queryset().filter( quota__isnull=False )
+
+class QuotaPagament(Pagament):
+    objects = QuotaPagamentManager()
+    
+    class Meta:
+        proxy = True
+
+    def __str__(self):
+        return u"Pagament de la quota {}, de l'alumne {}: {}".format( self.quota, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'Pendent' )
+    
+class SortidaPagamentManager(models.Manager):
+    def get_queryset(self):
+        return super(SortidaPagamentManager, self).get_queryset().filter( sortida__isnull=False )
+
+class SortidaPagament(Pagament):
+    objects = SortidaPagamentManager()
+    
+    class Meta:
+        proxy = True
 
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )

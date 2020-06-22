@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+            <p>{{ dades.peticio.idAlumne }}</p>
+            <p>{{ dades.cognoms }}, {{ dades.nom }}</p>
+            <p>{{ dades.peticio.curs }}</p>
+            <p>{{ dades.rp1_nom }}</p>
+            <p>{{ dades.rp1_telefon }}</p>
+            <p>{{ dades.peticio.email }}</p>
+            <p>
+            {%if dades.acceptar_condicions %}
+               <b>Condicions acceptades</b>
+            {%else%}
+               <b style="color:Tomato;">Falta acceptació</b>
+            {%endif%}
+            </p>
+            <p>
+            {%if dades.pagamentFet %}
+               <b>Pagament Fet</b>
+            {%else%}
+               <b style="color:Tomato;">Pagament pendent</b>
+            {%endif%}
+            </p>
+            <p><a href="{{ dades.files.url }}" target="_blank">Fitxer</a></p>
+			
+			<a href="{% url "matricula:gestio__confirma__matricula" %}">Tornar</a>
+
+ 
+ {% endblock %}

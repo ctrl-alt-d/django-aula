@@ -27,7 +27,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida, Pagament
+from aula.apps.sortides.models import Sortida, Pagament, Quota
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -1085,10 +1085,23 @@ def pagoOnline(request, pk):
     (user, _) = credentials
 
     pagament = get_object_or_404(Pagament, pk=pk)
-    sortida = pagament.sortida
-    preu = sortida.preu_per_alumne
-    descripcio_sortida = sortida.programa_de_la_sortida
-    data_limit_pagament = sortida.termini_pagament
+    if pagament.sortida:
+        sortida = pagament.sortida
+        preu = sortida.preu_per_alumne
+        descripcio_sortida = sortida.programa_de_la_sortida
+        titol_sortida = sortida.titol_de_la_sortida
+        data_limit_pagament = sortida.termini_pagament
+        codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
+        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
+    else:
+        sortida = pagament.quota
+        preu = sortida.importQuota
+        descripcio_sortida = sortida.descripcio
+        titol_sortida = sortida.descripcio
+        data_limit_pagament = sortida.dataLimit
+        codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
+        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
+        
     alumne = pagament.alumne
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
 
@@ -1102,16 +1115,16 @@ def pagoOnline(request, pk):
     values = {
         'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
         'DS_MERCHANT_ORDER': str(random.randint(100000000000, 999999999999)),
-        'DS_MERCHANT_MERCHANTCODE': CUSTOM_CODI_COMERÇ,
+        'DS_MERCHANT_MERCHANTCODE': codiComerç,
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',
         'DS_MERCHANT_TERMINAL': '1',
-        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio', kwargs={'pka':alumne.id, 'pks':sortida.id}),
-        'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
+        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio', kwargs={'pk':pk}),
+        'Ds_Merchant_ProductDescription': titol_sortida,
         'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
-                                                                          kwargs={'pk': pk}),
+                                                                          kwargs={'pk': pk})+'?next='+request.GET.get('next'),
         'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
-                                                                          kwargs={'pk': pk}),
+                                                                          kwargs={'pk': pk})+'?next='+request.GET.get('next'),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -1128,7 +1141,7 @@ def pagoOnline(request, pk):
     params_dic = json.loads(base64.b64decode(params).decode())
 
     cipher = DES3.new(
-        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        key=base64.b64decode(keyComerç),
         mode=DES3.MODE_CBC,
         IV=b'\0\0\0\0\0\0\0\0')
     ordre = str(params_dic['DS_MERCHANT_ORDER'])
@@ -1160,10 +1173,10 @@ def pagoOnline(request, pk):
         })
 
     entorn_real = CUSTOM_REDSYS_ENTORN_REAL
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real, 'next': request.GET.get('next'),})
 
 @csrf_exempt
-def retornTransaccio(request,pka,pks):
+def retornTransaccio(request,pk):
 
     ips_permeses = ['195.76.9.117',
                     '195.76.9.149',
@@ -1209,9 +1222,16 @@ def retornTransaccio(request,pka,pks):
 
     # verificant conincidència signatures --------------------------------------
     #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
-
+    pagament = get_object_or_404(Pagament, pk=pk)
+    if pagament.sortida:
+        sortida = pagament.sortida
+        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
+    else:
+        sortida = pagament.quota
+        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
+        
     cipher = DES3.new(
-        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        key=base64.b64decode(keyComerç),
         mode=DES3.MODE_CBC,
         IV=b'\0\0\0\0\0\0\0\0')
     ordre = str(parameters_dic['Ds_Order'])
@@ -1238,9 +1258,6 @@ def retornTransaccio(request,pka,pks):
     # -------------------------------------------------------------------------
     ds_response = parameters_dic.get('Ds_Response')
     if int(ds_response) in range(0,100):
-        alumne = Alumne.objects.get(id=pka)
-        sortida = Sortida.objects.get(id=pks)
-        pagament = get_object_or_404(Pagament, alumne=alumne, sortida=sortida)
         pagament.pagament_realitzat = True
         data = parameters_dic['Ds_Date']
         hora = parameters_dic['Ds_Hour']

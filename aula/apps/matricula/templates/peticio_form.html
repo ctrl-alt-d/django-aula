@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method="post">{% csrf_token %}
+    {{ form.as_p }}
+	<a href="{{ view.get_success_url }}" class="btn btn-secondary">Següent</a>
+    <input class="btn btn-primary" type="submit" value="Grava" />
+</form>
+{% endblock %}

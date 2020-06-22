@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{{ titol }}</h2>
+<table style="width:100%">
+<lu>
+	{% for dades in object_list %}
+	  <tr>
+            <td><li>{{ dades.peticio.idAlumne }}</li></td>
+
+           <!-- <td><a href="{% url 'matricula:gestio__confirma__matricula' dades.id %}">{{ dades.cognoms }}, {{ dades.nom }}</a></td>-->
+            <td>{{ dades.cognoms }}, {{ dades.nom }}</td>
+        
+			<td>{{ dades.peticio.curs }}</td>
+            <td>{{ dades.rp1_telefon1 }}</td>
+            <td>{{ dades.peticio.email }}</td>
+            {%if dades.acceptar_condicions %}
+               <td><b>Acceptació marcada</b></td>
+            {%else%}
+               <td><b style="color:Tomato;">Falta acceptació</b></td>
+            {%endif%}
+            {%if dades.pagamentFet %}
+               <td><b>Pagament Fet</b></td>
+            {%else%}
+               <td><b style="color:Tomato;">Pagament no fet</b></td>
+            {%endif%}
+            <td><a href="{{ dades.files.url }}" target="_blank">Fitxer</a></td>
+            {%if dades.peticio.estat == 'A' %}
+            <td><a class="btn btn-info pull" 
+			    href="{% url "matricula:changeestat" dades.peticio.id %}">
+			    Finalitza
+			</a></td>
+			{% else %}
+				<td>Finalitzada</td>
+			{% endif %}
+		</tr>
+	{% empty %}
+		<li>Sense matrícules pendents</li>
+	{% endfor %}
+</lu>
+</table>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head %}
+{{ wizard.form.media }}
+{% endblock %}
+
+{% block content %}
+<h2>{{ titol }}</h2>
+<p>Pàg. {{ wizard.steps.step1 }} de {{ wizard.steps.count }}</p>
+<form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+	<table>
+	{{ wizard.management_form }}
+	{% if wizard.form.forms %}
+	    {{ wizard.form.management_form }}
+	    {% for form in wizard.form.forms %}
+	        {{ form }}
+	    {% endfor %}
+	{% else %}
+	    {{ wizard.form }}
+	{% endif %}
+	</table>
+	{% if wizard.steps.step1 == wizard.steps.count %}
+	He llegit i accepto les <a target = _blank href="{% url  'matricula:condicions' %}">condicions de matrícula</a>
+	<br>
+	<b>Pagament online: </b>
+	{% if pagfet  %}
+		    <b>  Fet!</b>
+	{% else %}
+	        <input class="btn btn-primary" type="submit" value="Quota" name="quota"/>
+	{% endif %}
+	<br><br>
+	{% endif %}
+	{% if wizard.steps.prev %}
+	         <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "anterior" %}</button>
+	{% endif %}
+	<input class="btn btn-primary" type="submit" value="{% trans "continua" %}" name="grava"/>
+</form>
+{% endblock %}

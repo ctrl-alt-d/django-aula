@@ -37,6 +37,7 @@ from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd
 from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
+from aula.apps.matricula.views import get_url_alumne
 
 from django.contrib import messages
 from django.conf import settings
@@ -281,6 +282,9 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
+                        url_mat=get_url_alumne(user)
+                        if url_mat:
+                            return HttpResponseRedirect( url_mat )
                         return HttpResponseRedirect( url_next )
                     else:
                         LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
@@ -379,16 +383,30 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
     infoForm = [ ('Usuari',username,),]
     if request.method == 'POST':
         form = recuperacioDePasswdForm(  request.POST  )
+        alumneOK = True
+        try:
+            alumneUser =  AlumneUser.objects.get( username = username)
+            dataN = alumneUser.getAlumne().data_neixement
+        except AlumneUser.DoesNotExist:
+            alumneOK = False
+            dataN = None
+        except  AttributeError:
+            dataN = None
+        
+        if not dataN:
+            del form.fields['data_neixement']
         errors = []
         if form.is_valid(  ):         
             passwd = form.cleaned_data['p1']               
-            data_neixement = form.cleaned_data['data_neixement']
+            if dataN: data_neixement = form.cleaned_data['data_neixement']
             
-            alumneOK = True
             try:
-                alumneUser =  AlumneUser.objects.get( username = username)
-                dataOK = data_neixement == alumneUser.getAlumne().data_neixement
-                a_temps = datetime.now() - timedelta( minutes = 30 )
+                if dataN:
+                    dataOK = data_neixement == dataN
+                else:
+                    dataOK = True
+                    #  Per fer la matrícula es permet una setmana
+                a_temps = datetime.now() - timedelta( minutes = 30 if dataN else 60*24*7)
                 codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
                                                                   clau = oneTimePasswd, 
                                                                   moment_expedicio__gte = a_temps,
@@ -429,7 +447,10 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address) 
                                 
                 url_next = '/' 
-                return HttpResponseRedirect( url_next )        
+                url_mat=get_url_alumne(user)
+                if url_mat:
+                    return HttpResponseRedirect( url_mat )
+                return HttpResponseRedirect( url_next )    
             else:
                 try:
                     #apunto el login:
@@ -440,6 +461,15 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
 
     else:
         form = recuperacioDePasswdForm(   )
+        try:
+            alumneUser =  AlumneUser.objects.get( username = username)
+            dataN = alumneUser.getAlumne().data_neixement
+        except AlumneUser.DoesNotExist:
+            dataN = None
+        except  AttributeError:
+            dataN = None
+        if not dataN:
+            del form.fields['data_neixement']
         
     return render(
                 request,

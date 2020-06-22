@@ -25,7 +25,7 @@ def calculate_my_time_off(user):
         return settings.CUSTOM_TIMEOUT
     else:
         m=(settings.CUSTOM_TIMEOUT_GROUP.get(g.name, settings.CUSTOM_TIMEOUT) for g in user.groups.all())
-        if bool(m):
+        if bool(m) and user.groups.all():
             return max(m)
         return settings.CUSTOM_TIMEOUT
 
