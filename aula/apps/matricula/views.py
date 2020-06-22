@@ -473,7 +473,7 @@ def changeEstat(request, pk):
     p.estat='F'
     p.save()
     updateAlumne(p.alumne, p.dades)
-    mailPeticio(p.estat, p.idAlumne, p.email)
+    mailPeticio(p.estat, p.idAlumne, p.email, p.alumne)
     return HttpResponseRedirect(reverse_lazy('matricula:gestio__confirma__matricula'))
 
 @login_required
