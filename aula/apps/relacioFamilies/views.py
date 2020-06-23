@@ -960,7 +960,7 @@ def elMeuInforme( request, pk = None ):
         report.append(taula)
 
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
-    pagquotes = QuotaPagament.objects.filter(alumne=alumne)
+    pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
     infQuota=detall in ['all', 'sortides'] and pagquotes
 
     #----Sortides -----------------------------------------------------------------------------   
@@ -1084,7 +1084,7 @@ def elMeuInforme( request, pk = None ):
                 pagament_sortida_alumne = get_object_or_404(SortidaPagament, alumne=alumne, sortida=sortida.sortida)
                 camp.id = pagament_sortida_alumne.id
                 camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
-                if pagament_sortida_alumne.pagament_realitzat:
+                if pagament_sortida_alumne.pagamentFet:
                     camp.negreta = True
                     camp.contingut = "Pagat"
                 else:
@@ -1152,33 +1152,33 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = naturalday(pagquota.quota.any)       
-            camp.negreta = not bool( pagquota.pagament_realitzat )
+            camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = ''       
-            camp.negreta = not bool( pagquota.pagament_realitzat )
+            camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0}'.format( pagquota.quota.descripcio )        
-            camp.negreta = not bool( pagquota.pagament_realitzat )
+            camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = ''
-            camp.negreta = not bool( pagquota.pagament_realitzat )
+            camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0}'.format(pagquota.data_hora_pagament) if pagquota.data_hora_pagament else ''
-            camp.negreta = not bool( pagquota.pagament_realitzat )
+            camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             
             #----------------------------------------------
@@ -1203,7 +1203,7 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.id = pagquota.id
             camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
-            if pagquota.pagament_realitzat:
+            if pagquota.pagamentFet:
                 camp.negreta = True
                 camp.contingut = "Pagat"
             else:

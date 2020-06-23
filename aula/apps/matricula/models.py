@@ -20,7 +20,8 @@ class Dades(models.Model):
     rp2_nom = models.CharField("Nom complet 2n responsable", max_length=250, null=True, blank=True) #responsable 2
     rp2_telefon1 = models.CharField("Telèfon 2n responsable", max_length=15, null=True, blank=True)
     rp2_correu = models.EmailField( "Correu 2n responsable", null=True, blank=True)
-    files = PrivateFileField("Fitxer amb documents", upload_to='matricula/%Y/', max_file_size=20000000, null=True)
+    files = PrivateFileField("Fitxer amb documents", upload_to='matricula/%Y/', max_file_size=20000000, null=True, 
+                             help_text='Documentació obligatòria')
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True)
     acceptar_condicions=models.BooleanField("Accepto condicions de matrícula")
     
@@ -34,7 +35,7 @@ class Dades(models.Model):
     @property
     def pagamentFet(self):
         p=Pagament.objects.filter(alumne=self.peticio.alumne, quota=self.peticio.quota)
-        return p and p[0].pagament_realitzat
+        return p and p.pagamentFet
         
     
 class UFS(models.Model):

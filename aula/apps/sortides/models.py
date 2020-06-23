@@ -5,7 +5,7 @@ from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne, Curs
 from django.apps import apps
-from django.db.models import Q
+from django.db.models import Q, F
 from six import python_2_unicode_compatible
 from django.conf import settings
 
@@ -223,12 +223,12 @@ class Quota(models.Model):
     comerç = models.ForeignKey(Comerç, on_delete=models.PROTECT)
     
     class Meta:
-        ordering = ['any','curs']
+        ordering = ['any','curs__nom_curs_complert']
         verbose_name = u'Quota'
         verbose_name_plural = u'Quotes' 
         
     def __str__(self):
-        return str(self.importQuota)+' '+self.descripcio+' '+str(self.any)
+        return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio
 
 @python_2_unicode_compatible
 class Pagament(models.Model):
@@ -254,6 +254,10 @@ class QuotaPagament(Pagament):
 
     def __str__(self):
         return u"Pagament de la quota {}, de l'alumne {}: {}".format( self.quota, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'Pendent' )
+
+    @property
+    def pagamentFet(self):
+        return self.quota.importQuota==0 or self.pagament_realitzat
     
 class SortidaPagamentManager(models.Manager):
     def get_queryset(self):
@@ -267,6 +271,10 @@ class SortidaPagament(Pagament):
 
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
+
+    @property
+    def pagamentFet(self):
+        return self.pagament_realitzat
     
 @python_2_unicode_compatible
 class NotificaSortida( models.Model):

@@ -34,7 +34,7 @@ def get_url_alumne(usuari):
             p=Peticio.objects.filter(alumne=usuari.alumne, any=django.utils.timezone.now().year, estat='A')
             if p:
                 p=p[0]
-                if not p.dades:
+                if not p.dades or not p.dades.pagamentFet:
                     return reverse_lazy('matricula:relacio_families__matricula__dades')
     except Exception:
         return None
@@ -204,10 +204,12 @@ def peticio(request):
                     quotacurs=quotacurs[0]
                     creaPagament(alumne, quotacurs)
                     novaPeticio.quota=quotacurs
+                    novaPeticio.estat='A'
+                else:
+                    novaPeticio.estat='P'
                 novaPeticio.alumne=alumne
-                novaPeticio.estat='A'
                 novaPeticio.save()
-                mailPeticio('A', idalum, toaddress, alumne)
+                mailPeticio(novaPeticio.estat, idalum, toaddress, alumne)
             else:
                 mailPeticio('P', idalum, toaddress)
                     
@@ -254,7 +256,7 @@ class PeticioDetail(LoginRequiredMixin, UpdateView):
         form = super(PeticioDetail, self).get_form(form_class)
         form.fields['curs'].queryset = form.fields['curs'].queryset.order_by('nom_curs_complert')
         form.fields['quota'].required = True
-        form.fields['quota'].queryset = form.fields['quota'].queryset.order_by('descripcio')
+        #form.fields['quota'].queryset = form.fields['quota'].queryset.order_by('descripcio')
         form.fields['estat'].choices = [('A','Acceptada'), ('R','Rebutjada'),]
         return form
 
@@ -341,10 +343,10 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
                                         kwargs={'pk': pagament.id})+'?next=/')) #'?next='+str(self.request.get_full_path())))
         else:
             pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)
-            if not pagament or not pagament[0].pagament_realitzat:
-                infos.append('Dades completades, falta el pagament de la quota.')
-            else:
+            if pagament.pagamentFet:
                 infos.append('Dades completades, rebrà un mail amb el resultat.')
+            else:
+                infos.append('Dades completades, falta el pagament de la quota.')
                 
         return render(
                     self.request,
@@ -416,7 +418,7 @@ def OmpleDades(request, pk=None):
                 p=p[0]
                 if p.estat=='A':
                     pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
-                    pagfet=str(pagament.pagament_realitzat)
+                    pagfet=str(pagament.pagamentFet)
                     if p.dades:
                         item=p.dades
                     else:
@@ -560,7 +562,7 @@ def quotesCurs( request, curs ):
                     fet_act=False
                     pagament=a.get_pagamentQuota
                     if pagament:
-                        fet_act=pagament.pagament_realitzat
+                        fet_act=pagament.pagamentFet
                     if not fet_act:
                         p=QuotaPagament.objects.filter(alumne=a, quota__id=quota.pk)
                         QuotaPagament.objects.filter(alumne=a, quota__any=django.utils.timezone.now().year).exclude(quota__id=quota.pk).exclude(pagament_realitzat=True).delete()
@@ -584,7 +586,7 @@ def quotesCurs( request, curs ):
             pagament=a.get_pagamentQuota
             if pagament:
                 quota=pagament.quota
-                fet=pagament.pagament_realitzat
+                fet=pagament.pagamentFet
                 estat='Ja pagat' if fet else 'Pendent'
             else:
                 quota=quotacurs
