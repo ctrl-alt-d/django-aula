@@ -21,15 +21,17 @@
 	{% endif %}
 	</table>
 	{% if wizard.steps.step1 == wizard.steps.count %}
-	He llegit i accepto les <a target = _blank href="{% url  'matricula:condicions' %}">condicions de matrícula</a>
-	<br>
-	<b>Pagament online: </b>
-	{% if pagfet  %}
-		    <b>  Fet!</b>
-	{% else %}
-	        <input class="btn btn-primary" type="submit" value="Quota" name="quota"/>
-	{% endif %}
-	<br><br>
+		He llegit i accepto les <a target = _blank href="{% url  'matricula:condicions' %}">condicions de matrícula</a>
+		{% if pagament.quota.importQuota != 0 %}
+			<br><br>
+			<b>Pagament online: </b>
+			{% if pagament.pagamentFet  %}
+				    <b>  Fet!</b>
+			{% else %}
+			        <input class="btn btn-primary" type="submit" value="Quota" name="quota"/>
+			{% endif %}
+		{% endif %}
+		<br><br>
 	{% endif %}
 	{% if wizard.steps.prev %}
 	         <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "anterior" %}</button>

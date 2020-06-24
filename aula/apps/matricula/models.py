@@ -35,7 +35,7 @@ class Dades(models.Model):
     @property
     def pagamentFet(self):
         p=Pagament.objects.filter(alumne=self.peticio.alumne, quota=self.peticio.quota)
-        return p and p.pagamentFet
+        return p and p[0].pagamentFet
         
     
 class UFS(models.Model):
@@ -68,9 +68,9 @@ class Peticio(models.Model):
     any=models.IntegerField(default=django.utils.timezone.now().year)
     estat=models.CharField( max_length=1, choices=ESTAT_CHOICES, default='P')
     curs = models.ForeignKey(Curs, verbose_name="Curs on matricular-se", on_delete=models.PROTECT)
-    quota=models.ForeignKey(Quota, on_delete=models.PROTECT, null=True)
-    alumne=models.ForeignKey(Alumne, on_delete=models.PROTECT, null=True)
-    dades=models.OneToOneField(Dades, on_delete=models.PROTECT, null=True)
+    quota=models.ForeignKey(Quota, on_delete=models.PROTECT, null=True, blank=True)
+    alumne=models.ForeignKey(Alumne, on_delete=models.PROTECT, null=True, blank=True)
+    dades=models.OneToOneField(Dades, on_delete=models.PROTECT, null=True, blank=True)
     
     class Meta:
         #unique_together = ('any','idAlumne')

@@ -21,10 +21,10 @@ class peticioForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super(peticioForm, self).__init__(*args, **kwargs)
-        self.fields['curs'].queryset = self.fields['curs'].queryset.order_by('nom_curs_complert')
+        self.fields['curs'].queryset = Curs.objects.filter(nivell__matricula_oberta=True).order_by('nom_curs_complert')
         
 class DadesForm1(forms.ModelForm):
-    #data_naixement = forms.DateField(widget=DateTextImput())
+
     def __init__(self, *args, **kwargs):
         super(DadesForm1, self).__init__(*args, **kwargs)
         self.fields['data_naixement'].widget=DateTextImput()
@@ -40,7 +40,6 @@ class DadesForm2(forms.ModelForm):
         fields = ['rp1_nom','rp1_telefon1','rp1_correu','rp2_nom','rp2_telefon1','rp2_correu',]
 
 class DadesForm3(forms.ModelForm):
-    #acceptar_condicions=forms.BooleanField(required=True)
 
     def __init__(self, *args, **kwargs):
         super(DadesForm3, self).__init__(*args, **kwargs)
@@ -62,8 +61,7 @@ class EscollirCursForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(EscollirCursForm, self).__init__(*args, **kwargs)
-        self.fields['curs_list'].queryset = Curs.objects.filter(grup__alumne__isnull=False).distinct()
-
+        self.fields['curs_list'].queryset = Curs.objects.filter(grup__alumne__isnull=False, grup__alumne__data_baixa__isnull=True).distinct()
 
 class PagQuotesForm(forms.Form):
     cognoms = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )

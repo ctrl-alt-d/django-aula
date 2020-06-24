@@ -242,6 +242,11 @@ class Pagament(models.Model):
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
 
+    @property
+    def pagamentFet(self):
+        return self.pagament_realitzat or (self.quota and self.quota.importQuota==0) or \
+                (self.sortida and self.sortida.preu_per_alumne==0)
+
 class QuotaPagamentManager(models.Manager):
     def get_queryset(self):
         return super(QuotaPagamentManager, self).get_queryset().filter( quota__isnull=False )
@@ -274,7 +279,7 @@ class SortidaPagament(Pagament):
 
     @property
     def pagamentFet(self):
-        return self.pagament_realitzat
+        return self.sortida.preu_per_alumne==0 or self.pagament_realitzat
     
 @python_2_unicode_compatible
 class NotificaSortida( models.Model):

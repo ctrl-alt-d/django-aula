@@ -254,9 +254,8 @@ class PeticioDetail(LoginRequiredMixin, UpdateView):
 
     def get_form(self, form_class=None):
         form = super(PeticioDetail, self).get_form(form_class)
-        form.fields['curs'].queryset = form.fields['curs'].queryset.order_by('nom_curs_complert')
+        form.fields['curs'].queryset = Curs.objects.filter(nivell__matricula_oberta=True).order_by('nom_curs_complert')
         form.fields['quota'].required = True
-        #form.fields['quota'].queryset = form.fields['quota'].queryset.order_by('descripcio')
         form.fields['estat'].choices = [('A','Acceptada'), ('R','Rebutjada'),]
         return form
 
@@ -318,7 +317,8 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['titol'] = self.kwargs.get('titol', None)
-        context['pagfet'] = self.kwargs.get('pagfet', None)=='True'
+        pagid = self.kwargs.get('pagid', None)
+        context['pagament'] = QuotaPagament.objects.get(pk=pagid)
         return context
 
     def done(self, form_list, **kwargs):
@@ -332,17 +332,21 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
             setattr(item, field, value)
 
         item.save()
-        p=Peticio.objects.filter(alumne=self.request.user.alumne, estat='A', any=django.utils.timezone.now().year)[0]
+        al=self.request.user.alumne
+        p=Peticio.objects.get(alumne=al, estat='A', any=django.utils.timezone.now().year)
         p.dades=item
         p.save()
+        al.nom=item.nom
+        al.cognoms=item.cognoms
+        al.save()
         infos=[]
         if "quota" in self.request.POST:
             # redirect pagament online
-            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
+            pagament=QuotaPagament.objects.get(alumne=p.alumne, quota=p.quota)
             return (HttpResponseRedirect(reverse_lazy('sortides__sortides__pago_on_line',
                                         kwargs={'pk': pagament.id})+'?next=/')) #'?next='+str(self.request.get_full_path())))
         else:
-            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)
+            pagament=QuotaPagament.objects.get(alumne=p.alumne, quota=p.quota)
             if pagament.pagamentFet:
                 infos.append('Dades completades, rebrà un mail amb el resultat.')
             else:
@@ -417,8 +421,8 @@ def OmpleDades(request, pk=None):
             if p:
                 p=p[0]
                 if p.estat=='A':
-                    pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
-                    pagfet=str(pagament.pagamentFet)
+                    pagament=QuotaPagament.objects.get(alumne=p.alumne, quota=p.quota)
+                    pagid=pagament.pk
                     if p.dades:
                         item=p.dades
                     else:
@@ -436,9 +440,9 @@ def OmpleDades(request, pk=None):
                     }
                     initial['2']['acceptar_condicions']=False
                     if item.pk:
-                        return DadesView.as_view(initial_dict=initial)(request, pk=item.pk, titol=titol, pagfet=pagfet)
+                        return DadesView.as_view(initial_dict=initial)(request, pk=item.pk, titol=titol, pagid=pagid)
                     else:
-                        return DadesView.as_view(initial_dict=initial)(request, titol=titol, pagfet=pagfet)
+                        return DadesView.as_view(initial_dict=initial)(request, titol=titol, pagid=pagid)
                 else:
                     if p.estat=='F':
                         infos.append('Matrícula finalitzada. No fan falta més dades.')
