@@ -72,11 +72,13 @@ def alumneExisteix(idalum):
 def mailPeticio(estat, idalum, email, alumne=None):
     '''
     Envia email segons l'estat de la petició de matrícula
-    estat de la petició ('P', 'R', 'A' o 'F')
+    estat de la petició ('P', 'R', 'D', 'A' o 'F')
     idalum identificador d'alumne
     email  adreça email destinataria
     alumne objecte Alumne si matrícula completada o None
     '''
+    if estat=='D':
+        return
     if estat=='A':
         #preparo el codi a la bd:
         clau = str( random.randint( 100000, 999999) ) + str( random.randint( 100000, 999999) )
@@ -184,21 +186,55 @@ def peticio(request):
             novaPeticio=form.save()
             toaddress = novaPeticio.email
             idalum = novaPeticio.idAlumne
+            ralc=None
+            dni=None
             if novaPeticio.tipusIdent=='R':
+                # Comprova per RALC
                 p=Preinscripcio.objects.filter(ralc=idalum, correu=toaddress)
-                if not p:
-                    estat='P'
-                else:
+                if p:
                     estat='A'
+                    dni=p[0].identificador if p[0].identificador else None
+                else:
+                    #  No existeix amb aquest RALC
+                    estat='P'
+                ralc=idalum
             else:
+                # Comprova per DNI
                 p=Preinscripcio.objects.filter(identificador=idalum, correu=toaddress)
-                if not p:
-                    estat='P'
-                else:
+                if p:
                     estat='A'
-                    idalum=p[0].ralc
+                    if not p[0].ralc:
+                        # si no té RALC es crea un automàtic
+                        ralc=autoRalc(idalum)
+                    else:
+                        ralc=p[0].ralc
+                else:
+                    #  No existeix amb aquest DNI
+                    estat='P'
+                dni=idalum
+
+            if ralc:
+                pralc=Peticio.objects.filter(idAlumne=ralc, tipusIdent='R', email=toaddress, any=novaPeticio.any, estat__in=('A','F',)).exclude(pk=novaPeticio.pk)
+            else:
+                pralc=None
+            if dni:
+                pdni=Peticio.objects.filter(idAlumne=dni, tipusIdent='D', email=toaddress, any=novaPeticio.any, estat__in=('A','F',)).exclude(pk=novaPeticio.pk)
+            else:
+                pdni=None
+            if pralc or pdni:
+                # Si ja té una matrícula iniciada, marca la petició com duplicada.
+                estat='D'
+                novaPeticio.estat='D'
+                novaPeticio.save()
+            
             if estat=='A':
-                alumne=creaAlumne(idalum, 'R', novaPeticio.curs, toaddress)
+                # Canvia les peticions pendents o rebutjades a duplicades
+                if ralc:
+                    Peticio.objects.filter(idAlumne=ralc, tipusIdent='R', email=toaddress, any=novaPeticio.any, estat__in=('P','R',)).exclude(pk=novaPeticio.pk).update(estat='D')
+                if dni:
+                    Peticio.objects.filter(idAlumne=dni, tipusIdent='D', email=toaddress, any=novaPeticio.any, estat__in=('P','R',)).exclude(pk=novaPeticio.pk).update(estat='D')
+                
+                alumne=creaAlumne(ralc, 'R', novaPeticio.curs, toaddress)
                 quotacurs=Quota.objects.filter(curs=novaPeticio.curs, any=novaPeticio.any)
                 if quotacurs:
                     quotacurs=quotacurs[0]
@@ -211,12 +247,7 @@ def peticio(request):
                 novaPeticio.save()
                 mailPeticio(novaPeticio.estat, idalum, toaddress, alumne)
             else:
-                mailPeticio('P', idalum, toaddress)
-                    
-            p=Peticio.objects.filter(idAlumne=idalum, any=novaPeticio.any, estat__in=('A',))
-            if alumneExisteix(idalum) and p:
-                # Si ja existeix una petició acceptada
-                Peticio.objects.filter(idAlumne=idalum, any=novaPeticio.any, estat__in=('P','R',)).update(estat='D')
+                mailPeticio(estat, idalum, toaddress)
             
             infos.append('Petició rebuda, un cop verificada rebrà un email amb noves instruccions.')
             
@@ -275,7 +306,8 @@ class PeticioDetail(LoginRequiredMixin, UpdateView):
         if estat=='R':
             mailPeticio(estat, idalum, email)
         if estat=='A':
-            Peticio.objects.filter(idAlumne=idalum, any=self.object.any, estat__in=('P','R',)).update(estat='D')
+            # Canvia les peticions pendents o rebutjades a duplicades
+            Peticio.objects.filter(idAlumne=idalum, tipusIdent=self.object.tipusIdent, email=email, any=self.object.any, estat__in=('P','R',)).update(estat='D')
             alumne=creaAlumne(idalum, self.object.tipusIdent, self.object.curs, email)
             creaPagament(alumne, self.object.quota)
             self.object.alumne=alumne
@@ -371,10 +403,10 @@ def dadesAntigues(alumne):
         d.adreca=p.adreça
         d.localitat=p.localitat
         d.cp=p.cp
-        d.rp1_nom=p.nomtut1+" "+p.cognomstut1
+        d.rp1_nom=p.nomtut1+" "+p.cognomstut1 if p.nomtut1 and p.cognomstut1 else None
         d.rp1_telefon1=p.telefon
         d.rp1_correu=p.correu
-        d.rp2_nom=p.nomtut2+" "+p.cognomstut2
+        d.rp2_nom=p.nomtut2+" "+p.cognomstut2 if p.nomtut2 and p.cognomstut2 else None
     else:
         d.nom=alumne.nom
         d.cognoms=alumne.cognoms
@@ -428,7 +460,7 @@ def OmpleDades(request, pk=None):
                     else:
                         item=dadesAntigues(p.alumne)
                         item.rp1_correu=p.email
-                    nomAlumne=(item.nom+" "+item.cognoms) if item.nom or item.cognoms else p.idAlumne
+                    nomAlumne=(item.nom+" "+item.cognoms) if item.nom and item.cognoms else p.idAlumne
                     titol="Dades de matrícula de "+nomAlumne+" a "+p.curs.nom_curs_complert
                     #get the initial data to include in the form
                     fields0 = ['nom','cognoms','centre_de_procedencia','data_naixement','alumne_correu','adreca','localitat','cp',]
@@ -506,7 +538,7 @@ class MatriculesView(LoginRequiredMixin, ListView):
         return context
     
     def get_queryset(self):
-        return Dades.objects.filter(peticio__any=django.utils.timezone.now().year, peticio__estat='A', acceptar_condicions=True).order_by('peticio__curs', 'cognoms')
+        return Dades.objects.filter(peticio__any=django.utils.timezone.now().year, peticio__estat='A', acceptar_condicions=True).order_by('peticio__curs__nom_curs_complert', 'cognoms', 'nom')
     
 @login_required
 @group_required(['direcció','administradors'])
@@ -524,7 +556,7 @@ class MatriculesList(LoginRequiredMixin, ListView):
         return context
         
     def get_queryset(self):
-        return Dades.objects.filter(peticio__any=django.utils.timezone.now().year).order_by('peticio__curs', 'cognoms')
+        return Dades.objects.filter(peticio__any=django.utils.timezone.now().year).order_by('peticio__curs__nom_curs_complert', 'cognoms', 'nom')
 
 @login_required
 @group_required(['direcció','administradors'])
