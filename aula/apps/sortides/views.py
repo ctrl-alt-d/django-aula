@@ -1259,8 +1259,8 @@ def retornTransaccio(request,pk):
     ds_response = parameters_dic.get('Ds_Response')
     if int(ds_response) in range(0,100):
         pagament.pagament_realitzat = True
-        data = parameters_dic['Ds_Date']
-        hora = parameters_dic['Ds_Hour']
+        data = urllib.parse.unquote(parameters_dic['Ds_Date'])
+        hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
         pagament.data_hora_pagament = data + ' ' + hora
         pagament.ordre_pagament = reference
         pagament.save()
