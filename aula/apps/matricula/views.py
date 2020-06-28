@@ -586,8 +586,17 @@ def quotesCurs( request, curs ):
     #Mateix sistema que alumnes.views.assignaTutors 
     formset = []
     if request.method == "POST":
-
-        for a in Alumne.objects.filter(grup__curs__id=curs).exclude(grup__nom_grup='-').order_by('grup', 'cognoms', 'nom'):
+        llista=Alumne.objects.filter(grup__curs__id=curs,
+                                     data_baixa__isnull=True,
+                                    ).order_by('grup__nom_grup', 'cognoms', 'nom')
+        if not llista:
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
+                     )
+        
+        for a in llista:
             form=PagQuotesForm(request.POST,
                                prefix=str( a.pk )
                             )
@@ -618,7 +627,16 @@ def quotesCurs( request, curs ):
             quotacurs=quotacurs[0]
         else:
             quotacurs=None
-        for a in Alumne.objects.filter(grup__curs__id=curs).exclude(grup__nom_grup='-').order_by('grup', 'cognoms', 'nom'):
+        llista=Alumne.objects.filter(grup__curs__id=curs,
+                             data_baixa__isnull=True,
+                            ).order_by('grup__nom_grup', 'cognoms', 'nom')
+        if not llista:
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
+                     )
+        for a in llista:
             pagament=a.get_pagamentQuota
             if pagament:
                 quota=pagament.quota

@@ -1114,7 +1114,8 @@ def pagoOnline(request, pk):
 
     values = {
         'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
-        'DS_MERCHANT_ORDER': str(random.randint(100000000000, 999999999999)),
+        #'DS_MERCHANT_ORDER': str(random.randint(100000000000, 999999999999)),
+        'DS_MERCHANT_ORDER': str(int(alumne.pk)*10000000+int(pk))[-12:],
         'DS_MERCHANT_MERCHANTCODE': codiComerç,
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',

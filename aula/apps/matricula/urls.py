@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.conf import settings
 from aula.apps.matricula.views import peticio, PeticioVerifica, PeticiobyId, \
             OmpleDades, LlistaMat, changeEstat, condicions, LlistaMatFinals, DadesbyId, assignaQuotes, quotesCurs
             
@@ -18,3 +19,6 @@ urlpatterns = [
     url(r'^changeestat/(?P<pk>\d+)$', changeEstat, name='changeestat'),
     url(r'^condicions/$', condicions, name='condicions'),
 ]
+
+if not settings.CUSTOM_MODUL_MATRICULA_ACTIU:
+    urlpatterns = urlpatterns[1:]

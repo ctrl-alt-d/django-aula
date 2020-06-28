@@ -61,7 +61,9 @@ class EscollirCursForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(EscollirCursForm, self).__init__(*args, **kwargs)
-        self.fields['curs_list'].queryset = Curs.objects.filter(grup__alumne__isnull=False, grup__alumne__data_baixa__isnull=True).distinct()
+        self.fields['curs_list'].queryset = Curs.objects.filter(grup__alumne__isnull=False, 
+                                                                grup__alumne__data_baixa__isnull=True,
+                                                ).order_by('nom_curs_complert').distinct()
 
 class PagQuotesForm(forms.Form):
     cognoms = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )
