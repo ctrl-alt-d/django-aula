@@ -267,7 +267,7 @@ def calcula_menu( user , path ):
                   (
                       ("Informe", 'relacio_families__informe__el_meu_informe', al, None, None ),
                       ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al, None, None ),
-                      ("Matricula", 'matricula:relacio_families__matricula__dades', 
+                      ("Matrícula", 'matricula:relacio_families__matricula__dades', 
                        al if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, None ),
                    )
                ),

@@ -1095,10 +1095,10 @@ def pagoOnline(request, pk):
         keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
     else:
         sortida = pagament.quota
-        preu = sortida.importQuota
+        preu = pagament.importReal
         descripcio_sortida = sortida.descripcio
         titol_sortida = sortida.descripcio
-        data_limit_pagament = sortida.dataLimit
+        data_limit_pagament = pagament.getdataLimit
         codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
         keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
         

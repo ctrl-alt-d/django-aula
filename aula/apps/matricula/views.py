@@ -6,6 +6,7 @@ from django.views.generic.edit import UpdateView
 from django.views.generic import ListView, DetailView
 from django.urls import reverse_lazy
 import django.utils.timezone
+from dateutil.relativedelta import relativedelta
 import random
 from formtools.wizard.views import SessionWizardView
 from django.core.files.storage import FileSystemStorage
@@ -374,11 +375,11 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         infos=[]
         if "quota" in self.request.POST:
             # redirect pagament online
-            pagament=QuotaPagament.objects.get(alumne=p.alumne, quota=p.quota)
+            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
             return (HttpResponseRedirect(reverse_lazy('sortides__sortides__pago_on_line',
                                         kwargs={'pk': pagament.id})+'?next=/')) #'?next='+str(self.request.get_full_path())))
         else:
-            pagament=QuotaPagament.objects.get(alumne=p.alumne, quota=p.quota)
+            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
             if pagament.pagamentFet:
                 infos.append('Dades completades, rebrà un mail amb el resultat.')
             else:
@@ -453,7 +454,7 @@ def OmpleDades(request, pk=None):
             if p:
                 p=p[0]
                 if p.estat=='A':
-                    pagament=QuotaPagament.objects.get(alumne=p.alumne, quota=p.quota)
+                    pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
                     pagid=pagament.pk
                     if p.dades:
                         item=p.dades
@@ -583,39 +584,72 @@ def assignaQuotes(request):
 @login_required
 @group_required(['direcció','administradors'])
 def quotesCurs( request, curs ):
-    #Mateix sistema que alumnes.views.assignaTutors 
-    formset = []
+    from django.forms import formset_factory
+
     if request.method == "POST":
-        llista=Alumne.objects.filter(grup__curs__id=curs,
-                                     data_baixa__isnull=True,
-                                    ).order_by('grup__nom_grup', 'cognoms', 'nom')
-        if not llista:
-            return render(
-                        request,
-                        'resultat.html', 
-                        {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
-                     )
-        
-        for a in llista:
-            form=PagQuotesForm(request.POST,
-                               prefix=str( a.pk )
-                            )
-            formset.append( form )
-            if form.is_valid():
-                quota = form.cleaned_data['quota']
+        formsetQuotes = formset_factory(PagQuotesForm) 
+        formset = formsetQuotes(request.POST) 
+        if formset.is_valid():
+            for form in formset:
+                pg = form.cleaned_data
+                quota = pg.get('quota')
+                fracciona = pg.get('fracciona') and quota.importQuota>0
+                pkp = pg.get('pkp')
+                pka = pg.get('pka')
+                pagament=QuotaPagament.objects.get(pk=pkp) if pkp!='None' else None
+                a=Alumne.objects.get(pk=pka)
                 if quota:
-                    fet_act=False
-                    pagament=a.get_pagamentQuota
                     if pagament:
                         fet_act=pagament.pagamentFet
-                    if not fet_act:
-                        p=QuotaPagament.objects.filter(alumne=a, quota__id=quota.pk)
-                        QuotaPagament.objects.filter(alumne=a, quota__any=django.utils.timezone.now().year).exclude(quota__id=quota.pk).exclude(pagament_realitzat=True).delete()
-                        if not p:
-                            quota=Quota.objects.get(pk=quota.pk)
+                        canviFracc=not pagament.fracciona and fracciona and not fet_act
+                        canviQuota=pagament.quota!=quota and not fet_act and not pagament.fracciona
+                        crea=canviQuota or canviFracc
+                    else:
+                        canviQuota=False
+                        canviFracc=False
+                        crea=True
+
+                    if canviQuota or canviFracc:
+                        QuotaPagament.objects.filter(alumne=a, quota__any=django.utils.timezone.now().year).\
+                            exclude(pagament_realitzat=True).delete()
+                    if crea:
+                        if fracciona:
+                            import1=round(float(quota.importQuota)/2.00,2)
+                            import2=float(quota.importQuota)-import1
+                            p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
+                            p.save()
+                            p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import2, 
+                                            dataLimit=quota.dataLimit + relativedelta(months=+3))
+                            p.save()
+                        else:
                             p=QuotaPagament(alumne=a, quota=quota)
                             p.save()
-     
+                            
+        
+            llista=Alumne.objects.filter(grup__curs__id=curs,
+                                 data_baixa__isnull=True,
+                                ).order_by('grup__nom_grup', 'cognoms', 'nom')
+    
+            llistapag=[]
+            for a in llista:
+                pagaments=a.get_pagamentQuota
+                if pagaments:
+                    for pg in pagaments:
+                        llistapag.append({
+                            'pkp': pg.pk,
+                            'pka': a.pk,
+                            'cognoms': a.cognoms,
+                            'nom':  a.nom ,
+                            'grup': a.grup,
+                            'correu': a.correu_relacio_familia_pare,
+                            'quota': pg.quota,
+                            'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
+                            'fracciona': pg.fracciona
+                            })
+
+            formsetQuotes = formset_factory(PagQuotesForm, extra=0)
+            formset=formsetQuotes(initial= llistapag)
+            
     else:
         c=Curs.objects.get(id=curs)
         try:
@@ -627,6 +661,7 @@ def quotesCurs( request, curs ):
             quotacurs=quotacurs[0]
         else:
             quotacurs=None
+        
         llista=Alumne.objects.filter(grup__curs__id=curs,
                              data_baixa__isnull=True,
                             ).order_by('grup__nom_grup', 'cognoms', 'nom')
@@ -636,32 +671,44 @@ def quotesCurs( request, curs ):
                         'resultat.html', 
                         {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
                      )
+
+        llistapag=[]
         for a in llista:
-            pagament=a.get_pagamentQuota
-            if pagament:
-                quota=pagament.quota
-                fet=pagament.pagamentFet
-                estat='Ja pagat' if fet else 'Pendent'
+            pagaments=a.get_pagamentQuota
+            if pagaments:
+                for pg in pagaments:
+                    llistapag.append({
+                        'pkp': pg.pk,
+                        'pka': a.pk,
+                        'cognoms': a.cognoms,
+                        'nom':  a.nom ,
+                        'grup': a.grup,
+                        'correu': a.correu_relacio_familia_pare,
+                        'quota': pg.quota,
+                        'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
+                        'fracciona': pg.fracciona
+                        })
             else:
-                quota=quotacurs
-                fet=False
-                estat='No assignat'
-            form=PagQuotesForm(
-                                    prefix=str( a.pk ),
-                                    initial={'cognoms': a.cognoms,
-                                             'nom':  a.nom ,
-                                             'grup': a.grup,
-                                             'correu': a.correu_relacio_familia_pare,
-                                             'quota':quota,
-                                             'pagament': fet,
-                                             'estat': estat
-                                             } )            
-            formset.append( form )
+                llistapag.append({
+                    'pkp': 'None',
+                    'pka': a.pk,
+                    'cognoms': a.cognoms,
+                    'nom':  a.nom ,
+                    'grup': a.grup,
+                    'correu': a.correu_relacio_familia_pare,
+                    'quota': quotacurs,
+                    'estat': 'No assignat',
+                    'fracciona': False
+                    })
+
+        formsetQuotes = formset_factory(PagQuotesForm, extra=0)
+        formset=formsetQuotes(initial= llistapag)            
             
     return render(
-                    request,
+                  request,
                   "formsetgrid.html", 
                   { "formset": formset,
                     "head": "Assignació quotes",
-                   }
+                    }
                 )
+    

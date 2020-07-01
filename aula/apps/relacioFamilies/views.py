@@ -961,7 +961,7 @@ def elMeuInforme( request, pk = None ):
 
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
-    infQuota=detall in ['all', 'sortides'] and pagquotes
+    infQuota=detall in ['all', 'sortides'] and pagquotes and settings.CUSTOM_QUOTES_ACTIVES
 
     if settings.CUSTOM_MODUL_MATRICULA_ACTIU:
         titol_sortides = 'Activitats/Pagaments'
@@ -1157,7 +1157,7 @@ def elMeuInforme( request, pk = None ):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = naturalday(pagquota.quota.any)       
+            camp.contingut = naturalday(pagquota.getdataLimit)
             camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             
@@ -1197,11 +1197,12 @@ def elMeuInforme( request, pk = None ):
                                         pagquota.quota.descripcio,
                                         naturalday(pagquota.quota.any),
                                         )
+            valor=pagquota.importReal
             camp.modal['body'] =  u'{0}\n{1}\n{2}'.format(
                                         u'Amb targeta' if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else \
                                         u'Ingrés en compte' if settings.CUSTOM_SORTIDES_PAGAMENT_CAIXER else '',
-                                        u'Preu: {0} €'.format(str(pagquota.quota.importQuota)) if pagquota.quota.importQuota else u'Preu: 0 €',
-                                        u'Data límit pagament: {0}'.format(str(pagquota.quota.dataLimit)) if pagquota.quota.dataLimit else ''
+                                        u'Preu: {0} €'.format(valor),
+                                        u'Data límit pagament: {0}'.format(str(pagquota.getdataLimit)) if pagquota.getdataLimit else ''
                                   )
             filera.append(camp)
 

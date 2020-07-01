@@ -66,6 +66,8 @@ class EscollirCursForm(forms.Form):
                                                 ).order_by('nom_curs_complert').distinct()
 
 class PagQuotesForm(forms.Form):
+    pkp = forms.CharField( widget=forms.HiddenInput() )
+    pka = forms.CharField( widget=forms.HiddenInput() )
     cognoms = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )
     nom = forms.CharField( widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:100px'} ) )
     grup = forms.CharField(max_length=10, widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:80px'} ) )
@@ -80,11 +82,5 @@ class PagQuotesForm(forms.Form):
         required=False,
         )
 
-    pagament = forms.BooleanField(widget=forms.HiddenInput(), required=False)
     estat = forms.CharField(max_length=15, widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:100px'} ) )
-    '''
-    def __init__(self, *args, **kwargs):
-        super(PagQuotesForm, self).__init__(*args, **kwargs)
-        self.fields['quota'].disabled=kwargs['initial']['pagament'] if 'initial' in kwargs else False
-    '''
-    
+    fracciona = forms.BooleanField(required=False)

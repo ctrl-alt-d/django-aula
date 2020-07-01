@@ -297,6 +297,6 @@ class AbstractAlumne(models.Model):
         from aula.apps.sortides.models import QuotaPagament
         q=QuotaPagament.objects.filter(alumne=self, quota__any=timezone.now().year)
         if q:
-            return q[0]
+            return q
         else:
             return None

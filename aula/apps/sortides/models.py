@@ -238,6 +238,9 @@ class Pagament(models.Model):
     pagament_realitzat = models.BooleanField(null=True, default=False )
     ordre_pagament = models.CharField(max_length=12, unique=True, null=True)
     quota = models.ForeignKey(Quota, on_delete=models.PROTECT, null=True)
+    fracciona =  models.BooleanField(null=True, default=False )
+    importParcial = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    dataLimit = models.DateField(null=True)
     
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
@@ -246,7 +249,17 @@ class Pagament(models.Model):
     def pagamentFet(self):
         return self.pagament_realitzat or (self.quota and self.quota.importQuota==0) or \
                 (self.sortida and self.sortida.preu_per_alumne==0)
-
+    
+    @property
+    def importReal(self):
+        return self.importParcial if self.fracciona else self.quota.importQuota if self.quota else \
+            self.sortida.preu_per_alumne if self.sortida else 0
+    
+    @property
+    def getdataLimit(self):
+        return self.dataLimit if self.fracciona else self.quota.dataLimit if self.quota else \
+            self.sortida.termini_pagament if self.sortida else ''
+    
 class QuotaPagamentManager(models.Manager):
     def get_queryset(self):
         return super(QuotaPagamentManager, self).get_queryset().filter( quota__isnull=False )
@@ -258,11 +271,21 @@ class QuotaPagament(Pagament):
         proxy = True
 
     def __str__(self):
-        return u"Pagament de la quota {}, de l'alumne {}: {}".format( self.quota, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'Pendent' )
+        if self.fracciona:
+            return u"Pagament parcial {} de la quota {} {}, de l'alumne {}: {}".format( self.importParcial, self.quota.descripcio, self.quota.importQuota, self.alumne, 'Fet' if self.pagament_realitzat else 'Pendent' )
+        return u"Pagament de la quota {} {}, de l'alumne {}: {}".format( self.quota.descripcio, self.quota.importQuota, self.alumne, 'Fet' if self.pagament_realitzat else 'Pendent' )
 
     @property
     def pagamentFet(self):
         return self.quota.importQuota==0 or self.pagament_realitzat
+    
+    @property
+    def importReal(self):
+        return self.importParcial if self.fracciona else self.quota.importQuota
+    
+    @property
+    def getdataLimit(self):
+        return self.dataLimit if self.fracciona else self.quota.dataLimit
     
 class SortidaPagamentManager(models.Manager):
     def get_queryset(self):
