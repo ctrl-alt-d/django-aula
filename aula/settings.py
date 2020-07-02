@@ -56,6 +56,7 @@ CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU = u"""El pagament s'ha de realitza
 CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE = u"""El pagament s'ha de realitzar a través d'aquesta mateixa plataforma"""
 CUSTOM_REDSYS_ENTORN_REAL = False
 CUSTOM_QUOTES_ACTIVES = False
+CUSTOM_TIPUS_QUOTA_MATRICULA = None
 
 #Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 CUSTOM_TUTORS_INFORME = False

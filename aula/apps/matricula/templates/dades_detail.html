@@ -17,10 +17,12 @@
             {%endif%}
             </p>
             <p>
-            {%if dades.pagamentFet %}
-               <b>Pagament Fet</b>
-            {%else%}
-               <b style="color:Tomato;">Pagament pendent</b>
+            {%if dades.getPagament %}
+	            {%if dades.pagamentFet %}
+	               <b>Pagament Fet</b>
+	            {%else%}
+	               <b style="color:Tomato;">Pagament pendent</b>
+	            {%endif%}
             {%endif%}
             </p>
             <p><a href="{{ dades.files.url }}" target="_blank">Fitxer</a></p>

@@ -20,10 +20,12 @@
             {%else%}
                <td><b style="color:Tomato;">Falta acceptació</b></td>
             {%endif%}
-            {%if dades.pagamentFet %}
-               <td><b>Pagament Fet</b></td>
-            {%else%}
-               <td><b style="color:Tomato;">Pagament no fet</b></td>
+            {%if dades.getPagament %}
+	            {%if dades.pagamentFet %}
+	               <td><b>Pagament Fet</b></td>
+	            {%else%}
+	               <td><b style="color:Tomato;">Pagament no fet</b></td>
+	            {%endif%}
             {%endif%}
             <td><a href="{{ dades.files.url }}" target="_blank">Fitxer</a></td>
             {%if dades.peticio.estat == 'A' %}

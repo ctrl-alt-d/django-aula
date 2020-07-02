@@ -168,7 +168,7 @@ def creaPagament(alumne, quota):
     '''
     
     p=QuotaPagament.objects.filter(alumne=alumne, quota=quota)
-    if not p:
+    if not p and quota:
         p=QuotaPagament(alumne=alumne, quota=quota)
         p.save()
 
@@ -236,14 +236,17 @@ def peticio(request):
                     Peticio.objects.filter(idAlumne=dni, tipusIdent='D', email=toaddress, any=novaPeticio.any, estat__in=('P','R',)).exclude(pk=novaPeticio.pk).update(estat='D')
                 
                 alumne=creaAlumne(ralc, 'R', novaPeticio.curs, toaddress)
-                quotacurs=Quota.objects.filter(curs=novaPeticio.curs, any=novaPeticio.any)
+                quotacurs=Quota.objects.filter(curs=novaPeticio.curs, any=novaPeticio.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
                 if quotacurs:
                     quotacurs=quotacurs[0]
                     creaPagament(alumne, quotacurs)
                     novaPeticio.quota=quotacurs
                     novaPeticio.estat='A'
                 else:
-                    novaPeticio.estat='P'
+                    if settings.CUSTOM_TIPUS_QUOTA_MATRICULA:
+                        novaPeticio.estat='P'
+                    else:
+                        novaPeticio.estat='A'
                 novaPeticio.alumne=alumne
                 novaPeticio.save()
                 mailPeticio(novaPeticio.estat, idalum, toaddress, alumne)
@@ -287,7 +290,8 @@ class PeticioDetail(LoginRequiredMixin, UpdateView):
     def get_form(self, form_class=None):
         form = super(PeticioDetail, self).get_form(form_class)
         form.fields['curs'].queryset = Curs.objects.filter(nivell__matricula_oberta=True).order_by('nom_curs_complert')
-        form.fields['quota'].required = True
+        form.fields['quota'].queryset = Quota.objects.filter(any=django.utils.timezone.now().year, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+        form.fields['quota'].required = True if settings.CUSTOM_TIPUS_QUOTA_MATRICULA else False
         form.fields['estat'].choices = [('A','Acceptada'), ('R','Rebutjada'),]
         return form
 
@@ -351,7 +355,7 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         context = super().get_context_data(**kwargs)
         context['titol'] = self.kwargs.get('titol', None)
         pagid = self.kwargs.get('pagid', None)
-        context['pagament'] = QuotaPagament.objects.get(pk=pagid)
+        context['pagament'] = QuotaPagament.objects.get(pk=pagid) if bool(pagid) else None
         return context
 
     def done(self, form_list, **kwargs):
@@ -373,17 +377,17 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         al.cognoms=item.cognoms
         al.save()
         infos=[]
-        if "quota" in self.request.POST:
+        if p.quota and "quota" in self.request.POST:
             # redirect pagament online
-            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
+            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota).order_by('dataLimit')[0]
             return (HttpResponseRedirect(reverse_lazy('sortides__sortides__pago_on_line',
                                         kwargs={'pk': pagament.id})+'?next=/')) #'?next='+str(self.request.get_full_path())))
         else:
-            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
-            if pagament.pagamentFet:
-                infos.append('Dades completades, rebrà un mail amb el resultat.')
-            else:
+            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota).order_by('dataLimit')[0]
+            if pagament and not pagament.pagamentFet:
                 infos.append('Dades completades, falta el pagament de la quota.')
+            else:
+                infos.append('Dades completades, rebrà un mail amb el resultat.')
                 
         return render(
                     self.request,
@@ -454,8 +458,13 @@ def OmpleDades(request, pk=None):
             if p:
                 p=p[0]
                 if p.estat=='A':
-                    pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota)[0]
-                    pagid=pagament.pk
+                    
+                    pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota).order_by('dataLimit')
+                    if pagament:
+                        pagid=pagament[0].pk
+                    else:
+                        pagid=''
+                    
                     if p.dades:
                         item=p.dades
                     else:
@@ -571,7 +580,9 @@ def assignaQuotes(request):
         form = EscollirCursForm(request.POST)
         if form.is_valid():
             curs=form.cleaned_data['curs_list']
-            return HttpResponseRedirect(reverse_lazy("matricula:gestio__assigna__quotes", kwargs={"curs": curs.id}))
+            tipus=form.cleaned_data['tipus_quota']
+            return HttpResponseRedirect(reverse_lazy("matricula:gestio__assigna__quotes", 
+                                                     kwargs={"curs": curs.id, "tipus": tipus.id}))
     else:
         form = EscollirCursForm()
     return render(
@@ -581,24 +592,32 @@ def assignaQuotes(request):
                  },
                 )
 
+def get_QuotaPagament(alumne, tipus, nany=None):
+    if not nany:
+        nany=django.utils.timezone.now().year
+    return QuotaPagament.objects.filter(alumne=alumne, quota__tipus=tipus, quota__any=nany)
+
 @login_required
 @group_required(['direcció','administradors'])
-def quotesCurs( request, curs ):
+def quotesCurs( request, curs, tipus ):
     from django.forms import formset_factory
 
     if request.method == "POST":
         formsetQuotes = formset_factory(PagQuotesForm) 
-        formset = formsetQuotes(request.POST) 
+        formset = formsetQuotes(request.POST, form_kwargs={'tipus': tipus}) 
         if formset.is_valid():
+            fraccions_esborrades=()
             for form in formset:
                 pg = form.cleaned_data
                 quota = pg.get('quota')
-                fracciona = pg.get('fracciona') and quota.importQuota>0
                 pkp = pg.get('pkp')
                 pka = pg.get('pka')
+                if pkp!='None' and int(pkp) in fraccions_esborrades:
+                    continue
                 pagament=QuotaPagament.objects.get(pk=pkp) if pkp!='None' else None
                 a=Alumne.objects.get(pk=pka)
                 if quota:
+                    fracciona = pg.get('fracciona') and quota.importQuota>0
                     if pagament:
                         fet_act=pagament.pagamentFet
                         canviFracc=not pagament.fracciona and fracciona and not fet_act
@@ -610,7 +629,7 @@ def quotesCurs( request, curs ):
                         crea=True
 
                     if canviQuota or canviFracc:
-                        QuotaPagament.objects.filter(alumne=a, quota__any=django.utils.timezone.now().year).\
+                        QuotaPagament.objects.filter(alumne=a, quota__any=django.utils.timezone.now().year, quota__tipus=tipus).\
                             exclude(pagament_realitzat=True).delete()
                     if crea:
                         if fracciona:
@@ -624,15 +643,26 @@ def quotesCurs( request, curs ):
                         else:
                             p=QuotaPagament(alumne=a, quota=quota)
                             p.save()
-                            
-        
+                else:
+                    # Quota esborrada
+                    if pagament and not pagament.pagament_realitzat:
+                        #esborrar pagament o pagaments
+                        #si fracciona depén dels pagaments previs ja fets
+                        if not pagament.fracciona:
+                            pagament.delete()
+                        else:
+                            p=get_QuotaPagament(a, tipus).filter(fracciona=True)
+                            if p and not p.filter(pagament_realitzat=True):
+                                fraccions_esborrades=fraccions_esborrades+tuple(p.values_list('pk', flat = True))
+                                p.delete()
+
             llista=Alumne.objects.filter(grup__curs__id=curs,
                                  data_baixa__isnull=True,
                                 ).order_by('grup__nom_grup', 'cognoms', 'nom')
     
             llistapag=[]
             for a in llista:
-                pagaments=a.get_pagamentQuota
+                pagaments=get_QuotaPagament(a, tipus)
                 if pagaments:
                     for pg in pagaments:
                         llistapag.append({
@@ -647,14 +677,20 @@ def quotesCurs( request, curs ):
                             'fracciona': pg.fracciona
                             })
 
+            if len(llistapag)==0:
+                return render(
+                            request,
+                            'resultat.html', 
+                            {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes assignades']} },
+                         )
             formsetQuotes = formset_factory(PagQuotesForm, extra=0)
-            formset=formsetQuotes(initial= llistapag)
+            formset=formsetQuotes(form_kwargs={'tipus': tipus}, initial= llistapag)
             
     else:
         c=Curs.objects.get(id=curs)
         try:
             ncurs=str(int(c.nom_curs)+1)
-            quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=django.utils.timezone.now().year)
+            quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=django.utils.timezone.now().year, tipus=tipus)
         except:
             quotacurs=None
         if quotacurs:
@@ -674,14 +710,14 @@ def quotesCurs( request, curs ):
 
         llistapag=[]
         for a in llista:
-            pagaments=a.get_pagamentQuota
+            pagaments=get_QuotaPagament(a, tipus)
             if pagaments:
                 for pg in pagaments:
                     llistapag.append({
                         'pkp': pg.pk,
                         'pka': a.pk,
                         'cognoms': a.cognoms,
-                        'nom':  a.nom ,
+                        'nom':  a.nom,
                         'grup': a.grup,
                         'correu': a.correu_relacio_familia_pare,
                         'quota': pg.quota,
@@ -701,8 +737,16 @@ def quotesCurs( request, curs ):
                     'fracciona': False
                     })
 
+        if len(llistapag)==0:
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
+                     )
+        
         formsetQuotes = formset_factory(PagQuotesForm, extra=0)
-        formset=formsetQuotes(initial= llistapag)            
+        formset=formsetQuotes(form_kwargs={'tipus': tipus}, initial= llistapag)      
+
             
     return render(
                   request,

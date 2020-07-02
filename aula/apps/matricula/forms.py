@@ -1,7 +1,7 @@
 from django import forms
 from captcha.fields import CaptchaField
 from aula.apps.matricula.models import Peticio, Dades
-from aula.apps.sortides.models import Quota
+from aula.apps.sortides.models import Quota, TipusQuota, QuotaPagament
 from aula.apps.alumnes.models import Curs, Alumne
 from aula.utils.widgets import DateTextImput
 from aula.django_select2.forms import ModelSelect2Widget
@@ -58,12 +58,14 @@ class MatriculaForm(forms.ModelForm):
 class EscollirCursForm(forms.Form):
 
     curs_list = forms.ModelChoiceField(label=u'Curs', queryset=None, required = True,)
+    tipus_quota = forms.ModelChoiceField(label=u'Tipus de quota', queryset=None, required = True,)
 
     def __init__(self, *args, **kwargs):
         super(EscollirCursForm, self).__init__(*args, **kwargs)
         self.fields['curs_list'].queryset = Curs.objects.filter(grup__alumne__isnull=False, 
                                                                 grup__alumne__data_baixa__isnull=True,
                                                 ).order_by('nom_curs_complert').distinct()
+        self.fields['tipus_quota'].queryset = TipusQuota.objects.filter(quota__isnull=False).order_by('nom').distinct()
 
 class PagQuotesForm(forms.Form):
     pkp = forms.CharField( widget=forms.HiddenInput() )
@@ -84,3 +86,9 @@ class PagQuotesForm(forms.Form):
 
     estat = forms.CharField(max_length=15, widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:100px'} ) )
     fracciona = forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        tipus = kwargs.pop('tipus')
+        super(PagQuotesForm, self).__init__(*args, **kwargs)
+        self.fields['quota'].widget.queryset=Quota.objects.filter(tipus=tipus).distinct()
+        

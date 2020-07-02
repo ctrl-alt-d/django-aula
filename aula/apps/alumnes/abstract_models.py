@@ -25,6 +25,7 @@ class AbstractNivell(models.Model):
     descripcio_nivell = models.CharField(max_length=240, blank=True)
     anotacions_nivell = models.TextField(blank=True)
     matricula_oberta = models.BooleanField(default=False)
+    taxes = models.ForeignKey('sortides.TipusQuota', on_delete=models.PROTECT, null=True, default=None)
     
     class Meta:
         abstract = True        
@@ -291,12 +292,3 @@ class AbstractAlumne(models.Model):
     def get_foto_or_default(self):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
-    
-    @property
-    def get_pagamentQuota(self):
-        from aula.apps.sortides.models import QuotaPagament
-        q=QuotaPagament.objects.filter(alumne=self, quota__any=timezone.now().year)
-        if q:
-            return q
-        else:
-            return None

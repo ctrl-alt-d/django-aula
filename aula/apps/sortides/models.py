@@ -3,16 +3,15 @@ from django.db import models
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
 from aula.apps.sortides.business_rules.sortida import clean_sortida
-from aula.apps.alumnes.models import Alumne, Curs
+from aula.apps.alumnes.models import Alumne
 from django.apps import apps
-from django.db.models import Q, F
+from django.db.models import Q
 from six import python_2_unicode_compatible
 from django.conf import settings
 
 from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE, CUSTOM_SORTIDES_PAGAMENT_CAIXER
 from aula.utils.tools import unicode
 import django.utils.timezone
-
 
 class Comerç(models.Model):
     codi=models.CharField(max_length=32, unique=True)
@@ -213,19 +212,32 @@ class Sortida(models.Model):
 
         return l
 
+class TipusQuota(models.Model):
+    nom = models.CharField(max_length=100, unique=True)
+    
+    class Meta:
+        ordering = ['nom']
+        verbose_name = u'Tipus de quota'
+        verbose_name_plural = u'Tipus de quotes'
+        
+    def __str__(self):
+        return self.nom
+
 class Quota(models.Model):
+    from aula.apps.alumnes.models import Curs
+    
     importQuota=models.DecimalField(max_digits=7, decimal_places=2, default=0)
     dataLimit=models.DateField(null=True)
     any=models.IntegerField(default=django.utils.timezone.now().year)
     descripcio=models.CharField(max_length=200, blank=True)
     curs=models.ForeignKey(Curs, on_delete=models.PROTECT)
-    es_taxa=models.BooleanField(default=False)
     comerç = models.ForeignKey(Comerç, on_delete=models.PROTECT)
+    tipus = models.ForeignKey(TipusQuota, on_delete=models.PROTECT, null=True, default=None)
     
     class Meta:
         ordering = ['any','curs__nom_curs_complert']
         verbose_name = u'Quota'
-        verbose_name_plural = u'Quotes' 
+        verbose_name_plural = u'Quotes'
         
     def __str__(self):
         return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio
@@ -275,18 +287,6 @@ class QuotaPagament(Pagament):
             return u"Pagament parcial {} de la quota {} {}, de l'alumne {}: {}".format( self.importParcial, self.quota.descripcio, self.quota.importQuota, self.alumne, 'Fet' if self.pagament_realitzat else 'Pendent' )
         return u"Pagament de la quota {} {}, de l'alumne {}: {}".format( self.quota.descripcio, self.quota.importQuota, self.alumne, 'Fet' if self.pagament_realitzat else 'Pendent' )
 
-    @property
-    def pagamentFet(self):
-        return self.quota.importQuota==0 or self.pagament_realitzat
-    
-    @property
-    def importReal(self):
-        return self.importParcial if self.fracciona else self.quota.importQuota
-    
-    @property
-    def getdataLimit(self):
-        return self.dataLimit if self.fracciona else self.quota.dataLimit
-    
 class SortidaPagamentManager(models.Manager):
     def get_queryset(self):
         return super(SortidaPagamentManager, self).get_queryset().filter( sortida__isnull=False )
@@ -300,10 +300,6 @@ class SortidaPagament(Pagament):
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
 
-    @property
-    def pagamentFet(self):
-        return self.sortida.preu_per_alumne==0 or self.pagament_realitzat
-    
 @python_2_unicode_compatible
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne, on_delete=models.CASCADE )

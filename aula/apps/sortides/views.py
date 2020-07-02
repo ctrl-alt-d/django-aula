@@ -1174,7 +1174,9 @@ def pagoOnline(request, pk):
         })
 
     entorn_real = CUSTOM_REDSYS_ENTORN_REAL
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real, 'next': request.GET.get('next'),})
+    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 
+                                                       'sortida':sortida if pagament.sortida else descripcio_sortida + "("+str(pagament.quota.any)+")", 
+                                                       'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real, 'next': request.GET.get('next'),})
 
 @csrf_exempt
 def retornTransaccio(request,pk):

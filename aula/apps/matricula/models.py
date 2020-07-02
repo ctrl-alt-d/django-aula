@@ -34,10 +34,18 @@ class Dades(models.Model):
     
     @property
     def pagamentFet(self):
-        p=Pagament.objects.filter(alumne=self.peticio.alumne, quota=self.peticio.quota)
-        return p and p[0].pagamentFet
-        
+        pag=self.getPagament
+        if pag:
+            for p in pag:
+                if not p.pagamentFet: return False
+            return True
+        return False
     
+    @property
+    def getPagament(self):
+        p=Pagament.objects.filter(alumne=self.peticio.alumne, quota=self.peticio.quota)
+        return p
+
 class UFS(models.Model):
     alumne=models.ForeignKey(Alumne, on_delete=models.PROTECT)
     modul=models.ForeignKey(Assignatura, on_delete=models.PROTECT)

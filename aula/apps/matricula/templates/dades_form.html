@@ -22,7 +22,7 @@
 	</table>
 	{% if wizard.steps.step1 == wizard.steps.count %}
 		He llegit i accepto les <a target = _blank href="{% url  'matricula:condicions' %}">condicions de matrícula</a>
-		{% if pagament.quota.importQuota != 0 %}
+		{% if pagament and pagament.quota.importQuota != 0 %}
 			<br><br>
 			<b>Pagament online: </b>
 			{% if pagament.pagamentFet  %}
