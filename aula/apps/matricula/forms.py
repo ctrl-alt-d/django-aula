@@ -70,10 +70,10 @@ class EscollirCursForm(forms.Form):
 class PagQuotesForm(forms.Form):
     pkp = forms.CharField( widget=forms.HiddenInput() )
     pka = forms.CharField( widget=forms.HiddenInput() )
-    cognoms = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )
-    nom = forms.CharField( widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:100px'} ) )
+    cognoms = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ), required=False, )
+    nom = forms.CharField( widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:100px'} ), required=False, )
     grup = forms.CharField(max_length=10, widget = forms.TextInput( attrs={'readonly': True, 'style': 'width:80px'} ) )
-    correu = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ) )
+    correu = forms.CharField( widget = forms.TextInput( attrs={'readonly': True} ), required=False, )
 
     quota = ModelChoiceField(
         widget=ModelSelect2Widget(

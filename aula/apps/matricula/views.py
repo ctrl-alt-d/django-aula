@@ -253,6 +253,11 @@ def peticio(request):
             else:
                 mailPeticio(estat, idalum, toaddress)
             
+            '''
+            if estat=='D':
+                infos.append('Petició duplicada, ja existeix una matrícula acceptada per a aquest alumne.')
+            else:
+            '''
             infos.append('Petició rebuda, un cop verificada rebrà un email amb noves instruccions.')
             
             return render(
@@ -663,6 +668,7 @@ def quotesCurs( request, curs, tipus ):
             llistapag=[]
             for a in llista:
                 pagaments=get_QuotaPagament(a, tipus)
+                email=a.correu_relacio_familia_pare if a.correu_relacio_familia_pare else a.correu_relacio_familia_mare
                 if pagaments:
                     for pg in pagaments:
                         llistapag.append({
@@ -671,7 +677,7 @@ def quotesCurs( request, curs, tipus ):
                             'cognoms': a.cognoms,
                             'nom':  a.nom ,
                             'grup': a.grup,
-                            'correu': a.correu_relacio_familia_pare,
+                            'correu': email,
                             'quota': pg.quota,
                             'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
                             'fracciona': pg.fracciona
@@ -711,6 +717,7 @@ def quotesCurs( request, curs, tipus ):
         llistapag=[]
         for a in llista:
             pagaments=get_QuotaPagament(a, tipus)
+            email=a.correu_relacio_familia_pare if a.correu_relacio_familia_pare else a.correu_relacio_familia_mare
             if pagaments:
                 for pg in pagaments:
                     llistapag.append({
@@ -719,7 +726,7 @@ def quotesCurs( request, curs, tipus ):
                         'cognoms': a.cognoms,
                         'nom':  a.nom,
                         'grup': a.grup,
-                        'correu': a.correu_relacio_familia_pare,
+                        'correu': email,
                         'quota': pg.quota,
                         'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
                         'fracciona': pg.fracciona
@@ -731,7 +738,7 @@ def quotesCurs( request, curs, tipus ):
                     'cognoms': a.cognoms,
                     'nom':  a.nom ,
                     'grup': a.grup,
-                    'correu': a.correu_relacio_familia_pare,
+                    'correu': email,
                     'quota': quotacurs,
                     'estat': 'No assignat',
                     'fracciona': False
