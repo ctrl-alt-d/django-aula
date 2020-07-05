@@ -1008,7 +1008,12 @@ def elMeuInforme( request, pk = None ):
                 
         taula.fileres = []
             
+        pags = alumne.pagament_set.filter(sortida__isnull=False)
         for sortida in sortides.order_by( '-sortida__calendari_desde' ):
+            p=Pagament.objects.get(sortida=sortida.sortida, alumne=alumne)
+            if p in pags:
+                pags=pags.exclude(id=p.id)
+                
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
@@ -1089,6 +1094,7 @@ def elMeuInforme( request, pk = None ):
             #--
             taula.fileres.append( filera )
     
+        print(pags)
         report.append(taula)
         if not semiImpersonat:
             sortidesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
