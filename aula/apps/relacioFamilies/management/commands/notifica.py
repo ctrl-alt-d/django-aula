@@ -8,7 +8,7 @@ from aula.apps.usuaris.tools import controlDSN
 from aula.utils.tools import unicode
 
 class Command(BaseCommand):
-    help = "Notifica a les families"
+    help = "Notifica a les famílies"
 
     def handle(self, *args, **options):
 

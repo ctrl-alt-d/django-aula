@@ -961,9 +961,10 @@ def elMeuInforme( request, pk = None ):
 
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
+    pagquotesNoves = pagquotes.filter(pagament_realitzat=False)
     infQuota=detall in ['all', 'sortides'] and pagquotes and settings.CUSTOM_QUOTES_ACTIVES
 
-    if settings.CUSTOM_MODUL_MATRICULA_ACTIU:
+    if settings.CUSTOM_MODUL_MATRICULA_ACTIU or settings.CUSTOM_QUOTES_ACTIVES:
         titol_sortides = 'Activitats/Pagaments'
     else:
         titol_sortides = 'Activitats/Sortides'
@@ -978,7 +979,7 @@ def elMeuInforme( request, pk = None ):
         
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
-        taula.tabTitle = '{0} {1}'.format( titol_sortides, pintaNoves( sortidesNoves.count() ) )
+        taula.tabTitle = '{0} {1}'.format( titol_sortides, pintaNoves( sortidesNoves.count() + pagquotesNoves.count()) )
     
         taula.titol = tools.classebuida()
         taula.titol.contingut = ''
@@ -1111,6 +1112,7 @@ def elMeuInforme( request, pk = None ):
             taula = tools.classebuida()
             taula.codi = nTaula; nTaula+=1
             taula.tabTitle = titol_sortides
+            taula.tabTitle = '{0} {1}'.format( titol_sortides, pintaNoves( pagquotesNoves.count() ) )
         
             taula.titol = tools.classebuida()
             taula.titol.contingut = ''
@@ -1137,7 +1139,7 @@ def elMeuInforme( request, pk = None ):
     
             capcelera = tools.classebuida()
             capcelera.amplade = 20
-            capcelera.contingut = ''
+            capcelera.contingut = u'Notificada'
             taula.capceleres.append(capcelera)
     
             capcelera = tools.classebuida()
@@ -1177,13 +1179,13 @@ def elMeuInforme( request, pk = None ):
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = ''
+            camp.contingut = u'{0}'.format(pagquota.data_hora_pagament) if pagquota.data_hora_pagament and not pagquota.pagamentFet else ''
             camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(pagquota.data_hora_pagament) if pagquota.data_hora_pagament else ''
+            camp.contingut = u'{0}'.format(pagquota.data_hora_pagament) if pagquota.data_hora_pagament and pagquota.pagamentFet else ''
             camp.negreta = not bool( pagquota.pagamentFet )
             filera.append(camp)
             

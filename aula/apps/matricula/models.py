@@ -1,7 +1,7 @@
 from django.db import models
 from aula.apps.alumnes.models import Alumne, Curs
 from aula.apps.assignatures.models import Assignatura
-from aula.apps.sortides.models import Quota, Pagament
+from aula.apps.sortides.models import Quota, QuotaPagament
 import django.utils.timezone
 from private_storage.fields import PrivateFileField
 
@@ -43,7 +43,7 @@ class Dades(models.Model):
     
     @property
     def getPagament(self):
-        p=Pagament.objects.filter(alumne=self.peticio.alumne, quota=self.peticio.quota)
+        p=QuotaPagament.objects.filter(alumne=self.peticio.alumne, quota=self.peticio.quota)
         return p
 
 class UFS(models.Model):
