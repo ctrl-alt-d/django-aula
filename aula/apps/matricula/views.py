@@ -699,6 +699,14 @@ def quotesCurs( request, curs, tipus ):
             quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=django.utils.timezone.now().year, tipus=tipus)
         except:
             quotacurs=None
+        
+        if not quotacurs:
+            # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
+            quotacurs=Quota.objects.filter(any=django.utils.timezone.now().year, tipus=tipus)
+            if quotacurs.count()!=1:
+                # Si troba varies no selecciona cap, si només troba una aleshores la fa servir per defecte
+                quotacurs=None
+                
         if quotacurs:
             quotacurs=quotacurs[0]
         else:
