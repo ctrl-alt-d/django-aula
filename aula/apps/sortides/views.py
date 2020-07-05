@@ -27,7 +27,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida, Pagament, Quota
+from aula.apps.sortides.models import Sortida, SortidaPagament, Pagament
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -996,7 +996,7 @@ def sortidaExcel( request, pk ):
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
                ]
         if sortida.tipus_de_pagament=='ON':
-            pagament = Pagament.objects.get(alumne=alumne, sortida=sortida)
+            pagament = SortidaPagament.objects.get(alumne=alumne, sortida=sortida)
             pagament_realitzat = pagament.pagament_realitzat
             row.extend([u"Si" if pagament_realitzat else u"No",
                         pagament.data_hora_pagament if pagament_realitzat else u"",
@@ -1314,7 +1314,7 @@ def detallPagament(request, pk):
 
     taula.fileres = []
 
-    for pagament in Pagament.objects.filter(sortida=sortida).order_by('alumne'):
+    for pagament in SortidaPagament.objects.filter(sortida=sortida).order_by('alumne'):
         filera = []
 
         # -Alumne--------------------------------------------
