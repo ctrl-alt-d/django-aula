@@ -244,7 +244,7 @@ class Quota(models.Model):
 
 @python_2_unicode_compatible
 class Pagament(models.Model):
-    alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT)
+    alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT, null=True)
     sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT, null=True)
     data_hora_pagament = models.CharField(max_length=50, null=True)
     pagament_realitzat = models.BooleanField(null=True, default=False )

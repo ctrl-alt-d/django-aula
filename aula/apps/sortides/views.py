@@ -1124,8 +1124,7 @@ def pagoOnline(request, pk):
         'Ds_Merchant_ProductDescription': titol_sortida,
         'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
                                                                           kwargs={'pk': pk})+'?next='+request.GET.get('next'),
-        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
-                                                                          kwargs={'pk': pk})+'?next='+request.GET.get('next'),
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_lineKO'),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -1177,6 +1176,14 @@ def pagoOnline(request, pk):
     return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 
                                                        'sortida':sortida if pagament.sortida else descripcio_sortida + "("+str(pagament.quota.any)+")", 
                                                        'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real, 'next': request.GET.get('next'),})
+
+@login_required
+def pagoOnlineKO(request):
+    return render(
+                request,
+                'resultat.html', 
+                {'msgs': {'errors': [], 'warnings': [], 'infos': ['PAGAMENT NO EFECTUAT']} },
+             )
 
 @csrf_exempt
 def retornTransaccio(request,pk):
@@ -1259,14 +1266,45 @@ def retornTransaccio(request,pk):
         return HttpResponseServerError()
 
     # -------------------------------------------------------------------------
-    ds_response = parameters_dic.get('Ds_Response')
-    if int(ds_response) in range(0,100):
-        pagament.pagament_realitzat = True
-        data = urllib.parse.unquote(parameters_dic['Ds_Date'])
-        hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
-        pagament.data_hora_pagament = data + ' ' + hora
-        pagament.ordre_pagament = reference
-        pagament.save()
+    try:
+        ds_response = parameters_dic.get('Ds_Response')
+        if int(ds_response) in range(0,100):
+            pagament.pagament_realitzat = True
+            data = urllib.parse.unquote(parameters_dic['Ds_Date'])
+            hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
+            pagament.data_hora_pagament = data + ' ' + hora
+            pagament.ordre_pagament = reference
+            pagament.save()
+        else:
+            '''
+             Error en pagament, no es pot fer servir un altre cop el mateix ordre_pagament.
+             Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
+             El pagament erroni es guarda amb alumne NULL
+            '''
+            noupagament = Pagament()
+            noupagament.data_hora_pagament = pagament.data_hora_pagament
+            noupagament.alumne = pagament.alumne
+            noupagament.sortida = pagament.sortida
+            noupagament.quota = pagament.quota
+            noupagament.fracciona = pagament.fracciona
+            noupagament.importParcial = pagament.importParcial
+            noupagament.dataLimit = pagament.dataLimit
+            noupagament.save()
+            pagament.pagament_realitzat = False
+            data = urllib.parse.unquote(parameters_dic['Ds_Date'])
+            hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
+            pagament.data_hora_pagament = data + ' ' + hora
+            pagament.ordre_pagament = reference
+            pagament.alumne=None
+            pagament.save()
+    except Exception as e:
+        txt = 'Pagament: '+pk+'\n' + str(e) + 'apps.sortides.views.retornTransaccio'
+        tipus_de_missatge = "ADMINISTRACIO"
+        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+        importancia = 'VI'
+        administradors = get_object_or_404(Group, name='administradors')
+        msg.envia_a_grup(administradors, importancia=importancia)
+    
     return HttpResponse('')
 
 
