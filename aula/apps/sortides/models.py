@@ -253,6 +253,7 @@ class Pagament(models.Model):
     fracciona =  models.BooleanField(null=True, default=False )
     importParcial = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     dataLimit = models.DateField(null=True)
+    estat = models.CharField(max_length=1, blank=True, null=True, default='')
     
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )

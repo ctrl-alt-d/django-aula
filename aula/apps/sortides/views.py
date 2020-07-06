@@ -1077,30 +1077,43 @@ def sortidaExcel( request, pk ):
     
     
 #-----------------
-
-
+def clonePagament(pagament):
+    noupagament = Pagament()
+    noupagament.data_hora_pagament = pagament.data_hora_pagament
+    noupagament.alumne = pagament.alumne
+    noupagament.sortida = pagament.sortida
+    noupagament.quota = pagament.quota
+    noupagament.fracciona = pagament.fracciona
+    noupagament.importParcial = pagament.importParcial
+    noupagament.dataLimit = pagament.dataLimit
+    noupagament.save()
+    return noupagament
+        
 @login_required
 def pagoOnline(request, pk):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
     pagament = get_object_or_404(Pagament, pk=pk)
+    if pagament.estat=='T':
+        noup=clonePagament(pagament)
+        if not pagament.ordre_pagament and pagament.alumne:
+            pagament.ordre_pagament=str(int(pagament.alumne.pk)*10000000+int(pk))[-12:]
+        pagament.alumne=None
+        pagament.estat='F'
+        pagament.save()
+        pagament=noup
+        pk=pagament.pk
     if pagament.sortida:
         sortida = pagament.sortida
         preu = sortida.preu_per_alumne
         descripcio_sortida = sortida.programa_de_la_sortida
-        titol_sortida = sortida.titol_de_la_sortida
         data_limit_pagament = sortida.termini_pagament
-        codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
-        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
     else:
         sortida = pagament.quota
         preu = pagament.importReal
         descripcio_sortida = sortida.descripcio
-        titol_sortida = sortida.descripcio
         data_limit_pagament = pagament.getdataLimit
-        codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
-        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
         
     alumne = pagament.alumne
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
@@ -1108,6 +1121,60 @@ def pagoOnline(request, pk):
     potEntrar = (alumne.user_associat.getUser() == user or fEsDireccioOrGrupSortides)
     if not potEntrar:
         raise Http404
+    
+    if request.method == 'POST':
+        form = PagamentForm(request.POST, initial={
+            'sortida': sortida,
+        })
+
+    else:
+        form = PagamentForm(initial={
+            'sortida': sortida,
+            'acceptar_condicions': False
+        })
+    return render(request, 'formPagamentOnline.html', {'form': form, 'alumne':alumne, 'pk':pk, 
+                                                       'sortida':sortida if pagament.sortida else descripcio_sortida + "("+str(pagament.quota.any)+")", 
+                                                       'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'next': request.GET.get('next'),})
+
+@login_required
+def pagoOnlineKO(request, pk):
+    '''
+     Error en pagament, no es pot fer servir un altre cop el mateix ordre_pagament.
+     Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
+     El pagament erroni es guarda amb alumne NULL
+    '''
+    pagament = get_object_or_404(Pagament, pk=pk)
+    if pagament.estat=='T':
+        noup=clonePagament(pagament)
+    if not pagament.ordre_pagament and pagament.alumne:
+        pagament.ordre_pagament=str(int(pagament.alumne.pk)*10000000+int(pk))[-12:]
+    pagament.pagament_realitzat = False
+    pagament.alumne=None
+    pagament.estat='F'
+    pagament.save()
+    return render(
+                request,
+                'resultat.html', 
+                {'msgs': {'errors': [], 'warnings': [], 'infos': ['PAGAMENT NO EFECTUAT']} },
+             )
+
+@login_required
+def passarella(request, pk):
+    pagament = get_object_or_404(Pagament, pk=pk)
+    if pagament.sortida:
+        sortida = pagament.sortida
+        preu = sortida.preu_per_alumne
+        titol_sortida = sortida.titol_de_la_sortida
+        codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
+        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
+    else:
+        sortida = pagament.quota
+        preu = pagament.importReal
+        titol_sortida = sortida.descripcio
+        codiComerç = sortida.comerç.codi if sortida.comerç else CUSTOM_CODI_COMERÇ
+        keyComerç = sortida.comerç.key if sortida.comerç else CUSTOM_KEY_COMERÇ
+        
+    alumne = pagament.alumne
 
     #preparar parametres per redsys   --------------------------------------------
     #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
@@ -1122,9 +1189,11 @@ def pagoOnline(request, pk):
         'DS_MERCHANT_TERMINAL': '1',
         'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio', kwargs={'pk':pk}),
         'Ds_Merchant_ProductDescription': titol_sortida,
+        'Ds_Merchant_ConsumerLanguage': '003',
         'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
                                                                           kwargs={'pk': pk})+'?next='+request.GET.get('next'),
-        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_lineKO'),
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_lineKO',
+                                                                          kwargs={'pk': pk})+'?next='+request.GET.get('next'),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -1156,34 +1225,14 @@ def pagoOnline(request, pk):
     signature = base64.b64encode(dig).decode()
     # ----------------------------------------------------------------------------
 
-
-    if request.method == 'POST':
-        form = PagamentForm(request.POST, initial={
-            'sortida': sortida,
-            'Ds_MerchantParameters': params,
-            'Ds_Signature': signature,
-        })
-
-    else:
-        form = PagamentForm(initial={
-            'sortida': sortida,
-            'Ds_MerchantParameters': params,
-            'Ds_Signature': signature,
-            'acceptar_condicions': False
-        })
-
     entorn_real = CUSTOM_REDSYS_ENTORN_REAL
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 
-                                                       'sortida':sortida if pagament.sortida else descripcio_sortida + "("+str(pagament.quota.any)+")", 
-                                                       'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real, 'next': request.GET.get('next'),})
+    pagament.estat='T'
+    pagament.save()
+    return render(request, 'formredsys.html', {'entorn_real': entorn_real,
+                                                'Ds_MerchantParameters': params,
+                                                'Ds_Signature': signature,
+                                               })
 
-@login_required
-def pagoOnlineKO(request):
-    return render(
-                request,
-                'resultat.html', 
-                {'msgs': {'errors': [], 'warnings': [], 'infos': ['PAGAMENT NO EFECTUAT']} },
-             )
 
 @csrf_exempt
 def retornTransaccio(request,pk):
@@ -1274,6 +1323,7 @@ def retornTransaccio(request,pk):
             hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
             pagament.data_hora_pagament = data + ' ' + hora
             pagament.ordre_pagament = reference
+            pagament.estat='F'
             pagament.save()
         else:
             '''
@@ -1281,21 +1331,14 @@ def retornTransaccio(request,pk):
              Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
              El pagament erroni es guarda amb alumne NULL
             '''
-            noupagament = Pagament()
-            noupagament.data_hora_pagament = pagament.data_hora_pagament
-            noupagament.alumne = pagament.alumne
-            noupagament.sortida = pagament.sortida
-            noupagament.quota = pagament.quota
-            noupagament.fracciona = pagament.fracciona
-            noupagament.importParcial = pagament.importParcial
-            noupagament.dataLimit = pagament.dataLimit
-            noupagament.save()
+            noup=clonePagament(pagament)
             pagament.pagament_realitzat = False
             data = urllib.parse.unquote(parameters_dic['Ds_Date'])
             hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
             pagament.data_hora_pagament = data + ' ' + hora
             pagament.ordre_pagament = reference
             pagament.alumne=None
+            pagament.estat='F'
             pagament.save()
     except Exception as e:
         txt = 'Pagament: '+pk+'\n' + str(e) + 'apps.sortides.views.retornTransaccio'
