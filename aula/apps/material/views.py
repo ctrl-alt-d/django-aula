@@ -70,7 +70,7 @@ def reservaRecursList(request):
     )
 
 
- # -- wizard per aula 1/3
+ # -- wizard per recurs 1/3
 @login_required
 @group_required(['professors', 'professional', 'consergeria'])
 def consultaRecursPerRecurs(request):
@@ -103,7 +103,7 @@ def consultaRecursPerRecurs(request):
     )
 
 
- # -- wizard per aula 2/3
+ # -- wizard per recurs 2/3
 @login_required
 @group_required(['professors', 'professional', 'consergeria'])
 def detallRecursReserves(request, year, month, day, pk):
@@ -167,20 +167,6 @@ def detallRecursReserves(request, year, month, day, pk):
         nova_franja = {}
         nova_franja['franja'] = franja
         nova_franja['reserva'] = reserva
-        assignatures_list = (reserva
-                             .impartir_set
-                             .filter(horari__assignatura__nom_assignatura__isnull=False)
-                             .values_list('horari__assignatura__nom_assignatura', flat=True)
-                             .distinct()
-                             ) if reserva else []
-        nova_franja['assignatura'] = u", ".join(assignatures_list) if reserva else u""
-        grup_list = (reserva
-                     .impartir_set
-                     .filter(horari__grup__descripcio_grup__isnull=False)
-                     .values_list('horari__grup__descripcio_grup', flat=True)
-                     .distinct()
-                     ) if reserva else []
-        nova_franja['grup'] = u", ".join(grup_list) if reserva else u""
         nova_franja['professor'] = u", ".join(
             [reserva.usuari.first_name + ' ' + reserva.usuari.last_name]) if reserva else u""
         nova_franja['reservable'] = not bool(reserva) and recurs.reservable
@@ -330,7 +316,7 @@ def detallRecursReserves(request, year, month, day, pk):
 #     )
 
 
-# -- wizard per aula ó franja 3/3
+# -- wizard per recurs ó franja 3/3
 @login_required
 @group_required(['professors', 'professional', 'consergeria'])
 def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, month=None, day=None):
@@ -399,27 +385,27 @@ def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, mo
 
 # -------------------------------------------------------------------------
 
-# @login_required
-# @group_required(['professors', 'professional', 'consergeria'])
-# def eliminarReservaAula(request, pk):
-#     credentials = tools.getImpersonateUser(request)
-#     (user, l4) = credentials
-#     reserva = get_object_or_404(ReservaAula, pk=pk)
-#     reserva.credentials = credentials
-#
-#     try:
-#         reserva.delete()
-#         missatge = u"Reserva anul·lada correctament"
-#         messages.info(request, missatge)
-#     except ValidationError as e:
-#         for _, llista_errors in e.message_dict.items():
-#             missatge = u"No s'ha pogut anul·lar la reserva: {0}".format(
-#                 u", ".join(x for x in llista_errors)
-#             )
-#         messages.error(request, missatge)
-#
-#     # tornem a la mateixa pantalla on erem (en mode incògnit no funciona)
-#     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/aules/lesMevesReservesDAula/'))
+@login_required
+@group_required(['professors', 'professional', 'consergeria'])
+def eliminarReservaRecurs(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    reserva = get_object_or_404(ReservaRecurs, pk=pk)
+    reserva.credentials = credentials
+
+    try:
+        reserva.delete()
+        missatge = u"Reserva anul·lada correctament"
+        messages.info(request, missatge)
+    except ValidationError as e:
+        for _, llista_errors in e.message_dict.items():
+            missatge = u"No s'ha pogut anul·lar la reserva: {0}".format(
+                u", ".join(x for x in llista_errors)
+            )
+        messages.error(request, missatge)
+
+    # tornem a la mateixa pantalla on erem (en mode incògnit no funciona)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/recursos/lesMevesReservesDeRecurs/'))
 
 
 @login_required

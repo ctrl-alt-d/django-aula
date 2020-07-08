@@ -73,15 +73,9 @@ class Table2_ReservaRecurs(tables.Table):
 
     dia_reserva = tables.Column(order_by=('dia_reserva', 'hora'))
     hora = tables.Column(orderable = False)
-    get_assignatures =  tables.TemplateColumn(template_code = u"""
-                                        {{record.get_assignatures}}
-                                        """,
-                                    verbose_name = "",
-                                    orderable = False,
-                     )
     eliminar =  tables.TemplateColumn(
                                     template_code = u"""
-                                        {% if not record.es_del_passat and not record.associada_a_impartir %} 
+                                        {% if not record.es_del_passat%} 
                                             <a href='javascript:confirmAction("/recursos/eliminarReservaRecurs/{{record.pk}}" ,  
                                                                             " {{ "Segur que vols anul·lar la reserva del material:"|escapejs}} {{record.recurs.nom_recurs}} {{"hora:"}} {{record.hora}}?")'>
                                                 <span class="mybtn-red glyphicon glyphicon-minus-sign"> </span> <br />           
@@ -97,6 +91,6 @@ class Table2_ReservaRecurs(tables.Table):
     class Meta:
         model = ReservaRecurs
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("dia_reserva", "hora", "get_assignatures", "recurs", "motiu", "eliminar" )
+        sequence = ("dia_reserva", "hora", "recurs", "motiu", "eliminar" )
         fields = sequence
         template = 'bootable2.html' 

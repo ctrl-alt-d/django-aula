@@ -3,7 +3,10 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.datetime_safe import datetime
-from aula.utils.tools import unicode
+from aula.apps.material.business_rules.reservarecurs import ( reservarecurs_clean, reservarecurs_post_save,
+                                                         reservarecurs_pre_save, reservarecurs_pre_delete,
+                                                         reservarecurs_post_delete,)
+from aula.apps.material.business_rules.recurs import recurs_clean, recurs_pre_save, recurs_post_save, recurs_pre_delete
 
 
 class Recurs(models.Model):
@@ -27,6 +30,9 @@ class Recurs(models.Model):
 
     def getNom(self):
         return self.nom_recurs
+
+    def recurs(self):
+        recurs_clean(self)
 
 
 class ReservaRecurs(models.Model):
@@ -58,8 +64,11 @@ class ReservaRecurs(models.Model):
         ]
 
     def __str__(self):
-        return "{aula} {hora_inici}-{hora_fi} {usuari}".format(aula=self.aula, hora_inici=self.hora_inici,
+        return "{recurs} {hora_inici}-{hora_fi} {usuari}".format(recurs=self.recurs, hora_inici=self.hora_inici,
                                                                hora_fi=self.hora_fi, usuari=self.usuari)
+
+    def clean(self):
+        reservarecurs_clean(self)
 
     @property
     def dia_hora_reserva(self):
@@ -85,22 +94,18 @@ class ReservaRecurs(models.Model):
     def es_del_passat(self):
         return (self.dia_hora_reserva < datetime.now())
 
-    @property
-    def associada_a_impartir(self):
-        return (self.impartir_set.exists())
 
-    @property
-    def get_assignatures(self):
-        imparticions_associades = self.impartir_set.all()
-        resposta = u", ".join([unicode(r.horari.assignatura)
-                               for r
-                               in imparticions_associades])
-        return resposta or u""
 
-    @property
-    def get_grups(self):
-        imparticions_associades = self.impartir_set.all()
-        resposta = u", ".join([unicode(r.horari.grup)
-                               for r
-                               in imparticions_associades])
-        return resposta or u""
+# ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
+from django.db.models.signals import post_save, pre_save, pre_delete, post_delete
+
+#Recurs
+pre_delete.connect(recurs_pre_delete, sender= Recurs)
+pre_save.connect(recurs_pre_save, sender = Recurs )
+post_save.connect(recurs_post_save, sender = Recurs )
+
+#ReservaRecurs
+pre_delete.connect(reservarecurs_pre_delete, sender= ReservaRecurs)
+pre_save.connect(reservarecurs_pre_save, sender = ReservaRecurs )
+post_save.connect(reservarecurs_post_save, sender = ReservaRecurs )
+post_delete.connect(reservarecurs_post_delete, sender = ReservaRecurs )

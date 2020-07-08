@@ -10,12 +10,9 @@ from ....apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipu
 
 def reservarecurs_clean(instance):
     ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
-    print ("1")
     if instance.hora:
-        print ("2")
         instance.hora_inici = instance.hora.hora_inici
         instance.hora_fi = instance.hora.hora_fi
-        print ("3")
 
     if l4:
         return
@@ -30,20 +27,20 @@ def reservarecurs_clean(instance):
 
     # -- No es pot reservar un recurs ocupat
     if instance.es_reserva_manual:
-        recursOcupat = ( ReservaRecurs
+        recursReservat = ( ReservaRecurs
                        .objects.filter(hora = instance.hora,
                                                 recurs = instance.recurs,
                                                 dia_reserva = instance.dia_reserva)
                        .exclude(pk=instance.pk)
                        .exists() )
 
-        if recursOcupat:
-            professorsQueOcupen = [reserva.usuari.first_name + ' ' +
+        if recursReservat:
+            professorsQueReserven = [reserva.usuari.first_name + ' ' +
                                 reserva.usuari.last_name for reserva in ReservaRecurs.objects.filter(hora = instance.hora,
                                                                                                     recurs = instance.recurs,
                                                                                                     dia_reserva = instance.dia_reserva)]
             errors.setdefault('hora', []).append(u'''Material ocupat en aquesta hora per ''' +
-                                                ','.join(professorsQueOcupen))
+                                                ','.join(professorsQueReserven))
 
     # -- Només es poden fer reserves de la data actual en endavant
     if instance.es_reserva_manual:
@@ -99,12 +96,7 @@ def reservarecurs_pre_delete(sender, instance, **kwargs):
 
     if not l4 and usuari_informat and not es_meva:
         errors.setdefault('usuari', []).append(u"Només pots anul·lar les teves reserves.")
-        raise ValidationError(errors) 
-
-    te_imparticio_associada = instance.impartir_set.exists()
-    if not l4 and te_imparticio_associada:
-        errors.setdefault(NON_FIELD_ERRORS, []).append(u"Aquesta reserva està associada a impartir classe a un grup.")
-        raise ValidationError(errors) 
+        raise ValidationError(errors)
 
     if len(errors) > 0:
         raise ValidationError(errors)    
@@ -122,5 +114,3 @@ def reservarecurs_post_delete( sender, instance, **lwargs ):
             tipus_de_missatge = tipus_de_missatge,
             )
         msg.envia_a_usuari(instance.usuari, 'VI')
-        
-        
