@@ -28,11 +28,10 @@ from aula.apps.presencia.models import Impartir
 from django.db.models import Q
 
 # forms
-from aula.apps.material.forms import (  #RecursosForm,
-                                        #disponibilitatRecursPerFranjaForm,
-                                        reservaRecursForm,
-                                        disponibilitatRecursPerRecursForm,
-                                        carregaComentarisRecursForm, )
+from aula.apps.material.forms import (
+    reservaRecursForm,
+    disponibilitatRecursPerRecursForm,
+    carregaComentarisRecursForm, disponibilitatRecursPerFranjaForm, RecursosForm)
 
 # helpers
 from aula.apps.usuaris.models import User2Professor
@@ -190,130 +189,130 @@ def detallRecursReserves(request, year, month, day, pk):
     )
 
 
-# # -- wizard per franja 1/3
-# @login_required
-# @group_required(['professors', 'professional', 'consergeria'])
-# def consultaAulaPerFranja(request):
-#     credentials = tools.getImpersonateUser(request)
-#     (user, l4) = credentials
-#
-#     if request.method == 'POST':
-#         formDisponibilitatAula = disponibilitatAulaPerFranjaForm(request.POST)
-#
-#         if formDisponibilitatAula.is_valid():
-#             franja = formDisponibilitatAula.cleaned_data['franja']
-#             data = formDisponibilitatAula.cleaned_data['data']
-#             year = data.year
-#             month = data.month
-#             date = data.day
-#             next_url = r'/aules/detallFranjaReserves/{0}/{1}/{2}/{3}'
-#             return HttpResponseRedirect(next_url.format(year, month, date, franja.pk))
-#
-#     else:
-#         formDisponibilitatAula = disponibilitatAulaPerFranjaForm()
-#
-#     for f in formDisponibilitatAula.fields:
-#         formDisponibilitatAula.fields[f].widget.attrs['class'] = 'form-control ' + formDisponibilitatAula.fields[
-#             f].widget.attrs.get('class', "")
-#
-#     return render(
-#         request,
-#         'form.html',
-#         {'form': formDisponibilitatAula,
-#          'head': u'Consultar disponibilitat aula per franja',
-#          'titol_formulari': u"Assistent Reserva d'Aula (1/3)",
-#          },
-#     )
+# -- wizard per franja 1/3
+@login_required
+@group_required(['professors', 'professional', 'consergeria'])
+def consultaRecursPerFranja(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    if request.method == 'POST':
+        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(request.POST)
+
+        if formDisponibilitatRecurs.is_valid():
+            franja = formDisponibilitatRecurs.cleaned_data['franja']
+            data = formDisponibilitatRecurs.cleaned_data['data']
+            year = data.year
+            month = data.month
+            date = data.day
+            next_url = r'/recursos/detallFranjaReserves/{0}/{1}/{2}/{3}'
+            return HttpResponseRedirect(next_url.format(year, month, date, franja.pk))
+
+    else:
+        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm()
+
+    for f in formDisponibilitatRecurs.fields:
+        formDisponibilitatRecurs.fields[f].widget.attrs['class'] = 'form-control ' + formDisponibilitatRecurs.fields[
+            f].widget.attrs.get('class', "")
+
+    return render(
+        request,
+        'form.html',
+        {'form': formDisponibilitatRecurs,
+         'head': u'Consultar disponibilitat recurs per franja',
+         'titol_formulari': u"Assistent Reserva de Recurs (1/3)",
+         },
+    )
 
 
-# # -- wizard per franja 2/3
-# @login_required
-# @group_required(['professors', 'professional', 'consergeria'])
-# def detallFranjaReserves(request, year, month, day, pk):
-#     credentials = tools.getImpersonateUser(request)
-#     (user, l4) = credentials
-#
-#     franja = get_object_or_404(FranjaHoraria, pk=pk)
-#
-#     #
-#     import datetime as t
-#     try:
-#         year = int(year)
-#         month = int(month)
-#         day = int(day)
-#     except:
-#         today = t.date.today()
-#         year = today.year
-#         month = today.month
-#         day = today.day
-#
-#     data = t.date(year, month, day)
-#
-#     tretze_dies = timedelta(days=13)
-#     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-#     if data > darrer_dia_reserva or data < datetime.today().date():
-#         msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
-#             darrer_dia_reserva)
-#         messages.warning(request, SafeText(msg))
-#
-#     q_hi_ha_docencia_abans = Q(horari__hora__hora_inici__lte=franja.hora_inici)
-#     q_hi_ha_docencia_despres = Q(horari__hora__hora_fi__gte=franja.hora_fi)
-#     hi_ha_classe_al_centre_aquella_hora = (Impartir
-#                                            .objects
-#                                            .filter(dia_impartir=data)
-#                                            .filter(q_hi_ha_docencia_abans | q_hi_ha_docencia_despres)
-#                                            .exists()
-#                                            )
-#     aules_lliures = Aula.objects.none()
-#     if hi_ha_classe_al_centre_aquella_hora:
-#         # reservables
-#         reservable_aquella_hora = (Q(disponibilitat_horaria__isnull=True)
-#                                    | Q(disponibilitat_horaria=franja))
-#         reservable_aquella_hora_ids = (Aula
-#                                        .objects
-#                                        .filter(reservable_aquella_hora)
-#                                        .values_list('id', flat=True)
-#                                        .distinct()
-#                                        )
-#         # reservades
-#         reservada = Q(reservaaula__dia_reserva=data) & Q(reservaaula__hora=franja)
-#         reservada_ids = (Aula
-#                          .objects
-#                          .filter(reservada)
-#                          .values_list('id', flat=True)
-#                          .distinct()
-#                          )
-#         # lliures
-#         aules_lliures = (Aula
-#                          .objects
-#                          .exclude(reservable=False)
-#                          .filter(pk__in=reservable_aquella_hora_ids)
-#                          .exclude(pk__in=reservada_ids)
-#                          .distinct()
-#                          )
-#
-#     if request.method == 'POST':
-#         form = AulesForm(queryset=aules_lliures,
-#                          data=request.POST,
-#                          )
-#
-#         if form.is_valid():
-#             next_url = r"/aules/tramitarReservaAula/{0}/{1}/{2}/{3}/{4}/"
-#             return HttpResponseRedirect(next_url.format(form.cleaned_data['aula'].pk, franja.pk, year, month, day))
-#
-#     else:
-#         form = AulesForm(queryset=aules_lliures)
-#
-#     for f in form.fields:
-#         form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class', "")
-#
-#     return render(
-#         request,
-#         'form.html',
-#         {'form': form,
-#          'titol_formulari': u"Assistent Reserva d'Aula (2/3)",
-#          },
-#     )
+# -- wizard per franja 2/3
+@login_required
+@group_required(['professors', 'professional', 'consergeria'])
+def detallFranjaReserves(request, year, month, day, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    franja = get_object_or_404(FranjaHoraria, pk=pk)
+
+    #
+    import datetime as t
+    try:
+        year = int(year)
+        month = int(month)
+        day = int(day)
+    except:
+        today = t.date.today()
+        year = today.year
+        month = today.month
+        day = today.day
+
+    data = t.date(year, month, day)
+
+    tretze_dies = timedelta(days=13)
+    darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
+    if data > darrer_dia_reserva or data < datetime.today().date():
+        msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
+            darrer_dia_reserva)
+        messages.warning(request, SafeText(msg))
+
+    q_hi_ha_docencia_abans = Q(horari__hora__hora_inici__lte=franja.hora_inici)
+    q_hi_ha_docencia_despres = Q(horari__hora__hora_fi__gte=franja.hora_fi)
+    hi_ha_classe_al_centre_aquella_hora = (Impartir
+                                           .objects
+                                           .filter(dia_impartir=data)
+                                           .filter(q_hi_ha_docencia_abans | q_hi_ha_docencia_despres)
+                                           .exists()
+                                           )
+    recursos_lliures = Recurs.objects.none()
+    if hi_ha_classe_al_centre_aquella_hora:
+        # reservables
+        reservable_aquella_hora = (Q(disponibilitat_horaria__isnull=True)
+                                   | Q(disponibilitat_horaria=franja))
+        reservable_aquella_hora_ids = (Recurs
+                                       .objects
+                                       .filter(reservable_aquella_hora)
+                                       .values_list('id', flat=True)
+                                       .distinct()
+                                       )
+        # reservats
+        reservat = Q(reservarecurs__dia_reserva=data) & Q(reservarecurs__hora=franja)
+        reservat_ids = (Recurs
+                         .objects
+                         .filter(reservat)
+                         .values_list('id', flat=True)
+                         .distinct()
+                         )
+        # lliures
+        recursos_lliures = (Recurs
+                         .objects
+                         .exclude(reservable=False)
+                         .filter(pk__in=reservable_aquella_hora_ids)
+                         .exclude(pk__in=reservat_ids)
+                         .distinct()
+                         )
+
+    if request.method == 'POST':
+        form = RecursosForm(queryset=recursos_lliures,
+                         data=request.POST,
+                         )
+
+        if form.is_valid():
+            next_url = r"/recursos/tramitarReservaRecurs/{0}/{1}/{2}/{3}/{4}/"
+            return HttpResponseRedirect(next_url.format(form.cleaned_data['recurs'].pk, franja.pk, year, month, day))
+
+    else:
+        form = RecursosForm(queryset=recursos_lliures)
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class', "")
+
+    return render(
+        request,
+        'form.html',
+        {'form': form,
+         'titol_formulari': u"Assistent Reserva de Recurs (2/3)",
+         },
+    )
 
 
 # -- wizard per recurs ó franja 3/3

@@ -27,51 +27,51 @@ class disponibilitatRecursPerRecursForm(forms.Form):
             required=True,
             widget=DateTextImput())
 
-#
-# class disponibilitatAulaPerFranjaForm(forms.Form):
-#
-#     franja = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all()  )
-#
-#     data = forms.DateField(help_text="Data a consultar",
-#                                 initial=datetime.today(),
-#                                 required=True,
-#                                 widget=DateTextImput())
-#
-#     def clean(self):
-#         cleaned_data = super(disponibilitatAulaPerFranjaForm, self).clean()
-#
-#         data=self.cleaned_data['data']
-#         tretze_dies = timedelta(days=13)
-#         darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-#         if data > darrer_dia_reserva or data < datetime.today().date():
-#             raise forms.ValidationError(u"Només pots reservar a partir d'avui i fins al dia {0}".format(darrer_dia_reserva))
-#
-#         franja = self.cleaned_data['franja']
-#         franges_del_dia = (FranjaHoraria
-#                            .objects
-#                            .filter(horari__impartir__dia_impartir=data)
-#                            .order_by('hora_inici')
-#                            )
-#         primera_franja = franges_del_dia.first()
-#         darrera_franja = franges_del_dia.last()
-#         if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
-#             raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
-#
-#         return cleaned_data
 
-# class AulesForm(forms.Form):
-#     aula = forms.ModelChoiceField(
-#                         queryset = None,
-#                         empty_label=None
-#                                 )
-#
-#     def __init__(self, queryset, *args, **kwargs):
-#         super(AulesForm, self).__init__(*args, **kwargs)
-#         self.queryset = queryset
-#         self.fields['aula'].queryset = self.queryset
-#
-#
-#
+class disponibilitatRecursPerFranjaForm(forms.Form):
+
+    franja = forms.ModelChoiceField( queryset = FranjaHoraria.objects.all()  )
+
+    data = forms.DateField(help_text="Data a consultar",
+                                initial=datetime.today(),
+                                required=True,
+                                widget=DateTextImput())
+
+    def clean(self):
+        cleaned_data = super(disponibilitatRecursPerFranjaForm, self).clean()
+
+        data=self.cleaned_data['data']
+        tretze_dies = timedelta(days=13)
+        darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
+        if data > darrer_dia_reserva or data < datetime.today().date():
+            raise forms.ValidationError(u"Només pots reservar a partir d'avui i fins al dia {0}".format(darrer_dia_reserva))
+
+        franja = self.cleaned_data['franja']
+        franges_del_dia = (FranjaHoraria
+                           .objects
+                           .filter(horari__impartir__dia_impartir=data)
+                           .order_by('hora_inici')
+                           )
+        primera_franja = franges_del_dia.first()
+        darrera_franja = franges_del_dia.last()
+        if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
+            raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
+
+        return cleaned_data
+
+class RecursosForm(forms.Form):
+    recurs = forms.ModelChoiceField(
+                        queryset = None,
+                        empty_label=None
+                                )
+
+    def __init__(self, queryset, *args, **kwargs):
+        super(RecursosForm, self).__init__(*args, **kwargs)
+        self.queryset = queryset
+        self.fields['recurs'].queryset = self.queryset
+
+
+
 class reservaRecursForm(ModelForm):
     recurs = ModelChoiceField(
                    widget=ModelSelect2Widget(
