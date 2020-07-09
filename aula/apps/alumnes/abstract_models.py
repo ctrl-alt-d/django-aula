@@ -126,6 +126,11 @@ class AbstractAlumne(models.Model):
                 (False, 'No notificar.'),
                 (True,'Notificar-les totes.'),
             )
+
+    PRIMER_RESPONSABLE = (
+        (0, 'Responsable 1'),
+        (1, 'Responsable 2'),
+    )
         
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
     grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
@@ -154,6 +159,9 @@ class AbstractAlumne(models.Model):
     rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
+    primer_responsable = models.IntegerField( choices = PRIMER_RESPONSABLE, blank=False,
+                                               default = 0,
+                                               help_text = u"Principal responsable de l'alumne/a")
     altres_telefons = models.CharField(max_length=250, blank=True)
 
     data_alta = models.DateField( default = timezone.now, null=False )
@@ -174,7 +182,8 @@ class AbstractAlumne(models.Model):
 
 
     foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
-    
+    observacions =models.TextField(max_length=150, null=True, blank=True, help_text= u"Informació visible pels seus professors/es")
+
     class Meta:
         abstract = True
         ordering = ['grup','cognoms','nom']
