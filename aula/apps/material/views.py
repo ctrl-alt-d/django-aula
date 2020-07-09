@@ -130,13 +130,11 @@ def detallRecursReserves(request, year, month, day, pk):
         msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
-    #
     reserves_dun_dia_un_recurs = (ReservaRecurs
                                 .objects
                                 .filter(recurs=recurs)
                                 .filter(dia_reserva=data))
 
-    #
     franges_del_dia = (FranjaHoraria
                        .objects
                        .filter(horari__impartir__dia_impartir=data)
@@ -152,7 +150,6 @@ def detallRecursReserves(request, year, month, day, pk):
         franges_reservades = [reserva.hora.pk for reserva in reserves_dun_dia_un_recurs]
         q_horari_restringit = Q(pk__in=disponibilitatHoraria + franges_reservades)
 
-    #
     franges_reservables = (FranjaHoraria
                            .objects
                            .filter(hora_inici__gte=primera_franja.hora_inici)
@@ -234,7 +231,6 @@ def detallFranjaReserves(request, year, month, day, pk):
 
     franja = get_object_or_404(FranjaHoraria, pk=pk)
 
-    #
     import datetime as t
     try:
         year = int(year)
@@ -325,7 +321,6 @@ def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, mo
     recurs = Recurs.objects.filter(pk=pk_recurs).first()
     franja = FranjaHoraria.objects.filter(pk=pk_franja).first()
 
-    #
     import datetime as t
     try:
         year = int(year)
@@ -344,13 +339,13 @@ def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, mo
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
         return HttpResponseRedirect(r'/recursos/lesMevesReservesDeRecurs/')
-    #
+
     novaReserva = ReservaRecurs(recurs=recurs,
                               hora=franja,
                               dia_reserva=data,
                               usuari=user,
                               es_reserva_manual=True)
-    #
+
     if request.method == 'POST':
         form = reservaRecursForm(request.POST, instance=novaReserva)
         if form.is_valid():
@@ -367,11 +362,9 @@ def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, mo
     else:
         form = reservaRecursForm(instance=novaReserva)
 
-    #
     for f in ['recurs', 'dia_reserva', 'hora', 'motiu']:
         form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class', "")
 
-        #
     return render(
         request,
         'form.html',
