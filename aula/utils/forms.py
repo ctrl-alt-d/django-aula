@@ -46,9 +46,17 @@ class choiceForm(forms.Form):
         self.fields['opcio'].choices = self.opcions
         self.fields['opcio'].label = self.label 
         self.fields['opcio'].help_text = self.help_text          
-        
-        
 
 
-        
-                
+class initDBForm(forms.Form):
+     
+    confirma = forms.BooleanField( label=u'Confirma inicialització',required = True,
+                                   help_text=u'Inicialitza la base de dades. Fa logout de tots els usuaris. Aquest procés no es pot desfer.\
+                                               S\'hauria de realitzar abans una còpia de la base de dades.',  )
+    
+    def clean_confirma(self):
+        data = self.cleaned_data['confirma']
+        if not data:
+            raise forms.ValidationError(u'Confirma la inicialització de la base de dades')
+
+        return data

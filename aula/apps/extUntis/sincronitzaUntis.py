@@ -116,7 +116,7 @@ def fusionaGrups(llgrup, di, df, senseGrups):
     llista=sorted(llgrup.split())
     if len(llista)<=1:
         ng=llgrup[3:]
-        tipus='G'
+        tipus='A' #'G'
         galum, n, c, g = esGrupAlumnes(ng,senseGrups)
         if not galum:
             return None, tipus, warnings
