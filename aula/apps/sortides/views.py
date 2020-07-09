@@ -534,7 +534,10 @@ def alumnesConvocats( request, pk , origen ):
                     try:
                         instance.alumnes_convocats.add( alumne )
                         if instance.tipus_de_pagament == 'ON':
-                            instance.pagaments.add(alumne)
+                            # Comprova si ja existeix el pagament
+                            pag=Pagament.objects.filter(alumne=alumne, sortida=instance)
+                            if not pag:
+                                instance.pagaments.add(alumne)
                     except IntegrityError:
                         pass
                     
@@ -544,7 +547,11 @@ def alumnesConvocats( request, pk , origen ):
                     try:
                         instance.alumnes_convocats.remove( alumne )
                         if instance.tipus_de_pagament == 'ON':
-                            instance.pagaments.remove(alumne)
+                            # Comprova si ja ha pagat
+                            pag=Pagament.objects.filter(alumne=alumne, sortida=instance, pagament_realitzat=True)
+                            if not pag:
+                                instance.pagaments.remove(alumne)
+                            instance.notificasortida_set.filter( alumne = alumne ).delete()
                     except IntegrityError:
                         pass
 
