@@ -59,7 +59,7 @@ from django.urls import reverse
   
 #vistes -----------------------------------------------------------------------------------
 @login_required
-@group_required(['direcció'])
+@group_required(['direcció','administradors'])
 def regeneraImpartir(request):
     
     head=u'Reprogramar classes segons horari actual' 
