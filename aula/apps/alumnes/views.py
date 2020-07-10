@@ -381,10 +381,14 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 35
-        capcelera_contacte.contingut = u'Dades de contacte Tutors.'
+        capcelera_contacte.amplade = 20
+        capcelera_contacte.contingut = u'Informació dels Responsables'
+
+        capcelera_observacions = tools.classebuida()
+        capcelera_observacions.amplade = 15
+        capcelera_observacions.contingut = u'Observacions'
         
-        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte]
+        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte, capcelera_observacions]
         
         taula.fileres = []
         for alumne in Alumne.objects.filter( 
@@ -486,6 +490,13 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                                         alumne.rp2_mobil,
                                                                         alumne.rp2_correu ), None,)]
             filera.append(camp)
+
+            # -observacions--------------------------------------------
+            camp_observacions = tools.classebuida()
+            camp_observacions.enllac = None
+            camp_observacions.contingut = u'{0}'.format(alumne.observacions) if alumne.observacions else ''
+            filera.append(camp_observacions)
+
             taula.fileres.append( filera )
         
         report.append(taula)

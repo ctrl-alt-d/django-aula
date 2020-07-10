@@ -11,10 +11,28 @@ from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 
 
 class AlumneModelForm(forms.ModelForm):
+
     class Meta:
         model = Alumne
-        fields = ['correu_relacio_familia_pare', 'correu_relacio_familia_mare',
-                  'periodicitat_faltes', 'periodicitat_incidencies', 'foto']
+        fields = ['primer_responsable','correu_relacio_familia_pare', 'correu_relacio_familia_mare',
+                  'periodicitat_faltes', 'periodicitat_incidencies', 'foto', 'observacions']
+        labels = {
+            "correu_relacio_familia_pare": "Correu Notifi. Responsable 1",
+            "correu_relacio_familia_mare": "Correu Notifi. Responsable 2",
+        }
+        help_texts = {
+            "correu_relacio_familia_pare": "Correu notificació d'un responsable",
+            "correu_relacio_familia_mare": "Correu notificació d'altre responsable(opcional)"
+        }
+
+
+    def __init__(self, *args, **kwargs):
+        super(AlumneModelForm, self).__init__(*args, **kwargs)
+        responsables = [self.instance.rp1_nom, self.instance.rp2_nom]
+        responsable_choices = ((x, responsables[x]) for x in range(len(responsables)))
+        self.fields['primer_responsable'] = forms.ChoiceField(choices=responsable_choices)
+        self.fields['primer_responsable'].help_text = "Principal responsable de l'alumne/a"
+        self.fields['primer_responsable'].label = "Reponsable preferent"
 
     def clean_foto(self):
         foto = self.cleaned_data['foto']
