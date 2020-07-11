@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'form.html' %}
 
 {% block extrahead %}
 <style type="text/css">
@@ -9,12 +9,7 @@
 </style>
 {% endblock %}
 
-{% block content %}
+{% block preform %}
   <p class="text-center"><img src="/site-css/logo.png" width="154" heigh="64"></p>
-
-  <h2>Petició de matrícula</h2>
-  <form method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary" type="submit">Envia</button>
-  </form>
 {% endblock %}
+

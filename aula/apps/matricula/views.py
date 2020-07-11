@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.views.generic.edit import UpdateView
 from django.views.generic import ListView, DetailView
 from django.urls import reverse_lazy
+from django.core.exceptions import ValidationError
 import django.utils.timezone
 from dateutil.relativedelta import relativedelta
 import random
@@ -78,8 +79,7 @@ def mailPeticio(estat, idalum, email, alumne=None):
     email  adreça email destinataria
     alumne objecte Alumne si matrícula completada o None
     '''
-    if estat=='D':
-        return
+
     if estat=='A':
         #preparo el codi a la bd:
         clau = str( random.randint( 100000, 999999) ) + str( random.randint( 100000, 999999) )
@@ -93,24 +93,30 @@ def mailPeticio(estat, idalum, email, alumne=None):
         username=''
         url=''
         
+    if estat=='F':
+        username=alumne.get_user_associat().username
+
     assumpte = {
         'P': u"Petició de matrícula rebuda - {0}".format(settings.NOM_CENTRE ),
         'R': u"Petició de matrícula incorrecte - {0}".format(settings.NOM_CENTRE ),
+        'D': u"Petició de matrícula duplicada - {0}".format(settings.NOM_CENTRE ),
         'A': u"Petició de matrícula vàlida - {0}".format(settings.NOM_CENTRE ),
         'F': u"Matrícula completada - {0}".format(settings.NOM_CENTRE ),
         }
     cosmissatge={
         'P': u"Hem rebut la seva petició de matrícula, un cop verificada rebrà un email amb noves instruccions.",
         'R': u"La seva petició de matrícula no correspon a cap preinscripció. No és possible fer el tràmit.",
+        'D': u"La seva petició de matrícula és una duplicitat, ja té una matrícula anterior acceptada.",
         'A': u"\n".join(
             [u"El motiu d'aquest correu és el de donar-vos les instruccions per a realitzar la matrícula al nostre centre.",
-            u"El primer pas es obtenir la contrasenya:",
+            u"El vostre usuari és {0} i el primer pas es obtenir la contrasenya:".format(username),
             u" * Entreu a {0} on podeu escollir la vostra contrasenya.".format(url),
             u" * Una vegada accediu a l'aplicació podreu continuar la matrícula",
             u"",
             u"Sempre podreu accedir a l'aplicació {0} amb el vostre usuari {1} i la contrasenya escollida".format(settings.URL_DJANGO_AULA, username ),]
             ),
-        'F': u"La matrícula de l'alumne {0} ha finalitzat correctament.".format(str(alumne)),
+        'F': u"La matrícula de l'alumne {0} ha finalitzat correctament.\n".format(str(alumne)) + \
+            "Sempre podreu accedir a l'aplicació {0} amb el vostre usuari {1}".format(settings.URL_DJANGO_AULA, username),
         }
     missatge = [u"Aquest missatge ha estat enviat per un sistema automàtic. No respongui a aquest e-mail, el missatge no serà llegit per ningú.",
                 u"",
@@ -124,7 +130,7 @@ def mailPeticio(estat, idalum, email, alumne=None):
                 ]                        
     fromuser = settings.DEFAULT_FROM_EMAIL
     if settings.DEBUG:
-        print (u'Enviant recepció de petició a {0}'.format( idalum ))
+        print (u'Enviant comunicació sobre la petició a {0}'.format( idalum ))
     try:
         send_mail(assumpte.get(estat), 
                   u'\n'.join( missatge ), 
@@ -265,9 +271,10 @@ def peticio(request):
                         'resultat.html', 
                         {'msgs': {'errors': errors, 'warnings': [], 'infos': infos} },
                      )
+            
     else:
         form = peticioForm()
-    return render(request, 'peticio.html', {'form': form})
+    return render(request, 'peticio.html', {'form': form, 'titol_formulari': 'Petició de matrícula'})
     
 class PeticioDetail(LoginRequiredMixin, UpdateView):
     '''
@@ -388,8 +395,8 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
             return (HttpResponseRedirect(reverse_lazy('sortides__sortides__pago_on_line',
                                         kwargs={'pk': pagament.id})+'?next=/')) #'?next='+str(self.request.get_full_path())))
         else:
-            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota).order_by('dataLimit')[0]
-            if pagament and not pagament.pagamentFet:
+            pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota).order_by('dataLimit')
+            if pagament and not pagament[0].pagamentFet:
                 infos.append('Dades completades, falta el pagament de la quota.')
             else:
                 infos.append('Dades completades, rebrà un mail amb el resultat.')

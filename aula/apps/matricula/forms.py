@@ -3,6 +3,7 @@ from captcha.fields import CaptchaField
 from aula.apps.matricula.models import Peticio, Dades
 from aula.apps.sortides.models import Quota, TipusQuota, QuotaPagament
 from aula.apps.alumnes.models import Curs, Alumne
+from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.utils.widgets import DateTextImput
 from aula.django_select2.forms import ModelSelect2Widget
 from django.forms.models import ModelChoiceField
@@ -22,6 +23,20 @@ class peticioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(peticioForm, self).__init__(*args, **kwargs)
         self.fields['curs'].queryset = Curs.objects.filter(nivell__matricula_oberta=True).order_by('nom_curs_complert')
+    
+    def clean(self):
+        cleaned_data = super(peticioForm, self).clean()
+        idAlumne = cleaned_data.get('idAlumne')
+        tipus = cleaned_data.get('tipusIdent')
+        if tipus=='R':
+            # Comprova per RALC
+            p=Preinscripcio.objects.filter(ralc=idAlumne)
+        else:
+            # Comprova per DNI
+            p=Preinscripcio.objects.filter(identificador=idAlumne)
+        if not p:
+            raise forms.ValidationError("Identificador erròni")
+        return cleaned_data  
         
 class DadesForm1(forms.ModelForm):
 
