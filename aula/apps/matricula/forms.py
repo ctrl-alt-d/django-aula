@@ -26,7 +26,7 @@ class peticioForm(forms.ModelForm):
     
     def clean(self):
         cleaned_data = super(peticioForm, self).clean()
-        idAlumne = cleaned_data.get('idAlumne')
+        idAlumne = cleaned_data.get('idAlumne').upper()
         tipus = cleaned_data.get('tipusIdent')
         if tipus=='R':
             # Comprova per RALC
@@ -35,7 +35,9 @@ class peticioForm(forms.ModelForm):
             # Comprova per DNI
             p=Preinscripcio.objects.filter(identificador=idAlumne)
         if not p:
-            raise forms.ValidationError("Identificador erròni")
+            raise forms.ValidationError("Identificador RALC o DNI erròni")
+        self.instance.idAlumne = idAlumne
+        cleaned_data['idAlumne'] = self.instance.idAlumne
         return cleaned_data  
         
 class DadesForm1(forms.ModelForm):

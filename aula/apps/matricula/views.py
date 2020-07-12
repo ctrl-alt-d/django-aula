@@ -221,11 +221,11 @@ def peticio(request):
                 dni=idalum
 
             if ralc:
-                pralc=Peticio.objects.filter(idAlumne=ralc, tipusIdent='R', email=toaddress, any=novaPeticio.any, estat__in=('A','F',)).exclude(pk=novaPeticio.pk)
+                pralc=Peticio.objects.filter(idAlumne=ralc, tipusIdent='R', any=novaPeticio.any, estat__in=('A','F',)).exclude(pk=novaPeticio.pk)
             else:
                 pralc=None
             if dni:
-                pdni=Peticio.objects.filter(idAlumne=dni, tipusIdent='D', email=toaddress, any=novaPeticio.any, estat__in=('A','F',)).exclude(pk=novaPeticio.pk)
+                pdni=Peticio.objects.filter(idAlumne=dni, tipusIdent='D', any=novaPeticio.any, estat__in=('A','F',)).exclude(pk=novaPeticio.pk)
             else:
                 pdni=None
             if pralc or pdni:
