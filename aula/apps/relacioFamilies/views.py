@@ -1025,7 +1025,8 @@ def elMeuInforme( request, pk = None ):
                 notifica=None
             
             filera = []
-            negreta = False if not notifica or bool( notifica.relacio_familia_revisada ) else True
+            revisada_per_la_familia = not notifica or bool( notifica.relacio_familia_revisada )
+            negreta = not revisada_per_la_familia
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
