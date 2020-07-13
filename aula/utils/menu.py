@@ -176,7 +176,8 @@ def calcula_menu( user , path, sessioImpersonada ):
                #--Gestió--------------------------------------------------------------------------
                ('gestio', 'Gestió', 'gestio__reserva_aula__list', co or pl, None,
                   (
-                      ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),                                        
+                      ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),
+                      ("Reserva Material", 'gestio__reserva_recurs__list', co or pl, None, None),
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
                       ("iCal", 'gestio__calendari__integra', pl, None, None),  
@@ -250,6 +251,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                           ("HorarisKronowin", 'administracio__sincronitza__kronowin', di , None  ),
                           ("HorarisUntis", 'administracio__sincronitza__Untis', di , None  ),
                           ("Aules", 'gestio__aula__assignacomentari', di, None),
+                          ("Material", 'gestio__recurs__assignacomentari', di, None),
                           ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
                         ),
                       ),

@@ -207,6 +207,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.baixes',
     'aula.apps.BI',
     'aula.apps.aules',
+    'aula.apps.material',
     'aula.utils',
     'aula.apps.presenciaSetmanal',
     'aula.apps.extUntis',

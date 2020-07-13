@@ -1,0 +1,28 @@
+{% extends "table2.html" %}
+
+{% block pretaula %}
+
+{%if titol_formulari %}<h2>{{titol_formulari}}</h2>{%endif%}
+
+    <div class="row">
+		  <div class="col-sm-8 col-xs-12">
+	      <p class="well well-small">
+      	  <span class="glyphicon glyphicon-home"> </span> {{ recurs }}<br />
+          <span class="glyphicon glyphicon-calendar"> </span> {{ dia }} <br />
+          {%  if not recurs.reservable %}
+              <span class="blink_me text-danger"> <strong> Aquest material no es pot reservar des del sistema </strong></span>
+          {% endif %}
+          </p>
+          </div>
+    </div>
+    <div class="row">
+        <h3>Tria la franja que vols reservar</h3>
+    </div>
+    <div class="row">
+            <div class="col-lg-8 col-md-10 col-sm-12">
+    {% endblock %}
+
+    {% block posttaula %} 
+           </div>
+    </div>
+    {% endblock %}
