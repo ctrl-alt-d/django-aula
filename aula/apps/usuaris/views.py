@@ -378,6 +378,9 @@ def recoverPasswd( request , username, oneTimePasswd ):
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
     
+    if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):
+        return HttpResponseRedirect( '/' )
+    
     client_address = getClientAdress( request )
 
     infoForm = [ ('Usuari',username,),]
@@ -407,10 +410,14 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                     dataOK = True
                     #  Per fer la matrícula es permet una setmana
                 a_temps = datetime.now() - timedelta( minutes = 30 if dataN else 60*24*7)
-                codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
+                if alumneOK:
+                    codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
                                                                   clau = oneTimePasswd, 
                                                                   moment_expedicio__gte = a_temps,
                                                                   reintents__lt = 3 )
+                else:
+                    codiOK=None
+                    
             except AlumneUser.DoesNotExist:
                 alumneOK = False
             except  AttributeError:
@@ -423,7 +430,7 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 codiOK[0].reintents += 1
                 codiOK[0].save()
             elif dataOK and not codiOK:
-                errors.append( u"L'enllaç que esteu utilitzant està caducat o no és correcta. Demaneu un altre codi de recuperació.")
+                errors.append( u"L'enllaç que esteu utilitzant està caducat o no és correcte. Demaneu un altre codi de recuperació.")
             elif not dataOK and not codiOK:
                 errors.append( u"Dades incorrectes. Demaneu un altre codi de recuperació.")                
                 #todoBloquejar oneTimePasswd

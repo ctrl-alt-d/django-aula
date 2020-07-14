@@ -7,7 +7,7 @@ class PeticioAdmin(admin.ModelAdmin):
     model = Peticio
     list_filter = ['curs']
     list_display= ['idAlumne', 'email', 'curs']
-    search_fields = ['idAlumne', 'curs']
+    search_fields = ['idAlumne', 'curs__nom_curs_complert']
     
 class DadesAdmin(admin.ModelAdmin):
     model = Dades

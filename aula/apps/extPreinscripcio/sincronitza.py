@@ -14,13 +14,15 @@ def assignaDades(preinscripcio, index, value, colnames, col_indexs):
     if index in col_indexs and value:
         field=colnames[col_indexs[index]]
         if isinstance(field, dict):
+            if 'case' in field and field['case']:
+                value=value.lower() if field['case']=='L' else value.upper()
             if 'append' in field and field['append']:
                 if field['field'] not in preinscripcio:
                     preinscripcio[field['field']]=value
                 else:
                     preinscripcio[field['field']]=str(preinscripcio[field['field']])+" "+str(value)
             else:
-                if 'field' in field:
+                if 'field' in field and field['field']:
                     preinscripcio[field['field']]=value
         else:
             preinscripcio[field]=value
@@ -63,9 +65,9 @@ def sincronitza(f, user = None):
         'Curs P1': 'curs',
         'Règim P1': 'regim',
         'Torn P1': 'torn',
-        'DNI': 'identificador',
-        'NIE': {'field': 'identificador'},
-        'PASS': {'field': 'identificador'},
+        'DNI': {'field': 'identificador', 'case' : 'U'},
+        'NIE': {'field': 'identificador', 'case' : 'U'},
+        'PASS': {'field': 'identificador', 'case' : 'U'},
         'TIS': 'tis',
         'Data naixement': 'naixement',
         'Sexe': 'sexe',
@@ -81,7 +83,7 @@ def sincronitza(f, user = None):
         'CP': 'cp',
         'País residència': 'paisresidencia',
         'Telèfon': 'telefon',
-        'Correu electrònic': 'correu',
+        'Correu electrònic': {'field': 'correu', 'case' : 'L'},
         'Tipus doc. tutor 1': 'tdoctut1',
         'Núm. doc. tutor 1': 'doctut1',
         'Nom tutor 1': 'nomtut1',

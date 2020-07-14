@@ -397,9 +397,9 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         else:
             pagament=QuotaPagament.objects.filter(alumne=p.alumne, quota=p.quota).order_by('dataLimit')
             if pagament and not pagament[0].pagamentFet:
-                infos.append('Dades completades, falta el pagament de la quota.')
+                infos.append('Dades completades, una vegada siguin revisades per secretaria rebrà un missatge. Falta el pagament de la quota.')
             else:
-                infos.append('Dades completades, rebrà un mail amb el resultat.')
+                infos.append('Dades completades, una vegada siguin revisades per secretaria rebrà un missatge.')
                 
         return render(
                     self.request,
