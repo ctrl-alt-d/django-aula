@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from datetime import timedelta
 from django import forms as forms
+from django.contrib.auth.models import User
 
 from aula.apps.material.models import Recurs, ReservaRecurs
 from aula.apps.horaris.models import FranjaHoraria
@@ -37,13 +38,18 @@ class disponibilitatRecursPerFranjaForm(forms.Form):
                                 required=True,
                                 widget=DateTextImput())
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super(disponibilitatRecursPerFranjaForm, self).clean()
 
         data=self.cleaned_data['data']
         tretze_dies = timedelta(days=13)
         darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-        if data > darrer_dia_reserva or data < datetime.today().date():
+        es_reservador = User.objects.filter(pk=self.user.pk, groups__name__in=['reservador']).exists()
+        if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
             raise forms.ValidationError(u"Només pots reservar a partir d'avui i fins al dia {0}".format(darrer_dia_reserva))
 
         franja = self.cleaned_data['franja']

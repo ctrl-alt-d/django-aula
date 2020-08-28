@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 # workflow
 import os
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -126,7 +127,8 @@ def detallRecursReserves(request, year, month, day, pk):
     data = t.date(year, month, day)
     tretze_dies = timedelta(days=13)
     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-    if data > darrer_dia_reserva or data < datetime.today().date():
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
         msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
@@ -194,7 +196,7 @@ def consultaRecursPerFranja(request):
     (user, l4) = credentials
 
     if request.method == 'POST':
-        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(request.POST)
+        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(request.POST, user=request.user)
 
         if formDisponibilitatRecurs.is_valid():
             franja = formDisponibilitatRecurs.cleaned_data['franja']
@@ -206,7 +208,7 @@ def consultaRecursPerFranja(request):
             return HttpResponseRedirect(next_url.format(year, month, date, franja.pk))
 
     else:
-        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm()
+        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(user=request.user)
 
     for f in formDisponibilitatRecurs.fields:
         formDisponibilitatRecurs.fields[f].widget.attrs['class'] = 'form-control ' + formDisponibilitatRecurs.fields[
@@ -246,7 +248,8 @@ def detallFranjaReserves(request, year, month, day, pk):
 
     tretze_dies = timedelta(days=13)
     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-    if data > darrer_dia_reserva or data < datetime.today().date():
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
         msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
@@ -334,7 +337,8 @@ def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, mo
     data = t.date(year, month, day)
     tretze_dies = timedelta(days=13)
     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-    if data > darrer_dia_reserva or data < datetime.today().date():
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
         msg = u"Reserva NO realitzada. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))

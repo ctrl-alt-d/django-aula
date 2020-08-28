@@ -9,7 +9,7 @@ from django.apps import apps
 from ....apps.missatgeria.missatges_a_usuaris import SISTEMA_ANULA_RESERVA, tipusMissatge
 
 def reservarecurs_clean(instance):
-    ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (None,False,)
+    ( user, l4)  = instance.credentials if hasattr( instance, 'credentials') else (instance.usuari,False,)
     if instance.hora:
         instance.hora_inici = instance.hora.hora_inici
         instance.hora_fi = instance.hora.hora_fi
@@ -48,8 +48,9 @@ def reservarecurs_clean(instance):
         if data_del_passat:
             errors.setdefault('dia_reserva', []).append(u'Compte! Aquesta data de reserva és del passat!')       
 
-    # -- No es pot reservar més enllà de 15 dies
-    if instance.es_reserva_manual:
+    # -- No es pot reservar més enllà de 15 dies si l'usuari no és reservador
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if instance.es_reserva_manual and not es_reservador:
         tretze_dies = timedelta( days = 13 )
         darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta( days = datetime.today().weekday() )
         if instance.dia_reserva > darrer_dia_reserva:
