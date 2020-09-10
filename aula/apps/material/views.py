@@ -679,7 +679,7 @@ def tramitarReservaMassivaRecurs(request, pk_recurs=None, pk_franja=None, year_i
                     # missatge al professor:
                     dies_setmana={0:'dilluns', 1:'dimarts', 2:'dimecres', 3:'dijous', 4:'divendres'}
                     missatge = PROFESSOR_RESERVA_MASSIVA
-                    txt = missatge.format(novaReserva.recurs, dies_setmana[data_inici.weekday()], data_inici, data_fi)
+                    txt = missatge.format(novaReserva.recurs, dies_setmana[data_inici.weekday()], data_inici, data_fi, novaReserva.hora)
                     tipus_de_missatge = tipusMissatge(missatge)
                     msg = Missatge(remitent=user, text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
                     importancia = 'PI'
