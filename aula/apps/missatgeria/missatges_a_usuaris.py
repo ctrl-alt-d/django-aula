@@ -91,6 +91,8 @@ FI_INITDB=u"Inicialització de la base de dades completada"
 
 ERROR_INITDB=u"Inicialització incompleta de la base de dades"
 
+PROFESSOR_RESERVA_MASSIVA=u"Se t'ha assignat el recurs \"{0}\" tots els {1} des del dia {2} fins al dia {3} a la franja \"{4}\""
+
 MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_AFEGIR_ALUMNES,
                                 FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS,
@@ -124,7 +126,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
              'MISSATGERIA': {'info': {CONSERGERIA_A_TUTOR,
                                       CONSERGERIA_A_CONSERGERIA,
                                       ACUS_REBUT_ENVIAT_A_PROFE_O_PAS,
-                                      EMAIL_A_FAMILIES,}},
+                                      EMAIL_A_FAMILIES,
+                                      PROFESSOR_RESERVA_MASSIVA}},
              'ACTIVITATS': {'success': {ACOMPANYANT_A_ACTIVITAT,
                                         RESPONSABLE_A_ACTIVITAT,}},
              'INFORMATIVES_DISCIPLINA': {'primary': {INCIDENCIA_INFORMATIVA,

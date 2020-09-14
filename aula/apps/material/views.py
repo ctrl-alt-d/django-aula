@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 # workflow
 import os
 
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -19,6 +20,8 @@ from django_tables2 import RequestConfig
 
 from aula import settings
 from aula.apps.material.tables2_models import HorariRecursTable, Table2_ReservaRecurs
+from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, PROFESSOR_RESERVA_MASSIVA
+from aula.apps.missatgeria.models import Missatge
 from aula.utils.my_paginator import DiggPaginator
 
 # models
@@ -31,10 +34,11 @@ from django.db.models import Q
 from aula.apps.material.forms import (
     reservaRecursForm,
     disponibilitatRecursPerRecursForm,
-    carregaComentarisRecursForm, disponibilitatRecursPerFranjaForm, RecursosForm)
+    carregaComentarisRecursForm, disponibilitatRecursPerFranjaForm, RecursosForm,
+    disponibilitatMassivaRecursPerFranjaForm, reservaMassivaRecursForm)
 
 # helpers
-from aula.apps.usuaris.models import User2Professor
+from aula.apps.usuaris.models import User2Professor, Professor
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.utils.tools import unicode
@@ -60,11 +64,12 @@ def reservaRecursList(request):
     table.order_by = ['-dia_reserva', ]
 
     RequestConfig(request, paginate={"paginator_class": DiggPaginator, "per_page": 30}).configure(table)
-
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
     return render(
         request,
         'reservesRecursos.html',
         {'table': table,
+         'es_reservador': es_reservador,
          }
     )
 
@@ -126,7 +131,8 @@ def detallRecursReserves(request, year, month, day, pk):
     data = t.date(year, month, day)
     tretze_dies = timedelta(days=13)
     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-    if data > darrer_dia_reserva or data < datetime.today().date():
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
         msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
@@ -194,7 +200,7 @@ def consultaRecursPerFranja(request):
     (user, l4) = credentials
 
     if request.method == 'POST':
-        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(request.POST)
+        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(request.POST, user=request.user)
 
         if formDisponibilitatRecurs.is_valid():
             franja = formDisponibilitatRecurs.cleaned_data['franja']
@@ -206,7 +212,7 @@ def consultaRecursPerFranja(request):
             return HttpResponseRedirect(next_url.format(year, month, date, franja.pk))
 
     else:
-        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm()
+        formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(user=request.user)
 
     for f in formDisponibilitatRecurs.fields:
         formDisponibilitatRecurs.fields[f].widget.attrs['class'] = 'form-control ' + formDisponibilitatRecurs.fields[
@@ -246,7 +252,8 @@ def detallFranjaReserves(request, year, month, day, pk):
 
     tretze_dies = timedelta(days=13)
     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-    if data > darrer_dia_reserva or data < datetime.today().date():
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
         msg = u"Aquesta data no permet fer reserves. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
@@ -334,7 +341,8 @@ def tramitarReservaRecurs(request, pk_recurs=None, pk_franja=None, year=None, mo
     data = t.date(year, month, day)
     tretze_dies = timedelta(days=13)
     darrer_dia_reserva = datetime.today().date() + tretze_dies - timedelta(days=datetime.today().weekday())
-    if data > darrer_dia_reserva or data < datetime.today().date():
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador and (data > darrer_dia_reserva or data < datetime.today().date()):
         msg = u"Reserva NO realitzada. Només es pot des d'avui i fins al dia {0}".format(
             darrer_dia_reserva)
         messages.warning(request, SafeText(msg))
@@ -465,3 +473,234 @@ def assignaComentarisARecurs(request):
     )
 
 
+# -- wizard massiva per franja 1/3
+@login_required
+@group_required(['professors', 'professional', 'consergeria'])
+def consultaMassivaRecurs (request):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    if request.method == 'POST':
+        formDisponibilitatRecurs = disponibilitatMassivaRecursPerFranjaForm(request.POST, user=request.user)
+
+        if formDisponibilitatRecurs.is_valid():
+            franja = formDisponibilitatRecurs.cleaned_data['franja']
+            data_inici = formDisponibilitatRecurs.cleaned_data['data_inici']
+            data_fi = formDisponibilitatRecurs.cleaned_data['data_fi']
+            year_inici = data_inici.year
+            year_fi = data_fi.year
+            month_inici = data_inici.month
+            month_fi = data_fi.month
+            date_inici = data_inici.day
+            date_fi = data_fi.day
+            next_url = r'/recursos/detallMassiuFranjaReserves/{0}/{1}/{2}/{3}/{4}/{5}/{6}'
+            return HttpResponseRedirect(next_url.format(year_inici, year_fi, month_inici, month_fi, date_inici, date_fi, franja.pk))
+
+    else:
+        formDisponibilitatRecurs = disponibilitatMassivaRecursPerFranjaForm(user=request.user)
+
+    for f in formDisponibilitatRecurs.fields:
+        formDisponibilitatRecurs.fields[f].widget.attrs['class'] = 'form-control ' + formDisponibilitatRecurs.fields[
+            f].widget.attrs.get('class', "")
+
+    return render(
+        request,
+        'form.html',
+        {'form': formDisponibilitatRecurs,
+         'head': u'Consultar disponibilitat recurs per franja',
+         'titol_formulari': u"Assistent Reserva Massiva de Material (1/3)",
+         },
+    )
+
+
+# -- wizard massiva per franja 2/3
+@login_required
+@group_required(['professors', 'professional', 'consergeria'])
+def detallMassiuFranjaReserves(request, year_inici, year_fi, month_inici, month_fi, day_inici, day_fi, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    franja = get_object_or_404(FranjaHoraria, pk=pk)
+
+    import datetime as t
+    try:
+        year_inici = int(year_inici)
+        month_inici = int(month_inici)
+        day_inici = int(day_inici)
+        year_fi = int(year_fi)
+        month_fi = int(month_fi)
+        day_fi = int(day_fi)
+    except:
+        today = t.date.today()
+        year_inici = today.year
+        month_inici = today.month
+        day_inici = today.day
+        year_fi = today.year
+        month_fi = today.month
+        day_fi = today.day
+
+    data_inici = t.date(year_inici, month_inici, day_inici)
+    data_fi = t.date(year_fi, month_fi, day_fi)
+
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador:
+        msg = u"No tens permís per reservar un bloc de dies"
+        messages.warning(request, SafeText(msg))
+
+    q_hi_ha_docencia_abans = Q(horari__hora__hora_inici__lte=franja.hora_inici)
+    q_hi_ha_docencia_despres = Q(horari__hora__hora_fi__gte=franja.hora_fi)
+    hi_ha_classe_al_centre_aquella_hora = (Impartir
+                                           .objects
+                                           .filter(dia_impartir=data_inici)
+                                           .filter(q_hi_ha_docencia_abans | q_hi_ha_docencia_despres)
+                                           .exists()
+                                           )
+    recursos_lliures = Recurs.objects.none()
+    if hi_ha_classe_al_centre_aquella_hora:
+        # reservables
+        reservable_aquella_hora = (Q(disponibilitat_horaria__isnull=True)
+                                   | Q(disponibilitat_horaria=franja))
+        reservable_aquella_hora_ids = (Recurs
+                                       .objects
+                                       .filter(reservable_aquella_hora)
+                                       .values_list('id', flat=True)
+                                       .distinct()
+                                       )
+        # reservats
+        reservat = Q(reservarecurs__dia_reserva__gte=data_inici) & \
+                   Q(reservarecurs__dia_reserva__lte=data_fi) & \
+                   Q(reservarecurs__dia_reserva__week_day=data_inici.weekday()+2) & \
+                   Q(reservarecurs__hora=franja)
+        reservat_ids = (Recurs
+                         .objects
+                         .filter(reservat)
+                         .values_list('id', flat=True)
+                         .distinct()
+                         )
+        # lliures
+        recursos_lliures = (Recurs
+                         .objects
+                         .exclude(reservable=False)
+                         .filter(pk__in=reservable_aquella_hora_ids)
+                         .exclude(pk__in=reservat_ids)
+                         .distinct()
+                         )
+
+    if request.method == 'POST':
+        form = RecursosForm(queryset=recursos_lliures,
+                         data=request.POST,
+                         )
+
+        if form.is_valid():
+            next_url = r"/recursos/tramitarReservaMassivaRecurs/{0}/{1}/{2}/{3}/{4}/{5}/{6}/{7}/"
+            return HttpResponseRedirect(next_url.format(form.cleaned_data['recurs'].pk, franja.pk, year_inici, year_fi,
+                                                        month_inici, month_fi, day_inici, day_fi))
+
+    else:
+        form = RecursosForm(queryset=recursos_lliures)
+
+    for f in form.fields:
+        form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class', "")
+
+    return render(
+        request,
+        'form.html',
+        {'form': form,
+         'titol_formulari': u"Assistent Reserva Massiva de Material (2/3)",
+         },
+    )
+
+
+# -- wizard massiva per franja 3/3
+@login_required
+@group_required(['professors', 'professional', 'consergeria'])
+def tramitarReservaMassivaRecurs(request, pk_recurs=None, pk_franja=None, year_inici=None, year_fi=None, month_inici=None,  month_fi=None, day_inici=None, day_fi=None):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    recurs = Recurs.objects.filter(pk=pk_recurs).first()
+    franja = FranjaHoraria.objects.filter(pk=pk_franja).first()
+
+    import datetime as t
+    try:
+        year_inici = int(year_inici)
+        month_inici = int(month_inici)
+        day_inici = int(day_inici)
+        year_fi = int(year_fi)
+        month_fi = int(month_fi)
+        day_fi = int(day_fi)
+    except:
+        today = t.date.today()
+        year_inici = today.year
+        month_inici = today.month
+        day_inici = today.day
+        year_fi = today.year
+        month_fi = today.month
+        day_fi = today.day
+    data_inici = t.date(year_inici, month_inici, day_inici)
+    data_fi = t.date(year_fi, month_fi, day_fi)
+    es_reservador = User.objects.filter(pk=user.pk, groups__name__in=['reservador']).exists()
+    if not es_reservador:
+        msg = u"No tens permís per reservar un bloc de dies"
+        messages.warning(request, SafeText(msg))
+        return HttpResponseRedirect(r'/recursos/lesMevesReservesDeRecurs/')
+
+    novaReserva = ReservaRecurs(recurs=recurs,
+                                hora=franja,
+                                dia_reserva=data_inici,
+                                usuari=user,
+                                es_reserva_manual=True)
+    infoForm = [
+        ('Data inici reserva',data_inici),
+        ('Data fi reserva', data_fi),
+    ]
+
+    if request.method == 'POST':
+            novaReserva = ReservaRecurs(recurs=recurs,
+                                        hora=franja,
+                                        dia_reserva=data_inici,
+                                        usuari=user,
+                                        es_reserva_manual=False)
+            form = reservaMassivaRecursForm(request.POST, instance=novaReserva)
+
+            if form.is_valid():
+                try:
+                    reserva = form.save(commit=False)
+                    dates = []
+                    numdies = (data_fi - data_inici).days
+                    for x in range(0, numdies + 1, 7):
+                        dates.append(data_inici + timedelta(days=x))
+                    for data in dates:
+                        reserva.pk=None
+                        reserva.dia_reserva = data
+                        reserva.save()
+                    missatge = u"Reserva realitzada correctament"
+                    messages.success(request, missatge)
+                    # missatge al professor:
+                    dies_setmana={0:'dilluns', 1:'dimarts', 2:'dimecres', 3:'dijous', 4:'divendres'}
+                    missatge = PROFESSOR_RESERVA_MASSIVA
+                    txt = missatge.format(novaReserva.recurs, dies_setmana[data_inici.weekday()], data_inici, data_fi, novaReserva.hora)
+                    tipus_de_missatge = tipusMissatge(missatge)
+                    msg = Missatge(remitent=user, text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
+                    importancia = 'PI'
+                    destinatari=reserva.usuari
+                    msg.envia_a_usuari(destinatari, importancia)
+                    return HttpResponseRedirect(r'/recursos/lesMevesReservesDeRecurs/')
+                except ValidationError as e:
+                    for _, v in e.message_dict.items():
+                        form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
+    else:
+        form = reservaMassivaRecursForm(instance=novaReserva)
+
+    for f in ['recurs', 'dia_reserva', 'hora', 'motiu']:
+        form.fields[f].widget.attrs['class'] = 'form-control ' + form.fields[f].widget.attrs.get('class', "")
+
+    return render(
+        request,
+        'form.html',
+        {'form': form,
+         'infoForm': infoForm,
+         'head': u'Reservar material',
+         'titol_formulari': u"Assistent Reserva Massiva de Material (3/3)",
+         },
+    )
