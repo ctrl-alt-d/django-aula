@@ -99,16 +99,15 @@ class regeneraThread(Thread):
                                 aula_horari = horari.aula.pk if horari.aula else -1
                                 aula_impartir = impartir_modificat.reserva.aula.pk if impartir_modificat.reserva else -1
                                 canvi_aula = ( aula_horari != aula_impartir )
-                                if ( canvi_aula and 
-                                     impartir_modificat.reserva and 
-                                     not impartir_modificat.reserva.es_reserva_manual ):
-                                    fake_l4_credentials = (None, True)
-                                    impartir_modificat.reserva.credentials = fake_l4_credentials
-                                    impartir_modificat.reserva.delete()
-                                    impartir_modificat.reserva = None
-                                    impartir_modificat.reserva_id = None                                    
+                                if canvi_aula:
+                                    if (impartir_modificat.reserva and
+                                     not impartir_modificat.reserva.es_reserva_manual):
+                                        fake_l4_credentials = (None, True)
+                                        impartir_modificat.reserva.credentials = fake_l4_credentials
+                                        impartir_modificat.reserva.delete()
+                                        impartir_modificat.reserva = None
+                                        impartir_modificat.reserva_id = None
                                     impartir_modificat.save()
-
                         else:
                             Impartir.objects.filter( dia_impartir = dia, horari = horari ).delete()
                     else:
