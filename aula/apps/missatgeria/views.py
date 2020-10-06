@@ -117,7 +117,7 @@ def enviaMissatgeTutors( request ):
                 missatge = CONSERGERIA_A_CONSERGERIA
                 tipus_de_missatge = tipusMissatge(missatge)
                 msg = Missatge( remitent = user,
-                                text_missatge = missatge.format( alumne, strTutors, msg.text_missatge ),
+                                text_missatge = missatge.format( alumne, strTutors, txt2 ),
                                 tipus_de_missatge = tipus_de_missatge)
                 msg.envia_a_usuari(user, 'PI')
                 msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())  #marco com a llegit
