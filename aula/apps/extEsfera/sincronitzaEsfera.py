@@ -209,6 +209,8 @@ def sincronitza(f, user = None):
                 a.motiu_bloqueig = u'No sol·licitat'
                 a.tutors_volen_rebre_correu = False
                 a.foto = alumneDadesAnteriors.foto
+                a.primer_responsable = alumneDadesAnteriors.primer_responsable
+                a.observacions = alumneDadesAnteriors.observacions
             else:
                 a.correu_relacio_familia_pare         = alumneDadesAnteriors.correu_relacio_familia_pare
                 a.correu_relacio_familia_mare         = alumneDadesAnteriors.correu_relacio_familia_mare
@@ -218,6 +220,8 @@ def sincronitza(f, user = None):
                 a.periodicitat_incidencies            = alumneDadesAnteriors.periodicitat_incidencies
                 a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
                 a.foto = alumneDadesAnteriors.foto
+                a.primer_responsable = alumneDadesAnteriors.primer_responsable
+                a.observacions = alumneDadesAnteriors.observacions
                 
         a.save()
         nivells.add(a.grup.curs.nivell)
