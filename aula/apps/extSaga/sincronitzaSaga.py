@@ -241,7 +241,9 @@ def sincronitza(f, user = None):
 
     # Els alumnes d'Esfer@ no s'han de tenir en compte per fer les baixes
     AlumnesDeEsfera = Alumne.objects.exclude(grup__curs__nivell__in=nivells)
-    AlumnesDeEsfera.update(estat_sincronitzacio='')
+    # Es canvia estat PRC a ''. No modifica DEL ni MAN
+    AlumnesDeEsfera.filter( estat_sincronitzacio__exact = 'PRC' ).update(estat_sincronitzacio='')
+    
     #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
     AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
     AlumnesDonatsDeBaixa.update(

@@ -230,9 +230,10 @@ def sincronitza(f, user = None):
     #
     # Els alumnes de Saga no s'han de tenir en compte per fer les baixes
     AlumnesDeSaga = Alumne.objects.exclude(grup__curs__nivell__in=nivells)
-    AlumnesDeSaga.update(estat_sincronitzacio='')
-
-#     #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
+    # Es canvia estat PRC a ''. No modifica DEL ni MAN
+    AlumnesDeSaga.filter( estat_sincronitzacio__exact = 'PRC' ).update(estat_sincronitzacio='')
+    
+    #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
     AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
     AlumnesDonatsDeBaixa.update(
                             data_baixa = date.today(),
