@@ -1,14 +1,13 @@
 #http://djangosnippets.org/snippets/773/
 import math
 from django.core.paginator import \
-    Paginator, QuerySetPaginator, Page, InvalidPage
+    Paginator, Page, InvalidPage
 from functools import reduce
 
 __all__ = (
     'InvalidPage',
     'ExPaginator',
     'DiggPaginator',
-    'QuerySetDiggPaginator',
 )
 
 class ExPaginator(Paginator):
@@ -272,9 +271,6 @@ class DiggPage(Page):
                             " ".join(list(map(str, self.leading_range))),
                             " ".join(list(map(str, self.main_range))),
                             " ".join(list(map(str, self.trailing_range)))]))
-
-class QuerySetDiggPaginator(DiggPaginator, QuerySetPaginator):
-    pass
 
 if __name__ == "__main__":
     import doctest
