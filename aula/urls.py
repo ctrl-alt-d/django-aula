@@ -9,6 +9,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.views.static import serve
 
 admin.autodiscover()
+admin.site.enable_nav_sidebar = False
 
 import os.path
 import private_storage.urls
