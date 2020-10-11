@@ -95,6 +95,22 @@ SET storage-engine=INNODB;
 QUIT
 ```
 
+### Configurando Private Storage
+
+Hay información que la aplicación guarda en ficheros y que no debe estar en el servidor web. 
+Actualmente las fotos de los alumnos.
+
+Para ello hay que crear una carpeta donde guardar esa información.
+
+```bash
+mkdir -p /opt/djau-dades-privades-2020
+chmod 770 djau-dades-privades-2020
+chgrp :www-data djau-dades-privades-2020 
+```
+
+Al següent punt ens faran informar la variable `PRIVATE_STORAGE_ROOT` amb el path que haguem triat.
+
+
 ### Configurando Aplicación
 
 Django Aula tiene 3 archivos principales de configuración
@@ -198,6 +214,10 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
+
+# Path de les dades privades
+PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2020'
+
 ```
 
 **`/opt/djau2019/aula/wsgi.py`**
