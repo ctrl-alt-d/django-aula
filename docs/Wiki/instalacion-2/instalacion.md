@@ -108,7 +108,7 @@ chmod 770 djau-dades-privades-2020
 chgrp :www-data djau-dades-privades-2020 
 ```
 
-Al següent punt ens faran informar la variable `PRIVATE_STORAGE_ROOT` amb el path que haguem triat.
+En el siguiente apartado se configura la variable `PRIVATE_STORAGE_ROOT` con el path escogido.
 
 
 ### Configurando Aplicación
@@ -198,7 +198,6 @@ CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 #Componente que utilizará Django para serializar los objetos
 SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 
-PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
@@ -215,7 +214,7 @@ DATABASES = {
     }
 }
 
-# Path de les dades privades
+# Path de datos privados
 PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2020'
 
 ```
