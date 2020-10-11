@@ -1,6 +1,6 @@
 # Carga de Alumnos Fichero SAGA
 
-Hasta ahora tenemos cargados los los grupos de nuestro centro ahora es el momento de importar los alumnos.
+Hasta ahora tenemos cargados los grupos de nuestro centro ahora es el momento de importar los alumnos.
 
 Recuerda que Django-Aula solo permite la importación de alumnos desde una exportación hecha desde SAGA, el proceso de obtención de esta exportación esta explicado en [TutorialALUMNES_SAGA-ESFER@_a_DJAU.pdf](../../../installacio/TutorialALUMNES_SAGA-ESFER@_a_DJAU.pdf)
 
