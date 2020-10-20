@@ -60,7 +60,7 @@ class disponibilitatAulaPerFranjaForm(forms.Form):
                            )
         primera_franja = franges_del_dia.first()
         darrera_franja = franges_del_dia.last()
-        if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
+        if not primera_franja or franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
             raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
 
         return cleaned_data
