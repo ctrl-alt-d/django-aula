@@ -17,8 +17,8 @@ class AbstractItemQualitativa(models.Model):
 
 class AbstractAvaluacioQualitativa(models.Model):
     nom_avaluacio = models.CharField(u'Avaluació Qualitativa', max_length=120, unique=True, null=False, help_text = u'Ex: Avaluació qualitativa 1ra Avaluació')
-    data_obrir_avaluacio = models.DateField( u'Primer dia per entrar Qualitativa',unique=True, null=False, help_text=u"Data a partir de la qual els professors podran entrar l'avaluació.")
-    data_tancar_avaluacio = models.DateField( u'Darrer dia per entrar Qualitativa',unique=True, null=False, help_text=u"Darrer dia que tenen els professors per entrar la Qualitativa.")
+    data_obrir_avaluacio = models.DateField( u'Primer dia per entrar Qualitativa', null=False, help_text=u"Data a partir de la qual els professors podran entrar l'avaluació.")
+    data_tancar_avaluacio = models.DateField( u'Darrer dia per entrar Qualitativa', null=False, help_text=u"Darrer dia que tenen els professors per entrar la Qualitativa.")
     grups = models.ManyToManyField( 'alumnes.Grup', help_text = u"Tria els grups a avaluar." )    
     data_obrir_portal_families = models.DateField( u'Primer dia per veure els resultats al portal famílies', null=True, blank=True, help_text=u"Els pares podran veure els resultats al portal famílies a partir de la data aquí introduïda.")
     data_tancar_tancar_portal_families = models.DateField( u'Darrer dia per veure els resultats al portal famílies', null=True, blank=True, help_text=u"Els pares podran veure els resultats al portal famílies fins a la data aquí introduïda.")
