@@ -95,6 +95,22 @@ SET storage-engine=INNODB;
 QUIT
 ```
 
+### Configurando Private Storage
+
+Hay información que la aplicación guarda en ficheros y que no debe estar en el servidor web. 
+Actualmente las fotos de los alumnos.
+
+Para ello hay que crear una carpeta donde guardar esa información.
+
+```bash
+mkdir -p /opt/djau-dades-privades-2020
+chmod 770 djau-dades-privades-2020
+chgrp :www-data djau-dades-privades-2020 
+```
+
+En el siguiente apartado se configura la variable `PRIVATE_STORAGE_ROOT` con el path escogido.
+
+
 ### Configurando Aplicación
 
 Django Aula tiene 3 archivos principales de configuración
@@ -182,7 +198,6 @@ CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 #Componente que utilizará Django para serializar los objetos
 SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 
-PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
@@ -198,6 +213,10 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
+
+# Path de datos privados
+PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2020'
+
 ```
 
 **`/opt/djau2019/aula/wsgi.py`**
