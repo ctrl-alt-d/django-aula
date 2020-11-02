@@ -181,7 +181,7 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    telefons_alumne = [alumne.rp1_telefon, alumne.rp2_telefon, alumne.altres_telefons]
+    telefons_alumne = [alumne.rp1_telefon, alumne.rp1_mobil, alumne.rp2_telefon, alumne.rp2_mobil, alumne.altres_telefons]
     noms_responsables = [alumne.rp1_nom, alumne.rp2_nom]
     correus_responsables_saga = [alumne.rp1_correu, alumne.rp2_correu]
     infoForm = [
@@ -189,7 +189,7 @@ def configuraConnexio( request , pk ):
           ('Edat alumne', edatAlumne),
           ('Telèfons Alumne', ','.join(filter(None,telefons_alumne))),
           ('Noms responsables', ' / '.join(filter(None,noms_responsables))),
-          ('Correus responsables (Saga)', ','.join(filter(None,correus_responsables_saga))),
+          ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),
                 ]
     
     AlumneFormSet = modelform_factory(Alumne,
