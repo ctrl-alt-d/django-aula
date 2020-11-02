@@ -129,7 +129,9 @@ def sincronitza(f, user = None):
                     a.rp2_mobil = ', '.join(dades_tutor2["mobils"]);
                     a.rp2_correu = ', '.join(dades_tutor2["mails"]);
                 if col_indexs[index].endswith(u"Contacte altres alumne - Valor"):
-                    a.altres_telefons = unicode(cell.value)
+                    telefons_alumne = dades_responsable(unicode(cell.value) if cell.value else "")
+                    a.altres_telefons = ', '.join(telefons_alumne["fixes"]);
+                    a.altres_telefons = a.altres_telefons + ', '.join(telefons_alumne["mobils"]);
                 if col_indexs[index].endswith(u"Tutor 1 - 1r cognom "):
                     a.rp1_nom = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith(u"Tutor 1 - 2n cognom"):
