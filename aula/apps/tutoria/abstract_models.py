@@ -54,7 +54,8 @@ class AbstractSeguimentTutorialRespostes(models.Model):
 
 class AbstractActuacio(models.Model):
     QUI_CHOICES = (
-            ('T', u'''Tutor''',) ,
+            ('T', u'''Tutor/a''',) ,
+            ('O', u'''Cotutor/a''',),
             ('C', u'''Cap d'estudis''',) ,
             ('E', u'''Equip psicop.''',),
             ('A', u'''Altres''',),
