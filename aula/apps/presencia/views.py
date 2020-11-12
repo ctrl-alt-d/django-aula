@@ -191,7 +191,17 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                 impartir_pendents.append( impartir_franja ) #franges buides que potser caldrà afegir a l'horari
         
     nomProfessor = unicode( professor )
-    
+
+    qProfessor = Q(horari__professor=professor)
+    qFinsAra = Q(dia_impartir__lt=datetime.today())
+    qTeGrup = Q(horari__grup__isnull=False)
+    imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup)
+    nImparticios = imparticions.count()
+    nImparticionsLlistaPassada = imparticions.filter(professor_passa_llista__isnull=False).count()
+    pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
+    msg = u'Has controlat presència en un {0}% de les classes'.format(pct)
+    percentatgeProfessor = msg
+
     #navegacio pel calencari:
     altres_moments = [
            # text a mostrar, data de l'enllaç, mostrar-ho a mòbil, mostrar-ho a tablet&desktop
@@ -233,6 +243,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
                  'calendari': calendari,
                  'impartir_tot': impartir_tot, 
                  'professor': nomProfessor,
+                 'percentatge': percentatgeProfessor,
                  'altres_moments': altres_moments,
                  } ,
                 )
