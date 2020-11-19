@@ -963,10 +963,11 @@ def elMeuInforme( request, pk = None ):
         
         # sortides a on s'ha convocat a l'alumne
         sortidesnotificat = Sortida.objects.filter(notificasortida__alumne=alumne)
-        # sortides pagades a les que ja no s'ha convocat a l'alumne        
-        sortidespagades = Sortida.objects.filter(pagaments__id=alumne.id, pagaments__pagament__pagament_realitzat=True).exclude(notificasortida__alumne=alumne)
+        # sortides pagades a les que ja no s'ha convocat a l'alumne
+        sortidespagadesperalumne = Pagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list('sortida', flat=True).distinct()
+        sortidespagadesnonotificades = Sortida.objects.filter(id__in=sortidespagadesperalumne, pagaments__pagament__alumne=alumne, pagaments__pagament__pagament_realitzat=True).exclude(notificasortida__alumne=alumne)
         # totes les sortides relacionades amb l'alumne
-        activitats=sortidesnotificat.union(sortidespagades)
+        activitats=sortidesnotificat.union(sortidespagadesnonotificades)
         
         sortidesNoves = sortides.filter(  relacio_familia_revisada__isnull = True )
         sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list( 'id', flat=True ).distinct()           
