@@ -199,7 +199,7 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     nImparticios = imparticions.count()
     nImparticionsLlistaPassada = imparticions.filter(professor_passa_llista__isnull=False).count()
     pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
-    msg = u'Has controlat presència en un {0}% de les classes'.format(pct)
+    msg = u'Has controlat presència en un {0}% de les teves classes'.format(pct)
     percentatgeProfessor = msg
 
     #navegacio pel calencari:
