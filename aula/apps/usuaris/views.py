@@ -6,7 +6,7 @@ from django_tables2 import RequestConfig
 from django.urls import reverse
 
 from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuariForm, \
-    recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form
+    recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form, CanviDadesAddicionalsUsuari
 
 from django.contrib.auth.decorators import login_required
 
@@ -49,36 +49,56 @@ from icalendar import vCalAddress, vText
 from django.templatetags.tz import localtime
 
 @login_required
-def canviDadesUsuari( request):
-    credentials = tools.getImpersonateUser(request) 
+def canviDadesUsuari(request):
+    credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
-        
+
+    if User2Professor(user):
+        professor = User2Professor(user)
+        dadesaddicionalsprofessor = DadesAddicionalsProfessor.objects.get(professor=professor)
+        imageUrl = dadesaddicionalsprofessor.get_foto_or_default
+
     if request.method == "POST":
-        form=CanviDadesUsuari(
-                                request.POST,                                
-                                instance= user )
-        form.fields['first_name'].label = 'Nom'
-        form.fields['last_name'].label = 'Cognoms'
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect( '/' )
+        formUsuari = CanviDadesUsuari(
+            request.POST,
+            instance=user)
+        formUsuari.fields['first_name'].label = 'Nom'
+        formUsuari.fields['last_name'].label = 'Cognoms'
+
+        if professor:
+            formDadesAddicionals = CanviDadesAddicionalsUsuari(request.POST, request.FILES, instance=dadesaddicionalsprofessor)
+            formDadesAddicionals.fields['foto'].label = 'Foto'
+
+        if formUsuari.is_valid() and formDadesAddicionals.is_valid():
+            formUsuari.save()
+            formDadesAddicionals.save()
+            return HttpResponseRedirect('/')
+
     else:
-        form=CanviDadesUsuari(instance=user)
-        form.fields['first_name'].label = 'Nom'
-        form.fields['last_name'].label = 'Cognoms'
+        formUsuari =  CanviDadesUsuari(instance=user)
+        formUsuari.fields['first_name'].label = 'Nom'
+        formUsuari.fields['last_name'].label = 'Cognoms'
+
+        if professor:
+            dadesaddicionalsprofessor = DadesAddicionalsProfessor.objects.get(professor = professor)
+            formDadesAddicionals = CanviDadesAddicionalsUsuari(instance=dadesaddicionalsprofessor)
+            formDadesAddicionals.fields['foto'].label = 'Foto'
 
     head = u'''Dades d'usuari'''
-    infoForm = [ (u'Codi Usuari', user.username), ]      
-          
+    infoForm = [(u'Codi Usuari', user.username), ]
+
+    formset = [formUsuari, formDadesAddicionals]
+
     resposta = render(
-                request,
-                  "form.html", 
-                  {"form": form,
-                   "head": head,
-                   'infoForm': infoForm,
-                   }
-                )
-    
+        request,
+        "formset.html",
+        {"formset": formset,
+         "head": head,
+         'image': imageUrl,
+         'infoForm': infoForm,
+         }
+    )
+
     return resposta
 
 #--------------------------------------------------------------------

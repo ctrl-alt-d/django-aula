@@ -6,8 +6,9 @@ from aula.utils.widgets import DateTextImput
 from django.forms import ModelForm, ModelChoiceField
 from django import forms
 from django.contrib.auth.models import User
-from aula.apps.usuaris.models import Professor, ProfessorConserge
-
+from aula.apps.usuaris.models import Professor, ProfessorConserge, DadesAddicionalsProfessor
+import imghdr
+from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 
 #from aula.utils.captcha import ReCaptchaField
 
@@ -21,6 +22,26 @@ class CanviDadesUsuari(ModelForm):
         
     def clean(self):
         totInformat = self.cleaned_data.get('first_name') and self.cleaned_data.get('last_name') and self.cleaned_data.get('email')
+        if not totInformat:
+            raise forms.ValidationError('Cal informar totes les dades')
+        return self.cleaned_data
+
+class CanviDadesAddicionalsUsuari(ModelForm):
+    foto = forms.ImageField(required=False)
+
+    class Meta:
+        model = DadesAddicionalsProfessor
+        fields = ('foto',)
+
+    def clean_foto(self):
+        foto = self.cleaned_data['foto']
+        if foto and 'image/{0}'.format(imghdr.what(foto)) not in CUSTOM_TIPUS_MIME_FOTOS:
+            message = "Tipus de fitxer no vàlid. Formats permesos: {0}".format(CUSTOM_TIPUS_MIME_FOTOS).replace("image/",'')
+            raise forms.ValidationError(message)
+        return foto
+
+    def clean(self):
+        totInformat = self.cleaned_data.get('foto')
         if not totInformat:
             raise forms.ValidationError('Cal informar totes les dades')
         return self.cleaned_data

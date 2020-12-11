@@ -6,7 +6,9 @@ from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.abstract_usuaris import AbstractDepartament,\
     AbstractAccio, AbstractLoginUsuari, AbstractOneTimePasswd
 from aula.utils.tools import unicode
-
+from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
+from private_storage.fields import PrivateFileField
+from django.templatetags.static import static
 #-------------------------------------------------------------
 
 class Departament(AbstractDepartament):
@@ -78,6 +80,13 @@ def User2Professor(user):
 class DadesAddicionalsProfessor(models.Model):
     clauDeCalendari = models.UUIDField(default=uuid.uuid4)
     professor = models.OneToOneField(Professor, on_delete=models.CASCADE)
+    foto = PrivateFileField("Foto", upload_to='profes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS,
+                            max_file_size=3145728, null=True, blank=True)
+
+    @property
+    def get_foto_or_default(self):
+        foto = self.foto.url if self.foto else static('nofoto.png')
+        return foto
 
 def GetDadesAddicionalsProfessor(professor):
     dadesAddicionals, created = DadesAddicionalsProfessor.objects.get_or_create(
