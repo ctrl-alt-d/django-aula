@@ -9,6 +9,9 @@ from django.contrib.auth.models import User
 from aula.apps.usuaris.models import Professor, ProfessorConserge, DadesAddicionalsProfessor
 import imghdr
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
+from PIL import Image
+import io, os
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 #from aula.utils.captcha import ReCaptchaField
 
@@ -40,11 +43,25 @@ class CanviDadesAddicionalsUsuari(ModelForm):
             raise forms.ValidationError(message)
         return foto
 
-    def clean(self):
-        totInformat = self.cleaned_data.get('foto')
-        if not totInformat:
-            raise forms.ValidationError('Cal informar totes les dades')
-        return self.cleaned_data
+    def save(self):
+        # redimensionar i utilitzar username com a nom de foto
+        try:
+            img = Image.open(self.files['foto'])
+            img.thumbnail((150, 150), Image.ANTIALIAS)
+            thumb_io = io.BytesIO()
+            img.save(thumb_io, self.files['foto'].content_type.split('/')[-1].upper())
+            new_file_name = 'profe_' + str(self.instance.professor.username) + os.path.splitext(self.instance.foto.name)[1]
+            print (new_file_name)
+            file = InMemoryUploadedFile(thumb_io,
+                                        u"foto",
+                                        new_file_name,
+                                        self.files['foto'].content_type,
+                                        thumb_io.getbuffer().nbytes,
+                                        None)
+            self.instance.foto = file
+        except:
+            pass
+        super(CanviDadesAddicionalsUsuari, self).save()
 
 class triaUsuariForm(forms.Form):
     professor = forms.ModelChoiceField( 

@@ -1,0 +1,11 @@
+{% extends "formset.html" %}
+
+{% block preform %}
+    {% if image %}
+        <div class="row">
+              <div class="col-sm-2 col-xs-12">
+                 <img src="{{ image }}" width=120 class="center">
+               </div>
+        </div>
+    {% endif %}
+{% endblock %}

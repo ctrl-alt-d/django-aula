@@ -18,6 +18,7 @@ from aula.apps.extKronowin.models import ParametreKronowin
 #workflow
 from django.http import HttpResponseRedirect
 from django.shortcuts import  get_object_or_404, render
+from django import forms
 
 #helpers
 from django.http import HttpResponseNotFound, HttpResponse
@@ -49,6 +50,7 @@ from icalendar import vCalAddress, vText
 from django.templatetags.tz import localtime
 
 @login_required
+@group_required(['professors', 'consergeria'])
 def canviDadesUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
@@ -57,6 +59,9 @@ def canviDadesUsuari(request):
         professor = User2Professor(user)
         dadesaddicionalsprofessor = DadesAddicionalsProfessor.objects.get(professor=professor)
         imageUrl = dadesaddicionalsprofessor.get_foto_or_default
+    else:
+        professor = None
+        imageUrl = None
 
     if request.method == "POST":
         formUsuari = CanviDadesUsuari(
@@ -83,6 +88,9 @@ def canviDadesUsuari(request):
             dadesaddicionalsprofessor = DadesAddicionalsProfessor.objects.get(professor = professor)
             formDadesAddicionals = CanviDadesAddicionalsUsuari(instance=dadesaddicionalsprofessor)
             formDadesAddicionals.fields['foto'].label = 'Foto'
+            formDadesAddicionals.fields['foto'].widget = forms.FileInput()
+        else:
+            formDadesAddicionals = None
 
     head = u'''Dades d'usuari'''
     infoForm = [(u'Codi Usuari', user.username), ]
@@ -91,7 +99,7 @@ def canviDadesUsuari(request):
 
     resposta = render(
         request,
-        "formset.html",
+        "dadesUsuari.html",
         {"formset": formset,
          "head": head,
          'image': imageUrl,
