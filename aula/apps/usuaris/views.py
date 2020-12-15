@@ -693,6 +693,7 @@ def detallProfessorHorari(request, pk, detall='all'):
 
 
     professor = get_object_or_404( Professor, pk=pk)
+    dadesAddicionalsProfessor = get_object_or_404( DadesAddicionalsProfessor, professor=professor)
     tutoria = professor.tutor_set.filter( professor = professor )
 
     qHorari = Q(horari__professor = professor, dia_impartir = data)
@@ -708,6 +709,7 @@ def detallProfessorHorari(request, pk, detall='all'):
         'mostraInfoProfessorCercat.html',
         {'table': table,
          'professor':professor,
+         'dadesAddicionalsProfessor':dadesAddicionalsProfessor,
          'tutoria': tutoria,
          'dia' : data,
          'lendema': (data + timedelta( days = +1 )).strftime(r'%Y-%m-%d'),
