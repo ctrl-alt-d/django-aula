@@ -74,9 +74,10 @@ def canviDadesUsuari(request):
             formDadesAddicionals = CanviDadesAddicionalsUsuari(request.POST, request.FILES, instance=dadesaddicionalsprofessor)
             formDadesAddicionals.fields['foto'].label = 'Foto'
 
-        if formUsuari.is_valid() and formDadesAddicionals.is_valid():
+        if formUsuari.is_valid():
             formUsuari.save()
-            formDadesAddicionals.save()
+            if professor and formDadesAddicionals.is_valid():
+                formDadesAddicionals.save()
             return HttpResponseRedirect('/')
 
     else:
@@ -703,6 +704,15 @@ def detallProfessorHorari(request, pk, detall='all'):
     table=HorariProfessorTable(imparticions)
 
     RequestConfig(request).configure(table)
+    if dadesAddicionalsProfessor.foto:
+        Accio.objects.create(
+            tipus='AS',
+            usuari=user,
+            l4=l4,
+            impersonated_from=request.user if request.user != user else None,
+            moment=datetime.now(),
+            text=u"""Accés a dades sensibles del profe {0} per part de l'usuari {1}.""".format(professor, user)
+        )
 
     return render(
         request,
