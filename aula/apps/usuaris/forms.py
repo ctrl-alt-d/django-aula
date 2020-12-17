@@ -51,7 +51,6 @@ class CanviDadesAddicionalsUsuari(ModelForm):
             thumb_io = io.BytesIO()
             img.save(thumb_io, self.files['foto'].content_type.split('/')[-1].upper())
             new_file_name = 'profe_' + str(self.instance.professor.username) + os.path.splitext(self.instance.foto.name)[1]
-            print (new_file_name)
             file = InMemoryUploadedFile(thumb_io,
                                         u"foto",
                                         new_file_name,
