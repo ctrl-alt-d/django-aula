@@ -204,7 +204,7 @@ def about(request):
         filera = []
         
         camp = tools.classebuida()
-        camp.contingut = u'Percentatge de passar llista:'
+        camp.contingut = u'Percentatge de passar llista a les teves imparticions:'
         filera.append(camp) 
         
         camp = tools.classebuida()
@@ -215,9 +215,20 @@ def about(request):
         qFinsAhir = Q( dia_impartir__lt = datetime.today() )
         qFinsAra  = qFinsAhir | qAvui
         qTeGrup = Q( horari__grup__isnull = False)
-        imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup )    
-        nImparticios = imparticions.count()
-        nImparticionsLlistaPassada = imparticions.filter( professor_passa_llista__isnull = False ).count()
+        imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup )
+        nImparticionsLlistaPassada = \
+            imparticions \
+                .filter(professor_passa_llista__isnull=False) \
+                .order_by() \
+                .distinct() \
+                .count()
+        nImparticionsLlistaPendent = \
+            imparticions \
+                .filter(professor_passa_llista__isnull=True) \
+                .order_by() \
+                .distinct() \
+                .count()
+        nImparticios = nImparticionsLlistaPassada + nImparticionsLlistaPendent
 
         pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
         estadistica1 = u'{0}% ({1} classes impartides, {2} controls)'.format(pct, nImparticios, nImparticionsLlistaPassada)
@@ -225,15 +236,8 @@ def about(request):
             #---hores de classe
         nProfessor = Impartir.objects.filter( horari__professor = professor, horari__grup__isnull = False ).count()
         nTotal = Impartir.objects.filter( horari__grup__isnull = False).count()
-        import re
-        nProfessor = re.sub(r'(\d{3})(?=\d)', r'\1,', str(nProfessor)[::-1])[::-1]
-        nTotal = re.sub(r'(\d{3})(?=\d)', r'\1,', str(nTotal)[::-1])[::-1]
-        estadistica2 = u'''Aquest curs impartirem {0} hores de classe, d'aquestes, {1} les imparteixes tu.'''.format(
-                                    nTotal,
-                                    nProfessor
-                                     )
-        
-        
+        estadistica2 = f"Aquest curs impartirem {nTotal:,} hores de classe; d'aquestes, {nProfessor:,} les imparteixes tu."
+
         camp.contingut = u'{0}. {1}'.format(estadistica1, estadistica2)
         filera.append(camp)    
         
@@ -248,6 +252,108 @@ def about(request):
                      'head': 'About' ,
                     },
                 )
+
+@login_required
+@group_required(['professors'])
+def estadistiques(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    professor = User2Professor(user)
+    report = []
+
+    # --Estadistiques Professor.....................
+    if professor:
+        taula = tools.classebuida()
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+        taula.capceleres = []
+        capcelera = tools.classebuida()
+        capcelera.amplade = 20
+        capcelera.contingut = u'Estadístiques'
+        capcelera.enllac = None
+        taula.capceleres.append(capcelera)
+        capcelera = tools.classebuida()
+        capcelera.amplade = 80
+        capcelera.contingut = u''
+        taula.capceleres.append(capcelera)
+        taula.fileres = []
+        filera = []
+        camp = tools.classebuida()
+        camp.contingut = u'Percentatge de passar llista a les teves imparticions:'
+        filera.append(camp)
+        camp = tools.classebuida()
+        camp.enllac = None
+        qProfessor = Q(horari__professor=professor)
+        qFinsAra = Q(dia_impartir__lt=datetime.today())
+        qTeGrup = Q(horari__grup__isnull=False)
+        imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup)
+        nImparticionsLlistaPassada = \
+            imparticions\
+                .filter(professor_passa_llista__isnull=False)\
+                .order_by()\
+                .distinct()\
+                .count()
+        nImparticionsLlistaPendent = \
+            imparticions \
+                .filter(professor_passa_llista__isnull=True) \
+                .order_by() \
+                .distinct() \
+                .count()
+        nImparticios = nImparticionsLlistaPassada + nImparticionsLlistaPendent
+        pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
+        estadistica1 = u'{0}% ({1} classes impartides, {2} controls, falten {3} controls)'.format(pct, nImparticios,
+                                                                                                  nImparticionsLlistaPassada,
+                                                                                                  nImparticionsLlistaPendent)
+
+        # ---hores de classe
+        nProfessor = Impartir.objects.filter(horari__professor=professor, horari__grup__isnull=False).count()
+        nTotal = Impartir.objects.filter(horari__grup__isnull=False).count()
+        estadistica2 = f"Aquest curs impartirem {nTotal:,} hores de classe; d'aquestes, {nProfessor:,} les imparteixes tu."
+
+        camp.contingut = u'{0}. {1}'.format(estadistica1, estadistica2)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+        report.append(taula)
+
+        taula = tools.classebuida()
+
+        taula.titol = tools.classebuida()
+        taula.titol.contingut = ''
+        taula.titol.enllac = None
+
+        taula.capceleres = []
+
+        capcelera = tools.classebuida()
+        capcelera.amplade = 100
+        capcelera.contingut = u'Imparticions pendents passar llista'
+        capcelera.enllac = None
+        taula.capceleres.append(capcelera)
+
+        taula.fileres = []
+
+        for imparticio in imparticions.filter(professor_passa_llista__isnull=True):
+            filera = []
+            # ----------------------------------------------
+            camp = tools.classebuida()
+            camp.enllac = '/presencia/passaLlista/{0}'.format(imparticio.pk)
+            camp.contingut = u'{0} - {1}'.format(imparticio.dia_impartir, imparticio.horari)
+            camp.negreta = True
+            filera.append(camp)
+            taula.fileres.append(filera)
+
+        report.append(taula)
+
+    return render(
+        request,
+        'report.html',
+        {'report': report,
+         'head': 'Estadistiques',
+         },
+    )
 
 
 @login_required
