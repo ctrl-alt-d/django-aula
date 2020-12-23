@@ -7,7 +7,7 @@ from django.template import RequestContext, loader
 #tables
 from django.utils.safestring import mark_safe
 
-from .tables2_models import HorariAlumneTable
+from aula.apps.alumnes.tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
 #from django import forms as forms

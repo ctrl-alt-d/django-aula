@@ -53,22 +53,15 @@
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
                 <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
                     <p> <b><h4>Pagament Realitzat!!!</h4></b>  </p>
-                    <button type="button" class="btn btn-primary" onclick="location.href='{% url 'relacio_families__informe__el_meu_informe' %}'">Tornar</button>
+                    <button type="button" class="btn btn-primary" onclick="location.href='{{ next }}'">Tornar</button>
                 </div>
         </div>
     {% else %}
-        <form action= {% if entorn_real %}
-                            "https://sis.redsys.es/sis/realizarPago"
-                      {% else %}
-                            "https://sis-t.redsys.es:25443/sis/realizarPago"
-                      {% endif %}
+    	{% load static from static %}
+        <form action={% url 'sortides__sortides__passarella' pk %}?next={{ next }}
               method="post" >
             {% csrf_token %}
-            {{ form.Ds_MerchantParameters}}
-            {{ form.Ds_Signature}}
-            {{ form.sortida}}
-            <input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1"/>
-
+            {{ form.sortida }}
             <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
                 <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
                     {{ form.acceptar_condicions }} He llegit i accepto la <a target = _blank href="{% url  'varis__pagament__pagament_online' %}">política de venda/devolucions</a>
@@ -77,6 +70,8 @@
             <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
                 <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
                     <button type="submit" class="btn btn-primary">Pagar</button>
+                    &nbsp;&nbsp;Pagament amb targeta&nbsp;<img src="{% static 'mclogo.jpg' %}" style="height:25px;"></img>
+                    Mastercard o&nbsp;<img src="{% static 'visalogo.jpg' %}" style="height:25px;"></img>&nbsp;VISA
                 </div>
             </div>
         </form>

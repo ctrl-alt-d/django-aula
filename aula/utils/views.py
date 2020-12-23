@@ -430,6 +430,47 @@ def pagamentOnLine(request):
 
     taula.fileres.append(filera)
 
+    # -1--------------------------------------------
+    filera = []
+
+    camp = tools.classebuida()
+    camp.enllac = None
+    camp.contingut = u'Política de cookies'
+    camp.enllac = ''
+    filera.append(camp)
+
+    # -tip--------------------------------------------
+
+    politicaCookies = open(settings.POLITICA_COOKIES, "r")
+    tip = politicaCookies.read()
+
+    camp = tools.classebuida()
+    camp.enllac = ''
+    camp.contingut = tip
+    filera.append(camp)
+
+    taula.fileres.append(filera)
+
+    # -1--------------------------------------------
+    filera = []
+
+    camp = tools.classebuida()
+    camp.enllac = None
+    camp.contingut = u'Protecció de dades de caràcter personal'
+    camp.enllac = ''
+    filera.append(camp)
+
+    # -tip--------------------------------------------
+
+    politicaDadesPer = open(settings.POLITICA_RGPD, "r")
+    tip = politicaDadesPer.read()
+
+    camp = tools.classebuida()
+    camp.enllac = ''
+    camp.contingut = tip
+    filera.append(camp)
+
+    taula.fileres.append(filera)
 
     report.append(taula)
 

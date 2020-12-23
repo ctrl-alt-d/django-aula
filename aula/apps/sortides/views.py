@@ -12,7 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
     ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
-from aula.settings import CUSTOM_REDSYS_ENTORN_REAL, CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, URL_DJANGO_AULA
+from aula.settings import URL_DJANGO_AULA
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect,\
     DateTimeTextImput
 from django.contrib.auth.decorators import login_required
@@ -27,7 +27,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida, Pagament
+from aula.apps.sortides.models import Sortida, SortidaPagament, Pagament, QuotaPagament, Quota
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -42,7 +42,7 @@ from django.http.response import HttpResponse, Http404, HttpResponseServerError
 from django.utils.datetime_safe import datetime
 from django.conf import settings
 from django.urls import reverse
-from aula.apps.alumnes.models import Alumne, AlumneGrupNom
+from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs
 from django.contrib import messages
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.templatetags.tz import localtime
@@ -55,7 +55,11 @@ from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
-from .forms import PagamentForm, SortidaForm
+from aula.apps.sortides.utils_sortides import TPVsettings
+
+import django.utils.timezone
+from dateutil.relativedelta import relativedelta
+from django.urls import reverse_lazy
 
 @login_required
 @group_required(['professors'])  
@@ -275,6 +279,8 @@ def sortidesGestioList( request ):
 @login_required
 @group_required(['professors'])  # TODO: i grup sortides
 def sortidaEdit(request, pk=None, clonar=False, origen=False):
+    from aula.apps.sortides.forms import SortidaForm
+
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -324,9 +330,9 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
         exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'data_inici', 'franja_inici', 'data_fi',
                    'franja_fi', 'codi_de_barres', 'empresa_de_transport', 'pagament_a_empresa_de_transport',
-                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula', 'pagaments')
+                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula', 'pagaments', 'tpv')
     else:
-        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments')
+        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments', 'tpv')
 
     formIncidenciaF = modelform_factory(Sortida, form=SortidaForm, exclude=exclude)
 
@@ -350,7 +356,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                             horari__hora__hora_inici__gte=instance.calendari_desde.time()).order_by(
                             'dia_impartir', 'horari__hora__hora_inici')
                     .first() )
-                primerafranja = primeraimparticio.horari if primeraimparticio else None
+                primerafranja = primeraimparticio.horari.hora if primeraimparticio else None
 
                 if primeraimparticio is None:
                     primeraimparticio = (
@@ -359,16 +365,11 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                             dia_impartir__gt=instance.calendari_desde.date()).order_by(
                             'dia_impartir')
                         .first() )
-                    primerafranja = (
-                        FranjaHoraria
-                        .objects
-                        .order_by('hora_inici')
-                        .first()
-                    )
+                    primerafranja = primeraimparticio.horari.hora if primeraimparticio else None
 
                 if primeraimparticio is not None:
                     instance.data_inici = primeraimparticio.dia_impartir
-                    instance.franja_inici = primerafranja.hora
+                    instance.franja_inici = primerafranja
 
 
                 # Buscar darrera impartició afectada
@@ -380,7 +381,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                             'dia_impartir', 'horari__hora__hora_fi')
                     .last()
                 )
-                darrerafranja = darreraimparticio.horari if darreraimparticio else None
+                darrerafranja = darreraimparticio.horari.hora if darreraimparticio else None
 
                 if darreraimparticio is None:
                     darreraimparticio = (
@@ -390,11 +391,11 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                         .order_by('dia_impartir')
                         .last()
                     )
-                    darrerafranja = FranjaHoraria.objects.order_by('hora_inici').last()
+                    darrerafranja = darreraimparticio.horari.hora if darreraimparticio else None
 
                 if darreraimparticio is not None:
                     instance.data_fi = darreraimparticio.dia_impartir
-                    instance.franja_fi = darrerafranja.hora
+                    instance.franja_fi = darrerafranja
 
                 # Comprovem si la sortida en realitat no afecta cap hora d'impartició, això passa quan la data inicial > data final
                 if ( instance.data_fi and instance.data_inici and instance.data_fi < instance.data_inici):
@@ -535,7 +536,7 @@ def alumnesConvocats( request, pk , origen ):
                         instance.alumnes_convocats.add( alumne )
                         if instance.tipus_de_pagament == 'ON':
                             # Comprova si ja existeix el pagament
-                            pag=Pagament.objects.filter(alumne=alumne, sortida=instance)
+                            pag=SortidaPagament.objects.filter(alumne=alumne, sortida=instance)
                             if not pag:
                                 instance.pagaments.add(alumne)
                     except IntegrityError:
@@ -548,7 +549,7 @@ def alumnesConvocats( request, pk , origen ):
                         instance.alumnes_convocats.remove( alumne )
                         if instance.tipus_de_pagament == 'ON':
                             # Comprova si ja ha pagat
-                            pag=Pagament.objects.filter(alumne=alumne, sortida=instance, pagament_realitzat=True)
+                            pag=SortidaPagament.objects.filter(alumne=alumne, sortida=instance, pagament_realitzat=True)
                             if not pag:
                                 instance.pagaments.remove(alumne)
                             instance.notificasortida_set.filter( alumne = alumne ).delete()
@@ -1003,10 +1004,10 @@ def sortidaExcel( request, pk ):
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
                ]
         if sortida.tipus_de_pagament=='ON':
-            pagament = Pagament.objects.get(alumne=alumne, sortida=sortida)
+            pagament = SortidaPagament.objects.get(alumne=alumne, sortida=sortida)
             pagament_realitzat = pagament.pagament_realitzat
             row.extend([u"Si" if pagament_realitzat else u"No",
-                        pagament.data_hora_pagament if pagament_realitzat else u"",
+                        pagament.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagament_realitzat else u"",
                         pagament.ordre_pagament if pagament_realitzat else u""])
         alumnes += [ row ]
 
@@ -1084,41 +1085,242 @@ def sortidaExcel( request, pk ):
     
     
 #-----------------
+def clonePagament(pagament):
+    '''
+    Crea un nou Pagament , tot igual al pagament indicat 
+    menys l'estat, ordre_pagament i pagament_realitzat.
+    El pagament actual queda marcat com ERROR
+    retorna el Pagament creat.
+    '''
+    
+    pagament.estat='E'  # ERROR
+    pagament.save()
+    noupagament = Pagament()
+    noupagament.data_hora_pagament = pagament.data_hora_pagament
+    noupagament.alumne = pagament.alumne
+    noupagament.sortida = pagament.sortida
+    noupagament.quota = pagament.quota
+    noupagament.fracciona = pagament.fracciona
+    noupagament.importParcial = pagament.importParcial
+    noupagament.dataLimit = pagament.dataLimit
+    noupagament.save()
+    return noupagament
 
+def generaOrdre(pagament):
+    '''
+    L'ordre de pagament queda formada per l'identificador d'alumne (5 dígits)
+    concatenat amb l'identificador de pagament (7 dígits)
+    '''
+    
+    return (str(pagament.alumne.pk) + ('0000000'+str(pagament.pk))[-7:])[-12:]
 
+def esRecent(datahora, minuts=7):
+    '''
+    Retorna True si la datahora és anterior en menys de minuts de l'hora actual.
+    '''
+    
+    from dateutil.relativedelta import relativedelta
+    
+    ara=datetime.now()
+    return datahora + relativedelta(minutes=minuts) > ara
+
+def logPagaments(txt, tipus="ADMINISTRACIO"):
+    '''
+    Comunica incident relacionat amb pagament, només per als administradors
+    '''
+    msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus)
+    importancia = 'VI'
+    administradors = get_object_or_404(Group, name='administradors')
+    msg.envia_a_grup(administradors, importancia=importancia)
+        
 @login_required
 def pagoOnline(request, pk):
+    from aula.apps.sortides.forms import PagamentForm
+
+    '''
+    Mostra la informació del pagament i el botó per pagar o 
+    el missatge Pagament Realitzat!!!
+    '''
+    
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
     pagament = get_object_or_404(Pagament, pk=pk)
-    sortida = pagament.sortida
-    preu = sortida.preu_per_alumne
-    descripcio_sortida = sortida.programa_de_la_sortida
-    data_limit_pagament = sortida.termini_pagament
+    nexturl=request.GET.get('next')
+    if not nexturl:
+        nexturl='/'
+    if pagament.estat=='E':
+        '''
+        Pagament erroni, es pot donar el cas si l'usuari ha obert diverses finestres de pagament
+        No s'ha de fer res.
+        '''
+        return HttpResponseRedirect(reverse('relacio_families__informe__el_meu_informe'))
+
     alumne = pagament.alumne
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
 
     potEntrar = (alumne.user_associat.getUser() == user or fEsDireccioOrGrupSortides)
     if not potEntrar:
         raise Http404
+    
+    if not pagament.pagament_realitzat:
+        # Pagament pendent
+        if pagament.estat=='T':
+            '''
+            Pagament que no ha finalitzat d'una transacció anterior o simultània en cas
+            d'usuari amb varis logins actius.
+            Si l'hora és recent --> podria ser vàlid en un altre login, ha d'esperar-se.
+            en altre cas s'elimina i es crea un nou
+            '''
+            if esRecent(pagament.data_hora_pagament):
+                return render(
+                            request,
+                            'resultat.html', 
+                            {'msgs': {'errors': [], 'warnings': [], 'infos': ['PAGAMENT JA OBERT EN UN ALTRE CONNEXIÓ. CANCEL·LA O ESPERA UNS MINUTS.']} },
+                         )
+            else:
+                # es considera que ha caducat
+                #  Crea nou pagament
+                noup=clonePagament(pagament)
+                #logPagaments('Pagament caducat: '+str(pagament.pk)+' alumne: '+str(pagament.alumne.id))
+                if not pagament.ordre_pagament and pagament.alumne:
+                    # es genera ordre_pagament si fa falta
+                    pagament.ordre_pagament=generaOrdre(pagament)
+                # marca com erroni
+                pagament.alumne=None
+                pagament.data_hora_pagament=datetime.now()
+                #guarda pagament caducat
+                pagament.save()
+                #Nou pagament
+                pagament=noup
+                pk=pagament.pk
+    
+    if pagament.sortida:
+        sortida = pagament.sortida
+        preu = sortida.preu_per_alumne
+        descripcio_sortida = sortida.programa_de_la_sortida
+        data_limit_pagament = sortida.termini_pagament
+    else:
+        sortida = pagament.quota
+        preu = pagament.importReal
+        descripcio_sortida = sortida.descripcio
+        data_limit_pagament = pagament.getdataLimit
+    
+    if request.method == 'POST':
+        form = PagamentForm(request.POST, initial={
+            'sortida': sortida,
+        })
+
+    else:
+        form = PagamentForm(initial={
+            'sortida': sortida,
+            'acceptar_condicions': False
+        })
+    return render(request, 'formPagamentOnline.html', {'form': form, 'alumne':alumne, 'pk':pk, 
+                                                       'sortida':sortida if pagament.sortida else descripcio_sortida + "("+str(pagament.quota.any)+")", 
+                                                       'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'next': nexturl,})
+
+@login_required
+def pagoOnlineKO(request, pk):
+    '''
+    Pagament amb errors
+    '''
+    
+    pagament = get_object_or_404(Pagament, pk=pk)
+
+    if pagament.estat=='T':
+        '''
+        Pagament que no ha finalitzat d'una transacció anterior o simultània en cas
+        d'usuari amb varis logins actius.
+
+        Es considera error en pagament, no es pot fer servir un altre cop el mateix ordre_pagament.
+        Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
+        El pagament cancel·lat es guarda amb alumne NULL
+        '''
+        noup=clonePagament(pagament)
+        pagament.pagament_realitzat = False
+        pagament.data_hora_pagament = datetime.now()
+        pagament.alumne=None
+        pagament.save()
+    
+    return render(
+                request,
+                'resultat.html', 
+                {'msgs': {'errors': [], 'warnings': [], 'infos': ['PAGAMENT NO EFECTUAT']} },
+             )
+
+@login_required
+def passarella(request, pk):
+    '''
+    Connecta amb la passarel·la redsys
+    '''
+    
+    pagament = get_object_or_404(Pagament, pk=pk)
+    if pagament.pagament_realitzat:
+        # Ja completat, pot pasar si un usuari té diversos logins i paga des de tots.
+        return HttpResponseRedirect(reverse('sortides__sortides__pago_on_line', kwargs={'pk': pk})+'?next='+request.GET.get('next'))
+    
+    if pagament.estat=='E':
+        '''
+        Pagament erroni, es pot donar el cas si diversos logins actius
+        No s'ha de fer res.
+        '''
+        return HttpResponseRedirect(reverse('relacio_families__informe__el_meu_informe'))
+
+    # Pagament pendent
+    if pagament.estat=='T':
+        '''
+        Pagament que no ha finalitzat d'una transacció anterior o simultània en cas
+        d'usuari amb varis logins actius.
+        '''
+        return render(
+                    request,
+                    'resultat.html', 
+                    {'msgs': {'errors': [], 'warnings': [], 'infos': ['PAGAMENT JA OBERT EN UN ALTRE CONNEXIÓ. CANCEL·LA O ESPERA UNS MINUTS.']} },
+                 )
+            
+    # Marca el pagament com Transmés a la passarella
+    pagament.estat='T'
+    # Marca l'hora d'inici
+    pagament.data_hora_pagament=datetime.now()
+    pagament.save()
+    
+    if pagament.sortida:
+        sortida = pagament.sortida
+        preu = sortida.preu_per_alumne
+        titol = sortida.titol_de_la_sortida
+        c,k,e = TPVsettings(request.user)
+        codiComerç = sortida.tpv.codi if sortida.tpv else c
+        keyComerç = sortida.tpv.key if sortida.tpv else k
+        entorn_real = sortida.tpv.entornReal if sortida.tpv else e
+        
+    else:
+        quota = pagament.quota
+        preu = pagament.importReal
+        titol = quota.descripcio
+        c,k,e = TPVsettings(request.user)
+        codiComerç = quota.tpv.codi if quota.tpv else c
+        keyComerç = quota.tpv.key if quota.tpv else k
+        entorn_real = quota.tpv.entornReal if quota.tpv else e
 
     #preparar parametres per redsys   --------------------------------------------
     #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
 
     values = {
         'DS_MERCHANT_AMOUNT': str(int(round(preu * 100))),
-        'DS_MERCHANT_ORDER': str(random.randint(100000000000, 999999999999)),
-        'DS_MERCHANT_MERCHANTCODE': CUSTOM_CODI_COMERÇ,
+        # Es genera un ordre de pagament concret, segons les seves dades
+        'DS_MERCHANT_ORDER': generaOrdre(pagament),
+        'DS_MERCHANT_MERCHANTCODE': codiComerç,
         'DS_MERCHANT_CURRENCY': '978',
         'DS_MERCHANT_TRANSACTIONTYPE': '0',
-        'DS_MERCHANT_TERMINAL': '1',
-        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio', kwargs={'pka':alumne.id, 'pks':sortida.id}),
-        'Ds_Merchant_ProductDescription': sortida.titol_de_la_sortida,
+        'DS_MERCHANT_TERMINAL': '001',
+        'DS_MERCHANT_MERCHANTURL': URL_DJANGO_AULA + reverse('sortides__sortides__retorn_transaccio', kwargs={'pk':pk}),
+        'Ds_Merchant_ProductDescription': titol,
+        'Ds_Merchant_ConsumerLanguage': '003',
         'DS_MERCHANT_URLOK': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
-                                                                          kwargs={'pk': pk}),
-        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_line',
-                                                                          kwargs={'pk': pk}),
+                                                                          kwargs={'pk': pk})+'?next='+request.GET.get('next'),
+        'DS_MERCHANT_URLKO': URL_DJANGO_AULA.replace('/','\/') + reverse('sortides__sortides__pago_on_lineKO',
+                                                                          kwargs={'pk': pk})+'?next='+request.GET.get('next'),
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -1135,7 +1337,7 @@ def pagoOnline(request, pk):
     params_dic = json.loads(base64.b64decode(params).decode())
 
     cipher = DES3.new(
-        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        key=base64.b64decode(keyComerç),
         mode=DES3.MODE_CBC,
         IV=b'\0\0\0\0\0\0\0\0')
     ordre = str(params_dic['DS_MERCHANT_ORDER'])
@@ -1151,26 +1353,17 @@ def pagoOnline(request, pk):
     # ----------------------------------------------------------------------------
 
 
-    if request.method == 'POST':
-        form = PagamentForm(request.POST, initial={
-            'sortida': sortida,
-            'Ds_MerchantParameters': params,
-            'Ds_Signature': signature,
-        })
+    return render(request, 'formredsys.html', {'entorn_real': entorn_real,
+                                                'Ds_MerchantParameters': params,
+                                                'Ds_Signature': signature,
+                                               })
 
-    else:
-        form = PagamentForm(initial={
-            'sortida': sortida,
-            'Ds_MerchantParameters': params,
-            'Ds_Signature': signature,
-            'acceptar_condicions': False
-        })
-
-    entorn_real = CUSTOM_REDSYS_ENTORN_REAL
-    return render(request, 'formPagamentOnline.html', {'form': form,'alumne':alumne, 'sortida':sortida, 'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'entorn_real': entorn_real})
 
 @csrf_exempt
-def retornTransaccio(request,pka,pks):
+def retornTransaccio(request,pk):
+    '''
+    Comprova el resultat i actualitza el pagament.
+    '''
 
     ips_permeses = ['195.76.9.117',
                     '195.76.9.149',
@@ -1185,10 +1378,7 @@ def retornTransaccio(request,pka,pks):
         missatge = ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
         txt = missatge.format(ip)
         tipus_de_missatge = tipusMissatge(missatge)
-        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
-        importancia = 'VI'
-        administradors = get_object_or_404(Group, name='administradors')
-        msg.envia_a_grup(administradors, importancia)
+        logPagaments(txt, tipus_de_missatge)
         return HttpResponseServerError()
 
     # rebent dades de redsys   --------------------------------------------
@@ -1206,19 +1396,25 @@ def retornTransaccio(request,pka,pks):
         missatge = ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE
         txt = missatge.format(reference, pay_id, shasign)
         tipus_de_missatge = tipusMissatge(missatge)
-        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
-        importancia = 'VI'
-        administradors = get_object_or_404(Group, name='administradors')
-        msg.envia_a_grup(administradors, importancia=importancia)
+        logPagaments(txt, tipus_de_missatge)
         return HttpResponseServerError()
 
     # -------------------------------------------------------------------------
 
     # verificant conincidència signatures --------------------------------------
     #adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
-
+    pagament = get_object_or_404(Pagament, pk=pk)
+    if pagament.sortida:
+        sortida = pagament.sortida
+        _,k,_ = TPVsettings(request.user)
+        keyComerç = sortida.tpv.key if sortida.tpv else k
+    else:
+        quota = pagament.quota
+        _,k,_ = TPVsettings(request.user)
+        keyComerç = quota.tpv.key if quota.tpv else k
+    
     cipher = DES3.new(
-        key=base64.b64decode(CUSTOM_KEY_COMERÇ),
+        key=base64.b64decode(keyComerç),
         mode=DES3.MODE_CBC,
         IV=b'\0\0\0\0\0\0\0\0')
     ordre = str(parameters_dic['Ds_Order'])
@@ -1236,24 +1432,51 @@ def retornTransaccio(request,pka,pks):
         missatge = ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE
         txt = missatge.format(shasign, shasign_check, request.POST)
         tipus_de_missatge = tipusMissatge(missatge)
-        msg = Missatge(remitent=User.objects.filter(groups__name__contains='administradors').first(), text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
-        importancia = 'VI'
-        administradors = get_object_or_404(Group, name='administradors')
-        msg.envia_a_grup(administradors, importancia=importancia)
+        logPagaments(txt, tipus_de_missatge)
         return HttpResponseServerError()
 
     # -------------------------------------------------------------------------
-    ds_response = parameters_dic.get('Ds_Response')
-    if int(ds_response) in range(0,100):
-        alumne = Alumne.objects.get(id=pka)
-        sortida = Sortida.objects.get(id=pks)
-        pagament = get_object_or_404(Pagament, alumne=alumne, sortida=sortida)
-        pagament.pagament_realitzat = True
-        data = parameters_dic['Ds_Date']
-        hora = parameters_dic['Ds_Hour']
-        pagament.data_hora_pagament = data + ' ' + hora
-        pagament.ordre_pagament = reference
-        pagament.save()
+    try:
+        ds_response = parameters_dic.get('Ds_Response')
+        if int(ds_response) in range(0,100):
+            # Pagament OK
+            pagament.pagament_realitzat = True
+            try:
+                data = urllib.parse.unquote(parameters_dic['Ds_Date'])
+                hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
+                pagament.data_hora_pagament = datetime.strptime(data + ' ' + hora, '%d/%m/%Y %H:%M')
+            except Exception as e:
+                pagament.data_hora_pagament = datetime.now()
+            pagament.ordre_pagament = reference
+            pagament.estat='F'
+            if not pagament.alumne:
+                # S'han generat varis pagaments des de sessions diferents
+                # i aquest ha quedat marcat com error.
+                # Determina alumne segons ordre de pagament i comunica als Administradors.
+                pagament.alumne=Alumne.objects.get(pk=int(pagament.ordre_pagament[:-7]))
+                logPagaments('Pagament caducat pasa a ok: '+str(pagament.pk)+' alumne: '+str(pagament.alumne.id))
+            pagament.save()
+        else:
+            '''
+             Error en pagament o cancel·lat, no es pot fer servir un altre cop el mateix ordre_pagament.
+             Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
+             El pagament cancel·lat es guarda amb alumne NULL
+            '''
+            noup=clonePagament(pagament)
+            pagament.pagament_realitzat = False
+            try:
+                data = urllib.parse.unquote(parameters_dic['Ds_Date'])
+                hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
+                pagament.data_hora_pagament = datetime.strptime(data + ' ' + hora, '%d/%m/%Y %H:%M')
+            except Exception as e:
+                pagament.data_hora_pagament = datetime.now()
+            pagament.ordre_pagament = reference
+            pagament.alumne=None
+            pagament.save()
+    except Exception as e:
+        txt = 'Pagament: '+str(pk)+'\n' + str(e) + ' apps.sortides.views.retornTransaccio'
+        logPagaments(txt)
+    
     return HttpResponse('')
 
 
@@ -1301,7 +1524,7 @@ def detallPagament(request, pk):
 
     taula.fileres = []
 
-    for pagament in Pagament.objects.filter(sortida=sortida).order_by('alumne'):
+    for pagament in SortidaPagament.objects.filter(sortida=sortida).order_by('alumne'):
         filera = []
 
         # -Alumne--------------------------------------------
@@ -1313,13 +1536,13 @@ def detallPagament(request, pk):
         # -Pagat--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = pagament.data_hora_pagament if pagament.data_hora_pagament else 'No'
+        camp.contingut = pagament.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagament.data_hora_pagament and pagament.pagament_realitzat else 'No'
         filera.append(camp)
 
         # -Codi--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = pagament.ordre_pagament if pagament.ordre_pagament else ''
+        camp.contingut = pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
         filera.append(camp)
 
         # --
@@ -1333,3 +1556,453 @@ def detallPagament(request, pk):
           'head': head,
          },
     )
+
+@login_required
+@group_required(['direcció','administradors','tpvs'])
+def assignaQuotes(request):
+    '''
+    Selecciona els paràmetres per a l'assignació de quotes
+    '''
+    from aula.apps.sortides.forms import EscollirCursForm
+
+    if request.method == 'POST':
+        form = EscollirCursForm(request.user, request.POST)
+        if form.is_valid():
+            curs=form.cleaned_data['curs_list']
+            tipus=form.cleaned_data['tipus_quota']
+            nany=form.cleaned_data['year']
+            auto=form.cleaned_data['automatic']
+            return HttpResponseRedirect(reverse_lazy("gestio__quotes__assigna", 
+                                                     kwargs={"curs": curs.id, "tipus": tipus.id, "nany":nany, "auto":auto}))
+    else:
+        form = EscollirCursForm(request.user)
+    return render(
+                request,
+                'form.html', 
+                {'form': form, 
+                 },
+                )
+
+def get_QuotaPagament(alumne, tipus, nany=None):
+    '''
+    alumne del que volem la quota
+    tipus de quota a escollir
+    nany que correspon a la quota, si None utilitza any actual
+    Retorna queryset amb la quota que correspon a l'alumne, tipus de quota i any indicats.
+    '''
+    
+    if not nany:
+        nany=django.utils.timezone.now().year
+    return QuotaPagament.objects.filter(alumne=alumne, quota__tipus=tipus, quota__any=nany)
+
+@login_required
+@group_required(['direcció','administradors','tpvs'])
+def quotesCurs( request, curs, tipus, nany, auto ):
+    '''
+    Mostra les quotes corresponents i permet fer canvis.
+    curs d'on es seleccionen els alumnes
+    tipus de quota que es gestiona
+    nany any de la quota
+    auto indica si s'ha de proposar la quota per a cada alumne de manera automàtica
+    
+    '''
+    from aula.apps.sortides.forms import PagQuotesForm
+    from django.forms import formset_factory
+
+    auto=str(auto)=='True'
+    if request.method == "POST":
+        formsetQuotes = formset_factory(PagQuotesForm) 
+        formset = formsetQuotes(request.POST, form_kwargs={'tipus': tipus}) 
+        if formset.is_valid():
+            fraccions_esborrades=()
+            for form in formset:
+                pg = form.cleaned_data
+                quota = pg.get('quota')
+                pkp = pg.get('pkp')
+                pka = pg.get('pka')
+                if pkp!='None' and int(pkp) in fraccions_esborrades:
+                    continue
+                pagament=QuotaPagament.objects.get(pk=pkp) if pkp!='None' else None
+                a=Alumne.objects.get(pk=pka)
+                if quota:
+                    fracciona = pg.get('fracciona') and quota.importQuota>0
+                    if pagament:
+                        fet_act=pagament.pagamentFet
+                        canviFracc=not pagament.fracciona and fracciona and not fet_act
+                        canviQuota=pagament.quota!=quota and not fet_act and not pagament.fracciona
+                        crea=canviQuota or canviFracc
+                    else:
+                        canviQuota=False
+                        canviFracc=False
+                        crea=True
+
+                    if canviQuota or canviFracc:
+                        QuotaPagament.objects.filter(alumne=a, quota__any=nany, quota__tipus=tipus).\
+                            exclude(pagament_realitzat=True).delete()
+                    if crea:
+                        if fracciona:
+                            import1=round(float(quota.importQuota)/2.00,2)
+                            import2=float(quota.importQuota)-import1
+                            p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
+                            p.save()
+                            p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import2, 
+                                            dataLimit=quota.dataLimit + relativedelta(months=+3))
+                            p.save()
+                        else:
+                            p=QuotaPagament(alumne=a, quota=quota)
+                            p.save()
+                else:
+                    # Quota esborrada
+                    if pagament and not pagament.pagament_realitzat:
+                        #esborrar pagament o pagaments
+                        #si fracciona depén dels pagaments previs ja fets
+                        if not pagament.fracciona:
+                            pagament.delete()
+                        else:
+                            p=get_QuotaPagament(a, tipus, nany).filter(fracciona=True)
+                            # Esborra només si no s'ha pagat cap fracció
+                            if p and not p.filter(pagament_realitzat=True):
+                                fraccions_esborrades=fraccions_esborrades+tuple(p.values_list('pk', flat = True))
+                                p.delete()
+
+            llista=Alumne.objects.filter(grup__curs__id=curs,
+                                 data_baixa__isnull=True,
+                                ).order_by('grup__nom_grup', 'cognoms', 'nom')
+    
+            llistapag=[]
+            for a in llista:
+                pagaments=get_QuotaPagament(a, tipus, nany)
+                email=a.correu_relacio_familia_pare if a.correu_relacio_familia_pare else a.correu_relacio_familia_mare
+                if pagaments:
+                    for pg in pagaments:
+                        llistapag.append({
+                            'pkp': pg.pk,
+                            'pka': a.pk,
+                            'cognoms': a.cognoms,
+                            'nom':  a.nom ,
+                            'grup': a.grup,
+                            'correu': email,
+                            'quota': pg.quota,
+                            'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
+                            'fracciona': pg.fracciona
+                            })
+
+            if len(llistapag)==0:
+                return render(
+                            request,
+                            'resultat.html', 
+                            {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes assignades']} },
+                         )
+            formsetQuotes = formset_factory(PagQuotesForm, extra=0)
+            formset=formsetQuotes(form_kwargs={'tipus': tipus}, initial= llistapag)
+            
+    else:
+        quotacurs=None
+        if auto:
+            '''
+            Assigna quota automàticament segons el curs, tipus i any.
+            Si no n'hi ha cap, farà servir per defecte una quota del mateix tipus si només n'hi ha una possible.
+            '''
+            c=Curs.objects.get(id=curs)
+            try:
+                ncurs=str(int(c.nom_curs)+1)
+                quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=nany, tipus=tipus)
+            except:
+                quotacurs=None
+            
+            if not quotacurs:
+                # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
+                quotacurs=Quota.objects.filter(any=nany, tipus=tipus)
+                if quotacurs.count()!=1:
+                    # Si troba varies no selecciona cap, si només troba una aleshores la fa servir per defecte
+                    quotacurs=None
+            
+            if quotacurs:
+                quotacurs=quotacurs[0]
+            else:
+                quotacurs=None
+        
+        llista=Alumne.objects.filter(grup__curs__id=curs,
+                             data_baixa__isnull=True,
+                            ).order_by('grup__nom_grup', 'cognoms', 'nom')
+        if not llista:
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
+                     )
+
+        llistapag=[]
+        for a in llista:
+            pagaments=get_QuotaPagament(a, tipus, nany)
+            email=a.correu_relacio_familia_pare if a.correu_relacio_familia_pare else a.correu_relacio_familia_mare
+            if pagaments:
+                for pg in pagaments:
+                    llistapag.append({
+                        'pkp': pg.pk,
+                        'pka': a.pk,
+                        'cognoms': a.cognoms,
+                        'nom':  a.nom,
+                        'grup': a.grup,
+                        'correu': email,
+                        'quota': pg.quota,
+                        'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
+                        'fracciona': pg.fracciona
+                        })
+            else:
+                llistapag.append({
+                    'pkp': 'None',
+                    'pka': a.pk,
+                    'cognoms': a.cognoms,
+                    'nom':  a.nom ,
+                    'grup': a.grup,
+                    'correu': email,
+                    'quota': quotacurs,
+                    'estat': 'No assignat',
+                    'fracciona': False
+                    })
+
+        if len(llistapag)==0:
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes per assignar']} },
+                     )
+        
+        formsetQuotes = formset_factory(PagQuotesForm, extra=0)
+        formset=formsetQuotes(form_kwargs={'tipus': tipus}, initial= llistapag)      
+
+            
+    return render(
+                  request,
+                  "formsetgrid.html", 
+                  { "formset": formset,
+                    "head": "Assignació quotes",
+                    }
+                )
+
+def acumulatsQuotesCurs(tpv, nany=None):
+    '''
+    tpv que correspon als pagaments a seleccionar
+    nany que correspon a la quota, si None utilitza any actual
+    Agrupa per quotes que corresponen a cursos.
+    Retorna un diccionari amb tots els acumulats per quotes i mesos i quantitat pendent
+    {{quota1: {'pendent':nnnnn, 1:nnnnn, 2:nnnnn, ... 12:nnnnn},
+     {quota2: {'pendent':nnnnn, 1:nnnnn, 2:nnnnn, ... 12:nnnnn},
+     ... }
+    '''
+    
+    from django.db.models import Sum
+    
+    if not nany:
+        nany=django.utils.timezone.now().year
+    
+    totfet=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=True, data_hora_pagament__year=nany)\
+                    .exclude(quota__curs__isnull=True)\
+                    .values_list('quota','data_hora_pagament__month')\
+                    .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
+                    .annotate(totalf=Sum('importParcial', filter=Q(fracciona=True)))
+    
+    totpendent=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False)\
+                    .exclude(quota__curs__isnull=True)\
+                    .values_list('quota')\
+                    .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
+                    .annotate(totalf=Sum('importParcial', filter=Q(fracciona=True)))
+    
+    calcul={}
+    
+    for p in list(totfet):
+        q, m, t1, t2 = p
+        tot=(t1 if t1 else 0) + (t2 if t2 else 0)
+        if not q in calcul:
+            calcul[q]={}
+        calcul[q][m]=tot
+    
+    for p in list(totpendent):
+        q, t1, t2 = p
+        tot=(t1 if t1 else 0) + (t2 if t2 else 0)
+        if not q in calcul:
+            calcul[q]={}
+        calcul[q]['pendent']=tot
+    
+    return calcul
+
+def acumulatsQuotesGen(tpv, nany=None):
+    '''
+    tpv que correspon als pagaments a seleccionar
+    nany que correspon a la quota, si None utilitza any actual
+    Selecciona quotes genèriques (sense curs), les agrupa per nivells educatius.
+
+    Retorna un diccionari amb tots els acumulats per nivells i mesos i quantitat pendent
+    {{'nivell1': {'pendent':nnnnn, 1:nnnnn, 2:nnnnn, ... 12:nnnnn},
+     {'nivell2': {'pendent':nnnnn, 1:nnnnn, 2:nnnnn, ... 12:nnnnn},
+     ... }
+    '''
+    
+    from django.db.models import Sum
+    
+    if not nany:
+        nany=django.utils.timezone.now().year
+    
+    totfet=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=True, 
+                                        data_hora_pagament__year=nany,
+                                        quota__curs__isnull=True)\
+                    .values_list('alumne__grup__curs__nivell__nom_nivell','quota__tipus__nom','data_hora_pagament__month')\
+                    .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
+                    .annotate(totalf=Sum('importParcial', filter=Q(fracciona=True)))
+    
+    totpendent=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False, 
+                                            quota__curs__isnull=True)\
+                    .values_list('alumne__grup__curs__nivell__nom_nivell','quota__tipus__nom')\
+                    .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
+                    .annotate(totalf=Sum('importParcial', filter=Q(fracciona=True)))
+    
+    calcul={}
+    
+    for p in list(totfet):
+        n, x, m, t1, t2 = p
+        n=str(n)+'-'+str(x)
+        tot=(t1 if t1 else 0) + (t2 if t2 else 0)
+        if not n in calcul:
+            calcul[n]={}
+        calcul[n][m]=tot
+    
+    for p in list(totpendent):
+        n, x, t1, t2 = p
+        n=str(n)+'-'+str(x)
+        tot=(t1 if t1 else 0) + (t2 if t2 else 0)
+        if not n in calcul:
+            calcul[n]={}
+        calcul[n]['pendent']=tot
+    
+    return calcul
+
+def fullcalculQuotes(tpv, nany=None):
+    '''
+    tpv que correspon als pagaments a seleccionar
+    nany que correspon a la quota, si None utilitza any actual
+    Retorna un full de càlcul xlsx amb els acumulats i pagaments pendents
+    '''
+    
+    import xlsxwriter
+    import io
+    
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    
+    if not nany:
+        nany=django.utils.timezone.now().year
+    
+    acumulats=acumulatsQuotesCurs(tpv, nany)
+    acumGen=acumulatsQuotesGen(tpv, nany)
+    totes=Quota.objects.filter(importQuota__gt=0).values_list('id').order_by('curs__nom_curs_complert', 'descripcio')
+    
+    worksheet = workbook.add_worksheet('Acumulats')
+    
+    num_format = workbook.add_format()
+    num_format.set_num_format('0.00')
+    
+    cap=['Concepte','Pendent']
+    date=django.utils.timezone.now()
+    for i in range(1,13):
+        cap.append(date.replace(month=i, day=1).strftime('%B')[2:].strip())
+    cap.append('Total Pagat')
+    worksheet.set_column(0, 0, 30)
+    worksheet.set_column(1, 14, 10)
+    worksheet.write_string(0,0,tpv.descripcio+'-'+str(nany)+'. Dades a '+date.strftime('%d/%m/%Y %H:%M'))
+    worksheet.write_row(1,0,cap)
+    fila=2
+    for q in totes:
+        if q[0] in acumulats:
+            a = acumulats[q[0]]
+            quota=Quota.objects.get(id=q[0])
+            worksheet.write(fila, 0, quota.descripcio)
+            for m, v in a.items():
+                if m=='pendent':
+                    col=1
+                else:
+                    col=m+1 
+                worksheet.write_number(fila, col, v)
+            worksheet.write_formula(fila, 14, '=SUM(C{0}:N{0})'.format(fila+1), num_format)
+            fila=fila+1
+    
+    for t,a in acumGen.items():
+        worksheet.write(fila, 0, t)
+        for m, v in a.items():
+            if m=='pendent':
+                col=1
+            else:
+                col=m+1 
+            worksheet.write_number(fila, col, v)
+        worksheet.write_formula(fila, 14, '=SUM(C{0}:N{0})'.format(fila+1), num_format)
+        fila=fila+1
+    
+    if fila>2:
+        for t in range(ord('B'),ord('P')):
+            worksheet.write_formula(fila, t-ord('A'), '=SUM({0}3:{0}{1})'.format(chr(t),fila), num_format)
+    
+    worksheet = workbook.add_worksheet('Pendents')
+    worksheet.set_column(0, 4, 30)
+    worksheet.write_string(0,0,'Pagaments pendents. Dades a '+date.strftime('%d/%m/%Y %H:%M'))
+    worksheet.write_row(1,0,('Concepte','Alumne','Import','Data límit','Fraccionat'))
+    fila=2
+    pag=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False).order_by('quota__dataLimit','quota__descripcio','alumne__cognoms','alumne__nom')
+    date_format = workbook.add_format({'num_format': 'dd/mm/yyyy'})
+    
+    for p in pag:
+        worksheet.write_string(fila, 0, p.quota.descripcio )
+        worksheet.write_string(fila, 1, str(p.alumne) )
+        worksheet.write_number(fila, 2, p.quota.importQuota if not p.fracciona else p.importParcial )
+        worksheet.write_datetime(fila, 3, p.quota.dataLimit if not p.fracciona else p.dataLimit, date_format )
+        worksheet.write_string(fila, 4, 'SI' if p.fracciona else 'NO' )
+        fila=fila+1
+    
+    if fila>2:
+        worksheet.write_formula(fila, 2, '=SUM(C3:C{0})'.format(fila), num_format)
+    
+    workbook.close()
+    return output
+
+@login_required
+@group_required(['direcció','administradors','tpvs'])
+def totalsQuotes(request):
+    '''
+    Selecciona els paràmetres per a la descàrrega del full de càlcul
+    '''
+    
+    from aula.apps.sortides.forms import EscollirTPV
+
+    
+    if request.method == 'POST':
+        form = EscollirTPV(request.user, request.POST)
+        if form.is_valid():
+            nany=form.cleaned_data['year']
+            tpv=form.cleaned_data['tpv']
+            output=fullcalculQuotes(tpv,nany)
+            output.seek(0)
+            filename = tpv.descripcio+'-'+str(nany)+'-quotes.xlsx'
+            response = HttpResponse(
+                output,
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="%s"' % filename
+    
+            return response
+
+    else:
+        form = EscollirTPV(request.user)
+    return render(
+                request,
+                'form.html', 
+                {'form': form, 
+                 },
+                )
+
+@login_required
+@group_required(['direcció','administradors','tpvs'])
+def blanc( request ):
+    return render(
+                request,
+                'blanc.html',
+                    {},
+                )

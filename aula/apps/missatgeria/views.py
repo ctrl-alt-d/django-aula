@@ -157,7 +157,7 @@ def enviaMissatgeTutors( request ):
 
 
 @login_required
-@group_required(['professors','professional','consergeria','alumne'])
+# Permet a qualsevol usuari
 def enviaMissatgeAdministradors( request ):
     
     credentials = tools.getImpersonateUser(request) 
