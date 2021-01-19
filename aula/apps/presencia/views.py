@@ -197,8 +197,15 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     qTeGrup = Q(horari__grup__isnull=False)
     imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup)
     nImparticios = imparticions.count()
-    nImparticionsLlistaPassada = imparticions.filter(professor_passa_llista__isnull=False).count()
-    pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
+    qSenseAlumnes = Q(controlassistencia__isnull=True)
+    qProfeHaPassatLlista = Q(professor_passa_llista__isnull=False)
+    nImparticionsLlistaPassada = \
+        imparticions \
+            .filter(qProfeHaPassatLlista | qSenseAlumnes) \
+            .order_by()\
+            .distinct()\
+            .count()
+    pct = ('{0:.1f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
     msg = u'Has controlat presència en un {0}% de les teves classes'.format(pct)
     percentatgeProfessor = msg
 
