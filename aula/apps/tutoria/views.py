@@ -1759,7 +1759,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
         capcelera.contingut = u''
         taula.capceleres.append(capcelera)
         
-        for control in alumne.controlassistencia_set.exclude( estat__codi_estat = 'P' 
+        for control in alumne.controlassistencia_set.exclude( estat__codi_estat__in = ['P','O']
                                                               ).filter(  
                                                         estat__isnull=False                                                          
                                                             ).order_by( '-impartir__dia_impartir' , '-impartir__horari__hora'):
