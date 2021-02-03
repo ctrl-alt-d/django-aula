@@ -110,8 +110,8 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     
                 #-%--------------------------------------------
-            tpc_injust = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
-            tpc_assist = (0.0 + p + r ) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
+            tpc_injust = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if (f+r+p+j) > 0 else 0
+            tpc_assist = (0.0 + p + r ) * 100.0 / (0.0+f+r+p+j)  if (f+r+p+j) > 0 else 0
             
             camp = tools.classebuida()
             camp.enllac = None
