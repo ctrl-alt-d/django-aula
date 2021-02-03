@@ -399,7 +399,9 @@ def passaLlista(request, pk):
             # 0 = present #1 = Falta
             d = dades_dissociades(form.instance)
             form.hora_anterior = (0 if d['assistenciaaHoraAnterior'] == 'Present' else
-                                  1 if d['assistenciaaHoraAnterior'] == 'Absent' else None)
+                                  1 if d['assistenciaaHoraAnterior'] == 'Absent' else
+                                  2 if d['assistenciaaHoraAnterior'] == 'Online' else None)
+            print (form.hora_anterior)
             prediccio, pct = predictTreeModel(d)
             form.prediccio = (0 if prediccio == 'Present' else
                               1 if prediccio == 'Absent' else  None)

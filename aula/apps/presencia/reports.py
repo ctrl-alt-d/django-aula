@@ -87,7 +87,7 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc , ordenacio ):
         # té en compte tots els dies encara que no s'hagi passat llista
         q_p = q_controls.order_by().values_list( 'id','alumne__id' ).distinct()
     else:
-        q_p = q_controls.filter( estat__codi_estat__in = ('P','R' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
+        q_p = q_controls.filter( estat__codi_estat__in = ('P','R','O' ) ).order_by().values_list( 'id','alumne__id' ).distinct()
 
     q_j = q_controls.filter( estat__codi_estat = 'J' ).order_by().values_list( 'id','alumne__id' ).distinct()
     q_f = q_controls.filter( estat__codi_estat = 'F' ).order_by().values_list( 'id','alumne__id' ).distinct()
@@ -195,7 +195,7 @@ def indicadorAbsentisme( data_inici, data_fi, nivell, tpc, recerca):
         # té en compte tots els dies encara que no s'hagi passat llista
         q_p = q_controls.values('alumne__id').annotate(total=Count('id'), faltes=Count(Case(When(estat__codi_estat__in = recerca, then=1),output_field=IntegerField())))
     else:
-        q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = recerca, then=1),output_field=IntegerField())))
+        q_p = q_controls.values('alumne__id').annotate(total=Count(Case(When(estat__codi_estat__in = ('J','F','P','R','O' ), then=1),output_field=IntegerField())), faltes=Count(Case(When(estat__codi_estat__in = recerca, then=1),output_field=IntegerField())))
 
     quantitat=q_p.count()
     # Calcula el percentatge d'absentisme per alumne i compta els que superen el límit indicat

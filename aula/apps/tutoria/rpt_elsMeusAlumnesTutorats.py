@@ -103,15 +103,15 @@ def elsMeusAlumnesTutoratsRpt( professor = None, grup = None  , dataDesDe = None
             f = controls.filter( alumne = alumne, estat__codi_estat = 'F' ).distinct().count() 
             r = controls.filter( alumne = alumne, estat__codi_estat = 'R' ).distinct().count() 
             if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
-                p = controls.filter( alumne = alumne).filter( Q(estat__codi_estat = 'P') | Q(estat__codi_estat__isnull=True) ).distinct().count() 
+                p = controls.filter( alumne = alumne).filter( Q(estat__codi_estat__in = ['P','O']) | Q(estat__codi_estat__isnull=True) ).distinct().count()
             else:
-                p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count() 
+                p = controls.filter( alumne = alumne, estat__codi_estat__in = ['P','O'] ).distinct().count()
             j = controls.filter( alumne = alumne, estat__codi_estat = 'J' ).distinct().count() 
             #ca = controls.filter(q_hores).filter(estat__codi_estat__isnull = False).filter( alumne = alumne ).distinct().count()
     
                 #-%--------------------------------------------
-            tpc_injust = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
-            tpc_assist = (0.0 + p + r ) * 100.0 / (0.0+f+r+p+j)  if f > 0 else 0
+            tpc_injust = (1.0*f) * 100.0 / (0.0+f+r+p+j)  if (f+r+p+j) > 0 else 0
+            tpc_assist = (0.0 + p + r ) * 100.0 / (0.0+f+r+p+j)  if (f+r+p+j) > 0 else 0
             
             camp = tools.classebuida()
             camp.enllac = None
