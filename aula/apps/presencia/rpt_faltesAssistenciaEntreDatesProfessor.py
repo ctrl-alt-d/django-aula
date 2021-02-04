@@ -130,9 +130,9 @@ def faltesAssistenciaEntreDatesProfessorRpt(
         #-present--------------------------------------------
         if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
             # té en compte tots els dies encara que no s'hagi passat llista
-            p = controls.filter( alumne = alumne).filter(Q(estat__codi_estat = 'P') | Q(estat__codi_estat__isnull=True) ).distinct().count()
+            p = controls.filter( alumne = alumne).filter(Q(estat__codi_estat__in = ['P','O']) | Q(estat__codi_estat__isnull=True) ).distinct().count()
         else:
-            p = controls.filter( alumne = alumne, estat__codi_estat = 'P' ).distinct().count()
+            p = controls.filter( alumne = alumne, estat__codi_estat__in = ['P','O'] ).distinct().count()
         camp = tools.classebuida()
         camp.contingut = unicode(p) 
         filera.append(camp)
@@ -317,7 +317,7 @@ def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc ):
                    left outer join 
                    control_assistencia p
                        on ( 
-                           p.id_estat in ( select id_estat from estat_control_assistencia where codi_estat in ('P','R' ) ) and
+                           p.id_estat in ( select id_estat from estat_control_assistencia where codi_estat in ('P','R','O' ) ) and
                            p.id_control_assistencia = ca.id_control_assistencia )
 
                    left outer join 

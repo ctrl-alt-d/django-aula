@@ -103,6 +103,13 @@
                   $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
                   $('#label_id_{{f.prefix}}-estat_1').addClass('active');
                   $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
+				{% elif f.hora_anterior == 2  %}
+				  $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
+                  $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
+                  $('#label_id_{{f.prefix}}-estat_4').addClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_4').prop("checked", true);
                 {% endif %}
               }
             {% endfor %}

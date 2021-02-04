@@ -66,9 +66,9 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
                     q_desde = Q( impartir__dia_impartir__gte = dataInici )
                     q_finsa = Q( impartir__dia_impartir__lte = dataFi )
                     if settings.CUSTOM_NO_CONTROL_ES_PRESENCIA:
-                        q_presencia = Q( estat__codi_estat = 'P' ) | Q( estat__codi_estat__isnull=True )
+                        q_presencia = Q( estat__codi_estat__in = ['P','O'] ) | Q( estat__codi_estat__isnull=True )
                     else:
-                        q_presencia = Q( estat__codi_estat = 'P' )
+                        q_presencia = Q( estat__codi_estat__in = ['P','O'] )
                     q_null = Q( estat__isnull = True )
                     
                     n_faltes = 0
