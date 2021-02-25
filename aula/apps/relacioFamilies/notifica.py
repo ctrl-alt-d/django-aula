@@ -112,15 +112,15 @@ def notifica():
                     fromuser = settings.DEFAULT_FROM_EMAIL
                     if settings.DEBUG:
                         print (u'Enviant missatge a {0}'.format( alumne ))
-                        email = EmailMessage(
-                            assumpte,
-                            u'\n'.join(missatge),
-                            fromuser, #from
-                            [],   #to
-                            alumne.get_correus_relacio_familia(),  #Bcc
-                        )
-                        email.send(fail_silently=False)
-                        enviatOK = True
+                    email = EmailMessage(
+                        assumpte,
+                        u'\n'.join(missatge),
+                        fromuser, #from
+                        [],   #to
+                        alumne.get_correus_relacio_familia(),  #Bcc
+                    )
+                    email.send(fail_silently=False)
+                    enviatOK = True
                 except:
                     #cal enviar msg a tutor que no s'ha pogut enviar correu a un seu alumne.
                     enviatOK = False
