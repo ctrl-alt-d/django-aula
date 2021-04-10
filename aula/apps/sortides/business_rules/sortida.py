@@ -117,11 +117,12 @@ def clean_sortida(instance):
             errors.append( u"Només Direcció o el coordinador de sortides pot posar informació de pagament." )
 
     if (User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and
-            instance.tipus_de_pagament=='ON' and
-            (instance.preu_per_alumne < settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE or
-            instance.preu_per_alumne == None)):
-                errors.append(
-                    u"Preu mínim per poder fer el pagament online: {0} €".format(settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE))
+            instance.tipus_de_pagament == 'ON' and
+            instance.estat not in ['E', 'P'] and
+            (instance.preu_per_alumne == None or
+             instance.preu_per_alumne < settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE)):
+        errors.append(
+            u"Preu mínim per poder fer el pagament online: {0} €".format(settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE))
 
 
 

@@ -597,9 +597,25 @@ def detallAlumneHorari(request, pk, detall='all'):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
+    alumne = get_object_or_404( Alumne, pk=pk)
+    professor = User2Professor(user)
+    assignatura_grup = set()
+    for ca in Impartir.objects.filter(horari__professor=professor):
+        if ca.horari.grup is not None:
+            assignatura_grup.add((ca.horari.assignatura, ca.horari.grup))
+    alumnes_del_profe = set()
+    for (assignatura, grup,) in assignatura_grup:
+        for alumn in Alumne.objects.filter(
+                controlassistencia__impartir__horari__grup=grup,
+                controlassistencia__impartir__horari__assignatura=assignatura,
+                controlassistencia__impartir__horari__professor=professor).distinct().order_by('cognoms'):
+            alumnes_del_profe.add(alumn)
+    es_alumne_del_profe = alumne in alumnes_del_profe
+    tutors_de_lalumne = alumne.tutorsDeLAlumne()
+    es_tutor_de_lalumne = professor in tutors_de_lalumne
     grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
 
-    mostra_detalls = user.groups.filter(name__in=grups_poden_veure_detalls).exists()
+    mostra_detalls = es_alumne_del_profe or user.groups.filter(name__in=grups_poden_veure_detalls).exists()
 
     data_txt = request.GET.get( 'data', '' )
     try:
@@ -608,7 +624,6 @@ def detallAlumneHorari(request, pk, detall='all'):
         data = datetime.today()    
 
     qAvui = Q(impartir__dia_impartir=data)
-    alumne = get_object_or_404( Alumne, pk=pk)
     controlOnEslAlumneAvui = alumne.controlassistencia_set.filter(qAvui)
 
     grup = alumne.grup
@@ -703,6 +718,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
          'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          'ruta_fotos': settings.PRIVATE_STORAGE_ROOT,
+         'es_tutor': es_tutor_de_lalumne,
          },
     )
 
