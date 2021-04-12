@@ -615,7 +615,7 @@ def detallAlumneHorari(request, pk, detall='all'):
     es_tutor_de_lalumne = professor in tutors_de_lalumne
     grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
 
-    mostra_detalls = es_alumne_del_profe or user.groups.filter(name__in=grups_poden_veure_detalls).exists()
+    mostra_detalls = es_tutor_de_lalumne or user.groups.filter(name__in=grups_poden_veure_detalls).exists()
 
     data_txt = request.GET.get( 'data', '' )
     try:
@@ -718,7 +718,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'avui': datetime.today().date().strftime(r'%Y-%m-%d'),
          'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          'ruta_fotos': settings.PRIVATE_STORAGE_ROOT,
-         'es_tutor': es_tutor_de_lalumne,
+         'es_professor': es_alumne_del_profe,
          },
     )
 
