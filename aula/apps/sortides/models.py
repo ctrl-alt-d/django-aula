@@ -228,12 +228,15 @@ class TipusQuota(models.Model):
     def __str__(self):
         return self.nom
 
+def return_any_actual():
+    return django.utils.timezone.now().year
+
 class Quota(models.Model):
     from aula.apps.alumnes.models import Curs
     
     importQuota=models.DecimalField(max_digits=7, decimal_places=2, default=0)
-    dataLimit=models.DateField()
-    any=models.IntegerField(default=django.utils.timezone.now().year)
+    dataLimit=models.DateField(null=True, blank=True)
+    any=models.IntegerField(default=return_any_actual)
     descripcio=models.CharField(max_length=200)
     #  Si no s'indica curs, serveix per a tots els alumnes
     curs=models.ForeignKey(Curs, on_delete=models.PROTECT, null=True, blank=True)

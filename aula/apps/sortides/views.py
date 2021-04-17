@@ -1803,7 +1803,7 @@ def acumulatsQuotesCurs(tpv, nany=None):
                     .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
                     .annotate(totalf=Sum('importParcial', filter=Q(fracciona=True)))
     
-    totpendent=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False)\
+    totpendent=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False, alumne__isnull=False)\
                     .exclude(quota__curs__isnull=True)\
                     .values_list('quota')\
                     .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
@@ -1851,7 +1851,7 @@ def acumulatsQuotesGen(tpv, nany=None):
                     .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
                     .annotate(totalf=Sum('importParcial', filter=Q(fracciona=True)))
     
-    totpendent=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False, 
+    totpendent=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False, alumne__isnull=False,
                                             quota__curs__isnull=True)\
                     .values_list('alumne__grup__curs__nivell__nom_nivell','quota__tipus__nom')\
                     .annotate(total=Sum('quota__importQuota', filter=Q(fracciona=False)))\
@@ -1877,6 +1877,59 @@ def acumulatsQuotesGen(tpv, nany=None):
     
     return calcul
 
+def acumulatsActivitats(tpv, nany=None):
+    '''
+    tpv que correspon als pagaments a seleccionar, només s'admet tpv 'centre' o None
+    nany que correspon a la sortida, si None utilitza any actual
+    Selecciona pagaments d'activitats/sortides, els agrupa per activitat/sortida.
+
+    Retorna un diccionari amb tots els acumulats per activitats i mesos i quantitat pendent
+    {{'activitat': {'pendent':nnnnn, 1:nnnnn, 2:nnnnn, ... 12:nnnnn},
+     {'activitat': {'pendent':nnnnn, 1:nnnnn, 2:nnnnn, ... 12:nnnnn},
+     ... }
+    '''
+    
+    from django.db.models import Sum
+    
+    # Només es permet afegir les activitats/sortides si tpv és el de defecte
+    if tpv and tpv.nom!='centre':
+        return {}
+    
+    if not nany:
+        nany=django.utils.timezone.now().year
+        
+    llistaSortides=Sortida.objects.filter(preu_per_alumne__isnull=False,
+                                        notificasortida__alumne__isnull=False).distinct()
+    
+    totfet=SortidaPagament.objects.filter(pagament_realitzat=True, sortida__in=llistaSortides,
+                                        alumne__isnull=False,
+                                        data_hora_pagament__year=nany)\
+                    .values_list('sortida__id','sortida__titol_de_la_sortida','data_hora_pagament__month')\
+                    .annotate(total=Sum('sortida__preu_per_alumne'))
+    
+    totpendent=SortidaPagament.objects.filter(pagament_realitzat=False, sortida__in=llistaSortides,
+                    alumne__isnull=False)\
+                    .values_list('sortida__id','sortida__titol_de_la_sortida')\
+                    .annotate(total=Sum('sortida__preu_per_alumne'))
+    
+    calcul={}
+    
+    for p in list(totfet):
+        _, t, m, tot = p
+        n='activitat: '+str(t)
+        if not n in calcul:
+            calcul[n]={}
+        calcul[n][m]=tot
+    
+    for p in list(totpendent):
+        _, t, tot = p
+        n='activitat: '+str(t)
+        if not n in calcul:
+            calcul[n]={}
+        calcul[n]['pendent']=tot
+    
+    return calcul
+
 def fullcalculQuotes(tpv, nany=None):
     '''
     tpv que correspon als pagaments a seleccionar
@@ -1895,6 +1948,7 @@ def fullcalculQuotes(tpv, nany=None):
     
     acumulats=acumulatsQuotesCurs(tpv, nany)
     acumGen=acumulatsQuotesGen(tpv, nany)
+    acumAct=acumulatsActivitats(tpv, nany)
     totes=Quota.objects.filter(importQuota__gt=0).values_list('id').order_by('curs__nom_curs_complert', 'descripcio')
     
     worksheet = workbook.add_worksheet('Acumulats')
@@ -1922,7 +1976,7 @@ def fullcalculQuotes(tpv, nany=None):
                     col=1
                 else:
                     col=m+1 
-                worksheet.write_number(fila, col, v)
+                if v: worksheet.write_number(fila, col, v)
             worksheet.write_formula(fila, 14, '=SUM(C{0}:N{0})'.format(fila+1), num_format)
             fila=fila+1
     
@@ -1933,7 +1987,18 @@ def fullcalculQuotes(tpv, nany=None):
                 col=1
             else:
                 col=m+1 
-            worksheet.write_number(fila, col, v)
+            if v: worksheet.write_number(fila, col, v)
+        worksheet.write_formula(fila, 14, '=SUM(C{0}:N{0})'.format(fila+1), num_format)
+        fila=fila+1
+    
+    for t,a in acumAct.items():
+        worksheet.write(fila, 0, t)
+        for m, v in a.items():
+            if m=='pendent':
+                col=1
+            else:
+                col=m+1 
+            if v: worksheet.write_number(fila, col, v)
         worksheet.write_formula(fila, 14, '=SUM(C{0}:N{0})'.format(fila+1), num_format)
         fila=fila+1
     
@@ -1946,15 +2011,31 @@ def fullcalculQuotes(tpv, nany=None):
     worksheet.write_string(0,0,'Pagaments pendents. Dades a '+date.strftime('%d/%m/%Y %H:%M'))
     worksheet.write_row(1,0,('Concepte','Alumne','Import','Data límit','Fraccionat'))
     fila=2
-    pag=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False).order_by('quota__dataLimit','quota__descripcio','alumne__cognoms','alumne__nom')
+    pagq=QuotaPagament.objects.filter(quota__tpv=tpv, pagament_realitzat=False, alumne__isnull=False)\
+                    .order_by('quota__dataLimit','quota__descripcio','alumne__cognoms','alumne__nom')
+    # Només es permet afegir les activitats/sortides si tpv és el de defecte
+    if not tpv or tpv.nom=='centre':
+        pags=SortidaPagament.objects.filter(pagament_realitzat=False, sortida__preu_per_alumne__isnull=False,
+                                        alumne__isnull=False, sortida__notificasortida__alumne__isnull=False)\
+                                        .distinct()\
+                                        .order_by('sortida__termini_pagament','sortida__titol_de_la_sortida',
+                                                 'alumne__cognoms','alumne__nom')
+    else:
+        pags=SortidaPagament.objects.none()
     date_format = workbook.add_format({'num_format': 'dd/mm/yyyy'})
     
-    for p in pag:
+    for p in pagq:
         worksheet.write_string(fila, 0, p.quota.descripcio )
         worksheet.write_string(fila, 1, str(p.alumne) )
         worksheet.write_number(fila, 2, p.quota.importQuota if not p.fracciona else p.importParcial )
         worksheet.write_datetime(fila, 3, p.quota.dataLimit if not p.fracciona else p.dataLimit, date_format )
         worksheet.write_string(fila, 4, 'SI' if p.fracciona else 'NO' )
+        fila=fila+1
+    for p in pags:
+        worksheet.write_string(fila, 0, 'activitat: '+p.sortida.titol_de_la_sortida )
+        worksheet.write_string(fila, 1, str(p.alumne) )
+        if p.sortida.preu_per_alumne: worksheet.write_number(fila, 2, p.sortida.preu_per_alumne )
+        worksheet.write_datetime(fila, 3, p.sortida.termini_pagament, date_format )
         fila=fila+1
     
     if fila>2:
