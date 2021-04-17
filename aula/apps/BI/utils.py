@@ -264,7 +264,7 @@ def fact_controls( n = -1 , flag_impersona = False ):
         nDeClasses = 1 if element.estat is not None else 0
         element_row.append( nDeClasses )
         
-        nAssistencies = 1 if element.estat is not None and element.estat.codi_estat in ( 'P','R') else 0
+        nAssistencies = 1 if element.estat is not None and element.estat.codi_estat in ( 'P','R','O') else 0
         element_row.append( nAssistencies )
         
         nFaltesTotes = 1 if element.estat is not None and element.estat.codi_estat in ( 'F','J') else 0
@@ -403,7 +403,7 @@ def dades_dissociades( element ):
 def CalculaFalta( element ):
 
     if element and element.estat is not None:
-        if element.estat.codi_estat in ( 'P','R'):
+        if element.estat.codi_estat in ( 'P','R','O'):
             esFalta = 'Present' 
         else:
             esFalta = 'Absent'
@@ -416,6 +416,8 @@ def PresenciaQuerySet( qs ):
     if qs is not None and qs.filter( estat__isnull = False  ).exists():
         if qs.filter( estat__codi_estat__in = ['P','R'] ):
             esFaltaAnterior = 'Present'
+        elif qs.filter( estat__codi_estat__in = ['O'] ):
+            esFaltaAnterior = 'Online'
         else:
             esFaltaAnterior = 'Absent'
     else:

@@ -57,7 +57,7 @@ def canviDadesUsuari(request):
 
     if User2Professor(user):
         professor = User2Professor(user)
-        dadesaddicionalsprofessor = DadesAddicionalsProfessor.objects.get(professor=professor)
+        dadesaddicionalsprofessor,created = DadesAddicionalsProfessor.objects.get_or_create(professor=professor)
         imageUrl = dadesaddicionalsprofessor.get_foto_or_default
     else:
         professor = None
@@ -578,6 +578,7 @@ def cercaProfessor(request):
         formUsuari = triaProfessorSelect2Form(request.POST)  # todo: multiple=True (multiples profes de cop)
         if formUsuari.is_valid():
             professor = formUsuari.cleaned_data['professor']
+            dadesaddicionalsprofessor, created = DadesAddicionalsProfessor.objects.get_or_create(professor=professor)
             next_url = r'/usuaris/detallProfessorHorari/{0}/all/'
             return HttpResponseRedirect(next_url.format(professor.pk))
 

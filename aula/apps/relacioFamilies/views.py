@@ -463,7 +463,7 @@ def elMeuInforme( request, pk = None ):
 
     #----Assistencia --------------------------------------------------------------------
     if detall in ['all', 'assistencia']:
-        controls = alumne.controlassistencia_set.exclude( estat__codi_estat = 'P' 
+        controls = alumne.controlassistencia_set.exclude( estat__codi_estat__in = ['P','O']
                                                               ).filter(  
                                                         estat__isnull=False                                                          
                                                             )

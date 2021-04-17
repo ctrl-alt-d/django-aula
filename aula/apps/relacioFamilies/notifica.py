@@ -19,7 +19,7 @@ def notifica():
     from django.utils.datetime_safe import datetime
     from aula.apps.presencia.models import EstatControlAssistencia
     from aula.apps.presencia.models import ControlAssistencia
-    from django.core.mail import send_mail
+    from django.core.mail import send_mail, EmailMessage
     from aula.apps.usuaris.models import Accio
         
     urlDjangoAula = settings.URL_DJANGO_AULA
@@ -127,11 +127,14 @@ def notifica():
                     fromuser = settings.DEFAULT_FROM_EMAIL
                     if settings.DEBUG:
                         print (u'Enviant missatge a {0}'.format( alumne ))
-                    send_mail(assumpte, 
-                              u'\n'.join( missatge ), 
-                              fromuser,
-                              alumne.get_correus_relacio_familia(), 
-                              fail_silently=False)
+                    email = EmailMessage(
+                        assumpte,
+                        u'\n'.join(missatge),
+                        fromuser, #from
+                        [],   #to
+                        alumne.get_correus_relacio_familia(),  #Bcc
+                    )
+                    email.send(fail_silently=False)
                     enviatOK = True
                 except:
                     #cal enviar msg a tutor que no s'ha pogut enviar correu a un seu alumne.

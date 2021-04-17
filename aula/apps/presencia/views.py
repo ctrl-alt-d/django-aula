@@ -197,8 +197,15 @@ def mostraImpartir( request, year=None, month=None, day=None ):
     qTeGrup = Q(horari__grup__isnull=False)
     imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup)
     nImparticios = imparticions.count()
-    nImparticionsLlistaPassada = imparticions.filter(professor_passa_llista__isnull=False).count()
-    pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
+    qSenseAlumnes = Q(controlassistencia__isnull=True)
+    qProfeHaPassatLlista = Q(professor_passa_llista__isnull=False)
+    nImparticionsLlistaPassada = \
+        imparticions \
+            .filter(qProfeHaPassatLlista | qSenseAlumnes) \
+            .order_by()\
+            .distinct()\
+            .count()
+    pct = ('{0:.1f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
     msg = u'Has controlat presència en un {0}% de les teves classes'.format(pct)
     percentatgeProfessor = msg
 
@@ -392,7 +399,9 @@ def passaLlista(request, pk):
             # 0 = present #1 = Falta
             d = dades_dissociades(form.instance)
             form.hora_anterior = (0 if d['assistenciaaHoraAnterior'] == 'Present' else
-                                  1 if d['assistenciaaHoraAnterior'] == 'Absent' else None)
+                                  1 if d['assistenciaaHoraAnterior'] == 'Absent' else
+                                  2 if d['assistenciaaHoraAnterior'] == 'Online' else None)
+            print (form.hora_anterior)
             prediccio, pct = predictTreeModel(d)
             form.prediccio = (0 if prediccio == 'Present' else
                               1 if prediccio == 'Absent' else  None)

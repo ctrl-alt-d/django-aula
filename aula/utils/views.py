@@ -289,20 +289,22 @@ def estadistiques(request):
         qFinsAra = Q(dia_impartir__lt=datetime.today())
         qTeGrup = Q(horari__grup__isnull=False)
         imparticions = Impartir.objects.filter(qProfessor & qFinsAra & qTeGrup)
+        qSenseAlumnes = Q(controlassistencia__isnull=True)
+        qProfeHaPassatLlista = Q(professor_passa_llista__isnull=False)
         nImparticionsLlistaPassada = \
             imparticions\
-                .filter(professor_passa_llista__isnull=False)\
+                .filter(qProfeHaPassatLlista | qSenseAlumnes)\
                 .order_by()\
                 .distinct()\
                 .count()
         nImparticionsLlistaPendent = \
             imparticions \
-                .filter(professor_passa_llista__isnull=True) \
+                .filter(professor_passa_llista__isnull=True).exclude(controlassistencia__isnull=True) \
                 .order_by() \
                 .distinct() \
                 .count()
         nImparticios = nImparticionsLlistaPassada + nImparticionsLlistaPendent
-        pct = ('{0:.0f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
+        pct = ('{0:.1f}'.format(nImparticionsLlistaPassada * 100 / nImparticios) if nImparticios > 0 else 'N/A')
         estadistica1 = u'{0}% ({1} classes impartides, {2} controls, falten {3} controls)'.format(pct, nImparticios,
                                                                                                   nImparticionsLlistaPassada,
                                                                                                   nImparticionsLlistaPendent)
@@ -335,7 +337,7 @@ def estadistiques(request):
 
         taula.fileres = []
 
-        for imparticio in imparticions.filter(professor_passa_llista__isnull=True):
+        for imparticio in imparticions.filter(professor_passa_llista__isnull=True).exclude(controlassistencia__isnull=True):
             filera = []
             # ----------------------------------------------
             camp = tools.classebuida()
