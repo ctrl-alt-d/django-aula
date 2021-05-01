@@ -814,7 +814,7 @@ def treuAlumnesLlista(request, pk):
         form=afegeixTreuAlumnesLlistaForm(
                                 request.POST,
                                 prefix=str( 'alumnes' ),
-                                queryset=queyset,       
+                                queryset=queryset,       
                                 etiqueta='Alumnes a treure:'                             
                                  )
 
@@ -863,7 +863,7 @@ def treuAlumnesLlista(request, pk):
         formset.append( formExpandir )
 
         #altres forms: grups d'alumnes   
-        queryset = AlumneNomSentit.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all()  ] )  ,                   
+        queryset = AlumneNomSentit.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all()  ] )        
         form = afegeixTreuAlumnesLlistaForm(
                                 prefix=str( 'alumnes' ),
                                 queryset=queryset,

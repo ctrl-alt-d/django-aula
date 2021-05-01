@@ -201,6 +201,12 @@ class AbstractAlumne(models.Model):
     def __str__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom 
 
+    def __str__(self):
+        return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom 
+
+    def get_nom_sentit(self):
+        return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + (self.nom_sentit or self.nom )
+
     def delete(self):
         self.data_baixa = datetime.today()
         self.save()

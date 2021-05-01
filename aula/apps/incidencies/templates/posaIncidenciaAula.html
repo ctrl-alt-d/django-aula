@@ -41,7 +41,7 @@
 							<p>
 								<a href="/incidencies/eliminaIncidenciaAula/{{ incidencia.pk }}" style="color:red"><span class="glyphicon glyphicon-remove"></span></a>
 								<span style="color:{% if incidencia.tipus.es_informativa %}blue{%else%}red{%endif%}">
-									{{ incidencia.alumne }}
+									{{ incidencia.alumne.get_nom_sentit }}
 								</span>
 							</p>					
 						{% endfor %}				
@@ -56,7 +56,7 @@
 		    		{% for expulsio in expulsions %}
 						<p>
 							<a href="/incidencies/editaExpulsio/{{ expulsio.pk }}" style="color:red">
-								<span class="glyphicon glyphicon-arrow-right"></span> {{expulsio.alumne}}
+								<span class="glyphicon glyphicon-arrow-right"></span> {{expulsio.alumne.get_nom_sentit}}
 							</a>
 						</p>
 					{% endfor %}
