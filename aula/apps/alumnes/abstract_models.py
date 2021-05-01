@@ -135,6 +135,13 @@ class AbstractAlumne(models.Model):
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
     grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
     nom = models.CharField("Nom",max_length=240)
+    nom_sentit = models.CharField(
+        "Nom Sentit",max_length=240,
+        blank=True,
+        help_text="És el nom amb el que l'alumne se sent identificat "
+                  "tot i que formalment encara els tràmits de canvi de"
+                  " nom no estiguin completats"
+    )
     cognoms = models.CharField("Cognoms",max_length=240)
     data_neixement = models.DateField("Data naixement",null=True)
     estat_sincronitzacio = models.CharField(choices=ESTAT_SINCRO_CHOICES ,max_length=3, blank=True)

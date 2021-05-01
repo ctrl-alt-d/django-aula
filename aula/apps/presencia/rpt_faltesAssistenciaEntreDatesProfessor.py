@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.models import AlumneNomSentit
 from aula.apps.presencia.models import ControlAssistencia
 from django.db.models import Q
 from django.conf import settings
@@ -28,7 +28,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
     
     controls = ControlAssistencia.objects.filter( q_grup & q_assignatures & q_hores & q_professor )
     
-    alumnes = Alumne.objects.filter( controlassistencia__pk__in = controls.values_list('pk', flat=True)
+    alumnes = AlumneNomSentit.objects.filter( controlassistencia__pk__in = controls.values_list('pk', flat=True)
                                       ).distinct()
     
     report = []

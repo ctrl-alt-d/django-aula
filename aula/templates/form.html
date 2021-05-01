@@ -2,12 +2,19 @@
 
 {% block extrahead %} {% endblock %}
 
-{% block head %}
-  {{ head }}
-{% endblock %}
+
 
  
 {% block content  %}
+
+	{% block head %}
+	{% if head %}
+	<h2 style="margin-bottom: 25px;">{{ head }}</h2>
+	<p/>
+	<p/>
+	{% endif %}
+	{% endblock %}
+
 	{% block preform %}{% endblock %}
 	
 	{% if form.non_field_errors %}
