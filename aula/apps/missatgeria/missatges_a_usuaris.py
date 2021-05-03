@@ -45,6 +45,10 @@ ALUMNES_DONATS_DE_BAIXA = u'''El següents alumnes han estat donats de baixa.'''
 
 ALUMNES_CANVIATS_DE_GRUP = u'''El següents alumnes han estat canviats de grup.'''
 
+ALUMNES_ASSIGNAR_NOMSENTIT = "L'alumne {0} té nom sentit {1}"
+
+ALUMNES_ESBORRAR_NOMSENTIT = "L'alumne {0} té nom sentit {1}"
+
 ALUMNES_DONATS_DALTA = u'''El següents alumnes han estat donats d'alta.'''
 
 ALUME_HA_ESTAT_SANCIONAT = u"L'alumne {0} ha estat sancionat ( del {1} al {2} )."
@@ -103,6 +107,8 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_TREURE_ALUMNES_AMB_ERRORS,
                                 ALUMNES_DONATS_DE_BAIXA,
                                 ALUMNES_CANVIATS_DE_GRUP,
+                                ALUMNES_ASSIGNAR_NOMSENTIT,
+                                ALUMNES_ESBORRAR_NOMSENTIT,
                                 ALUMNES_DONATS_DALTA,
                                 FI_REPROGRAMACIO_CLASSES,
                                 RECORDA_REPROGRAMAR_CLASSES,

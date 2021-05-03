@@ -22,7 +22,7 @@ from django.template import RequestContext, loader
 
 #models
 from aula.apps.presencia.models import Impartir, ControlAssistencia
-from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.models import Alumne, AlumneNomSentit
 from aula.apps.incidencies.models import Incidencia, Sancio
 from aula.apps.incidencies.models import TipusSancio, TipusIncidencia
 from aula.apps.usuaris.models import  Professor, User2Professor, Professional, User2Professional,\
@@ -83,7 +83,7 @@ def posaIncidenciaAula(request, pk):           #pk = pk_impartir
     head=u'Incidències aula ' + unicode( impartir )
 
     #Posa incidències
-    alumnes = Alumne.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all() ] )
+    alumnes = AlumneNomSentit.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all() ] )
     
     if request.method == 'POST':
         form = posaIncidenciaAulaForm(request.POST, queryset=alumnes, etiqueta= u'Posar incidència a:' )
@@ -198,15 +198,16 @@ def eliminaIncidenciaAula(request, pk):           #pk = pk_incidencia
     url_next = '/incidencies/posaIncidenciaAula/%s/'% ( pk_impartir )
     try:
         incidencia.credentials = credentials
-        incidencia.delete()
-
+        incidencia.delete()        
         #LOGGING
         Accio.objects.create( 
                 tipus = 'IN',
                 usuari = user,
                 l4 = l4,
                 impersonated_from = request.user if request.user != user else None,
-                text = u"""Eliminada incidència d'aula de l'alumne {0}. Text incidència: {1}""".format( incidencia.alumne , incidencia.descripcio_incidencia)
+                text = u"""Eliminada incidència d'aula de l'alumne {0}. Text incidència: {1}""".format( 
+                    incidencia.alumne,
+                    incidencia.descripcio_incidencia)
             )  
         
     except ValidationError as e:
@@ -236,7 +237,7 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
         return render(
                         request,
                         'resultat.html', 
-                        {'head': u'Error al crear expulsió per acumulació' ,
+                        {'head': u'Error eliminant incidència' ,
                          'msgs': { 'errors': [], 'warnings':  [u'Aquesta incidència ja no existeix'], 'infos':  [] } },
                     )
     
@@ -276,7 +277,7 @@ def eliminaIncidencia(request, pk):           #pk = pk_incidencia
 
 #vistes -----------------------------------------------------------------------------------
 
-from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form
+from aula.apps.alumnes.forms import triaAlumneForm, triaAlumneSelect2Form, triaAlumneNomSentitSelect2Form
 
 @login_required
 @group_required(['professors','professional'])
@@ -298,7 +299,7 @@ def posaIncidencia( request ):
     if request.method == 'POST':
         
         #formAlumne = triaAlumneForm(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
-        formAlumne = triaAlumneSelect2Form(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
+        formAlumne = triaAlumneNomSentitSelect2Form(request.POST ) #todo: multiple=True (multiples alumnes de cop)        
         incidencia = Incidencia ( es_vigent = True )
         incidencia.professional = User2Professional(user)
         incidencia.credentials = credentials
@@ -345,7 +346,7 @@ def posaIncidencia( request ):
     else:
 
         #formAlumne = triaAlumneForm( ) #todo: multiple=True (multiples alumnes de cop)
-        formAlumne = triaAlumneSelect2Form()        
+        formAlumne = triaAlumneNomSentitSelect2Form()        
 #        formIncidenciaF = modelform_factory(Incidencia, fields=['dia_incidencia',
 #                                                                'franja_incidencia',
 #                                                                'descripcio_incidencia',
@@ -410,7 +411,7 @@ def posaIncidenciaPrimeraHora( request ):
     formset = []
     if request.method == 'POST':
         
-        formAlumne = triaAlumneSelect2Form(request.POST )
+        formAlumne = triaAlumneNomSentitSelect2Form(request.POST )
 
         incidencia.credentials = credentials
         formIncidencia = formIncidenciaF(request.POST, instance = incidencia )
@@ -453,7 +454,7 @@ def posaIncidenciaPrimeraHora( request ):
         
     else:
 
-        formAlumne = triaAlumneSelect2Form()        
+        formAlumne = triaAlumneNomSentitSelect2Form()        
         formIncidencia = formIncidenciaF( instance = incidencia)
 
         formset.append( formAlumne )
@@ -486,7 +487,7 @@ def posaExpulsio( request ):
         expulsio.professor_recull =  User2Professor( user )
         
         #formAlumne = triaAlumneForm(request.POST )  
-        formAlumne = triaAlumneSelect2Form(request.POST ) 
+        formAlumne = triaAlumneNomSentitSelect2Form(request.POST ) 
         formExpulsio = posaExpulsioForm(data=request.POST, instance = expulsio )
 
         if formAlumne.is_valid():
@@ -505,7 +506,7 @@ def posaExpulsio( request ):
     else:
 
         #formAlumne = triaAlumneForm( ) 
-        formAlumne = triaAlumneSelect2Form( )
+        formAlumne = triaAlumneNomSentitSelect2Form( )
         
         franja_actual = None
         try:
