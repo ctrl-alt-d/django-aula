@@ -56,6 +56,7 @@ from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
 from .forms import PagamentForm, SortidaForm
+import datetime
 
 @login_required
 @group_required(['professors'])  
@@ -271,6 +272,33 @@ def sortidesGestioList( request ):
                    }
                  )
 
+
+@login_required
+@group_required(['consergeria'])
+def sortidesConsergeriaList(request):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+    avui = datetime.date.today()
+    sortides = list(Sortida
+                    .objects
+                    .filter(calendari_desde__gte=avui, estat__in=['R','G'])
+                    .distinct()
+                    )
+
+    table = Table2_Sortides(data=sortides, origen="Consergeria")
+    table.order_by = 'calendari_desde'
+
+    RequestConfig(request, paginate={"paginator_class": DiggPaginator, "per_page": 10}).configure(table)
+
+    url = r"{0}{1}".format(settings.URL_DJANGO_AULA, reverse('sortides__sortides__ical'))
+
+    return render(
+        request,
+        'table2.html',
+        {'table': table,
+         'url': url,
+         }
+    )
 
 @login_required
 @group_required(['professors'])  # TODO: i grup sortides

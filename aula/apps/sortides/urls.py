@@ -5,6 +5,7 @@ urlpatterns = [
                        
     url(r'^sortidesMeves/$', sortides_views.sortidesMevesList,name = "sortides__meves__list"),
     url(r'^sortidesGestio/$', sortides_views.sortidesGestioList,name = "sortides__gestio__list"),
+    url(r'^sortidesConsergeria/$', sortides_views.sortidesConsergeriaList, name="sortides__consergeria__list"),
     url(r'^sortidesAll/$', sortides_views.sortidesAllList,name = "sortides__all__list"),
     
     url(r'^sortidaEdit/$', sortides_views.sortidaEdit,name = "sortides__sortides__edit", kwargs={'origen':'Meves'}),
