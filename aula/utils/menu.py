@@ -134,6 +134,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
                       ("Incidència per retard", 'consergeria__incidencia__onbehalf', co, None, None ),
+                      ("Activitats", 'sortides__consergeria__list', co, None, None),
 
                    )
                ),
