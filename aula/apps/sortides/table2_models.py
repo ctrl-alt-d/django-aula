@@ -276,7 +276,7 @@ class Table2_Sortides(tables.Table):
         #if origen == "Gestio":
         self.columns['n_acompanyants'].column.template_code = "{{record.nom_acompanyants}}"
         if origen=="Consergeria":
-            self.exclude=("accions", "estat", "professor_que_proposa", "participacio")
+            self.exclude=("accions", "estat", "professor_que_proposa")
 
     class Meta:
         model = Sortida
