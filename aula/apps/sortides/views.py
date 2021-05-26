@@ -281,7 +281,7 @@ def sortidesConsergeriaList(request):
     avui = datetime.date.today()
     sortides = list(Sortida
                     .objects
-                    .filter(calendari_desde__gte=avui, estat__in=['R','G'])
+                    .filter(calendari_finsa__gte=avui, estat__in=['R','G'])
                     .distinct()
                     )
 
