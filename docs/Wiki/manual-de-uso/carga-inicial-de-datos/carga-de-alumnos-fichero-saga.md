@@ -6,7 +6,7 @@ Recuerda que Django-Aula solo permite la importación de alumnos desde una expor
 
 Si desde SAGA no esta especificado el grupo al que pertenece el Alumno consultar [IMPORTAR_A_DJAUsense_curs_actualitzat.pdf](../../../installacio/IMPORTAR_A_DJAUsense_curs_actualitzat.pdf)
 
-Vale llego el momento de la verdad, nos dirigimos a esta URL: [\[DJANGO\_URL\]/extSaga/sincronitzaSaga/](https://djau.local/extSaga/sincronitzaSaga/) 
+Vale llego el momento de la verdad, nos dirigimos a esta URL: \[URL\_DJANGO\]/extSaga/sincronitzaSaga/ 
 
 ![](../../.gitbook/assets/image%20%2813%29.png)
 
@@ -16,13 +16,13 @@ Seleccionamos nuestro fichero SAGA  y presionamos sobre "Upload", si el fichero 
 
 Nos avisa de que es necesario mapear los grupos que ha leído del CSV con los de la aplicación creados en pasos anteriores.
 
-Vamos a esta URL: [\[URL\_DJANGO\]/extSaga/assignaGrups/](https://djau.local/extSaga/assignaGrups/)
+Vamos a esta URL: \[URL\_DJANGO\]/extSaga/assignaGrups/
 
 ![](../../.gitbook/assets/image%20%2817%29.png)
 
 A la izquierda aparecen los grupos leídos en el CSV, a la derecha podemos seleccionar uno de nuestros grupos, esto lo que hará es mas tarde meter a los Alumnos de un Grupo X del CSV en el Grupo Y elegido de la aplicación.
 
-Ahora solo hay que volver a subir el fichero del SAGA en la misma URL que antes: [\[DJANGO\_URL\]/extSaga/sincronitzaSaga/](https://djau.local/extSaga/sincronitzaSaga/) 
+Ahora solo hay que volver a subir el fichero del SAGA en la misma URL que antes: \[URL\_DJANGO\]/extSaga/sincronitzaSaga/
 
 Si todo va bien nos debería dar la siguiente salida:
 

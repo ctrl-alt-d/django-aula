@@ -8,7 +8,7 @@ Antes de dar el ultimo paso podríamos hacer una serie de cosas:
 
 
 
-* También deberíamos ponerle un nombre descriptivo a las Materias y asignarle el tipo de Materia, lo podemos hacer desde aquí: [\[DJANGO\_URL\]/admin/assignatures/assignatura/](https://djau.local/admin/assignatures/assignatura/) 
+* También deberíamos ponerle un nombre descriptivo a las Materias y asignarle el tipo de Materia, lo podemos hacer desde aquí: \[URL\_DJANGO\]/admin/assignatures/assignatura/
 * Deberíamos establecer los periodos de vacaciones y festivos, para que los cálculos de los horarios se hagan correctamente
 
 ![](../../.gitbook/assets/image.png)
