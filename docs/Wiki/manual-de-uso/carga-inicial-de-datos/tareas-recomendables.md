@@ -2,13 +2,13 @@
 
 Antes de dar el ultimo paso podríamos hacer una serie de cosas:
 
-* Asignar el Rol de Dirección a los profes que lo necesiten, este rol les permitirá acceder a casi todos los módulos y funciones de la app, para cambiar roles dirigirse aquí [\[URL\_DAJNGO\]/admin/auth/user/](https://djau.local/admin/auth/user/) Seleccionar el usuario al que quieras cambiar el ROL y asignarle el ROL de Dirección. 
+* Asignar el Rol de Dirección a los profes que lo necesiten, este rol les permitirá acceder a casi todos los módulos y funciones de la app, para cambiar roles dirigirse aquí \[URL\_DJAU\]/admin/auth/user/. Seleccionar el usuario al que quieras cambiar el ROL y asignarle el ROL de Dirección. 
 
 ![](../../.gitbook/assets/image%20%2824%29.png)
 
 
 
-* También deberíamos ponerle un nombre descriptivo a las Materias y asignarle el tipo de Materia, lo podemos hacer desde aquí: [\[DJANGO\_URL\]/admin/assignatures/assignatura/](https://djau.local/admin/assignatures/assignatura/) 
+* También deberíamos ponerle un nombre descriptivo a las Materias y asignarle el tipo de Materia, lo podemos hacer desde aquí: \[URL\_DJAU\]/admin/assignatures/assignatura/
 * Deberíamos establecer los periodos de vacaciones y festivos, para que los cálculos de los horarios se hagan correctamente
 
 ![](../../.gitbook/assets/image.png)

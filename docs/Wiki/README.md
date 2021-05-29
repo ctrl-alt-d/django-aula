@@ -24,7 +24,7 @@ El Proyecto es Open-source, y aquí se encuentra su repositorio Git: [https://gi
 * [Manual del Administrador](manual-de-uso/README.md)
   * [Primer Inicio](manual-de-uso/primer-inicio.md)
   * [Carga Inicial de datos](manual-de-uso/carga-inicial-de-datos/README.md)
-    * [Configurar Franjas Horarias y Dias de la semana](manual-de-uso/carga-inicial-de-datos/untitled.md)
+    * [Configurar Franjas Horarias y Dias de la semana](manual-de-uso/carga-inicial-de-datos/configurar-franjas-y-dias-semana.md)
     * [Configurar Estados de Asistencia y Tipos de Asignatura](manual-de-uso/carga-inicial-de-datos/configurar-estados-de-asistencia-y-tipos-de-asignatura.md)
     * [Carga De Niveles, Cursos y Grupos](manual-de-uso/carga-inicial-de-datos/creacion-de-niveles-cursos-y-grupos.md)
     * [Carga de Alumnos Fichero SAGA](manual-de-uso/carga-inicial-de-datos/carga-de-alumnos-fichero-saga.md)
