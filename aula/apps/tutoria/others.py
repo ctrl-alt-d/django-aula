@@ -49,7 +49,7 @@ def calculaResumAnualProcess():
         Text: {5}
         
         """.format(   act.moment_actuacio,
-                      act.assumpte,
+                      act.get_assumpte_display(),
                       act.professional,
                       act.get_qui_fa_actuacio_display(),
                       act.get_amb_qui_es_actuacio_display(),
