@@ -55,7 +55,7 @@ from django.template.defaultfilters import slugify
 from aula.utils.tools import classebuida
 import codecs
 from django.db.utils import IntegrityError
-from .forms import PagamentForm, SortidaForm
+from .forms import PagamentForm, SortidaForm, PagamentEfectiuForm
 import datetime
 
 @login_required
@@ -1284,6 +1284,54 @@ def retornTransaccio(request,pka,pks):
         pagament.save()
     return HttpResponse('')
 
+@login_required
+def pagoEfectiu(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    pagament = get_object_or_404(Pagament, pk=pk)
+    sortida = pagament.sortida
+    preu = sortida.preu_per_alumne
+    alumne = pagament.alumne
+    fEsGrupSecrretaria = request.user.groups.filter(name__in=[u"secretaria"]).exists()
+
+    potEntrar = (fEsGrupSecrretaria)
+    if not potEntrar:
+        raise Http404
+
+    if request.method == 'POST':
+        form = PagamentEfectiuForm(request.POST, initial={
+            'sortida': sortida,
+            'ordre_pagament': "Efectiu-{0}".format(random.randint(0, 9999)),
+            'data_hora_pagament': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'alumne': alumne,
+            'preu': preu,
+        })
+        if form.is_valid():
+            try:
+                pagament.data_hora_pagament = form.cleaned_data['data_hora_pagament']
+                pagament.ordre_pagament = form.cleaned_data['ordre_pagament']
+                pagament.pagament_realitzat = True
+                pagament.save()
+                return HttpResponseRedirect(reverse('sortides__sortides__detall_pagament', kwargs={'pk': sortida.pk}))
+            except ValidationError as e:
+                for _, v in e.message_dict.items():
+                    form._errors.setdefault(NON_FIELD_ERRORS, []).extend(v)
+    else:
+        form = PagamentEfectiuForm(initial={
+            'sortida': sortida,
+            'ordre_pagament': "Efectiu-{0}".format(random.randint(0, 9999)),
+            'data_hora_pagament': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'alumne' : alumne,
+            'preu': preu,
+        })
+
+    return render(request,
+                  'form.html',
+                  {'form': form, 'head': u'Pagament Efectiu',
+                   'titol_formulari': u"Es realitza el pagament en efectiu d'una activitat programada per pagar online",
+                                                        })
+
 
 @login_required()
 @group_required(['professors'])
@@ -1304,10 +1352,6 @@ def detallPagament(request, pk):
     report = []
 
     taula = tools.classebuida()
-
-    # taula.titol = tools.classebuida()
-    # taula.titol.contingut = 'Sortida: ' + sortida.titol_de_la_sortida
-    # taula.titol.enllac = None
 
     taula.capceleres = []
 
@@ -1349,6 +1393,14 @@ def detallPagament(request, pk):
         camp.enllac = None
         camp.contingut = pagament.ordre_pagament if pagament.ordre_pagament else ''
         filera.append(camp)
+
+        # -Efectiu--------------------------------------------
+        fEsGrupSecrretaria = request.user.groups.filter(name__in=[u"secretaria"]).exists()
+        if (fEsGrupSecrretaria):
+            camp = tools.classebuida()
+            camp.enllac = "/sortides/pagoEfectiu/{0}/".format( pagament.pk ) if not pagament.pagament_realitzat else None
+            camp.contingut = u'''Pagament/Efectiu''' if not pagament.pagament_realitzat else ''
+            filera.append(camp)
 
         # --
         taula.fileres.append(filera)

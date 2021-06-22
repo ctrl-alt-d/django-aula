@@ -1,5 +1,7 @@
+from datetime import datetime
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from aula.apps.sortides.models import Sortida
 
 class PagamentForm(forms.Form):
@@ -15,6 +17,22 @@ class PagamentForm(forms.Form):
         self.Ds_MerchantParameters = kwargs.pop('Ds_MerchantParameters', None)
         self.Ds_Signature = kwargs.pop('signature', None)
         self.acceptar_condicions = kwargs.pop('signature', False)
+
+
+class PagamentEfectiuForm(forms.Form):
+    alumne = forms.CharField(disabled=True, label='Alumne/a', required=True, widget=forms.Textarea(attrs={'cols': 40, 'rows': 1}))
+    sortida = forms.CharField(disabled=True, label='Activitat', widget=forms.Textarea(attrs={'cols': 40, 'rows': 1}), required=True)
+    preu = forms.CharField(disabled=True, label='Preu(€)', required=True)
+    data_hora_pagament = forms.CharField(label='Data/Hora pagament', required=True, widget=forms.DateInput(format="%Y-%m-%d %H:%M:%S"))
+    ordre_pagament = forms.CharField(widget=forms.HiddenInput(), required=True)
+
+    def clean_data_hora_pagament(self):
+        data_hora = self.cleaned_data['data_hora_pagament']
+        try:
+            datetime.strptime(data_hora, "%Y-%m-%d %H:%M:%S")
+        except:
+            raise ValidationError('Format no correcte (Y-M-D H-M-S)')
+        return data_hora
 
 TIPUS_INIT = Sortida.TIPUS_PAGAMENT_CHOICES
 TIPUS_CHOICES = []
