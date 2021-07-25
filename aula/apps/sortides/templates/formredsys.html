@@ -1,0 +1,13 @@
+<html>
+    <body onload="document.my_form.submit()">
+        <form action= {% if entorn_real %}
+                            "https://sis.redsys.es/sis/realizarPago"
+                      {% else %}
+                            "https://sis-t.redsys.es:25443/sis/realizarPago"
+                      {% endif %} name="my_form" method="POST">
+			<input type="hidden" name="Ds_MerchantParameters" value="{{ Ds_MerchantParameters }}"/>
+			<input type="hidden" name="Ds_Signature" value="{{ Ds_Signature }}"/>
+			<input type="hidden" name="Ds_SignatureVersion" value="HMAC_SHA256_V1"/>
+		</form>        
+    </body>
+</html>

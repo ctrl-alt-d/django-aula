@@ -1,5 +1,28 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.sortides.models import Sortida, NotificaSortida
+from aula.settings import CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, CUSTOM_REDSYS_ENTORN_REAL
+
+def TPVsettings(user):
+    '''
+    Determina els paràmetres del TPV
+    Si l'usuari pertany a 'tpvs', fa servir el TPV que coincideix amb el seu username
+    En altre cas fa servir el TPV principal 'centre'.
+    Si no pot seleccionar cap TPV, fa servir els settings a settings_local.py o settings.py
+    Retorna codi comerç, key, entorn real
+    '''
+    from django.contrib.auth.models import Group
+    from aula.apps.sortides.models import TPV
+
+    tp=Group.objects.get_or_create(name= 'tpvs' )
+    tpv=None
+    if tp and tp[0] in user.groups.all():
+        tpv = TPV.objects.filter(nom=user.username)
+    else:
+        tpv = TPV.objects.filter(nom='centre')
+    if tpv:
+        return tpv[0].codi, tpv[0].key, tpv[0].entornReal
+    else:
+        return CUSTOM_CODI_COMERÇ, CUSTOM_KEY_COMERÇ, CUSTOM_REDSYS_ENTORN_REAL
 
 def notifica_sortides():
     """

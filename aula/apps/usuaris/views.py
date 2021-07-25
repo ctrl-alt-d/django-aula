@@ -35,7 +35,7 @@ from django.db.models import Q
 from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth.models import User, Group
-from aula.apps.usuaris.tools import enviaOneTimePasswd
+from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
 from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
 
@@ -75,10 +75,20 @@ def canviDadesUsuari(request):
             formDadesAddicionals.fields['foto'].label = 'Foto'
 
         if formUsuari.is_valid():
-            formUsuari.save()
-            if professor and formDadesAddicionals.is_valid():
-                formDadesAddicionals.save()
-            return HttpResponseRedirect('/')
+            # Verifica si domini correcte
+            errors = {}
+            email=formUsuari.cleaned_data['email']
+            res, email = testEmail(email, False)
+            if res<-1:
+                errors.setdefault('email', []).append(u'''Adreça no vàlida''')
+
+            if len(errors)>0:
+                formUsuari._errors.update(errors)
+            else:
+                formUsuari.save()
+                if professor and formDadesAddicionals.is_valid():
+                    formDadesAddicionals.save()
+                return HttpResponseRedirect('/')         
 
     else:
         formUsuari =  CanviDadesUsuari(instance=user)
@@ -402,6 +412,9 @@ def recoverPasswd( request , username, oneTimePasswd ):
     return alumneRecoverPasswd( request , username, oneTimePasswd )
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
+    # Comprova que correspongui a dades vàlides actuals
+    if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):
+        return HttpResponseRedirect( '/' )
     
     client_address = getClientAdress( request )
 
@@ -434,7 +447,7 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 codiOK[0].reintents += 1
                 codiOK[0].save()
             elif dataOK and not codiOK:
-                errors.append( u"L'enllaç que esteu utilitzant està caducat o no és correcta. Demaneu un altre codi de recuperació.")
+                errors.append( u"L'enllaç que esteu utilitzant està caducat o no és correcte. Demaneu un altre codi de recuperació.")
             elif not dataOK and not codiOK:
                 errors.append( u"Dades incorrectes. Demaneu un altre codi de recuperació.")                
                 #todoBloquejar oneTimePasswd
