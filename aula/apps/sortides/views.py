@@ -1488,11 +1488,13 @@ def retornTransaccio(request,pk):
         else:
             '''
              Error en pagament o cancel·lat, no es pot fer servir un altre cop el mateix ordre_pagament.
-             Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
+             Si estat diferent a 'E', crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
+             Si estat ja és 'E' aleshores no fa falta fer clone.
              El pagament cancel·lat es guarda amb alumne NULL
             '''
-            noup=clonePagament(pagament)
+            if pagament.estat!='E': noup=clonePagament(pagament)
             pagament.pagament_realitzat = False
+            
             try:
                 data = urllib.parse.unquote(parameters_dic['Ds_Date'])
                 hora = urllib.parse.unquote(parameters_dic['Ds_Hour'])
@@ -1695,7 +1697,7 @@ def quotesCurs( request, curs, tipus, nany, auto ):
     auto=str(auto)=='True'
     if request.method == "POST":
         formsetQuotes = formset_factory(PagQuotesForm) 
-        formset = formsetQuotes(request.POST, form_kwargs={'tipus': tipus}) 
+        formset = formsetQuotes(request.POST, form_kwargs={'tipus': tipus, 'any': nany}) 
         if formset.is_valid():
             fraccions_esborrades=()
             for form in formset:
@@ -1777,7 +1779,7 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                             {'msgs': {'errors': [], 'warnings': [], 'infos': ['Sense quotes assignades']} },
                          )
             formsetQuotes = formset_factory(PagQuotesForm, extra=0)
-            formset=formsetQuotes(form_kwargs={'tipus': tipus}, initial= llistapag)
+            formset=formsetQuotes(form_kwargs={'tipus': tipus, 'any': nany}, initial= llistapag)
             
     else:
         quotacurs=None
@@ -1853,7 +1855,7 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                      )
         
         formsetQuotes = formset_factory(PagQuotesForm, extra=0)
-        formset=formsetQuotes(form_kwargs={'tipus': tipus}, initial= llistapag)      
+        formset=formsetQuotes(form_kwargs={'tipus': tipus, 'any': nany}, initial= llistapag)  
 
             
     return render(

@@ -138,8 +138,9 @@ class PagQuotesForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         tipus = kwargs.pop('tipus')
+        nany = kwargs.pop('any')
         super(PagQuotesForm, self).__init__(*args, **kwargs)
-        self.fields['quota'].widget.queryset=Quota.objects.filter(tipus=tipus).distinct()
+        self.fields['quota'].widget.queryset=Quota.objects.filter(tipus=tipus, any=nany).distinct()
 
 class EscollirTPV(forms.Form):
     '''
