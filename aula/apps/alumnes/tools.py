@@ -81,6 +81,7 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
             
         #dades bàsiques
         a_desti.nom = a.nom
+        a_desti.nom = a.nom_sentit
         a_desti.cognoms = a.cognoms
         a_desti.data_neixement = a.data_neixement
         

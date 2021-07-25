@@ -4,9 +4,9 @@ Este paso no es necesario con la importación desde Untis.
 
 Para la carga de Profes y Franjas Horarias hay que utilizar el mismo fichero que se utilizo para cargar los Grupos del curso, ya que ese fichero también contenía la información que necesitamos ahora.
 
-{% page-ref page="creacion-de-niveles-cursos-y-grupos.md" %}
+[Carga De Niveles, Cursos y Grupos](creacion-de-niveles-cursos-y-grupos.md)
 
-Nos dirijimos a la URL: [\[URL\_DJANGO\]/extKronowin/sincronitzaKronowin/](https://djau.local/extKronowin/sincronitzaKronowin/)
+Nos dirijimos a la URL: \[URL\_DJAU\]/extKronowin/sincronitzaKronowin/
 
 ![](../../.gitbook/assets/image%20%2828%29.png)
 
@@ -20,11 +20,11 @@ La salida no lo muestra pero también es necesario mapear de nuevo los grupos qu
 
 Los profesores están ya creados ahora hay que mapear las franjas y los grupos.
 
-Para mapear los grupos de kronowin ir a [\[DJANGO\_URL\]/extKronowin/assignaGrups/](https://djau.local/extKronowin/assignaGrups/) y mapea los grupos tal como hiciste al importar los alumnos del SAGA.
+Para mapear los grupos de kronowin ir a \[URL\_DJAU\]/extKronowin/assignaGrups/ y mapea los grupos tal como hiciste al importar los alumnos del SAGA.
 
 ![](../../.gitbook/assets/image%20%2818%29.png)
 
-Finalmente mapeamos las franjas desde [\[URL\_DJANGO\]/extKronowin/assignaFranges/](https://djau.local/extKronowin/assignaFranges/)
+Finalmente mapeamos las franjas desde \[URL\_DJAU\]/extKronowin/assignaFranges/
 
 ![](../../.gitbook/assets/image%20%283%29.png)
 

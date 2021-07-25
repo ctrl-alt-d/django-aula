@@ -134,6 +134,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Missatge a tutors", 'consergeria__missatges__envia_tutors', co, None, None ),
                       ("Incidència per retard", 'consergeria__incidencia__onbehalf', co, None, None ),
+                      ("Activitats", 'sortides__consergeria__list', co, None, None),
 
                    )
                ),
@@ -193,8 +194,9 @@ def calcula_menu( user , path, sessioImpersonada ):
                #--psicopedagog--------------------------------------------------------------------------
                ('psico', 'Psicopedagog', 'psico__informes_alumne__list', pg or di, None,
                   (
-                      ("Alumne", 'psico__informes_alumne__list', pg or di, None, None ),
+                      ("Informe d'Alumne", 'psico__informes_alumne__list', pg or di, None, None ),
                       ("Actuacions", 'psico__actuacions__list', pg or di, None, None ),
+                      ("Alumne, canvi nom sentit", 'psico__nomsentit__w1', pg or di, None, None ),
                    )
                ),
 

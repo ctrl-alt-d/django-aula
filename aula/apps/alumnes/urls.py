@@ -28,6 +28,12 @@ urlpatterns = [
    url(r'^informePsicopedagoc/$', alumnes_views.informePsicopedagoc,
        name="psico__informes_alumne__list"),
                        
+   url(r'^nomsentitw1/$', alumnes_views.canviarNomSentitW1,
+       name="psico__nomsentit__w1"),
+                       
+   url(r'^nomsentitw2/(?P<pk>\d+)/$', alumnes_views.canviarNomSentitW2,
+       name="psico__nomsentit__w2"),
+                       
    url(r'^duplicats/$', alumnes_views.duplicats,
        name="administracio__sincronitza__duplicats" ),
                        

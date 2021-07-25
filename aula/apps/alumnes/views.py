@@ -38,7 +38,7 @@ from aula.apps.presencia.models import Impartir
 from django.utils.datetime_safe import  date, datetime
 from datetime import timedelta
 from django.db.models import Q
-from django.forms.models import modelformset_factory
+from django.forms.models import modelformset_factory, modelform_factory
 from aula.apps.alumnes.reports import reportLlistaTutorsIndividualitzats
 from aula.apps.avaluacioQualitativa.forms import alumnesGrupForm
 from aula.apps.tutoria.models import TutorIndividualitzat
@@ -47,6 +47,15 @@ from aula.apps.alumnes.tools import fusiona_alumnes_by_pk
 from aula.apps.alumnes.forms import promoForm, newAlumne
 from django.conf import settings
 from aula.apps.alumnes.gestioGrups import grupsPromocionar
+from django.urls import reverse
+
+# missatgeria
+from aula.apps.missatgeria.models import Missatge
+from aula.apps.missatgeria.missatges_a_usuaris import (
+    ALUMNES_ASSIGNAR_NOMSENTIT,
+    ALUMNES_ESBORRAR_NOMSENTIT,
+    tipusMissatge
+)
 
 #duplicats
 @login_required
@@ -202,6 +211,108 @@ def informePsicopedagoc( request  ):
                      'head': 'Triar alumne'
                     }
                 )
+
+
+@login_required
+@group_required(['direcció','psicopedagog'])
+def canviarNomSentitW1( request  ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+
+    if request.method == 'POST':
+        
+        formAlumne = triaAlumneSelect2Form(request.POST )
+        if formAlumne.is_valid():            
+            alumne = formAlumne.cleaned_data['alumne']
+            url_next = reverse( 'psico__nomsentit__w2' , kwargs={'pk': alumne.pk ,})
+            return HttpResponseRedirect( url_next )
+        
+    else:
+
+        formAlumne = triaAlumneSelect2Form( )         
+        
+    return render(
+                request,
+                'form.html',
+                    {'form': formAlumne,
+                     'head': 'Triar alumne'
+                    }
+                )
+
+@login_required
+@group_required(['direcció','psicopedagog'])
+def canviarNomSentitW2( request, pk ):
+
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+
+    alumne = get_object_or_404(Alumne,pk=pk)
+    formF=modelform_factory( Alumne, fields=[ 'nom_sentit' ]  )
+    if request.method == 'POST':
+        
+        formAlumne = formF(request.POST, instance=alumne )
+        if formAlumne.is_valid():            
+            formAlumne.save()
+
+            # modificar o esborrar?
+            esborrat = not alumne.nom_sentit
+
+            # missatge a tutors i professors
+            qElTenenALHorari = Q( horari__impartir__controlassistencia__alumne = alumne   )            
+            qImparteixDocenciaAlNouGrup = Q(horari__grup =  alumne.grup)
+            qEsTutor = Q(pk__in=[p.pk for p in alumne.tutorsDeLAlumne()])
+            professors = Professor.objects.filter(qElTenenALHorari | qImparteixDocenciaAlNouGrup | qEsTutor).distinct()
+
+            if esborrat:
+                missatge = ALUMNES_ESBORRAR_NOMSENTIT
+                tipus_de_missatge = tipusMissatge(missatge)
+                missatge_txt =  missatge.format(
+                    alumne
+                )
+            else:
+                missatge = ALUMNES_ASSIGNAR_NOMSENTIT
+                tipus_de_missatge = tipusMissatge(missatge)
+                missatge_txt = missatge.format(
+                    alumne,
+                    alumne.nom_sentit,
+                )
+
+            for professor in professors:
+                msg = Missatge( remitent = user, text_missatge = missatge_txt,tipus_de_missatge = tipus_de_missatge  )
+                msg.envia_a_usuari( professor, 'IN')
+
+            # missatge per pantalla            
+            professors_txt = ", ".join([unicode(professor) for professor in professors])
+            msg = "El nom sentit de l'alumne {0} és: {1}. Els professors {2} han estat notificats.".format(
+                alumne,
+                alumne.nom_sentit,
+                professors_txt,
+            )
+            if esborrat:
+                msg =  "Eliminat el nom sentit de l'alumne {0}. Els professors {1} han estat notificats.".format(
+                    alumne,
+                    professors_txt
+                )
+            messages.success(request, msg)
+
+            # fi
+            url_next = reverse("psico__informes_alumne__list")
+            return HttpResponseRedirect( url_next )
+        
+    else:
+
+        formAlumne = formF( instance=alumne )         
+        
+    return render(
+                request,
+                'form.html',
+                    {'form': formAlumne,
+                     'head': 'Canviar el nom sentit a {0}'.format(alumne)
+                    }
+                )
+
+
 
 
 @login_required
