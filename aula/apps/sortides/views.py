@@ -62,9 +62,6 @@ import django.utils.timezone
 from dateutil.relativedelta import relativedelta
 from django.urls import reverse_lazy
 
-from .forms import PagamentForm, SortidaForm, PagamentEfectiuForm
-#import datetime
-
 
 @login_required
 @group_required(['professors'])  
@@ -286,7 +283,7 @@ def sortidesGestioList( request ):
 def sortidesConsergeriaList(request):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
-    avui = datetime.date.today()
+    avui = datetime.now().date()
     sortides = list(Sortida
                     .objects
                     .filter(calendari_finsa__gte=avui, estat__in=['R','G'])
@@ -1513,6 +1510,8 @@ def retornTransaccio(request,pk):
 
 @login_required
 def pagoEfectiu(request, pk):
+    from aula.apps.sortides.forms import PagamentEfectiuForm
+    
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -1530,7 +1529,7 @@ def pagoEfectiu(request, pk):
         form = PagamentEfectiuForm(request.POST, initial={
             'sortida': sortida,
             'ordre_pagament': "Efectiu-{0}".format(random.randint(0, 9999)),
-            'data_hora_pagament': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'data_hora_pagament': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'alumne': alumne,
             'preu': preu,
         })
@@ -1548,7 +1547,7 @@ def pagoEfectiu(request, pk):
         form = PagamentEfectiuForm(initial={
             'sortida': sortida,
             'ordre_pagament': "Efectiu-{0}".format(random.randint(0, 9999)),
-            'data_hora_pagament': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'data_hora_pagament': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'alumne' : alumne,
             'preu': preu,
         })

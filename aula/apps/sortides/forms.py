@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from django import forms
 from django.conf import settings
 from aula.django_select2.forms import ModelSelect2Widget
@@ -27,7 +27,7 @@ class PagamentEfectiuForm(forms.Form):
     def clean_data_hora_pagament(self):
         data_hora = self.cleaned_data['data_hora_pagament']
         try:
-            datetime.strptime(data_hora, "%Y-%m-%d %H:%M:%S")
+            datetime.datetime.strptime(data_hora, "%Y-%m-%d %H:%M:%S")
         except:
             raise ValidationError('Format no correcte (Y-M-D H-M-S)')
         return data_hora
