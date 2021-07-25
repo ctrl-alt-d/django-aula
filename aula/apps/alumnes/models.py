@@ -29,6 +29,13 @@ class AlumneGrupNom(Alumne):
     def __str__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + self.nom         
 
+class AlumneNomSentit(Alumne):
+    class Meta:
+        proxy = True
+
+    def __str__(self):
+        return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + (self.nom_sentit or self.nom)
+        
 class AlumneGrup(Alumne):
 
     class Meta:
@@ -37,6 +44,14 @@ class AlumneGrup(Alumne):
     def __str__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + self.nom         
 
+
+class AlumneNomSentitGrup(Alumne):
+
+    class Meta:
+        proxy = True
+
+    def __str__(self):
+        return (u'És baixa: ' if self.esBaixa() else u'') + unicode( self.grup ) + ' - ' + self.cognoms + ', ' + (self.nom_sentit or self.nom)
 
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #

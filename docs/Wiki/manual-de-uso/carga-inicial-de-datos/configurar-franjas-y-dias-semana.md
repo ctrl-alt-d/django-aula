@@ -7,7 +7,7 @@ Una franja horaria es un intervalo de tiempo en el que se imparten Asignaturas e
 
 ### Franjas Horarias
 
-El primer paso es acceder a la siguiente URL:  [\[Dominio django-aula\]/admin/horaris/franjahoraria/](https://djau.local/admin/horaris/franjahoraria/)
+El primer paso es acceder a la siguiente URL:  \[URL\_DJAU\]/admin/horaris/franjahoraria/
 
 Veremos lo siguiente:
 
@@ -23,7 +23,7 @@ Nuestro primer objetivo es crear las franjas horarias  necesarias, tomando como 
 
 ### Días de la semana
 
-Los días de la semana ya vienen creados, aun así podemos cambiarles el nombre desde aquí: [\[Dominiodjango-aula\]](https://djau.local/admin/horaris/franjahoraria/)[/admin/horaris/diadelasetmana/](https://djau.local/admin/horaris/diadelasetmana/)
+Los días de la semana ya vienen creados, aun así podemos cambiarles el nombre desde aquí: \[URL\_DJAU\]/admin/horaris/diadelasetmana/
 
 ![](../../.gitbook/assets/image%20%285%29.png)
 

@@ -15,7 +15,7 @@ from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsForm
 #models
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.models import Impartir, ControlAssistencia
-from aula.apps.alumnes.models import Alumne     , Grup
+from aula.apps.alumnes.models import Alumne, AlumneNomSentit, Grup
 from aula.apps.usuaris.models import User2Professor, Accio
 
 #helpers
@@ -446,6 +446,8 @@ def passaLlista(request, pk):
 
 def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
 
+    alumne = AlumneNomSentit.objects.get(pk=control_a.alumne.pk)
+
     NoHaDeSerALAula = apps.get_model('presencia', 'NoHaDeSerALAula')
     q_no_al_centre_expulsat = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.EXPULSAT_DEL_CENTRE)
     q_no_al_centre_sortida = control_a.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.SORTIDA)
@@ -454,7 +456,7 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
     if q_no_al_centre_expulsat.exists():
         form = ControlAssistenciaFormFake()
         form.fields['estat'].label_suffix = u""
-        form.fields['estat'].label = (unicode(control_a.alumne)
+        form.fields['estat'].label = (unicode(alumne)
                                       + u", ".join(
             [u"sanció del {0} al {1}".format(x.sancio.data_inici.strftime('%d/%m/%Y'),
                                              x.sancio.data_fi.strftime('%d/%m/%Y')
@@ -465,7 +467,7 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
     elif q_no_al_centre_sortida.exists():
         form = ControlAssistenciaFormFake()
         form.fields['estat'].label_suffix = u""
-        form.fields['estat'].label = (unicode(control_a.alumne)
+        form.fields['estat'].label = (unicode(alumne)
                                       + u" - Activitat: "
                                       + u", ".join([x.sortida.titol_de_la_sortida
                                                     for x in q_no_al_centre_sortida.all()]
@@ -475,7 +477,7 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
     elif q_no_al_centre_altres.exists():
         form = ControlAssistenciaFormFake()
         form.fields['estat'].label_suffix = u""
-        form.fields['estat'].label = (unicode(control_a.alumne)
+        form.fields['estat'].label = (unicode(alumne)
                                       + u" - ".join([x.get_motiu_display()
                                                     for x in q_no_al_centre_altres.all()]
                                                    )
@@ -496,14 +498,14 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
                 prefix=str(control_a.pk),
                 instance=control_a)
 
-        form.fields['estat'].label = unicode(control_a.alumne)
-        avui_es_aniversari = control_a.alumne.aniversari(control_a.impartir.dia_impartir)
+        form.fields['estat'].label = unicode(alumne)
+        avui_es_aniversari = alumne.aniversari(control_a.impartir.dia_impartir)
 
         missatge = ''
-        if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and control_a.alumne.edat(control_a.impartir.dia_impartir)>=18):
+        if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and alumne.edat(control_a.impartir.dia_impartir)>=18):
             missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
 
-        form.fields['estat'].label = (unicode(control_a.alumne)
+        form.fields['estat'].label = (unicode(alumne)
                                       + missatge +('(fa anys en aquesta data)' if avui_es_aniversari else '')
                                       )
     return form
@@ -581,7 +583,7 @@ def passaLlistaGrupData(request, grup, dia, mes, year):
                                                 choices = [x for x in f.fields['estat'].choices][1:],
                                                 attrs={'class':'presenciaEstat'},                                                
                                                  )
-
+            alumne = AlumneNomSentit.objects.get(pk = f.instance.alumne.pk)
             f.fields['estat'].label = u'{0} {1}'.format(  f.instance.alumne, f.instance.impartir.horari.hora )
             if f.instance.alumne != f_prev.instance.alumne:
                 f_prev = f
@@ -703,11 +705,12 @@ def afegeixAlumnesLlista(request, pk):
         #altres forms: grups d'alumnes        
         #
         for grup in grups_a_mostrar:
+            queryset=AlumneNomSentit.objects.filter(grup=grup).exclude(pk__in=alumnes_pk )
             form=afegeixTreuAlumnesLlistaForm(
                                     request.POST,
                                     prefix=str( grup.pk ),
-                                    queryset =  grup.alumne_set.exclude( pk__in = alumnes_pk )  ,       
-                                    etiqueta = unicode(grup)                             
+                                    queryset=queryset,       
+                                    etiqueta=unicode(grup)                             
                                      )
             formset.append( form )
             if form.is_valid():                
@@ -753,10 +756,10 @@ def afegeixAlumnesLlista(request, pk):
 
         #altres forms: grups d'alumnes        
         for grup in grups_a_mostrar:
-            #http://www.ibm.com/developerworks/opensource/library/os-django-models/index.html?S_TACT=105AGX44&S_CMP=EDU
+            queryset=AlumneNomSentit.objects.filter(grup=grup).exclude(pk__in=alumnes_pk )
             form=afegeixTreuAlumnesLlistaForm(
                                     prefix=str( grup.pk ),
-                                    queryset =  grup.alumne_set.exclude( pk__in = alumnes_pk )  ,                                    
+                                    queryset =queryset,     
                                     etiqueta = unicode( grup )                             
                                      )
             formset.append( form )
@@ -807,11 +810,12 @@ def treuAlumnesLlista(request, pk):
         #
         #altres forms: grups d'alumnes        
         #
+        queryset=AlumneNomSentit.objects.filter(pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all()])
         form=afegeixTreuAlumnesLlistaForm(
                                 request.POST,
                                 prefix=str( 'alumnes' ),
-                                queryset =  Alumne.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all()  ] )   ,       
-                                etiqueta = 'Alumnes a treure:'                             
+                                queryset=queryset,       
+                                etiqueta='Alumnes a treure:'                             
                                  )
 
         if form.is_valid() and formExpandir.is_valid():
@@ -858,11 +862,12 @@ def treuAlumnesLlista(request, pk):
 
         formset.append( formExpandir )
 
-        #altres forms: grups d'alumnes               
-        form=afegeixTreuAlumnesLlistaForm(
+        #altres forms: grups d'alumnes   
+        queryset = AlumneNomSentit.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all()  ] )        
+        form = afegeixTreuAlumnesLlistaForm(
                                 prefix=str( 'alumnes' ),
-                                queryset =  Alumne.objects.filter( pk__in = [ ca.alumne.pk for ca in impartir.controlassistencia_set.all()  ] )  ,       
-                                etiqueta = 'Alumnes a treure:'                               
+                                queryset=queryset,
+                                etiqueta='Alumnes a treure:'                               
                                  )
         formset.append( form )
         

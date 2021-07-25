@@ -269,18 +269,20 @@ class Table2_Sortides(tables.Table):
                     
                     </ul>
                   </div>
-            """        
-            
-        super(Table2_Sortides, self).__init__(data, *args, **kwargs)        
+            """
+
+        super(Table2_Sortides, self).__init__(data, *args, **kwargs)
         self.columns['accions'].column.template_code = accions_html
         #if origen == "Gestio":
         self.columns['n_acompanyants'].column.template_code = "{{record.nom_acompanyants}}"
-    
+        if origen=="Consergeria":
+            self.exclude=("accions", "estat", "professor_que_proposa")
+
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ambit", "calendari_desde", "calendari_finsa", "professor_que_proposa", "participacio", "n_acompanyants" )
+        sequence = ("estat", "tipus", "titol_de_la_sortida", "ciutat", "ambit", "calendari_desde", "calendari_finsa", "professor_que_proposa", "participacio", "n_acompanyants" )
         fields = sequence
         template = 'bootable2.html'      
         

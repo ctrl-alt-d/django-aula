@@ -4,7 +4,7 @@ from django import forms as forms
 from aula.utils.widgets import SelectAjax, bootStrapButtonSelect
 from django.forms import ModelForm
 
-from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne,  AlumneGrup
+from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne,  AlumneGrup, AlumneNomSentitGrup
 from aula.apps.usuaris.models import Professor
 from aula.django_select2.forms import ModelSelect2Widget
 from django.forms.models import ModelChoiceField
@@ -152,10 +152,32 @@ class triaAlumneSelect2Form(forms.Form):
     alumne = ModelChoiceField(
                    widget=ModelSelect2Widget(
                                         queryset=AlumneGrup.objects.all(),
-                                        search_fields = ['cognoms__icontains','nom__icontains', 'grup__descripcio_grup__icontains' ],
+                                        search_fields = [
+                                            'cognoms__icontains',
+                                            'nom__icontains',
+                                            'nom_sentit__icontains',
+                                            'grup__descripcio_grup__icontains'
+                                            ],
                                         attrs={'style':"'width': '100%'"},
                                         ),
                    queryset=AlumneGrup.objects.all(), 
+                   required=True)
+
+
+
+class triaAlumneNomSentitSelect2Form(forms.Form): 
+    alumne = ModelChoiceField(
+                   widget=ModelSelect2Widget(
+                                        queryset=AlumneNomSentitGrup.objects.all(),
+                                        search_fields = [
+                                            'cognoms__icontains',
+                                            'nom__icontains',
+                                            'nom_sentit__icontains',
+                                            'grup__descripcio_grup__icontains'
+                                            ],
+                                        attrs={'style':"'width': '100%'"},
+                                        ),
+                   queryset=AlumneNomSentitGrup.objects.all(), 
                    required=True)
 
 

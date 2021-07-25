@@ -19,7 +19,7 @@ Te recuerdo que el formato que debe de tener el fichero es el siguiente:
 * 1=Día de la semana \(1=Lunes\)
 * 1=Código de franja horaria
 
-Nos dirigimos a[ \[URL-DJANGO-AULA\]/extKronowin/creaNivellCursGrupDesDeKronowin/](https://djau.local/extKronowin/creaNivellCursGrupDesDeKronowin/)
+Nos dirigimos a \[URL\_DJAU\]/extKronowin/creaNivellCursGrupDesDeKronowin/
 
 Veremos la siguiente ventana
 
@@ -29,7 +29,7 @@ Desde esta ventana seleccionamos el fichero CSV y tenemos que indicar la fecha d
 
 El formato de la fecha debe ser  **DD/MM/AAAA**
 
-Si no ha habido errores podemos comprobar desde aquí [\[URL\_DJANGO\_AULA\]/admin/alumnes/](https://djau.local/admin/alumnes/) si se ha creado la estructura de Cursos del centro.
+Si no ha habido errores podemos comprobar desde aquí \[URL\_DJAU\]/admin/alumnes/ si se ha creado la estructura de Cursos del centro.
 
 ![](../../.gitbook/assets/image%20%2826%29.png)
 

@@ -6,7 +6,7 @@ Con Kronowin utilizaremos de nuevo el fichero proporcionado por Kronowin.
 
 Con Untis este paso ya se ha realizado, conjuntamente con profesorado y grupos, al realizar la importación del fichero xml
 
-Volvemos otra vez a [\[URL\_DJANGO\]/extKronowin/sincronitzaKronowin/](https://djau.local/extKronowin/sincronitzaKronowin/) y cargamos el mismo fichero de siempre, la salida deberá ser la siguiente:
+Volvemos otra vez a \[URL\_DJAU\]/extKronowin/sincronitzaKronowin/ y cargamos el mismo fichero de siempre, la salida deberá ser la siguiente:
 
 ![](../../.gitbook/assets/image%20%2816%29.png)
 
