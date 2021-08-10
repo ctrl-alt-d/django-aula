@@ -131,6 +131,11 @@ class AbstractAlumne(models.Model):
         (0, 'Responsable 1'),
         (1, 'Responsable 2'),
     )
+
+    BOOLEAN_CHOICES = (
+        (True, 'SÍ'),
+        (False, 'NO'),
+    )
         
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
     grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
@@ -190,6 +195,11 @@ class AbstractAlumne(models.Model):
 
     foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
     observacions =models.TextField(max_length=150, null=True, blank=True, help_text= u"Informació visible pels seus professors/es")
+    drets_imatge = models.BooleanField(choices=BOOLEAN_CHOICES, blank=True, null=True, help_text=u"Acceptació dels drets d'imatge")
+    autoritzacio_sortides = models.BooleanField(choices=BOOLEAN_CHOICES, blank=True, null=True, help_text=u"Autorització per realitzar sortides")
+    salut_i_escola = models.BooleanField(choices=BOOLEAN_CHOICES, blank=True, null=True, help_text=u"Acceptació del programa Salut i Escola")
+    rp_importat_nom = models.CharField(max_length=250, blank=True) #Responsable importat des de fitxer de dades addicionals
+    dades_mediques = models.CharField(max_length=750, blank=True)
 
     class Meta:
         abstract = True

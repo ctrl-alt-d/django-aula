@@ -3,7 +3,7 @@
 #--
 from aula.apps.alumnes.models import Alumne, Grup, Nivell
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
-    ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA
+    ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA, IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
@@ -402,4 +402,92 @@ def dades_responsable ( dades ):
     return dades_tutor
 
 
+def dades_adiccionals (f, user=None):
+    errors = []
+    warnings = []
+    camps_addicionals = {
+        'Drets imatge': 'drets_imatge',
+        'Autorització sortides': 'autoritzacio_sortides',
+        'Salut i Escola': 'salut_i_escola',
+        'Responsable Preferent': 'rp_importat_nom',
+        'Dades mèdiques': 'dades_mediques',
+    }
+
+    try:
+        # Carregar full de càlcul
+        wb2 = load_workbook(f)
+        if len(wb2.worksheets) != 1:
+            # Si té més d'una pestanya --> error
+            errors.append('Fitxer incorrecte')
+            return {'errors': errors, 'warnings': [], 'infos': []}
+    except:
+        errors.append('Fitxer incorrecte')
+        return {'errors': errors, 'warnings': [], 'infos': []}
+
+    info_nLiniesLlegides = 0
+    info_nModificacions = 0
+
+    # Carregar full de càlcul
+    full = wb2.active
+    max_row = full.max_row
+
+    # iterar sobre les files
+    colnames = [u'Identificador de l’alumne/a', u'Nom complet de l’alumne/a', u'Camps lliures - Nom',
+                u'Camps lliures - Valor']
+    rows = list(wb2.active.rows)
+    col_indexs = {n: cell.value for n, cell in enumerate(rows[9])
+                  if cell.value in colnames}  # Començar a la fila 10, les anteriors són brossa
+    for row in rows[10:max_row - 1]:  # la darrera fila també és brossa
+        info_nLiniesLlegides += 1
+        ralc_llegit = ''
+        nom_llegit = ''
+        alumne = None
+        for index, cell in enumerate(row):
+            if bool(cell) and bool(cell.value):
+                cell.value = cell.value.strip()
+            if index in col_indexs:
+                if col_indexs[index].endswith(u"Identificador de l’alumne/a"):
+                    ralc_llegit = unicode(cell.value)
+                    try:
+                        alumne = Alumne.objects.get(ralc=ralc_llegit)
+                    except:
+                        return {'errors': [u"error carregant, Ralc {0} no trobat".format(ralc_llegit), ], 'warnings': [],
+                                'infos': []}
+                if col_indexs[index].endswith(u"Nom complet de l’alumne/a"):
+                    nom_llegit = unicode(cell.value).split(', ')[1].strip()
+                    if alumne.nom != nom_llegit:
+                        warnings.append(u'Nom Alumne/a amb ralc {0} no coincident: {1} - {2}'.format(alumne.ralc,alumne.nom, nom_llegit))
+                if col_indexs[index].endswith(u"Camps lliures - Nom"):
+                    camp = unicode(cell.value)
+                    if camp in camps_addicionals:
+                        try:
+                            nom_camp = camps_addicionals[camp]
+                            valor = unicode(cell.offset(0,1).value) #accedim a la següent columna on està el valor corresponent al camp
+                            if getattr(alumne,nom_camp) != valor:
+                                setattr(alumne,nom_camp,valor)
+                                alumne.save()
+                                info_nModificacions += 1
+                        except:
+                            return {'errors': [
+                                u"error carregant, línia {0} del fitxer de càrrega".format(info_nLiniesLlegides+10), ],
+                                    'warnings': [],
+                                    'infos': []}
+
+    infos = []
+    infos.append(u'{0} línies llegides'.format(info_nLiniesLlegides))
+    infos.append(u'{0} modificacions realitzades'.format(info_nModificacions))
+    missatge = IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
+    tipus_de_missatge = tipusMissatge(missatge)
+    msg = Missatge(
+        remitent=user,
+        text_missatge=missatge,
+        tipus_de_missatge=tipus_de_missatge)
+    msg.afegeix_errors(errors)
+    msg.afegeix_warnings(warnings)
+    msg.afegeix_infos(infos)
+    importancia = 'VI' if len(errors) > 0 else 'IN'
+    grupDireccio = Group.objects.get(name='direcció')
+    msg.envia_a_grup(grupDireccio, importancia=importancia)
+
+    return {'errors': errors, 'warnings': warnings, 'infos': infos}
 
