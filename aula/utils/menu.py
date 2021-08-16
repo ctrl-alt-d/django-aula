@@ -250,6 +250,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                         (
                           ("Alumnes ESO/BAT", 'administracio__sincronitza__esfera', di , None  ),
                           ("Alumnes Cicles", 'administracio__sincronitza__saga', di, None),
+                          ("Dades addicionals alumnat", 'administracio__sincronitza__dades_addicionals', di, None),
                           ("HorarisKronowin", 'administracio__sincronitza__kronowin', di , None  ),
                           ("HorarisUntis", 'administracio__sincronitza__Untis', di , None  ),
                           ("Aules", 'gestio__aula__assignacomentari', di, None),

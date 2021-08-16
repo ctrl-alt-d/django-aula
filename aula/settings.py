@@ -95,6 +95,14 @@ PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
+CAMPS_ADDICIONALS_ALUMNE = {
+        'Drets imatge': 'drets_imatge',
+        'Autorització sortides': 'autoritzacio_sortides',
+        'Salut i Escola': 'salut_i_escola',
+        'Responsable Preferent': 'rp_importat_nom',
+        'Dades mèdiques': 'dades_mediques',
+    }
+
 
 try:
     from .settings_local import *

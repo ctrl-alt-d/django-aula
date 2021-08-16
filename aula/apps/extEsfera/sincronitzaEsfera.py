@@ -17,6 +17,7 @@ from django.contrib.auth.models import Group
 
 import time
 from aula.apps.extEsfera.models import Grup2Aula
+from aula.settings import CAMPS_ADDICIONALS_ALUMNE
 
 from aula.utils.tools import unicode
 
@@ -405,13 +406,7 @@ def dades_responsable ( dades ):
 def dades_adiccionals (f, user=None):
     errors = []
     warnings = []
-    camps_addicionals = {
-        'Drets imatge': 'drets_imatge',
-        'Autorització sortides': 'autoritzacio_sortides',
-        'Salut i Escola': 'salut_i_escola',
-        'Responsable Preferent': 'rp_importat_nom',
-        'Dades mèdiques': 'dades_mediques',
-    }
+    camps_addicionals = CAMPS_ADDICIONALS_ALUMNE
 
     try:
         # Carregar full de càlcul
@@ -446,23 +441,25 @@ def dades_adiccionals (f, user=None):
             if bool(cell) and bool(cell.value):
                 cell.value = cell.value.strip()
             if index in col_indexs:
-                if col_indexs[index].endswith(u"Identificador de l’alumne/a"):
-                    ralc_llegit = unicode(cell.value)
-                    try:
-                        alumne = Alumne.objects.get(ralc=ralc_llegit)
-                    except:
-                        return {'errors': [u"error carregant, Ralc {0} no trobat".format(ralc_llegit), ], 'warnings': [],
-                                'infos': []}
-                if col_indexs[index].endswith(u"Nom complet de l’alumne/a"):
-                    nom_llegit = unicode(cell.value).split(', ')[1].strip()
-                    if alumne.nom != nom_llegit:
-                        warnings.append(u'Nom Alumne/a amb ralc {0} no coincident: {1} - {2}'.format(alumne.ralc,alumne.nom, nom_llegit))
                 if col_indexs[index].endswith(u"Camps lliures - Nom"):
                     camp = unicode(cell.value)
                     if camp in camps_addicionals:
+                        ralc_llegit = unicode(cell.offset(0,-2).value) #accedim a la columna on es troba el ralc
+                        try:
+                            alumne = Alumne.objects.get(ralc=ralc_llegit)
+                        except:
+                            return {'errors': [u"error carregant, Ralc {0} no trobat - línia {1} del fitxer de càrrega".format(ralc_llegit,info_nLiniesLlegides+10), ],
+                                    'warnings': [],'infos': []}
+                        nom_llegit = unicode(cell.offset(0,-1).value) #accedim a la columna on es troba el nom
+                        if alumne.__str__() != nom_llegit:
+                            warnings.append(u'Nom/Cognoms alumne/a amb ralc {0} no coincident: {1} - {2}'.format(alumne.ralc, alumne.__str__(), nom_llegit))
                         try:
                             nom_camp = camps_addicionals[camp]
-                            valor = unicode(cell.offset(0,1).value) #accedim a la següent columna on està el valor corresponent al camp
+                            valor = unicode(cell.offset(0,1).value) if cell.offset(0,1).value else ""  #accedim a la següent columna on està el valor corresponent al camp
+                            if Alumne._meta.get_field(nom_camp).get_internal_type() == 'BooleanField':
+                                if valor.lower() == 'sí': valor = True
+                                elif valor.lower() == 'no': valor = False
+                                else: valor = None
                             if getattr(alumne,nom_camp) != valor:
                                 setattr(alumne,nom_camp,valor)
                                 alumne.save()
@@ -473,9 +470,10 @@ def dades_adiccionals (f, user=None):
                                     'warnings': [],
                                     'infos': []}
 
-    infos = []
+    infos = ['Resum:']
     infos.append(u'{0} línies llegides'.format(info_nLiniesLlegides))
     infos.append(u'{0} modificacions realitzades'.format(info_nModificacions))
+    if warnings: warnings.insert(0, "Avisos:")
     missatge = IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
     tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(
