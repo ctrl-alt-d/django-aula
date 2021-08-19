@@ -190,6 +190,7 @@ def configuraConnexio( request , pk ):
           ('Telèfons Alumne', ','.join(filter(None,telefons_alumne))),
           ('Noms responsables', ' / '.join(filter(None,noms_responsables))),
           ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),
+          ('Responsable preferent (Esfer@/Saga)', alumne.rp_importat_nom),
                 ]
     
     AlumneFormSet = modelform_factory(Alumne,
@@ -214,7 +215,7 @@ def configuraConnexio( request , pk ):
                     {'form': form,
                      'image': imageUrl,
                      'infoForm': infoForm,
-                     'head': u'Gestió relació familia amb empreses' ,
+                     'head': u'Gestió relació familia' ,
                      'formSetDelimited':True},
                 )
 
@@ -920,7 +921,7 @@ def elMeuInforme( request, pk = None ):
         filera = []
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'Pares'        
+        camp.contingut = u'Responsables'
         filera.append(camp)
     
         camp = tools.classebuida()
@@ -954,6 +955,37 @@ def elMeuInforme( request, pk = None ):
         filera.append(camp)
     
         taula.fileres.append( filera )
+
+        # ----dades mèdiques------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Dades mèdiques'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        dades_mediques = alumne.dades_mediques if alumne.dades_mediques else ''
+        camp.contingut = u'{0}'.format(dades_mediques)
+        filera.append(camp)
+
+        taula.fileres.append(filera)
+
+        # ----autoritzacions------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Autoritzacions'
+        filera.append(camp)
+
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.multipleContingut = [(u'Drets imatge: {0}'.format(alumne.get_drets_imatge_display() if alumne.drets_imatge != None else '-'), None,),
+                                  (u'Sortides: {0}'.format(alumne.get_autoritzacio_sortides_display() if alumne.autoritzacio_sortides != None else '-'),None,),
+                                  (u'Salut i Escola: {0}'.format(alumne.get_salut_i_escola_display() if alumne.salut_i_escola != None else '-'),None,)]
+        filera.append(camp)
+
+        taula.fileres.append(filera)
     
         report.append(taula)
 

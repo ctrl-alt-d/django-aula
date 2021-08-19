@@ -462,14 +462,14 @@ def elsMeusAlumnesAndAssignatures( request ):
         taula.titol.contingut = ""
 
         capcelera_foto = tools.classebuida()
-        capcelera_foto.amplade = 10
+        capcelera_foto.amplade = 5
 
         capcelera_nom = tools.classebuida()
         capcelera_nom.amplade = 25
         capcelera_nom.contingut = u'{0} - {1}'.format(unicode( assignatura ) , unicode( grup ) )
 
         capcelera_nIncidencies = tools.classebuida()
-        capcelera_nIncidencies.amplade = 10
+        capcelera_nIncidencies.amplade = 5
         capcelera_nIncidencies.contingut = u'Incidències'
 
         capcelera_assistencia = tools.classebuida()
@@ -492,14 +492,23 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 20
-        capcelera_contacte.contingut = u'Informació dels Responsables'
+        capcelera_contacte.amplade = 10
+        capcelera_contacte.contingut = u'Responsables'
+
+        capcelera_autoritzacio = tools.classebuida()
+        capcelera_autoritzacio.amplade = 15
+        capcelera_autoritzacio.contingut = u'Autorització'
+
+        capcelera_mediques = tools.classebuida()
+        capcelera_mediques.amplade = 10
+        capcelera_mediques.contingut = u'Dades mèdiques'
 
         capcelera_observacions = tools.classebuida()
-        capcelera_observacions.amplade = 15
+        capcelera_observacions.amplade = 10
         capcelera_observacions.contingut = u'Observacions'
         
-        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte, capcelera_observacions]
+        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia,
+                            capcelera_nFaltes, capcelera_contacte, capcelera_autoritzacio, capcelera_mediques, capcelera_observacions]
         
         taula.fileres = []
         for alumne in Alumne.objects.filter( 
@@ -546,8 +555,8 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                     ).exclude(
                                                         estat = 'ES'
                                                     ).count()
-            camp_nIncidencies.multipleContingut = [ ( u'Incid: {0}'.format( nIncidencies ), None, ), 
-                                                    ( u'Expul: {0}'.format( nExpulsions), None,  ) ]
+            camp_nIncidencies.multipleContingut = [ ( u'Incid:\xa0{0}'.format( nIncidencies ), None, ),
+                                                    ( u'Expul:\xa0{0}'.format( nExpulsions), None,  ) ]
             filera.append(camp_nIncidencies)
 
             #-Assistencia--------------------------------------------
@@ -601,6 +610,21 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                                         alumne.rp2_mobil,
                                                                         alumne.rp2_correu ), None,)]
             filera.append(camp)
+
+            # -Autorització--------------------------------------------
+            camp_autoritzacio = tools.classebuida()
+            camp_autoritzacio.enllac = None
+            camp_autoritzacio.multipleContingut = [(u'Drets\xa0imatge: {0}'.format(alumne.get_drets_imatge_display() if alumne.drets_imatge != None else '-'), None,),
+                                                   (u'Sortides: {0}'.format(alumne.get_autoritzacio_sortides_display() if alumne.autoritzacio_sortides != None else '-'), None,),
+                                                   (u'Salut\xa0i\xa0Escola:{0}'.format(alumne.get_salut_i_escola_display() if alumne.salut_i_escola != None else '-'), None,)]
+            filera.append(camp_autoritzacio)
+
+            # -Dades mèdiques--------------------------------------------
+            camp_mediques = tools.classebuida()
+            camp_mediques.enllac = None
+            camp_mediques.contingut = u'{0}'.format(
+                alumne.dades_mediques) if alumne.dades_mediques else ''
+            filera.append(camp_mediques)
 
             # -observacions--------------------------------------------
             camp_observacions = tools.classebuida()
