@@ -95,12 +95,13 @@ PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
-CAMPS_ADDICIONALS_ALUMNE = {
-        'Drets imatge': 'drets_imatge',
-        'Autorització sortides': 'autoritzacio_sortides',
-        'Salut i Escola': 'salut_i_escola',
-        'Responsable Preferent': 'rp_importat_nom',
-        'Dades mèdiques': 'dades_mediques',
+CUSTOM_DADES_ADDICIONALS_ALUMNE = {
+        #Nom de la dada addicional: [qui la pot visualitzar],
+        #'Drets imatge': ['Tutor','Familia','Professor'],
+        #'Autorització sortides': ['Tutor','Familia','Professor'],
+        #'Salut i Escola': ['Tutor','Familia','Professor'],
+        #'Responsable Preferent': ['Tutor'],
+        #'Dades mèdiques': ['Tutor','Familia','Professor'],
     }
 
 

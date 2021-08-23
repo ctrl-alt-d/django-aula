@@ -132,11 +132,6 @@ class AbstractAlumne(models.Model):
         (1, 'Responsable 2'),
     )
 
-    BOOLEAN_CHOICES = (
-        (True, 'SÍ'),
-        (False, 'NO'),
-    )
-        
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
     grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
     nom = models.CharField("Nom",max_length=240)
@@ -195,11 +190,6 @@ class AbstractAlumne(models.Model):
 
     foto = PrivateFileField("Foto", upload_to='alumnes/fotos', content_types=CUSTOM_TIPUS_MIME_FOTOS, max_file_size=3145728, null=True, blank=True)
     observacions =models.TextField(max_length=150, null=True, blank=True, help_text= u"Informació visible pels seus professors/es")
-    drets_imatge = models.BooleanField(choices=BOOLEAN_CHOICES, blank=True, null=True, help_text=u"Acceptació dels drets d'imatge")
-    autoritzacio_sortides = models.BooleanField(choices=BOOLEAN_CHOICES, blank=True, null=True, help_text=u"Autorització per realitzar sortides")
-    salut_i_escola = models.BooleanField(choices=BOOLEAN_CHOICES, blank=True, null=True, help_text=u"Acceptació del programa Salut i Escola")
-    rp_importat_nom = models.CharField(max_length=250, blank=True) #Responsable importat des de fitxer de dades addicionals
-    dades_mediques = models.CharField(max_length=750, blank=True)
 
     class Meta:
         abstract = True
@@ -318,3 +308,19 @@ class AbstractAlumne(models.Model):
     def get_foto_or_default(self):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
+
+
+class AbstractDadesAddicionalsAlumne(models.Model):
+
+    alumne = models.ForeignKey('alumnes.Alumne', on_delete=models.CASCADE)
+    label = models.CharField(max_length=50, help_text=u"Nom del camp addicional")
+    value = models.CharField(max_length=500, blank=True, null=True, help_text="Contingut del camp addicional")
+
+    class Meta:
+        abstract = True
+        verbose_name = u"Dada addicional de l'alumne"
+        verbose_name_plural = u"Dades addicionals dels alumnes"
+        unique_together = ['alumne','label']
+
+    def __str__(self):
+        return self.alumne + ' - ' + self.label + ': ' + self.value

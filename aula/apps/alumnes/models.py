@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.apps.alumnes.abstract_models import AbstractNivell, AbstractCurs,\
-    AbstractGrup, AbstractAlumne
+    AbstractGrup, AbstractAlumne, AbstractDadesAddicionalsAlumne
 from aula.utils.tools import unicode
 
 class Nivell(AbstractNivell):
@@ -13,6 +13,9 @@ class Grup(AbstractGrup):
     pass
     
 class Alumne(AbstractAlumne):
+    pass
+
+class DadesAddicionalsAlumne(AbstractDadesAddicionalsAlumne):
     pass
 
 from django.db import models
