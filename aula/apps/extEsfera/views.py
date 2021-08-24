@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from django.contrib.auth.decorators import login_required
-from aula.settings import CAMPS_ADDICIONALS_ALUMNE
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
@@ -91,7 +91,7 @@ def dadesAddicionals(request):
     professor = User2Professor(user)
 
     from aula.apps.extEsfera.sincronitzaEsfera import dades_adiccionals
-    camps_addicionals = CAMPS_ADDICIONALS_ALUMNE
+    camps_addicionals = CUSTOM_DADES_ADDICIONALS_ALUMNE
     if request.method == 'POST':
         form = dadesAddicionalsForm(request.POST, request.FILES)
         if form.is_valid():

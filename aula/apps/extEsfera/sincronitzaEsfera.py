@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #--
-from aula.apps.alumnes.models import Alumne, Grup, Nivell
+from aula.apps.alumnes.models import Alumne, Grup, Nivell, DadesAddicionalsAlumne
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
     ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA, IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
@@ -17,7 +17,7 @@ from django.contrib.auth.models import Group
 
 import time
 from aula.apps.extEsfera.models import Grup2Aula
-from aula.settings import CAMPS_ADDICIONALS_ALUMNE
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 
 from aula.utils.tools import unicode
 
@@ -406,7 +406,7 @@ def dades_responsable ( dades ):
 def dades_adiccionals (f, user=None):
     errors = []
     warnings = []
-    camps_addicionals = CAMPS_ADDICIONALS_ALUMNE
+    camps_addicionals = CUSTOM_DADES_ADDICIONALS_ALUMNE
 
     try:
         # Carregar full de càlcul
@@ -454,15 +454,11 @@ def dades_adiccionals (f, user=None):
                         if alumne.__str__() != nom_llegit:
                             warnings.append(u'Nom/Cognoms alumne/a amb ralc {0} no coincident: {1} - {2}'.format(alumne.ralc, alumne.__str__(), nom_llegit))
                         try:
-                            nom_camp = camps_addicionals[camp]
                             valor = unicode(cell.offset(0,1).value) if cell.offset(0,1).value else ""  #accedim a la següent columna on està el valor corresponent al camp
-                            if Alumne._meta.get_field(nom_camp).get_internal_type() == 'BooleanField':
-                                if valor.lower() == 'sí': valor = True
-                                elif valor.lower() == 'no': valor = False
-                                else: valor = None
-                            if getattr(alumne,nom_camp) != valor:
-                                setattr(alumne,nom_camp,valor)
-                                alumne.save()
+                            dada_addicional, created = DadesAddicionalsAlumne.objects.get_or_create(alumne=alumne, label=camp)
+                            if dada_addicional.value != valor:
+                                dada_addicional.value = valor
+                                dada_addicional.save()
                                 info_nModificacions += 1
                         except:
                             return {'errors': [

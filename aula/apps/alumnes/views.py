@@ -11,7 +11,7 @@ from .tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
 #from django import forms as forms
-from aula.apps.alumnes.models import Alumne,  Curs, Grup
+from aula.apps.alumnes.models import Alumne, Curs, Grup, DadesAddicionalsAlumne
 from aula.apps.usuaris.models import Professor, Accio
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
@@ -58,6 +58,9 @@ from aula.apps.missatgeria.missatges_a_usuaris import (
 )
 
 #duplicats
+from ...settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
+
+
 @login_required
 @group_required(['direcció'])
 def duplicats(request):
@@ -508,8 +511,15 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_observacions.contingut = u'Observacions'
         
         taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia,
-                            capcelera_nFaltes, capcelera_contacte, capcelera_autoritzacio, capcelera_mediques, capcelera_observacions]
-        
+                            capcelera_nFaltes, capcelera_contacte, capcelera_autoritzacio]
+
+        for index,value in CUSTOM_DADES_ADDICIONALS_ALUMNE.items():
+            if (not value[0] and 'Professor' in value[1]): #camp no agrupable en una sóla columna i visible al professorat
+                capcelera_nova = tools.classebuida()
+                capcelera_nova.contingut = index
+                taula.capceleres.append(capcelera_nova)
+        taula.capceleres.append(capcelera_observacions)
+
         taula.fileres = []
         for alumne in Alumne.objects.filter( 
                             controlassistencia__impartir__horari__grup = grup,
@@ -611,20 +621,23 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                                         alumne.rp2_correu ), None,)]
             filera.append(camp)
 
-            # -Autorització--------------------------------------------
+            # -Camps addicionals i autoritzacions--------------------------------------------
             camp_autoritzacio = tools.classebuida()
             camp_autoritzacio.enllac = None
-            camp_autoritzacio.multipleContingut = [(u'Drets\xa0imatge: {0}'.format(alumne.get_drets_imatge_display() if alumne.drets_imatge != None else '-'), None,),
-                                                   (u'Sortides: {0}'.format(alumne.get_autoritzacio_sortides_display() if alumne.autoritzacio_sortides != None else '-'), None,),
-                                                   (u'Salut\xa0i\xa0Escola:{0}'.format(alumne.get_salut_i_escola_display() if alumne.salut_i_escola != None else '-'), None,)]
+            camp_autoritzacio.multipleContingut = []
+            dades_addicionals_alumne = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+            for dada_addicional in dades_addicionals_alumne:
+                    agrupable = CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][0]
+                    visible_al_professorat = 'Professor' in CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][1]
+                    if visible_al_professorat:
+                        if agrupable:
+                            camp_autoritzacio.multipleContingut.append((u'{0}: {1}'.format(dada_addicional.label,dada_addicional.value), None,))
+                        else:
+                            camp_nou = tools.classebuida()
+                            camp_nou.enllac = None
+                            camp_nou.contingut = dada_addicional.value
             filera.append(camp_autoritzacio)
-
-            # -Dades mèdiques--------------------------------------------
-            camp_mediques = tools.classebuida()
-            camp_mediques.enllac = None
-            camp_mediques.contingut = u'{0}'.format(
-                alumne.dades_mediques) if alumne.dades_mediques else ''
-            filera.append(camp_mediques)
+            filera.append(camp_nou)
 
             # -observacions--------------------------------------------
             camp_observacions = tools.classebuida()

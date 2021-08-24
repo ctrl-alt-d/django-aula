@@ -323,4 +323,4 @@ class AbstractDadesAddicionalsAlumne(models.Model):
         unique_together = ['alumne','label']
 
     def __str__(self):
-        return self.alumne + ' - ' + self.label + ': ' + self.value
+        return self.alumne.cognoms + ', ' + self.alumne.nom + ' - ' + self.label + ': ' + self.value
