@@ -46,6 +46,8 @@ urlpatterns = [
     url(r'^recursos/', include('aula.apps.material.urls')),
     url(r'^presenciaSetmanal/', include('aula.apps.presenciaSetmanal.urls')),
     url(r'^extUntis/', include('aula.apps.extUntis.urls')),
+    url(r'^matricula/', include('aula.apps.matricula.urls', namespace='matricula')),
+    url(r'^extPreinscripcio/', include('aula.apps.extPreinscripcio.urls')),
     # Uncomment the next line to enable the admin:
     path('admin/', admin.site.urls),
     # Login i logout automàtics

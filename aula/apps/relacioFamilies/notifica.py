@@ -9,6 +9,18 @@ from aula.apps.sortides.models import NotificaSortida, QuotaPagament
 from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core.mail import EmailMessage
 from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
+from aula.apps.relacioFamilies.models import EmailPendent
+
+def notifica_pendents():
+    for ep in EmailPendent.objects.all():
+        r=0
+        try:
+            email = EmailMessage(subject=ep.subject, body=ep.message, from_email=ep.fromemail, bcc=eval(ep.toemail))
+            r=email.send(fail_silently=False)
+        except Exception as e:
+            print (u'Error {0} enviant missatge pendent a {1}'.format(e, eval(ep.toemail)))
+            continue
+        if r==1: ep.delete()
 
 def notifica():
     from aula.apps.alumnes.models import Alumne
@@ -29,6 +41,9 @@ def notifica():
         
     #actualitzo notificacions sortides:
     notifica_sortides()
+    
+    #Missatges pendents
+    notifica_pendents()
 
     #Notificacions        
     ara = datetime.now()
@@ -194,8 +209,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
             informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
 
     correus_alumnes = Alumne.objects.filter(q_no_es_baixa).values_list(
-        'correu_relacio_familia_pare','correu_relacio_familia_mare','correu_tutors', 
-        'rp1_correu', 'rp2_correu', 'correu')
+        'correu_relacio_familia_pare','correu_relacio_familia_mare') # ,'correu_tutors', 'rp1_correu', 'rp2_correu', 'correu')
     
     # crea llista de correus
     correus_alumnes=[item for sublist in list(correus_alumnes) for item in sublist]

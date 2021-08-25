@@ -48,6 +48,7 @@ from django.contrib.humanize.templatetags.humanize import naturalday
 import json
 from django.utils.html import escapejs
 import django.utils.timezone
+from aula.apps.matricula.views import inforgpd
 
 #@login_required
 #@group_required(['professors'])
@@ -390,12 +391,13 @@ def canviParametres( request ):
     ]
     
     AlumneFormSet = modelform_factory(Alumne,
-                                         fields = ( 'correu_relacio_familia_pare', 'correu_relacio_familia_mare' ,
-                                                    'periodicitat_faltes', 'periodicitat_incidencies'), 
-                                         )    
+                                      form=AlumneModelForm,
+                                      widgets={
+                                          'foto': FileInput,}
+                                         )
     
     if request.method == 'POST':
-        form = AlumneFormSet(  request.POST , instance=alumne )
+        form = AlumneFormSet(  request.POST , request.FILES, instance=alumne )
         if form.is_valid(  ):
             #Comprova els dominis de correu
             errors = {}
@@ -420,13 +422,14 @@ def canviParametres( request ):
 
     return render(
                 request,
-                'form.html',
+                'configuraConnexio.html',
                     {'form': form,
+                     'image': alumne.get_foto_or_default,
                      'infoForm': infoForm,
                      'head': u'Canvi de paràmetres' ,
-                     'formSetDelimited':True},
+                     'formSetDelimited':True,
+                     'rgpd': inforgpd()},
                 )
-
 
 @login_required
 def elMeuInforme( request, pk = None ):

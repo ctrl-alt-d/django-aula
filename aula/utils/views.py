@@ -505,12 +505,26 @@ def blanc( request ):
                 'blanc.html',
                     {},
                 )
-    
-    
-def allow_foto(private_file):
+
+def allow_private_files(private_file):
+    from aula.apps.alumnes.models import Alumne
+    from aula.apps.matricula.models import Document    
+
     request = private_file.request
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
+
+    if not request.user.is_authenticated: return False
+    
+    if private_file.relative_name.startswith('matricula'):
+        data=Document.objects.filter(matricula__alumne__user_associat=user, fitxer=private_file.relative_name)
+        if data:
+            return request.user.is_authenticated
+    
+    prop=Alumne.objects.filter(user_associat=user, foto=private_file.relative_name)
+    if prop:
+        return request.user.is_authenticated
+
     pertany_al_grup_permes = (user
                               .groups
                               .filter(name__in=CUSTOM_GRUPS_PODEN_VEURE_FOTOS)

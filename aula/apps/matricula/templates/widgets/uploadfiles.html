@@ -1,0 +1,15 @@
+{% if widget.attrs.files %}
+    {{ widget.initial_text }}: 
+    <br>
+	{% for f in widget.attrs.files %}
+		<a href="/private-media/{{ f }}" target="_blank">{{ f }}</a>
+		<input type="checkbox" name="{{ widget.checkbox_name }}{{ forloop.counter }}" id="{{ widget.checkbox_id }}{{ forloop.counter }}"
+		{% if widget.attrs.disabled %} 
+			disabled
+		{% endif %}>
+		<label for="{{ widget.checkbox_id }}{{ forloop.counter }}">{{ widget.clear_checkbox_label }}</label>
+		<br>
+	{% endfor %}
+{% endif %}
+{{ widget.input_text }}:
+<input type="{{ widget.type }}" name="{{ widget.name }}" {% include "django/forms/widgets/attrs.html" %}>

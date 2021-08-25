@@ -90,7 +90,7 @@
              {% else %}
 	            {% if camp.enllac %}<a href="{{camp.enllac}}">{%endif%}
 
-                {% if camp.buto %}<a class="btn btn-primary" href="{% url camp.buto camp.id %}" role="button">{%endif%}
+                {% if camp.buto %}<a class="btn btn-primary" href="{% url camp.buto camp.id %}?next={{ camp.nexturl }}" role="button">{%endif%}
 	            	
 	            {% if camp.negreta %}<strong>{%endif%}
 

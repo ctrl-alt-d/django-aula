@@ -295,6 +295,8 @@ def elsProfessors( request ):
         
 
 def loginUser( request ):
+    from aula.apps.matricula.views import get_url_alumne
+    
     head=u'Login' 
 
     client_address = getClientAdress( request )
@@ -320,6 +322,9 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
+                        url_mat=get_url_alumne(user)
+                        if url_mat:
+                            return HttpResponseRedirect( url_mat )
                         return HttpResponseRedirect( url_next )
                     else:
                         LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
@@ -412,6 +417,8 @@ def recoverPasswd( request , username, oneTimePasswd ):
     return alumneRecoverPasswd( request , username, oneTimePasswd )
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
+    from aula.apps.matricula.views import get_url_alumne, MatriculaOberta
+    
     # Comprova que correspongui a dades vàlides actuals
     if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):
         return HttpResponseRedirect( '/' )
@@ -430,8 +437,12 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
             try:
                 alumneUser =  AlumneUser.objects.get( username = username)
                 dataOK = data_neixement == alumneUser.getAlumne().data_neixement
-                a_temps = datetime.now() - timedelta( minutes = 30 )
-                codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
+                if MatriculaOberta(alumneUser.getAlumne()):
+                    codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
+                                                                  clau = oneTimePasswd)
+                else:
+                    a_temps = datetime.now() - timedelta( minutes = 30 )
+                    codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
                                                                   clau = oneTimePasswd, 
                                                                   moment_expedicio__gte = a_temps,
                                                                   reintents__lt = 3 )
@@ -471,6 +482,9 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address) 
                                 
                 url_next = '/' 
+                url_mat=get_url_alumne(user)
+                if url_mat:
+                    return HttpResponseRedirect( url_mat )
                 return HttpResponseRedirect( url_next )        
             else:
                 try:

@@ -109,9 +109,9 @@ class EscollirCursForm(forms.Form):
             # Si usuari no pertany a direcció ni administradors
             # només permet tipus de quotes que coincideixen amb l'usuari
             #  Exemple:  usuari ampa --> tipus de quota "ampa" 
-            self.fields['tipus_quota'].queryset = TipusQuota.objects.filter(quota__isnull=False, nom=user.username).order_by('nom').distinct()
+            self.fields['tipus_quota'].queryset = TipusQuota.objects.exclude(nom='uf').exclude(nom='taxcurs').filter(quota__isnull=False, nom=user.username).order_by('nom').distinct()
         else:
-            self.fields['tipus_quota'].queryset = TipusQuota.objects.filter(quota__isnull=False).order_by('nom').distinct()
+            self.fields['tipus_quota'].queryset = TipusQuota.objects.exclude(nom='uf').exclude(nom='taxcurs').filter(quota__isnull=False).order_by('nom').distinct()
 
 class PagQuotesForm(forms.Form):
     '''
