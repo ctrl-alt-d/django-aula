@@ -39,7 +39,7 @@ class Table2_Actuacions(tables.Table):
                         )
     
     assumpte  = tables.TemplateColumn(
-                        template_code = u"""{{ record.assumpte }}""", 
+                        template_code = u"""{{ record.get_assumpte_display }}""",
                         order_by=( 'assumpte', 'alumne.grup', 'alumne.cognoms', 'alumne.nom' )
                         )
     

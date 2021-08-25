@@ -65,12 +65,24 @@ class AbstractActuacio(models.Model):
             ('F', u'''Familia''',),
             ('T', u'''Altres''',),
                    )
+    ASSUMPTE_CHOICES = (
+        ('T', u'''Tutoria individualitzada''',),
+        ('C', u'''A/I Conflicte comportament''',),
+        ('V', u'''A/I Valoració''',),
+        ('S', u'''A/I Seguiment''',),
+        ('O', u'''A/I Orientació acadèmica''',),
+        ('E', u'''A/I Suport educatiu''',),
+        ('G', u'''A/I Gestió de les emocions''',),
+        ('I', u'''A/I Gestió social''',),
+        ('P', u'''A/I Pla individualitzat''',),
+        ('A', u'''Actuació puntual''',),
+    )
     alumne = models.ForeignKey('alumnes.Alumne', help_text=u"Alumne sobre el qual es fa l'actuació", db_index = True, on_delete=models.CASCADE )
     professional = models.ForeignKey('usuaris.Professional', null=True, blank=True, help_text=u"Professional que fa l'actuacio", db_index=True, on_delete=models.CASCADE )
     moment_actuacio = models.DateTimeField(help_text=u"Data i Hora de l'actuació. Format: 2011-06-01 9:05")
     qui_fa_actuacio = models.CharField(choices = QUI_CHOICES, max_length=1, help_text=u"Qui realitza l'actuació")
     amb_qui_es_actuacio = models.CharField(choices = AMB_QUI_CHOICES, max_length=1, help_text=u"Sobre qui es realitza l'actuació")
-    assumpte = models.CharField(max_length=200, help_text=u"Assumpte")
+    assumpte = models.CharField(choices = ASSUMPTE_CHOICES, max_length=1, help_text=u"Assumpte")
     actuacio = models.TextField(blank=True, help_text=u"Explicació detallada de l'actuació realitzada. No inclogueu dades mèdiques ni diagnòstiques.")
     class Meta:
         abstract = True
