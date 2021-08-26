@@ -20,9 +20,10 @@ from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, Pagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 
 #qualitativa
 
@@ -189,9 +190,13 @@ def configuraConnexio( request , pk ):
           ('Edat alumne', edatAlumne),
           ('Telèfons Alumne', ','.join(filter(None,telefons_alumne))),
           ('Noms responsables', ' / '.join(filter(None,noms_responsables))),
-          ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),
-          ('Responsable preferent (Esfer@/Saga)', alumne.rp_importat_nom),
-                ]
+          ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),]
+
+    if alumne.dadesaddicionalsalumne_set.exists():
+        for dada,value in CUSTOM_DADES_ADDICIONALS_ALUMNE.items():
+            if 'Tutor' in value[1]:
+                valor = alumne.dadesaddicionalsalumne_set.get(label=dada).value if alumne.dadesaddicionalsalumne_set.get(label=dada) else ''
+                infoForm.append((dada + u'(Esfer@/Saga)', valor))
     
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
@@ -956,37 +961,25 @@ def elMeuInforme( request, pk = None ):
     
         taula.fileres.append( filera )
 
-        # ----dades mèdiques------------------------------------------
-        filera = []
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'Dades mèdiques'
-        filera.append(camp)
+        # # ----dades addicionals-----------------------------------------
+        if CUSTOM_DADES_ADDICIONALS_ALUMNE:
+            dades_addicionals = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+            for dada_addicional in dades_addicionals:
+                if dada_addicional.label in CUSTOM_DADES_ADDICIONALS_ALUMNE and 'Familia' in CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][1]:
+                    filera = []
+                    camp = tools.classebuida()
+                    camp.enllac = None
+                    camp.contingut = dada_addicional.label
+                    filera.append(camp)
 
-        camp = tools.classebuida()
-        camp.enllac = None
-        dades_mediques = alumne.dades_mediques if alumne.dades_mediques else ''
-        camp.contingut = u'{0}'.format(dades_mediques)
-        filera.append(camp)
+                    camp = tools.classebuida()
+                    camp.enllac = None
+                    dada_camp = dada_addicional.value
+                    camp.contingut = dada_camp
+                    filera.append(camp)
 
-        taula.fileres.append(filera)
+                    taula.fileres.append(filera)
 
-        # ----autoritzacions------------------------------------------
-        filera = []
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'Autoritzacions'
-        filera.append(camp)
-
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.multipleContingut = [(u'Drets imatge: {0}'.format(alumne.get_drets_imatge_display() if alumne.drets_imatge != None else '-'), None,),
-                                  (u'Sortides: {0}'.format(alumne.get_autoritzacio_sortides_display() if alumne.autoritzacio_sortides != None else '-'),None,),
-                                  (u'Salut i Escola: {0}'.format(alumne.get_salut_i_escola_display() if alumne.salut_i_escola != None else '-'),None,)]
-        filera.append(camp)
-
-        taula.fileres.append(filera)
-    
         report.append(taula)
 
     #----Sortides -----------------------------------------------------------------------------   

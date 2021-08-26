@@ -96,12 +96,12 @@ CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
 CUSTOM_DADES_ADDICIONALS_ALUMNE = {
-        #Nom de la dada addicional: [És autorització? , [qui la pot visualitzar]],
-        #'Drets imatge': [True,['Tutor','Familia','Professor']],
-        #'Autorització sortides': [True,['Tutor','Familia','Professor']],
-        #'Salut i Escola': [True,['Tutor','Familia','Professor']],
+        #Nom de la dada addicional: [És una autorització? , [qui la pot visualitzar]],
+        #'Drets imatge': [True,['Familia','Professor']],
+        #'Autorització sortides': [True,['Familia','Professor']],
+        #'Salut i Escola': [True,['Familia','Professor']],
         #'Responsable Preferent': [False,['Tutor']],
-        #'Dades mèdiques': [False,['Tutor','Familia','Professor']],
+        #'Dades mèdiques': [False,['Familia','Professor']],
     }
 
 

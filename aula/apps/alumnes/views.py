@@ -498,20 +498,22 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_contacte.amplade = 10
         capcelera_contacte.contingut = u'Responsables'
 
-        capcelera_autoritzacio = tools.classebuida()
-        capcelera_autoritzacio.amplade = 15
-        capcelera_autoritzacio.contingut = u'Autorització'
-
-        capcelera_mediques = tools.classebuida()
-        capcelera_mediques.amplade = 10
-        capcelera_mediques.contingut = u'Dades mèdiques'
-
         capcelera_observacions = tools.classebuida()
         capcelera_observacions.amplade = 10
         capcelera_observacions.contingut = u'Observacions'
         
         taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia,
-                            capcelera_nFaltes, capcelera_contacte, capcelera_autoritzacio]
+                            capcelera_nFaltes, capcelera_contacte]
+
+
+        hi_ha_autoritzacions=[]
+        for value in CUSTOM_DADES_ADDICIONALS_ALUMNE.values():
+            hi_ha_autoritzacions.append(value[0])
+        if True in hi_ha_autoritzacions:
+            capcelera_autoritzacio = tools.classebuida()
+            capcelera_autoritzacio.amplade = 15
+            capcelera_autoritzacio.contingut = u'Autorització'
+            taula.capceleres.append(capcelera_autoritzacio)
 
         for index,value in CUSTOM_DADES_ADDICIONALS_ALUMNE.items():
             if (not value[0] and 'Professor' in value[1]): #camp no agrupable en una sóla columna i visible al professorat
@@ -621,23 +623,34 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                                         alumne.rp2_correu ), None,)]
             filera.append(camp)
 
-            # -Camps addicionals i autoritzacions--------------------------------------------
-            camp_autoritzacio = tools.classebuida()
-            camp_autoritzacio.enllac = None
-            camp_autoritzacio.multipleContingut = []
-            dades_addicionals_alumne = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
-            for dada_addicional in dades_addicionals_alumne:
-                    agrupable = CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][0]
-                    visible_al_professorat = 'Professor' in CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][1]
-                    if visible_al_professorat:
-                        if agrupable:
-                            camp_autoritzacio.multipleContingut.append((u'{0}: {1}'.format(dada_addicional.label,dada_addicional.value), None,))
-                        else:
-                            camp_nou = tools.classebuida()
-                            camp_nou.enllac = None
+            # -Camps addicionals agrupables en una columna (autoritzacions)--------------------
+            if CUSTOM_DADES_ADDICIONALS_ALUMNE and hi_ha_autoritzacions:
+                camp_autoritzacio = tools.classebuida()
+                camp_autoritzacio.enllac = None
+                camp_autoritzacio.multipleContingut = []
+                dades_addicionals_alumne = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+                for dada_addicional in dades_addicionals_alumne:
+                    if dada_addicional.label in CUSTOM_DADES_ADDICIONALS_ALUMNE:
+                        agrupable = CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][0]
+                        visible_al_professorat = 'Professor' in CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][1]
+                        if visible_al_professorat and agrupable:
+                                camp_autoritzacio.multipleContingut.append((u'{0}: {1}'.format(dada_addicional.label, dada_addicional.value), None,))
+                filera.append(camp_autoritzacio)
+
+
+            # -Camps addicionals no agrupables en una columna --------------------
+            if CUSTOM_DADES_ADDICIONALS_ALUMNE:
+                camp_nou = tools.classebuida()
+                camp_nou.enllac = None
+                dades_addicionals_alumne = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+                for dada_addicional in dades_addicionals_alumne:
+                    if dada_addicional.label in CUSTOM_DADES_ADDICIONALS_ALUMNE:
+                        agrupable = CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][0]
+                        visible_al_professorat = 'Professor' in CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][1]
+                        if visible_al_professorat and not agrupable:
                             camp_nou.contingut = dada_addicional.value
-            filera.append(camp_autoritzacio)
-            filera.append(camp_nou)
+                filera.append(camp_nou)
+
 
             # -observacions--------------------------------------------
             camp_observacions = tools.classebuida()
