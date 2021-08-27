@@ -25,7 +25,7 @@ POLITICA_RGPD = location( r'../customising/docs/POLITICARGPD' )
 #Fitxer de text amb les condicions de matrícula, es poden fer servir marques HTML.
 CONDICIONS_MATRICULA = location( r'../customising/docs/MATRICULA' )
 #Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
-INFORGPD = location( r'../customising/docs/INFORGPD' )
+INFORGPD = None # location( r'../customising/docs/INFORGPD' )
 
 MANAGERS = ADMINS
 
