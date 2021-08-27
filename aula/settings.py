@@ -95,14 +95,33 @@ PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
-CUSTOM_DADES_ADDICIONALS_ALUMNE = {
-        #Nom de la dada addicional: [És una autorització? , [qui la pot visualitzar]],
-        #'Drets imatge': [True,['Familia','Professor']],
-        #'Autorització sortides': [True,['Familia','Professor']],
-        #'Salut i Escola': [True,['Familia','Professor']],
-        #'Responsable Preferent': [False,['Tutor']],
-        #'Dades mèdiques': [False,['Familia','Professor']],
-    }
+CUSTOM_DADES_ADDICIONALS_ALUMNE = [
+    # {
+    #     'label':  'Drets imatge',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Autorització sortides',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Salut i Escola',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Responsable Preferent',
+    #     'esautoritzacio': False,
+    #     'visibilitat': ['Tutor'],
+    # },
+    # {
+    #     'label':  'Dades mèdiques',
+    #     'esautoritzacio': False,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    ]
 
 
 try:

@@ -406,7 +406,7 @@ def dades_responsable ( dades ):
 def dades_adiccionals (f, user=None):
     errors = []
     warnings = []
-    camps_addicionals = CUSTOM_DADES_ADDICIONALS_ALUMNE
+    camps_addicionals = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
 
     try:
         # Carregar full de càlcul

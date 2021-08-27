@@ -193,11 +193,11 @@ def configuraConnexio( request , pk ):
           ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),]
 
     if alumne.dadesaddicionalsalumne_set.exists():
-        for dada,value in CUSTOM_DADES_ADDICIONALS_ALUMNE.items():
-            if 'Tutor' in value[1]:
-                valor = alumne.dadesaddicionalsalumne_set.get(label=dada).value if alumne.dadesaddicionalsalumne_set.get(label=dada) else ''
-                infoForm.append((dada + u'(Esfer@/Saga)', valor))
-    
+        for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:
+            if 'Tutor' in element['visibilitat']:
+                valor = alumne.dadesaddicionalsalumne_set.get(label=element['label']).value if alumne.dadesaddicionalsalumne_set.get(label=element['label']) else ''
+                infoForm.append((element['label'] + u'(Esfer@/Saga)', valor))
+
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
                                       widgets={
@@ -964,8 +964,10 @@ def elMeuInforme( request, pk = None ):
         # # ----dades addicionals-----------------------------------------
         if CUSTOM_DADES_ADDICIONALS_ALUMNE:
             dades_addicionals = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+            labels = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
             for dada_addicional in dades_addicionals:
-                if dada_addicional.label in CUSTOM_DADES_ADDICIONALS_ALUMNE and 'Familia' in CUSTOM_DADES_ADDICIONALS_ALUMNE[dada_addicional.label][1]:
+                element = next((item for item in CUSTOM_DADES_ADDICIONALS_ALUMNE if item["label"] == dada_addicional.label), None)
+                if element and dada_addicional.label in labels and 'Familia' in element['visibilitat']:
                     filera = []
                     camp = tools.classebuida()
                     camp.enllac = None

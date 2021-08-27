@@ -91,7 +91,7 @@ def dadesAddicionals(request):
     professor = User2Professor(user)
 
     from aula.apps.extEsfera.sincronitzaEsfera import dades_adiccionals
-    camps_addicionals = CUSTOM_DADES_ADDICIONALS_ALUMNE
+    camps_addicionals = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
     if request.method == 'POST':
         form = dadesAddicionalsForm(request.POST, request.FILES)
         if form.is_valid():
@@ -109,5 +109,5 @@ def dadesAddicionals(request):
         request,
         'dadesAddicionals.html',
         {'form': form,
-         'camps_addicionals': list(camps_addicionals.keys())},
+         'camps_addicionals': camps_addicionals},
     )
