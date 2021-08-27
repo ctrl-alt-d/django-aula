@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+ 
+{% block content  %}
+	<h1>Carregar el fitxer xlsx amb dades addicionals de l'alumnat (extret d'Esfer@)</h1>
+	<form action="." method="post" enctype="multipart/form-data">{% csrf_token %}
+		 {{ form }}
+		 <input type="submit" value="Upload">
+	</form>
+	<h2>Recorda que les columnes a enviar són</h2>
+	<ul>
+	<li>
+	<pre>
+Columnes:
+	"Identificador de l’alumne/a",
+	"Nom complet de l’alumne/a",
+	"Camps lliures - Nom",
+	"Camps lliures - Valor"
+	</pre>
+	</li>
+	</ul>
+    <h2>Les dades addicionals que es carregaran són</h2>
+	<ul>
+	<li>
+	<pre>
+Dades:{% for camp in camps_addicionals %} "{{ camp }}", {% endfor %}
+	</pre>
+	</li>
+	</ul>
+{% endblock %}

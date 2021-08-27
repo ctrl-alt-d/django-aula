@@ -1,10 +1,11 @@
 # This Python file uses the following encoding: utf-8
 from django.contrib.auth.decorators import login_required
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
 from django.shortcuts import render
-from aula.apps.extEsfera.forms import sincronitzaEsferaForm
+from aula.apps.extEsfera.forms import sincronitzaEsferaForm, dadesAddicionalsForm
 from aula.apps.extEsfera.models import Grup2Aula
 from django.forms.models import modelformset_factory
 from django.http.response import HttpResponseRedirect
@@ -80,4 +81,33 @@ def assignaGrups( request ):
                     "head": "Manteniment de grups Esfera",
                    },
                  )
-    
+
+
+
+@login_required
+@group_required(['direcció'])
+def dadesAddicionals(request):
+    (user, l4) = tools.getImpersonateUser(request)
+    professor = User2Professor(user)
+
+    from aula.apps.extEsfera.sincronitzaEsfera import dades_adiccionals
+    camps_addicionals = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
+    if request.method == 'POST':
+        form = dadesAddicionalsForm(request.POST, request.FILES)
+        if form.is_valid():
+            f = request.FILES['fitxerDadesAddicionals']
+            resultat = dades_adiccionals(f, user)
+            return render(
+                request,
+                'resultat.html',
+                {'head': 'Resultat importació dades addicionals',
+                 'msgs': resultat},
+            )
+    else:
+        form = dadesAddicionalsForm()
+    return render(
+        request,
+        'dadesAddicionals.html',
+        {'form': form,
+         'camps_addicionals': camps_addicionals},
+    )

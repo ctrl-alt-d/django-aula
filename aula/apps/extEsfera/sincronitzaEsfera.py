@@ -1,9 +1,9 @@
 # This Python file uses the following encoding: utf-8
 
 #--
-from aula.apps.alumnes.models import Alumne, Grup, Nivell
+from aula.apps.alumnes.models import Alumne, Grup, Nivell, DadesAddicionalsAlumne
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
-    ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA
+    ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA, IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
@@ -17,6 +17,7 @@ from django.contrib.auth.models import Group
 
 import time
 from aula.apps.extEsfera.models import Grup2Aula
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 
 from aula.utils.tools import unicode
 
@@ -402,4 +403,85 @@ def dades_responsable ( dades ):
     return dades_tutor
 
 
+def dades_adiccionals (f, user=None):
+    errors = []
+    warnings = []
+    camps_addicionals = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
+
+    try:
+        # Carregar full de càlcul
+        wb2 = load_workbook(f)
+        if len(wb2.worksheets) != 1:
+            # Si té més d'una pestanya --> error
+            errors.append('Fitxer incorrecte')
+            return {'errors': errors, 'warnings': [], 'infos': []}
+    except:
+        errors.append('Fitxer incorrecte')
+        return {'errors': errors, 'warnings': [], 'infos': []}
+
+    info_nLiniesLlegides = 0
+    info_nModificacions = 0
+
+    # Carregar full de càlcul
+    full = wb2.active
+    max_row = full.max_row
+
+    # iterar sobre les files
+    colnames = [u'Identificador de l’alumne/a', u'Nom complet de l’alumne/a', u'Camps lliures - Nom',
+                u'Camps lliures - Valor']
+    rows = list(wb2.active.rows)
+    col_indexs = {n: cell.value for n, cell in enumerate(rows[9])
+                  if cell.value in colnames}  # Començar a la fila 10, les anteriors són brossa
+    for row in rows[10:max_row - 1]:  # la darrera fila també és brossa
+        info_nLiniesLlegides += 1
+        ralc_llegit = ''
+        nom_llegit = ''
+        alumne = None
+        for index, cell in enumerate(row):
+            if bool(cell) and bool(cell.value):
+                cell.value = cell.value.strip()
+            if index in col_indexs:
+                if col_indexs[index].endswith(u"Camps lliures - Nom"):
+                    camp = unicode(cell.value)
+                    if camp in camps_addicionals:
+                        ralc_llegit = unicode(cell.offset(0,-2).value) #accedim a la columna on es troba el ralc
+                        try:
+                            alumne = Alumne.objects.get(ralc=ralc_llegit)
+                        except:
+                            return {'errors': [u"error carregant, Ralc {0} no trobat - línia {1} del fitxer de càrrega".format(ralc_llegit,info_nLiniesLlegides+10), ],
+                                    'warnings': [],'infos': []}
+                        nom_llegit = unicode(cell.offset(0,-1).value) #accedim a la columna on es troba el nom
+                        if alumne.__str__() != nom_llegit:
+                            warnings.append(u'Nom/Cognoms alumne/a amb ralc {0} no coincident: {1} - {2}'.format(alumne.ralc, alumne.__str__(), nom_llegit))
+                        try:
+                            valor = unicode(cell.offset(0,1).value) if cell.offset(0,1).value else ""  #accedim a la següent columna on està el valor corresponent al camp
+                            dada_addicional, created = DadesAddicionalsAlumne.objects.get_or_create(alumne=alumne, label=camp)
+                            if dada_addicional.value != valor:
+                                dada_addicional.value = valor
+                                dada_addicional.save()
+                                info_nModificacions += 1
+                        except:
+                            return {'errors': [
+                                u"error carregant, línia {0} del fitxer de càrrega".format(info_nLiniesLlegides+10), ],
+                                    'warnings': [],
+                                    'infos': []}
+
+    infos = ['Resum:']
+    infos.append(u'{0} línies llegides'.format(info_nLiniesLlegides))
+    infos.append(u'{0} modificacions realitzades'.format(info_nModificacions))
+    if warnings: warnings.insert(0, "Avisos:")
+    missatge = IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
+    tipus_de_missatge = tipusMissatge(missatge)
+    msg = Missatge(
+        remitent=user,
+        text_missatge=missatge,
+        tipus_de_missatge=tipus_de_missatge)
+    msg.afegeix_errors(errors)
+    msg.afegeix_warnings(warnings)
+    msg.afegeix_infos(infos)
+    importancia = 'VI' if len(errors) > 0 else 'IN'
+    grupDireccio = Group.objects.get(name='direcció')
+    msg.envia_a_grup(grupDireccio, importancia=importancia)
+
+    return {'errors': errors, 'warnings': warnings, 'infos': infos}
 
