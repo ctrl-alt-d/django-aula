@@ -11,7 +11,7 @@ from aula.apps.alumnes.tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
 #from django import forms as forms
-from aula.apps.alumnes.models import Alumne,  Curs, Grup
+from aula.apps.alumnes.models import Alumne, Curs, Grup, DadesAddicionalsAlumne
 from aula.apps.usuaris.models import Professor, Accio
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
@@ -58,6 +58,9 @@ from aula.apps.missatgeria.missatges_a_usuaris import (
 )
 
 #duplicats
+from ...settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
+
+
 @login_required
 @group_required(['direcció'])
 def duplicats(request):
@@ -462,14 +465,14 @@ def elsMeusAlumnesAndAssignatures( request ):
         taula.titol.contingut = ""
 
         capcelera_foto = tools.classebuida()
-        capcelera_foto.amplade = 10
+        capcelera_foto.amplade = 5
 
         capcelera_nom = tools.classebuida()
         capcelera_nom.amplade = 25
         capcelera_nom.contingut = u'{0} - {1}'.format(unicode( assignatura ) , unicode( grup ) )
 
         capcelera_nIncidencies = tools.classebuida()
-        capcelera_nIncidencies.amplade = 10
+        capcelera_nIncidencies.amplade = 5
         capcelera_nIncidencies.contingut = u'Incidències'
 
         capcelera_assistencia = tools.classebuida()
@@ -492,15 +495,33 @@ def elsMeusAlumnesAndAssignatures( request ):
         capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
 
         capcelera_contacte = tools.classebuida()
-        capcelera_contacte.amplade = 20
-        capcelera_contacte.contingut = u'Informació dels Responsables'
+        capcelera_contacte.amplade = 10
+        capcelera_contacte.contingut = u'Responsables'
 
         capcelera_observacions = tools.classebuida()
-        capcelera_observacions.amplade = 15
+        capcelera_observacions.amplade = 10
         capcelera_observacions.contingut = u'Observacions'
         
-        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia, capcelera_nFaltes, capcelera_contacte, capcelera_observacions]
-        
+        taula.capceleres = [capcelera_foto, capcelera_nom, capcelera_nIncidencies, capcelera_assistencia,
+                            capcelera_nFaltes, capcelera_contacte]
+
+
+        hi_ha_autoritzacions=[]
+        for value in CUSTOM_DADES_ADDICIONALS_ALUMNE:
+            hi_ha_autoritzacions.append(value['esautoritzacio'])
+        if True in hi_ha_autoritzacions:
+            capcelera_autoritzacio = tools.classebuida()
+            capcelera_autoritzacio.amplade = 15
+            capcelera_autoritzacio.contingut = u'Autorització'
+            taula.capceleres.append(capcelera_autoritzacio)
+
+        for dada in CUSTOM_DADES_ADDICIONALS_ALUMNE:
+            if (not dada['esautoritzacio'] and 'Professor' in dada['visibilitat']): #camp no agrupable en una sóla columna i visible al professorat
+                capcelera_nova = tools.classebuida()
+                capcelera_nova.contingut = dada['label']
+                taula.capceleres.append(capcelera_nova)
+        taula.capceleres.append(capcelera_observacions)
+
         taula.fileres = []
         for alumne in Alumne.objects.filter( 
                             controlassistencia__impartir__horari__grup = grup,
@@ -546,8 +567,8 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                     ).exclude(
                                                         estat = 'ES'
                                                     ).count()
-            camp_nIncidencies.multipleContingut = [ ( u'Incid: {0}'.format( nIncidencies ), None, ), 
-                                                    ( u'Expul: {0}'.format( nExpulsions), None,  ) ]
+            camp_nIncidencies.multipleContingut = [ ( u'Incid:\xa0{0}'.format( nIncidencies ), None, ),
+                                                    ( u'Expul:\xa0{0}'.format( nExpulsions), None,  ) ]
             filera.append(camp_nIncidencies)
 
             #-Assistencia--------------------------------------------
@@ -601,6 +622,38 @@ def elsMeusAlumnesAndAssignatures( request ):
                                                                         alumne.rp2_mobil,
                                                                         alumne.rp2_correu ), None,)]
             filera.append(camp)
+
+            labels = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
+            # -Camps addicionals agrupables en una columna (autoritzacions)--------------------
+            if CUSTOM_DADES_ADDICIONALS_ALUMNE and hi_ha_autoritzacions:
+                camp_autoritzacio = tools.classebuida()
+                camp_autoritzacio.enllac = None
+                camp_autoritzacio.multipleContingut = []
+                dades_addicionals_alumne = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+                for dada_addicional in dades_addicionals_alumne:
+                    if dada_addicional.label in labels:
+                        element = next(item for item in CUSTOM_DADES_ADDICIONALS_ALUMNE if item["label"] == dada_addicional.label)
+                        agrupable = element['esautoritzacio']
+                        visible_al_professorat = 'Professor' in element['visibilitat']
+                        if visible_al_professorat and agrupable:
+                                camp_autoritzacio.multipleContingut.append((u'{0}: {1}'.format(dada_addicional.label, dada_addicional.value), None,))
+                filera.append(camp_autoritzacio)
+
+
+            # -Camps addicionals no agrupables en una columna --------------------
+            if CUSTOM_DADES_ADDICIONALS_ALUMNE:
+                camp_nou = tools.classebuida()
+                camp_nou.enllac = None
+                dades_addicionals_alumne = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+                for dada_addicional in dades_addicionals_alumne:
+                    if dada_addicional.label in labels:
+                        element = next((item for item in CUSTOM_DADES_ADDICIONALS_ALUMNE if item["label"] == dada_addicional.label), None)
+                        agrupable = element['esautoritzacio'] if element else True
+                        visible_al_professorat = 'Professor' in element['visibilitat'] if element else False
+                        if visible_al_professorat and not agrupable:
+                            camp_nou.contingut = dada_addicional.value
+                filera.append(camp_nou)
+
 
             # -observacions--------------------------------------------
             camp_observacions = tools.classebuida()

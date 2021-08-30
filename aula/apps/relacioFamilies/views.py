@@ -21,9 +21,10 @@ from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 
 #qualitativa
 
@@ -192,9 +193,14 @@ def configuraConnexio( request , pk ):
           ('Edat alumne', edatAlumne),
           ('Telèfons Alumne', ','.join(filter(None,telefons_alumne))),
           ('Noms responsables', ' / '.join(filter(None,noms_responsables))),
-          ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),
-                ]
-    
+          ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),]
+
+    if alumne.dadesaddicionalsalumne_set.exists():
+        for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:
+            if 'Tutor' in element['visibilitat']:
+                valor = alumne.dadesaddicionalsalumne_set.get(label=element['label']).value if alumne.dadesaddicionalsalumne_set.get(label=element['label']) else ''
+                infoForm.append((element['label'] + u'(Esfer@/Saga)', valor))
+
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
                                       widgets={
@@ -231,7 +237,7 @@ def configuraConnexio( request , pk ):
                     {'form': form,
                      'image': imageUrl,
                      'infoForm': infoForm,
-                     'head': u'Gestió relació familia amb empreses' ,
+                     'head': u'Gestió relació familia' ,
                      'formSetDelimited':True},
                 )
 
@@ -953,7 +959,7 @@ def elMeuInforme( request, pk = None ):
         filera = []
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'Pares'        
+        camp.contingut = u'Responsables'
         filera.append(camp)
     
         camp = tools.classebuida()
@@ -987,7 +993,28 @@ def elMeuInforme( request, pk = None ):
         filera.append(camp)
     
         taula.fileres.append( filera )
-    
+
+        # # ----dades addicionals-----------------------------------------
+        if CUSTOM_DADES_ADDICIONALS_ALUMNE:
+            dades_addicionals = DadesAddicionalsAlumne.objects.filter(alumne=alumne)
+            labels = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
+            for dada_addicional in dades_addicionals:
+                element = next((item for item in CUSTOM_DADES_ADDICIONALS_ALUMNE if item["label"] == dada_addicional.label), None)
+                if element and dada_addicional.label in labels and 'Familia' in element['visibilitat']:
+                    filera = []
+                    camp = tools.classebuida()
+                    camp.enllac = None
+                    camp.contingut = dada_addicional.label
+                    filera.append(camp)
+
+                    camp = tools.classebuida()
+                    camp.enllac = None
+                    dada_camp = dada_addicional.value
+                    camp.contingut = dada_camp
+                    filera.append(camp)
+
+                    taula.fileres.append(filera)
+
         report.append(taula)
 
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU

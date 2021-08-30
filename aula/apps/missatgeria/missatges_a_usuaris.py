@@ -83,6 +83,8 @@ IMPORTACIO_ESFERA_FINALITZADA = u"Importació Esfer@ finalitzada."
 
 IMPORTACIO_PREINSCRIPCIO_FINALITZADA = u"Importació de la preinscripció finalitzada."
 
+IMPORTACIO_DADES_ADDICIONALS_FINALITZADA = u"Importació dades addicionals finalitzada."
+
 ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE = u"Redsys: No hi ha coincidència entre firma rebuda {0}, i calculada {1}, en dades corresponents a report de transacció online"
 
 ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE = u"Redsys: Falta nombre d'ordre ({0}) o codi autorització ({1}) o firma ({2}) en report de transacció online"

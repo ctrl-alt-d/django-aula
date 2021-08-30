@@ -51,7 +51,7 @@ class AlumneModelForm(forms.ModelForm):
         responsable_choices = ((x, responsables[x]) for x in range(len(responsables)))
         self.fields['primer_responsable'] = forms.ChoiceField(choices=responsable_choices)
         self.fields['primer_responsable'].help_text = "Principal responsable de l'alumne/a"
-        self.fields['primer_responsable'].label = "Reponsable preferent"
+        self.fields['primer_responsable'].label = "Responsable preferent"
 
     def clean_foto(self):
         foto = self.cleaned_data['foto']

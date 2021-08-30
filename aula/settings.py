@@ -109,6 +109,35 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 FILE_UPLOAD_MAX_MEMORY_SIZE=20971520
 DATA_UPLOAD_MAX_MEMORY_SIZE=20971520
 
+CUSTOM_DADES_ADDICIONALS_ALUMNE = [
+    # {
+    #     'label':  'Drets imatge',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Autorització sortides',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Salut i Escola',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Responsable Preferent',
+    #     'esautoritzacio': False,
+    #     'visibilitat': ['Tutor'],
+    # },
+    # {
+    #     'label':  'Dades mèdiques',
+    #     'esautoritzacio': False,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    ]
+
+
 try:
     from .settings_local import *
 except ImportError:

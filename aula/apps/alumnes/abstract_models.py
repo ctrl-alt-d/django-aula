@@ -138,7 +138,7 @@ class AbstractAlumne(models.Model):
         (0, 'Responsable 1'),
         (1, 'Responsable 2'),
     )
-        
+
     ralc = models.CharField(max_length=100, blank=True, db_index=True)
     grup = models.ForeignKey("alumnes.Grup", on_delete=models.CASCADE)
     nom = models.CharField("Nom",max_length=240)
@@ -318,3 +318,19 @@ class AbstractAlumne(models.Model):
     def get_foto_or_default(self):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
+
+
+class AbstractDadesAddicionalsAlumne(models.Model):
+
+    alumne = models.ForeignKey('alumnes.Alumne', on_delete=models.CASCADE)
+    label = models.CharField(max_length=50, help_text=u"Nom del camp addicional")
+    value = models.CharField(max_length=500, blank=True, null=True, help_text="Contingut del camp addicional")
+
+    class Meta:
+        abstract = True
+        verbose_name = u"Dada addicional de l'alumne"
+        verbose_name_plural = u"Dades addicionals dels alumnes"
+        unique_together = ['alumne','label']
+
+    def __str__(self):
+        return self.alumne.cognoms + ', ' + self.alumne.nom + ' - ' + self.label + ': ' + self.value

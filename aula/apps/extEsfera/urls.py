@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from aula.apps.extEsfera.views import sincronitzaEsfera,assignaGrups
+from aula.apps.extEsfera.views import sincronitzaEsfera,assignaGrups,dadesAddicionals
 
 urlpatterns = [
    url(r'^sincronitzaEsfera/$', sincronitzaEsfera,
@@ -7,6 +7,9 @@ urlpatterns = [
                        
    url(r'^assignaGrups/$', assignaGrups,
        name="administracio__configuracio__assigna_grups_esfera"),
+
+    url(r'^dadesAddicionals/$', dadesAddicionals,
+       name="administracio__sincronitza__dades_addicionals"),
                        
 ]
 
