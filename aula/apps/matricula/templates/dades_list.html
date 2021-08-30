@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load detalls %}
+
+{% block content %}
+<h2>{{ titol }}</h2>
+<table style="width:100%">
+<lu>
+{% for dades in object_list %}
+	  <tr>
+            <td><li>{{ dades.idAlumne }}&nbsp</li></td>
+
+			<td>
+			<a href="{% url "gestio__usuari__cercaresultat" dades.alumne.id 'all' %}" target="_blank">{{ dades.cognoms }}, {{ dades.nom }}&nbsp</a>
+            </td>
+            
+			<td>{{ dades.curs }}({{ dades | torn }})&nbsp</td>
+            <td>{{ dades.rp1_telefon }}&nbsp</td>
+            <td>{{ dades.rp1_correu }}&nbsp</td>
+		    
+            {% ctrlPag dades as matmis %}
+            {% ctrlTax dades as taxmis %}
+            <td>
+              {%if matmis.mess %}
+                  <b style="color:{{ matmis.color }};">{{ matmis.mess }}</b>
+              {%endif%}
+              {%if taxmis.mess %}
+                  <br>
+                  <b style="color:{{ taxmis.color }};">{{ taxmis.mess }}</b>
+              {%endif%}
+            &nbsp</td>
+
+            {%if dades.bonificacio != '0' and dades.curs.nivell.taxes %}
+	            <td><b>Bon.Tax:{{ dades.get_bonificacio_display }}&nbsp</b></td>
+	        {%else%}
+	            <td></td>
+            {%endif%}
+			{%if dades|documents %}
+                <td>
+				{% for d in dades|documents %}
+				    <a href="{{ d.fitxer.url }}" target="_blank">Fitxer{{ forloop.counter }}</a>
+				{% endfor %}
+				</td>         
+            {% else %}
+                <td></td>
+            {% endif %}
+	        <td>
+            {%if dades.confirma_matricula %}
+	            {%if dades.confirma_matricula == 'C' %}
+	            	<b>Confirmada&nbsp</b>
+	            {% endif %}
+	            {%if dades.confirma_matricula == 'N' %}
+	            	<b>No Confirma&nbsp</b>
+	            {% endif %}
+			{% endif %}            
+	        </td>
+            {%if dades.estat == 'A' and dades.confirma_matricula != 'C' %}
+	            <td><a class="btn btn-info pull" 
+				    href="{% url "matricula:changeestat" dades.id tipus %}">
+				    Finalitza
+				</a></td>
+			{% else %}
+			    {%if dades.estat == 'F' %}
+				    <td>Finalitzada</td>
+				{% else %}
+				    <td><a class="btn btn-info pull" 
+				    href="{% url "matricula:gestio__llistat__matricula" dades.id dades.curs.id dades.any 'C' %}">
+				    Verifica
+				</a></td>
+			    {% endif %}
+			{% endif %}
+		</tr>
+		<tr><td colspan="9">
+            {%if dades.curs_complet %}
+	            <b>Matrícula curs complet</b>&nbsp
+            {%else%}
+	            {%if dades.quantitat_ufs > 0 %}
+	             	<b>Matrícula ufs soltes ({{ dades.quantitat_ufs }}): {{ dades.llistaufs }}</b>&nbsp
+	            {%endif%}
+            {%endif%}
+            </td>
+         </tr>
+         <tr><td colspan="9">&nbsp</tr>
+	{% empty %}
+		<li>Sense matrícules pendents</li>
+{% endfor %}
+</lu>
+</table>
+{% endblock %}

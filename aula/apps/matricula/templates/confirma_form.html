@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Confirmació de matrícula</h3>
+<form method="post">{% csrf_token %}
+Benvolguda família,<br>
+<br>
+Com ja sabeu el curs ja s’està acabant i cal preparar el nou curs, per això us demanem que confirmeu la plaça si voleu continuar amb nosaltres.<br>
+Si el vostre fill/a continua en el centre <b>comproveu que les dades personals siguin correctes</b> i feu click al botó <b>Envia</b>.<br>
+És molt important tenir els telèfons i correus electrònics actualitzats per facilitar el contacte amb vosaltres.<br>
+<br>
+Aprofitem l’avinentesa per a saludar-vos cordialment.<br>
+La direcció<br><br>
+
+ 		{% for field in form.visible_fields %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+	        <div class="col-sm-8 col-xs-12 tria_tag">
+		        {% if field.errors %}		        	
+			        <div class="alert alert-danger">
+			        <button type="button" class="close" data-dismiss="alert">&times;</button>
+				        <ul>
+				          {% for error in field.errors%}
+				          <li>{{ error }}</li>
+			              {% endfor %}
+			            </ul>
+		         	</div>
+		        {% endif %}
+	        </div>
+        </div>
+        {% endfor %}
+
+
+    <p><b>Curs actual: </b>{{ curs }}</p>
+    {{ form.as_p }}
+	He llegit i accepto les <a target = _blank href="{% url  'matricula:varis__condicions__matricula' %}">condicions de matrícula</a>
+    <br><br>
+    <input class="btn btn-primary" type="submit" value="Envia" />
+    <br><br><br><br>
+</form>
+{% endblock %}
+
+
+

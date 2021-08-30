@@ -81,6 +81,8 @@ IMPORTACIO_SAGA_FINALITZADA = u"Importació Saga finalitzada."
 
 IMPORTACIO_ESFERA_FINALITZADA = u"Importació Esfer@ finalitzada."
 
+IMPORTACIO_PREINSCRIPCIO_FINALITZADA = u"Importació de la preinscripció finalitzada."
+
 IMPORTACIO_DADES_ADDICIONALS_FINALITZADA = u"Importació dades addicionals finalitzada."
 
 ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE = u"Redsys: No hi ha coincidència entre firma rebuda {0}, i calculada {1}, en dades corresponents a report de transacció online"
@@ -98,6 +100,8 @@ FI_INITDB=u"Inicialització de la base de dades completada"
 ERROR_INITDB=u"Inicialització incompleta de la base de dades"
 
 PROFESSOR_RESERVA_MASSIVA=u"Se t'ha assignat el recurs \"{0}\" tots els {1} des del dia {2} fins al dia {3} a la franja \"{4}\""
+
+PAGAMENT_INCORRECTE=u"El pagament fet no correspon"
 
 MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 FI_PROCES_AFEGIR_ALUMNES,
@@ -126,6 +130,7 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 ALUMNE_SENSE_EMAILS,
                                 FI_INITDB,
                                 ERROR_INITDB,
+                                IMPORTACIO_PREINSCRIPCIO_FINALITZADA,
                                 }},
              'DISCIPLINA': {'danger': {EXPULSIO_PER_ACUMULACIO_INCIDENCIES,
                                        EXPULSIO_PER_ACUMULACIO_INCIDENCIES_FORA_AULA,

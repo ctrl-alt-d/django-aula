@@ -5,10 +5,22 @@ import sys
 from django.conf import settings
 
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
-from aula.apps.sortides.models import NotificaSortida
+from aula.apps.sortides.models import NotificaSortida, QuotaPagament
 from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core.mail import EmailMessage
 from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
+from aula.apps.relacioFamilies.models import EmailPendent
+
+def notifica_pendents():
+    for ep in EmailPendent.objects.all():
+        r=0
+        try:
+            email = EmailMessage(subject=ep.subject, body=ep.message, from_email=ep.fromemail, bcc=eval(ep.toemail))
+            r=email.send(fail_silently=False)
+        except Exception as e:
+            print (u'Error {0} enviant missatge pendent a {1}'.format(e, eval(ep.toemail)))
+            continue
+        if r==1: ep.delete()
 
 def notifica():
     from aula.apps.alumnes.models import Alumne
@@ -29,6 +41,9 @@ def notifica():
         
     #actualitzo notificacions sortides:
     notifica_sortides()
+    
+    #Missatges pendents
+    notifica_pendents()
 
     #Notificacions        
     ara = datetime.now()
@@ -54,6 +69,19 @@ def notifica():
             alumne = Alumne.objects.get( pk = alumne_id )
             fa_n_dies = ara - timedelta(  days = alumne.periodicitat_faltes )
             noves_sortides = NotificaSortida.objects.filter( alumne = alumne, relacio_familia_notificada__isnull = True  )
+            if settings.CUSTOM_QUOTES_ACTIVES:
+                #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                fa7dies = ara - timedelta( days = 7 )
+                en7dies = ara + timedelta( days = 7 )
+                '''
+                Selecciona pagaments no comunicats o pagaments pendents que no s'han comunicat en l'última setmana i 
+                la data límit ja ha passat o falten menys de 7 dies.
+                '''
+                nous_pagaments = QuotaPagament.objects.filter(
+                    Q(data_hora_pagament__isnull=True) | (Q(data_hora_pagament__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
+                    alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False)
+            else:
+                nous_pagaments = QuotaPagament.objects.none()
             noves_incidencies = alumne.incidencia_set.filter( relacio_familia_notificada__isnull = True  )
             noves_expulsions = alumne.expulsio_set.exclude( estat = 'ES').filter(    relacio_familia_notificada__isnull = True  )
             noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
@@ -75,6 +103,7 @@ def notifica():
                                      noves_faltes_assistencia.exists()
             hiHaNovetatsQualitativa = noves_respostes_qualitativa.exists()
             hiHaNovetatsSortides = noves_sortides.exists()
+            hiHaNovetatsPagaments = nous_pagaments.exists()
             hiHaNovetatsIncidencies = ( alumne.periodicitat_incidencies and
                                        ( noves_incidencies.exists() or noves_expulsions.exists() or noves_sancions.exists() )
                                       )
@@ -82,24 +111,25 @@ def notifica():
                              hiHaNovetatsQualitativa or
                              hiHaNovetatsPresencia or
                              hiHaNovetatsSortides or
+                             hiHaNovetatsPagaments or
                              hiHaNovetatsIncidencies
                              )                  
             #print u'Avaluant a {0}'.format( alumne )
             enviatOK = False
             if hiHaNovetats:
                 #enviar correu i marcar novetats com a notificades:
-                assumpte = u"{0} - Notificacions al Djau de {1}".format(alumne.nom, settings.NOM_CENTRE )
+                assumpte = u"{0} - Notificacions al Djau - {1}".format(alumne.nom, settings.NOM_CENTRE )
                 missatge = [u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
                             u"",
                             u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
                             u"",
                             u"Benvolgut/da,",
                             u"",
-                            u"Us comuniquem que teniu noves notificacions del vostre fill/a {0} a l'aplicació Djau del centre {1}".format(alumne.nom, urlDjangoAula),
+                            u"Us comuniquem que teniu noves notificacions de l'alumne {0} a l'aplicació Djau del centre {1}".format(alumne.nom+' '+alumne.cognoms, urlDjangoAula),
                             u"",
                             u"Recordeu que el vostre nom d'usuari és: {0}".format( alumne.get_user_associat().username ),
                             u"",
-                            u"Per qualsevol dubte que tingueu al respecte poseu-vos en contacte amb el tutor/a del vostre fill/a.",
+                            u"Per qualsevol dubte que tingueu al respecte poseu-vos en contacte amb el tutor/a.",
                             u"",
                             u"Cordialment,",
                             u"",
@@ -123,10 +153,14 @@ def notifica():
                     enviatOK = True
                 except:
                     #cal enviar msg a tutor que no s'ha pogut enviar correu a un seu alumne.
+                    if settings.DEBUG:
+                        print (u'Error enviant missatge a {0}'.format( alumne ))
                     enviatOK = False
 
             if enviatOK:                    
                 noves_sortides.update( relacio_familia_notificada = ara )
+                #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                nous_pagaments.update( data_hora_pagament = ara )
                 noves_incidencies.update( relacio_familia_notificada = ara )
                 noves_expulsions.update( relacio_familia_notificada = ara )
                 noves_sancions.update( relacio_familia_notificada = ara )
@@ -175,8 +209,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
             informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
 
     correus_alumnes = Alumne.objects.filter(q_no_es_baixa).values_list(
-        'correu_relacio_familia_pare','correu_relacio_familia_mare','correu_tutors', 
-        'rp1_correu', 'rp2_correu', 'correu')
+        'correu_relacio_familia_pare','correu_relacio_familia_mare') # ,'correu_tutors', 'rp1_correu', 'rp2_correu', 'correu')
     
     # crea llista de correus
     correus_alumnes=[item for sublist in list(correus_alumnes) for item in sublist]

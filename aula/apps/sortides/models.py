@@ -11,7 +11,22 @@ from django.conf import settings
 
 from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE, CUSTOM_SORTIDES_PAGAMENT_CAIXER
 from aula.utils.tools import unicode
+import django.utils.timezone
 
+class TPV(models.Model):
+    # nom és la clau, es reserva el nom "centre" per identificar el TPV principal
+    nom=models.CharField("Nom", max_length=32, unique=True)
+    codi=models.CharField("Codi Comerç", max_length=32)
+    key=models.CharField("Key", max_length=64)
+    descripcio=models.CharField("Descripció", max_length=200)
+    entornReal=models.BooleanField("Fa servir entorn real", default=False)
+    
+    class Meta:
+        verbose_name = u'TPV'
+        verbose_name_plural = u'TPVs' 
+        
+    def __str__(self):
+        return self.descripcio
 
 @python_2_unicode_compatible
 class Sortida(models.Model):
@@ -142,6 +157,11 @@ class Sortida(models.Model):
     alumnes_justificacio = models.ManyToManyField(Alumne, blank=True, help_text=u"Alumnes que no venen i disposen de justificació per no assistir al Centre el dia de l'activitat.",related_name='sortides_falta_justificat')
 
     pagaments = models.ManyToManyField(Alumne, through='Pagament')
+    
+    # Per futures ampliacions, de moment no es fa servir. 
+    # Totes les sortides es paguen amb el TPV per defecte.
+    tpv = models.ForeignKey(TPV, on_delete=models.PROTECT, null=True)
+    
     @property
     def n_acompanyants(self):
         return self.altres_professors_acompanyants.count()
@@ -197,17 +217,112 @@ class Sortida(models.Model):
 
         return l
 
+class TipusQuota(models.Model):
+    nom = models.CharField(max_length=100, unique=True)
+    
+    class Meta:
+        ordering = ['nom']
+        verbose_name = u'Tipus de quota'
+        verbose_name_plural = u'Tipus de quotes'
+        
+    def __str__(self):
+        return self.nom
+
+def return_any_actual():
+    return django.utils.timezone.now().year
+
+class Quota(models.Model):
+    from aula.apps.alumnes.models import Curs
+    
+    importQuota=models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    dataLimit=models.DateField(null=True, blank=True)
+    any=models.IntegerField(default=return_any_actual)
+    descripcio=models.CharField(max_length=200)
+    #  Si no s'indica curs, serveix per a tots els alumnes
+    curs=models.ForeignKey(Curs, on_delete=models.PROTECT, null=True, blank=True)
+    tpv = models.ForeignKey(TPV, on_delete=models.PROTECT)
+    tipus = models.ForeignKey(TipusQuota, on_delete=models.PROTECT)
+    
+    class Meta:
+        ordering = ['any','curs__nom_curs_complert']
+        verbose_name = u'Quota'
+        verbose_name_plural = u'Quotes'
+        
+    def __str__(self):
+        return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio if self.descripcio else self.tipus
+
 @python_2_unicode_compatible
 class Pagament(models.Model):
-    alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT)
-    sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT)
-    data_hora_pagament = models.CharField(max_length=50, null=True)
+    # Pagament per a una sortida o una quota
+    alumne = models.ForeignKey(Alumne, on_delete=models.PROTECT, null=True)
+    sortida = models.ForeignKey(Sortida, on_delete=models.PROTECT, null=True)
+    data_hora_pagament = models.DateTimeField(null=True)
     pagament_realitzat = models.BooleanField(null=True, default=False )
     ordre_pagament = models.CharField(max_length=12, unique=True, null=True)
+    quota = models.ForeignKey(Quota, on_delete=models.PROTECT, null=True)
+    # Si es fracciona es fa en dos pagaments, només per quotes
+    fracciona =  models.BooleanField(null=True, default=False )
+    # import d'aquesta fracció,  si fraccionat
+    importParcial = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    # data límit d'aquesta fracció
+    dataLimit = models.DateField(null=True)
+    '''
+    estat del pagament:
+        '' Pagament no iniciat.
+        'E' Error. Pagament rebujat per redsys.
+        'T' Transmès. Pagament iniciat, però no finalitzat. Es deixa un temps per completar-ho.
+        'F' Finalitzat. Pagament correctament finalitzat.
+    '''
+    estat = models.CharField(max_length=1, blank=True, null=True, default='')
+    
+    def __str__(self):
+        return u"Pagament realitzat per l'alumne {}: {}".format( self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
+
+    @property
+    def pagamentFet(self):
+        return self.pagament_realitzat or (self.quota and self.quota.importQuota==0) or \
+                (self.sortida and self.sortida.preu_per_alumne==0)
+    
+    @property
+    def importReal(self):
+        return self.importParcial if self.fracciona else self.quota.importQuota if self.quota else \
+            self.sortida.preu_per_alumne if self.sortida else 0
+    
+    @property
+    def getdataLimit(self):
+        return self.dataLimit if self.fracciona else self.quota.dataLimit if self.quota else \
+            self.sortida.termini_pagament if self.sortida else ''
+    
+class QuotaPagamentManager(models.Manager):
+    def get_queryset(self):
+        #  Pagaments referents a una quota. Els pagaments en estat 'E' són pagaments cancel·lats.
+        return super(QuotaPagamentManager, self).get_queryset().filter( quota__isnull=False ).exclude(estat='E')
+
+class QuotaPagament(Pagament):
+    objects = QuotaPagamentManager()
+    
+    class Meta:
+        proxy = True
+
+    def __str__(self):
+        if self.fracciona:
+            return u"Pagament parcial {} de la quota {} {}, de l'alumne {}: {}".format( self.importParcial, self.quota.descripcio, self.quota.importQuota, self.alumne, 'Fet' if self.pagament_realitzat else 'Pendent' )
+        return u"Pagament de la quota {} {}, de l'alumne {}: {}".format( self.quota.descripcio, self.quota.importQuota, self.alumne, 'Fet' if self.pagament_realitzat else 'Pendent' )
+
+class SortidaPagamentManager(models.Manager):
+    def get_queryset(self):
+        #  Pagaments referents a una sortida. Els pagaments en estat 'E' són pagaments cancel·lats.
+        return super(SortidaPagamentManager, self).get_queryset().filter( sortida__isnull=False ).exclude(estat='E')
+
+class SortidaPagament(Pagament):
+    objects = SortidaPagamentManager()
+    
+    class Meta:
+        proxy = True
 
     def __str__(self):
         return u"Pagament de la sortida {}, realitzat per l'alumne {}: {}".format( self.sortida, self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
-    
+
 @python_2_unicode_compatible
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne, on_delete=models.CASCADE )

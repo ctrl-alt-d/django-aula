@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ titol }}</h2>
+<form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+    {{ form.as_ul }}
+	<a href="{{ view.get_success_url }}" class="btn btn-secondary">Següent</a>
+    <input class="btn btn-primary" type="submit" value="Grava" />
+</form>
+{% endblock %}

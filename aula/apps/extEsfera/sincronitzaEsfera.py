@@ -225,6 +225,7 @@ def sincronitza(f, user = None):
                 a.foto = alumneDadesAnteriors.foto
                 a.primer_responsable = alumneDadesAnteriors.primer_responsable
                 a.observacions = alumneDadesAnteriors.observacions
+                a.data_alta = alumneDadesAnteriors.data_alta
                 
         a.save()
         nivells.add(a.grup.curs.nivell)

@@ -7,7 +7,7 @@ from django.template import RequestContext, loader
 #tables
 from django.utils.safestring import mark_safe
 
-from .tables2_models import HorariAlumneTable
+from aula.apps.alumnes.tables2_models import HorariAlumneTable
 from django_tables2 import RequestConfig
 
 #from django import forms as forms
@@ -758,6 +758,8 @@ def mostraGrupPromocionar(request, grup=""):
 @login_required
 @group_required(['consergeria','professors'])
 def detallAlumneHorari(request, pk, detall='all'):
+    from aula.apps.matricula.models import Document
+    
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
 
@@ -871,6 +873,11 @@ def detallAlumneHorari(request, pk, detall='all'):
             text=u"""Accés a dades sensibles de l'alumne {0} per part de l'usuari {1}.""".format(alumne, user)
         )
 
+    if user.groups.filter(name__in=['direcció']).exists():
+        documents=Document.objects.filter(matricula__alumne=alumne).order_by('pk')
+    else:
+        documents=[]
+
     return render(
         request,
         'mostraInfoAlumneCercat.html',
@@ -883,6 +890,7 @@ def detallAlumneHorari(request, pk, detall='all'):
          'diaabans': (data + timedelta( days = -1 )).strftime(r'%Y-%m-%d'),
          'ruta_fotos': settings.PRIVATE_STORAGE_ROOT,
          'es_professor': es_alumne_del_profe,
+         'documents':documents,
          },
     )
 

@@ -35,7 +35,7 @@ from django.db.models import Q
 from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth.models import User, Group
-from aula.apps.usuaris.tools import enviaOneTimePasswd
+from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
 from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
 
@@ -75,10 +75,20 @@ def canviDadesUsuari(request):
             formDadesAddicionals.fields['foto'].label = 'Foto'
 
         if formUsuari.is_valid():
-            formUsuari.save()
-            if professor and formDadesAddicionals.is_valid():
-                formDadesAddicionals.save()
-            return HttpResponseRedirect('/')
+            # Verifica si domini correcte
+            errors = {}
+            email=formUsuari.cleaned_data['email']
+            res, email = testEmail(email, False)
+            if res<-1:
+                errors.setdefault('email', []).append(u'''Adreça no vàlida''')
+
+            if len(errors)>0:
+                formUsuari._errors.update(errors)
+            else:
+                formUsuari.save()
+                if professor and formDadesAddicionals.is_valid():
+                    formDadesAddicionals.save()
+                return HttpResponseRedirect('/')         
 
     else:
         formUsuari =  CanviDadesUsuari(instance=user)
@@ -285,6 +295,8 @@ def elsProfessors( request ):
         
 
 def loginUser( request ):
+    from aula.apps.matricula.views import get_url_alumne
+    
     head=u'Login' 
 
     client_address = getClientAdress( request )
@@ -310,6 +322,9 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
+                        url_mat=get_url_alumne(user)
+                        if url_mat:
+                            return HttpResponseRedirect( url_mat )
                         return HttpResponseRedirect( url_next )
                     else:
                         LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
@@ -402,6 +417,11 @@ def recoverPasswd( request , username, oneTimePasswd ):
     return alumneRecoverPasswd( request , username, oneTimePasswd )
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
+    from aula.apps.matricula.views import get_url_alumne, MatriculaOberta
+    
+    # Comprova que correspongui a dades vàlides actuals
+    if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):
+        return HttpResponseRedirect( '/' )
     
     client_address = getClientAdress( request )
 
@@ -417,8 +437,12 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
             try:
                 alumneUser =  AlumneUser.objects.get( username = username)
                 dataOK = data_neixement == alumneUser.getAlumne().data_neixement
-                a_temps = datetime.now() - timedelta( minutes = 30 )
-                codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
+                if MatriculaOberta(alumneUser.getAlumne()):
+                    codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
+                                                                  clau = oneTimePasswd)
+                else:
+                    a_temps = datetime.now() - timedelta( minutes = 30 )
+                    codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
                                                                   clau = oneTimePasswd, 
                                                                   moment_expedicio__gte = a_temps,
                                                                   reintents__lt = 3 )
@@ -434,7 +458,7 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 codiOK[0].reintents += 1
                 codiOK[0].save()
             elif dataOK and not codiOK:
-                errors.append( u"L'enllaç que esteu utilitzant està caducat o no és correcta. Demaneu un altre codi de recuperació.")
+                errors.append( u"L'enllaç que esteu utilitzant està caducat o no és correcte. Demaneu un altre codi de recuperació.")
             elif not dataOK and not codiOK:
                 errors.append( u"Dades incorrectes. Demaneu un altre codi de recuperació.")                
                 #todoBloquejar oneTimePasswd
@@ -458,6 +482,9 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address) 
                                 
                 url_next = '/' 
+                url_mat=get_url_alumne(user)
+                if url_mat:
+                    return HttpResponseRedirect( url_mat )
                 return HttpResponseRedirect( url_next )        
             else:
                 try:

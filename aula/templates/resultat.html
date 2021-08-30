@@ -25,7 +25,7 @@
    <div class="info">
     <ul>
     {% for info in msgs.infos %}
-        <li><strong>{{ info|escape }}</strong></li>
+        <li><strong>{{ info|safe|escape }}</strong></li>
     {% endfor %}
     </ul>
    </div>

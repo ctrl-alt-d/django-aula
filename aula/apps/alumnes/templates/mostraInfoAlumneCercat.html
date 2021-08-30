@@ -41,6 +41,16 @@
       	</p>
           </div>
     </div>
+    
+{% if documents %}
+    Documents aportats: 
+    <br>
+	{% for f in documents %}
+		<a href="{{ f.fitxer.url }}" target="_blank">{{ f.fitxer }}</a>
+		<br>
+	{% endfor %}
+	<br>
+{% endif %}
 
 {% endblock %}
 

@@ -47,10 +47,18 @@ urlpatterns = [
     url(r'^imprimir/(?P<pk>\d+)/(?P<din>\d+)$', sortides_views.imprimir, name = 'sortides__sortides__imprimir' ),
 
     url(r'^pagoOnline/(?P<pk>\d+)/$', sortides_views.pagoOnline, name='sortides__sortides__pago_on_line'),
+    url(r'^pagoOnlineKO/(?P<pk>\d+)/$', sortides_views.pagoOnlineKO, name='sortides__sortides__pago_on_lineKO'),
+    url(r'^passarella/(?P<pk>\d+)/$', sortides_views.passarella, name='sortides__sortides__passarella'),
 
-    url(r'^retornTransaccio/(?P<pka>\d+)/(?P<pks>\d+)$', sortides_views.retornTransaccio, name='sortides__sortides__retorn_transaccio'),
+    url(r'^retornTransaccio/(?P<pk>\d+)/$', sortides_views.retornTransaccio, name='sortides__sortides__retorn_transaccio'),
 
     url(r'^detallPagament/(?P<pk>\d+)/$', sortides_views.detallPagament, name='sortides__sortides__detall_pagament'),
+    
+    url(r'^quotes/$', sortides_views.assignaQuotes, name='gestio__quotes__assigna'),
+    url(r'^quotes/(?P<curs>\d+)/(?P<tipus>\d+)/(?P<nany>\d+)/(?P<auto>.*)/$', sortides_views.quotesCurs, name='gestio__quotes__assigna'),
+    url(r'^totals/$', sortides_views.totalsQuotes, name='gestio__quotes__descarrega'),
+    url(r'^blanc/$', sortides_views.blanc, name="gestio__quotes__blanc"),
 
     url(r'^pagoEfectiu/(?P<pk>\d+)/$', sortides_views.pagoEfectiu, name='sortides__sortides__pago_efectiu'),
+
 ]

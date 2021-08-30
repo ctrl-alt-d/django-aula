@@ -361,6 +361,8 @@ def informa(emailRetornat, status, action, data, diagnostic, text):
                     tutors=almn.tutorsDelGrupDeLAlumne()
                     informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
                             geturlconf('TUT',almn.get_user_associat()))
+                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
+                               geturlconf('ADM',almn.get_user_associat()))
                 else:
                     # És un altre correu de l'usuari
                     informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
@@ -383,6 +385,8 @@ def informa(emailRetornat, status, action, data, diagnostic, text):
                     tutors=almn.tutorsDelGrupDeLAlumne()
                     informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
                                geturlconf('TUT',almn.get_user_associat()))
+                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
+                               geturlconf('ADM',almn.get_user_associat()))
                 else:
                     if almn.correu_tutors == emailRetornat or almn.rp1_correu == emailRetornat or \
                          almn.rp2_correu == emailRetornat or almn.correu == emailRetornat:

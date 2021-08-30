@@ -1,5 +1,4 @@
 # This Python file uses the following encoding: utf-8
-from aula.settings import CUSTOM_SORTIDES_PAGAMENT_ONLINE
 from aula.utils.tools import classebuida
 from django.urls import resolve, reverse
 from django.contrib.auth.models import Group, User
@@ -31,8 +30,9 @@ def calcula_menu( user , path, sessioImpersonada ):
     co = not al and Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
     pg = not al and Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
     so = not al and Group.objects.get_or_create(name= 'sortides' )[0] in user.groups.all()
+    tp = not al and Group.objects.get_or_create(name= 'tpvs' )[0] in user.groups.all()
     tu = not al and pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )    
-    tots = al or ad or di or pr or pl or co or pg or so
+    tots = al or ad or di or pr or pl or co or pg or so or tp
     
     #Comprovar si té missatges sense llegir
     nMissatges = user.destinatari_set.filter( moment_lectura__isnull = True ).count()
@@ -79,7 +79,7 @@ def calcula_menu( user , path, sessioImpersonada ):
         alumneuser = AlumneUser.objects.get( id = user.id )
         alumne = alumneuser.getAlumne()
         if alumne:
-            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom )
+            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom if alumne.nom else alumne.ralc)
         else:
             menu["nomusuari"]= user.first_name or user.username 
     else:
@@ -175,13 +175,26 @@ def calcula_menu( user , path, sessioImpersonada ):
                ),
 
                #--Gestió--------------------------------------------------------------------------
-               ('gestio', 'Gestió', 'gestio__reserva_aula__list', co or pl, None,
+               ('gestio', 'Gestió', 'gestio__reserva_aula__list' if not tp else 'gestio__quotes__blanc', co or pl or tp, None,
                   (
                       ("Reserva Aula", 'gestio__reserva_aula__list', co or pl, None, None),
                       ("Reserva Material", 'gestio__reserva_recurs__list', co or pl, None, None),
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
                       ("iCal", 'gestio__calendari__integra', pl, None, None),  
+                      ("Matrícules", 'matricula:gestio__blanc__matricula', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, 
+                          ( 
+                            ("Verifica", 'matricula:gestio__llistat__matricula', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
+                            ("Descàrrega resum", 'matricula:gestio__resum__matricula', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
+                            ("Activa", 'matricula:gestio__activa__matricula', ad if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
+                          )
+                      ),  
+                      ("Quotes", 'gestio__quotes__blanc', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None,
+                          ( 
+                            ("Assigna Quotes", 'gestio__quotes__assigna', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None),
+                            ("Descàrrega acumulats", 'gestio__quotes__descarrega', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None)
+                          )
+                      ),         
                    )
                ),
                             
@@ -251,6 +264,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                           ("Alumnes ESO/BAT", 'administracio__sincronitza__esfera', di , None  ),
                           ("Alumnes Cicles", 'administracio__sincronitza__saga', di, None),
                           ("Dades addicionals alumnat", 'administracio__sincronitza__dades_addicionals', di, None),
+                          ("Preinscripció", 'administracio__sincronitza__preinscripcio', di , None  ),
                           ("HorarisKronowin", 'administracio__sincronitza__kronowin', di , None  ),
                           ("HorarisUntis", 'administracio__sincronitza__Untis', di , None  ),
                           ("Aules", 'gestio__aula__assignacomentari', di, None),
@@ -273,6 +287,8 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Informe", 'relacio_families__informe__el_meu_informe', al, None, None ),
                       ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al, None, None ),
+                      ("Matrícula", 'matricula:relacio_families__matricula__dades', 
+                       al if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, None ),
                    )
                ),
              )
@@ -280,7 +296,7 @@ def calcula_menu( user , path, sessioImpersonada ):
     arbre2 = (
 
                #--Varis--------------------------------------------------------------------------
-               ('varis', 'Ajuda i Avisos', 'varis__about__about' if al else 'varis__elmur__veure', tots, nMissatges > 0,
+               ('varis', 'Ajuda i Avisos', 'varis__about__about' if al or tp else 'varis__elmur__veure', tots, nMissatges > 0,
                   (
                       ("Notificacions", 'varis__elmur__veure', di or pr or pl or co or pg , ( nMissatgesDelta, 'info' if nMissatgesDelta < 10 else 'danger' ) if nMissatgesDelta >0 else None, None ),
                       ("Missatge a professorat o PAS", 'varis__prof_i_pas__envia_professors_i_pas', pr or pl or co, None, None ),
@@ -288,7 +304,8 @@ def calcula_menu( user , path, sessioImpersonada ):
                       ("Email a les famílies", 'varis__mail__enviaEmailFamilies', di, None, None ),
                       ("Estadístiques", 'varis__estadistiques__estadistiques', pr, None, None),
                       ("About", 'varis__about__about', tots, None, None ),
-                      ("Pagament Online", 'varis__pagament__pagament_online', al if CUSTOM_SORTIDES_PAGAMENT_ONLINE else None, None, None),
+                      ("Pagament Online", 'varis__pagament__pagament_online', (al or tp) if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE or settings.CUSTOM_QUOTES_ACTIVES else None, None, None),
+                      ("Condicions Matrícula", 'matricula:varis__condicions__matricula', tots if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, None),
                    )
                ),
 
@@ -367,6 +384,8 @@ def calcula_menu( user , path, sessioImpersonada ):
                 subitem.subsubitems = []
                 if subsubitems:
                     for subitem_label, subitem_url, subitem_condicio, subitem_medalla in subsubitems:
+                        if not subitem_condicio:
+                            continue
                         subsubitem = classebuida()
                         subsubitem.label = safe( subitem_label )
                         subsubitem.url = reverse( subitem_url ) 
@@ -424,6 +443,7 @@ administracio__sincronitza__Untis
 administracio__sincronitza__regenerar_horaris
 administracio__sincronitza__saga
 administracio__sincronitza__esfera
+administracio__sincronitza__preinscripcio
 
 coordinacio_pedagogica__qualitativa__avaluacions
 coordinacio_pedagogica__qualitativa__items
@@ -480,17 +500,22 @@ tutoria__relacio_families__bloqueja_desbloqueja
 tutoria__relacio_families___configura_connexio
 tutoria__relacio_families__dades_relacio_families
 tutoria__relacio_families__envia_benvinguda
- tutoria__seguiment_tutorial__formulari
-        
+tutoria__seguiment_tutorial__formulari
 
+matricula:gestio__llistat__matricula
+matricula:varis__condicions__matricula
+matricula:gestio__activa__matricula
+
+gestio__quotes__assigna
+gestio__quotes__descarrega
 
 nologin__usuari__login
 nologin__usuari__recover_password
 nologin__usuari__send_pass_by_email
 obsolet__tria_alumne
 psico__informes_alumne
+matricula:relacio_families__matricula__dades
 relacio_families__configuracio__canvi_parametres
-'relacio_families__informe__el_meu_informe'),
 relacio_families__informe__el_meu_informe
 triaAlumneAlumneAjax
 triaAlumneCursAjax
@@ -505,7 +530,8 @@ varis__todo__del
 varis__todo__edit
 varis__todo__edit_by_pk
 varis__todo__list
+
 varis__mail__enviaEmailFamilies
+varis__estadistiques__estadistiques
+varis__pagament__pagament_online
 '''
-        
-                
