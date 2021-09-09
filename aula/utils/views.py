@@ -432,26 +432,29 @@ def pagamentOnLine(request):
 
     taula.fileres.append(filera)
 
-    # -1--------------------------------------------
-    filera = []
-
-    camp = tools.classebuida()
-    camp.enllac = None
-    camp.contingut = u'Política de cookies'
-    camp.enllac = ''
-    filera.append(camp)
-
-    # -tip--------------------------------------------
-
-    politicaCookies = open(settings.POLITICA_COOKIES, "r")
-    tip = politicaCookies.read()
-
-    camp = tools.classebuida()
-    camp.enllac = ''
-    camp.contingut = tip
-    filera.append(camp)
-
-    taula.fileres.append(filera)
+    if settings.CUSTOM_QUOTES_ACTIVES and hasattr(settings, 'POLITICA_COOKIES') and bool(settings.POLITICA_COOKIES):
+        # -1--------------------------------------------
+        filera = []
+    
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Política de cookies'
+        camp.enllac = ''
+        filera.append(camp)
+    
+        # -tip--------------------------------------------
+    
+        try:
+            politicaCookies = open(settings.POLITICA_COOKIES, "r")
+            tip = politicaCookies.read()
+        except:
+            tip = 'Fitxer '+settings.POLITICA_COOKIES+' no disponible'
+        camp = tools.classebuida()
+        camp.enllac = ''
+        camp.contingut = tip
+        filera.append(camp)
+    
+        taula.fileres.append(filera)
 
     # -1--------------------------------------------
     filera = []
