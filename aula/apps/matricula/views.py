@@ -808,10 +808,13 @@ def inforgpd():
     '''
     Retorna info sobre RGPD
     '''
-    if not settings.INFORGPD: return ''
-    f = open(settings.INFORGPD, 'r', encoding='UTF-8')
-    file_content = f.read()
-    f.close()
+    if not hasattr(settings, 'INFORGPD') or not bool(settings.INFORGPD): return ''
+    try:
+        f = open(settings.INFORGPD, 'r', encoding='UTF-8')
+        file_content = f.read()
+        f.close()
+    except:
+        file_content = 'Fitxer '+settings.INFORGPD+' no disponible'
     file_content = "<br />".join(file_content.split("\n"))
     return file_content
 

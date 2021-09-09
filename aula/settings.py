@@ -13,6 +13,9 @@ CUSTOM_DIES_PRESCRIU_EXPULSIO = 90
 CUSTOM_NOMES_TUTOR_POT_JUSTIFICAR = True
 CUSTOM_MODUL_SORTIDES_ACTIU = True
 CUSTOM_MODUL_MATRICULA_ACTIU = False
+#Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
+#INFORGPD = location( r'../customising/docs/INFORGPD' )
+
 CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA = False
 CUSTOM_RETARD_PRIMERA_HORA_GESTIONAT_PEL_TUTOR = False
 CUSTOM_NIVELLS = { u"ESO": [u"ESO"],
@@ -58,6 +61,8 @@ CUSTOM_REDSYS_ENTORN_REAL = False
 # Si True permet utilitzar les quotes
 CUSTOM_QUOTES_ACTIVES = False
 CUSTOM_TIPUS_QUOTA_MATRICULA = None
+#Política de cookies i reglament general de protecció de dades.
+#POLITICA_COOKIES = location( r'../customising/docs/POLITICACOOKIES' )
 
 #Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 CUSTOM_TUTORS_INFORME = False
