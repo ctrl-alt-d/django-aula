@@ -432,7 +432,7 @@ def pagamentOnLine(request):
 
     taula.fileres.append(filera)
 
-    if settings.CUSTOM_QUOTES_ACTIVES and hasattr(settings, 'POLITICA_COOKIES') and bool(settings.POLITICA_COOKIES):
+    if hasattr(settings, 'POLITICA_COOKIES') and bool(settings.POLITICA_COOKIES):
         # -1--------------------------------------------
         filera = []
     
@@ -456,26 +456,29 @@ def pagamentOnLine(request):
     
         taula.fileres.append(filera)
 
-    # -1--------------------------------------------
-    filera = []
-
-    camp = tools.classebuida()
-    camp.enllac = None
-    camp.contingut = u'Protecció de dades de caràcter personal'
-    camp.enllac = ''
-    filera.append(camp)
-
-    # -tip--------------------------------------------
-
-    politicaDadesPer = open(settings.POLITICA_RGPD, "r")
-    tip = politicaDadesPer.read()
-
-    camp = tools.classebuida()
-    camp.enllac = ''
-    camp.contingut = tip
-    filera.append(camp)
-
-    taula.fileres.append(filera)
+    if hasattr(settings, 'POLITICA_RGPD') and bool(settings.POLITICA_RGPD):
+        # -1--------------------------------------------
+        filera = []
+    
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Protecció de dades de caràcter personal'
+        camp.enllac = ''
+        filera.append(camp)
+    
+        # -tip--------------------------------------------
+    
+        try:
+            politicaDadesPer = open(settings.POLITICA_RGPD, "r")
+            tip = politicaDadesPer.read()
+        except:
+            tip = 'Fitxer '+settings.POLITICA_RGPD+' no disponible'    
+        camp = tools.classebuida()
+        camp.enllac = ''
+        camp.contingut = tip
+        filera.append(camp)
+    
+        taula.fileres.append(filera)
 
     report.append(taula)
 

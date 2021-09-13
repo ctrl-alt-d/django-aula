@@ -19,7 +19,6 @@ LOGIN_URL="/usuaris/login/"
 LICENSE_FILE = location( r'../LICENSE' )
 DADES_FISCALS_FILE = location( r'../customising/docs/DADESFISCALS' )
 POLITICA_VENDA_FILE = location( r'../customising/docs/POLITICAVENDA' )
-POLITICA_RGPD = location( r'../customising/docs/POLITICARGPD' )
 #Fitxer de text amb les condicions de matrícula, es poden fer servir marques HTML.
 CONDICIONS_MATRICULA = location( r'../customising/docs/MATRICULA' )
 
