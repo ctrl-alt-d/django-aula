@@ -286,7 +286,7 @@ def passaLlista(request, pk):
     if ultimaReserva is not None:
         esUltimaHora = impartir.reserva_id == ultimaReserva.id
         if esUltimaHora:
-            msg = u"ATENCIÓ: és l'última hora en aquesta aula. Recorda't de tancar finestres, baixar persianes i deixar l'aula ordenada. Per facilitar la desinfecció NO s'han de pujar les cadires"
+            msg = u"ATENCIÓ: és l'última hora en aquesta aula. Recorda't de pujar les cadires, tancar finestres, baixar persianes i deixar l'aula ordenada."
             messages.error(request, SafeText(msg))
 
     url_next = '/presencia/mostraImpartir/%d/%d/%d/' % (
