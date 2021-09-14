@@ -62,11 +62,11 @@ CUSTOM_TIPUS_QUOTA_MATRICULA = None
 
 #Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
 #Es mostra a la part inferior de les pantalles d'entrada de dades com la de "Canvi de paràmetres".
-#INFORGPD = location( r'../customising/docs/INFORGPD' )
+#INFORGPD = location( r'../customising/TermesIcondicions/INFORGPD.sample' )
 #Política de cookies.
-#POLITICA_COOKIES = location( r'../customising/docs/POLITICACOOKIES' )
+#POLITICA_COOKIES = location( r'../customising/TermesIcondicions/POLITICACOOKIES.sample' )
 #Informació sobre protecció de dades de caràcter personal.
-#POLITICA_RGPD = location( r'../customising/docs/POLITICARGPD' )
+#POLITICA_RGPD = location( r'../customising/TermesIcondicions/POLITICARGPD.sample' )
 
 #Si True, permet que els tutors tinguin accés als informes de seguiment de faltes i incidències.
 CUSTOM_TUTORS_INFORME = False

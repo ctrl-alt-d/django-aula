@@ -86,3 +86,10 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
+
+#TermesICondicions
+DADES_FISCALS_FILE = location( r'../customising/TermesIcondicions/DADESFISCALS.sample' )
+POLITICA_VENDA_FILE = location( r'../customising/TermesIcondicions/POLITICAVENDA.sample' )
+#Fitxer de text amb les condicions de matrícula, es poden fer servir marques HTML.
+CUSTOM_MODUL_MATRICULA_ACTIU = True
+CONDICIONS_MATRICULA = location( r'../customising/TermesIcondicions/MATRICULA.sample' )
