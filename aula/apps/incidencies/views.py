@@ -418,7 +418,7 @@ def posaIncidenciaPrimeraHora( request ):
         if formAlumne.is_valid():            
             alumne = formAlumne.cleaned_data['alumne']
             incidencia.alumne = alumne
-            incidencia.professional = alumne.tutorsDelGrupDeLAlumne().first()
+            incidencia.professional = alumne.tutorsDelGrupDeLAlumne().first() if alumne.tutorsDelGrupDeLAlumne() else alumne.tutorsIndividualitzatsDeLAlumne().first()
 
             try:
                 if not bool(incidencia.professional):
