@@ -86,3 +86,23 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
+
+# TermesICondicions (copiar els samples amb un altre nom i apuntar als nous fitxers)
+DADES_FISCALS_FILE = location( r'../customising/TermesIcondicions/DADESFISCALS.sample' )
+POLITICA_VENDA_FILE = location( r'../customising/TermesIcondicions/POLITICAVENDA.sample' )
+#Fitxer de text amb les condicions de matrícula, es poden fer servir marques HTML.
+CUSTOM_MODUL_MATRICULA_ACTIU = True
+CONDICIONS_MATRICULA = location( r'../customising/TermesIcondicions/MATRICULA.sample' )
+
+# S'ha de considerar si és volen fer servir els següents fitxers
+#Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
+#Es mostra a la part inferior de les pantalles d'entrada de dades com la de "Canvi de paràmetres".
+#INFORGPD = location( r'../customising/TermesIcondicions/INFORGPD.sample' )
+#Els següents fitxers es fan servir en les condicions dels pagaments online
+#Política de cookies.
+#POLITICA_COOKIES = location( r'../customising/TermesIcondicions/POLITICACOOKIES.sample' )
+#Informació sobre protecció de dades de caràcter personal.
+#POLITICA_RGPD = location( r'../customising/TermesIcondicions/POLITICARGPD.sample' )
+
+
+
