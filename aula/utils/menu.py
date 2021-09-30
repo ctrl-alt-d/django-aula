@@ -286,7 +286,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                ('relacio_families', u'Famílies', 'relacio_families__informe__el_meu_informe', al, None,
                   (
                       ("Informe", 'relacio_families__informe__el_meu_informe', al, None, None ),
-                      ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al, None, None ),
+                      ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al if settings.CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES else None, None, None ),
                       ("Matrícula", 'matricula:relacio_families__matricula__dades', 
                        al if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, None ),
                    )

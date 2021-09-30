@@ -21,7 +21,7 @@ from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm
-from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
@@ -376,7 +376,10 @@ def dadesRelacioFamilies( request ):
 def canviParametres( request ):
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
-               
+
+    if  not CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES:
+        raise Http404()
+
     alumne = Alumne.objects.get( user_associat = user )
 
     edatAlumne = None
