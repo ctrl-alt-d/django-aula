@@ -23,6 +23,7 @@ class PagamentEfectiuForm(forms.Form):
     preu = forms.CharField(disabled=True, label='Preu(€)', required=True)
     data_hora_pagament = forms.CharField(label='Data/Hora pagament', required=True, widget=forms.DateInput(format="%Y-%m-%d %H:%M:%S"))
     ordre_pagament = forms.CharField(widget=forms.HiddenInput(), required=True)
+    observacions = forms.CharField(widget=forms.TextInput())
 
     def clean_data_hora_pagament(self):
         data_hora = self.cleaned_data['data_hora_pagament']

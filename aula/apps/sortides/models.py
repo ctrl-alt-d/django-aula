@@ -266,6 +266,7 @@ class Pagament(models.Model):
     importParcial = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     # data límit d'aquesta fracció
     dataLimit = models.DateField(null=True)
+    observacions = models.CharField(max_length=150, null=True, blank=True)
     '''
     estat del pagament:
         '' Pagament no iniciat.
