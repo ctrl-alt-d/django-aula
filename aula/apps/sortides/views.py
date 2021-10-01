@@ -1035,9 +1035,11 @@ def sortidaExcel( request, pk ):
         if sortida.tipus_de_pagament=='ON':
             pagament = SortidaPagament.objects.get(alumne=alumne, sortida=sortida)
             pagament_realitzat = pagament.pagament_realitzat
+            ordre = pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
+            observacions = pagament.observacions if pagament.observacions and pagament.pagament_realitzat else ''
             row.extend([u"Si" if pagament_realitzat else u"No",
                         pagament.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagament_realitzat else u"",
-                        pagament.ordre_pagament if pagament_realitzat else u""])
+                        "{0} - {1}".format(ordre, observacions) if observacions else ordre])
         alumnes += [ row ]
 
     dades_sortida = detall + alumnes
@@ -1540,6 +1542,7 @@ def pagoEfectiu(request, pk):
                 pagament.data_hora_pagament = form.cleaned_data['data_hora_pagament']
                 pagament.ordre_pagament = form.cleaned_data['ordre_pagament']
                 pagament.pagament_realitzat = True
+                pagament.observacions = form.cleaned_data['observacions']
                 pagament.save()
                 return HttpResponseRedirect(reverse('sortides__sortides__detall_pagament', kwargs={'pk': sortida.pk}))
             except ValidationError as e:
@@ -1619,7 +1622,9 @@ def detallPagament(request, pk):
         # -Codi--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
+        ordre= pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
+        observacions = pagament.observacions if pagament.observacions and pagament.pagament_realitzat else ''
+        camp.contingut = '{0} - {1}'.format(ordre,observacions) if observacions else ordre
         filera.append(camp)
 
         # -Efectiu--------------------------------------------
