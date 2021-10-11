@@ -707,35 +707,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
         infos.append(txtCapcelera)
         assumpte = u"Alta a l'aplicatiu Djau de {0}".format( settings.NOM_CENTRE )
 
-        missatge = [ u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
-                     u"",
-                     u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
-                     u"",
-                     u"Benvolgut/da,",
-                     u"",
-                     u"El motiu d'aquest correu és el de donar-vos les instruccions d'alta de l'aplicació Djau del nostre centre.",
-                     u"Aquesta aplicació us permetrà fer un seguiment diari del rendiment acadèmic del vostre fill/a.",
-                     u"Per tant, hi trobareu les faltes d'assistència, de disciplina, les observacions del professorat , les sortides que afectaran al vostre fill/a entre altres informacions.",
-                     u"",
-                     u"Per a donar-vos d'alta:",
-                     u"",
-                     u" * Entreu a {0} on podeu obtenir o recuperar les claus d'accés a l'aplicació.".format(urlDjangoAula),
-                     u" * Cliqueu l'enllaç 'Obtenir o recuperar accés'. ",
-                     u" * Escriviu la vostra adreça de correu electrònic.",
-                     u" * Cliqueu el botó  Enviar.",
-                     u" * Consulteu el vostre correu electrònic on hi trobareu un missatge amb les instruccions per completar el procés d'accés al Djau.",
-                     u"",
-                     u"Com bé sabeu és molt important que hi hagi una comunicació molt fluida entre el centre i les famílies.",
-                     u"És per això que us recomanem que us doneu d'alta a aquesta aplicació i per qualsevol dubte que tingueu al respecte, poseu-vos en contacte amb el tutor/a del vostre fill/a.",
-                     u"",
-                     u"Restem a la vostra disposició per a qualsevol aclariment.",
-                     u"",
-                     u"Cordialment,",
-                     u"",
-                     settings.NOM_CENTRE,
-                     u"",
-                     u"{0}".format( textTutorial ), 
-                     ]        
+        missatge = settings.CUSTOM_MESSAGE_BENVINGUDA_FAMILIES
         
       
     

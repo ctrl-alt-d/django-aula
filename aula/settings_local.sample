@@ -2,6 +2,7 @@
 # Django settings for aula project.
 
 from .settings_dir.common import *
+from .settings import CUSTOM_PORTAL_FAMILIES_TUTORIAL
 
 #En producción dejar en False
 DEBUG = True
@@ -104,5 +105,28 @@ CONDICIONS_MATRICULA = location( r'../customising/TermesIcondicions/MATRICULA.sa
 #Informació sobre protecció de dades de caràcter personal.
 #POLITICA_RGPD = location( r'../customising/TermesIcondicions/POLITICARGPD.sample' )
 
-
+CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [ u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis a aquest correu, el missatge no serà llegit per ningú.",
+                     u"",
+                     u"Benvolgut/da,",
+                     u"",
+                     u"És molt important que et donis d’alta de l’aplicació DjAu per tal que hi hagi una comunicació fluida entre el centre i les famílies.",
+                     u"",
+                     u"L’aplicació DjAu et permetrà fer un seguiment diari del teu fill/a. Hi trobaràs dades d'assistència, de disciplina, i observacions del professorat. També tindràs accés a informació i pagament d’activitats i sortides.",
+                     u"",
+                     u"Segueix les instruccions per a donar-te d'alta al DjAu:",
+                     u"",
+                     u" 1.- Entra a {0}".format(URL_DJANGO_AULA),
+                     u" 2.- Clica l'enllaç 'Obtenir o recuperar accés'. ",
+                     u" 3.- Escriu l’adreça de correu electrònic on has rebut aquest correu. ",
+                     u" 4.- Clica el botó Enviar.",
+                     u" 5.- Consulta el correu electrònic on hi trobaràs el teu nom d’usuari i un missatge amb les instruccions per completar el procés d'accés al Djau.",
+                     u"",
+                     u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                     u"",
+                     u"Cordialment,",
+                     u"",
+                     NOM_CENTRE,
+                     u"",
+                     u"{0}".format( CUSTOM_PORTAL_FAMILIES_TUTORIAL ),
+                     ]
 
