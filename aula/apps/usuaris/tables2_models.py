@@ -20,7 +20,7 @@ class HorariProfessorTable(tables.Table):
                         )
     Assignatura = tables.TemplateColumn(
         template_code=u"""
-                        {{ record.horari.assignatura }}
+                        {{ record.horari.assignatura.getLongName}}
                         """,
         orderable=False,
     )
