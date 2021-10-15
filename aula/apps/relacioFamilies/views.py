@@ -198,7 +198,10 @@ def configuraConnexio( request , pk ):
     if alumne.dadesaddicionalsalumne_set.exists():
         for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:
             if 'Tutor' in element['visibilitat']:
-                valor = alumne.dadesaddicionalsalumne_set.get(label=element['label']).value if alumne.dadesaddicionalsalumne_set.get(label=element['label']) else ''
+                try:
+                    valor = alumne.dadesaddicionalsalumne_set.get(label=element['label']).value
+                except:
+                    valor = '-'
                 infoForm.append((element['label'] + u'(Esfer@/Saga)', valor))
 
     AlumneFormSet = modelform_factory(Alumne,
