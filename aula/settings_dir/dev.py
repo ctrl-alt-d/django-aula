@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
+import os
 
 from .common import *
 
@@ -8,18 +9,16 @@ SQL_DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': location( 'db.sqlite'),
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
     }
 }
 
 
-# per mysql:  
+# per mysql:
 #     sudo apt-get install mysql-server python-mysqldb libmysqlclient-dev
 #     pip install MySQL-python
 # DATABASES = {
