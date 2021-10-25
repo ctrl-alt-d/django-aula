@@ -12,19 +12,18 @@ repository = Path(__file__) - 3
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
 if READ_DOT_ENV_FILE:
     env.read_env(repository(".env"))
-    env_db.read_env(repository(".env.db"))
 
 DEBUG = True
 SQL_DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': env_db.str('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': env_db.str('DB_NAME', default=location('db.sqlite')),
-        'USER': env_db.str('DB_USER', default=''),
-        'PASSWORD': env_db.str('DB_PASSWORD', default=''),
-        'HOST': env_db.str('DB_HOST', default=''),
-        'ATOMIC_REQUESTS': env_db.bool('DB_ATOMIC_REQUESTS', default=True),
+        'ENGINE': env.str('DB_ENGINE', default='django.db.backends.sqlite3'),
+        'NAME': env.str('DB_NAME', default=location('db.sqlite')),
+        'USER': env.str('DB_USER', default=''),
+        'PASSWORD': env.str('DB_PASSWORD', default=''),
+        'HOST': env.str('DB_HOST', default=''),
+        'ATOMIC_REQUESTS': env.bool('DB_ATOMIC_REQUESTS', default=True),
     }
 }
 
