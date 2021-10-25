@@ -14,7 +14,6 @@ Using Docker
 
 ```
 cp env.example .env
-cp env.db.example .env.db
 make build
 make start
 ```
