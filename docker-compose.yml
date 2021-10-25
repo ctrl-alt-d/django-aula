@@ -6,7 +6,11 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env.db
+      - .env
+    environment:
+     - POSTGRES_USER=${DB_USER}
+     - POSTGRES_PASSWORD=${DB_PASSWORD}
+     - POSTGRES_DB=${DB_NAME}
 
   web:
     image: django_aula:latest

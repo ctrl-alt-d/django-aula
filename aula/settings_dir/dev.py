@@ -1,19 +1,30 @@
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
-import os
+from environ import Env, Path
 
 from .common import *
+
+# environ configuration
+env = Env()
+env_db = Env()
+repository = Path(__file__) - 3
+
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+if READ_DOT_ENV_FILE:
+    env.read_env(repository(".env"))
+    env_db.read_env(repository(".env.db"))
 
 DEBUG = True
 SQL_DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('POSTGRES_HOST'),
+        'ENGINE': env_db.str('DB_ENGINE', default='django.db.backends.sqlite3'),
+        'NAME': env_db.str('DB_NAME', default=location('db.sqlite')),
+        'USER': env_db.str('DB_USER', default=''),
+        'PASSWORD': env_db.str('DB_PASSWORD', default=''),
+        'HOST': env_db.str('DB_HOST', default=''),
+        'ATOMIC_REQUESTS': env_db.bool('DB_ATOMIC_REQUESTS', default=True),
     }
 }
 

@@ -4,6 +4,7 @@ openpyxl
 git+https://github.com/lino-framework/appypod.git#egg=appy
 Django
 django-extensions
+django-environ
 lxml
 django-appypod
 six
