@@ -1,25 +1,34 @@
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
+from environ import Env, Path
 
 from .common import *
+
+# environ configuration
+env = Env()
+env_db = Env()
+repository = Path(__file__) - 3
+
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
+if READ_DOT_ENV_FILE:
+    env.read_env(repository(".env"))
 
 DEBUG = True
 SQL_DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': location( 'db.sqlite'),
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-        'ATOMIC_REQUESTS': True,
+        'ENGINE': env.str('DB_ENGINE', default='django.db.backends.sqlite3'),
+        'NAME': env.str('DB_NAME', default=location('db.sqlite')),
+        'USER': env.str('DB_USER', default=''),
+        'PASSWORD': env.str('DB_PASSWORD', default=''),
+        'HOST': env.str('DB_HOST', default=''),
+        'ATOMIC_REQUESTS': env.bool('DB_ATOMIC_REQUESTS', default=True),
     }
 }
 
 
-# per mysql:  
+# per mysql:
 #     sudo apt-get install mysql-server python-mysqldb libmysqlclient-dev
 #     pip install MySQL-python
 # DATABASES = {
