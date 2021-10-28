@@ -17,13 +17,13 @@ from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, MAIL_REBUTJ
 
 def connectIMAP():
     '''
-    Realitza connexió al servidor de correu segons les dades 
+    Realitza connexió al servidor de correu segons les dades
     dels settings EMAIL_HOST_IMAP EMAIL_HOST_USER EMAIL_HOST_PASSWORD
-    
+
     Retorna objecte IMAP4_SSL per accedir al correu o None si falla
-    
+
     '''
-    
+
     try:
         mail = imaplib.IMAP4_SSL(settings.EMAIL_HOST_IMAP)
         if mail:
@@ -36,9 +36,9 @@ def connectIMAP():
 def disconnectIMAP(mail):
     '''
     Desconnecta el servidor de correu imaplib.IMAP4_SSL mail
-    
+
     '''
-    
+
     if mail:
         try:
             mail.close()
@@ -49,17 +49,17 @@ def disconnectIMAP(mail):
 def extractEmail(address):
     '''
     Comprova o recupera una adreça email de l'string address
-    Només fa la comprovació sintàctica, si l'string és format per varies 
+    Només fa la comprovació sintàctica, si l'string és format per varies
     adreces potencials retorna la primera correcta
-    
+
     Retorna True, adreçaOK si és vàlid
-            False, address original si no correspon a email 
+            False, address original si no correspon a email
             Exemples:
             "usuari@domini.com (Correu tutor 1) +34666555777"  -->  True, "usuari@domini.com"
             "usuari @ domini . com (Correu tutor 1)"  --> False, "usuari @ domini . com (Correu tutor 1)"
-            
+
     '''
-    
+
     addressToVerify=address.strip().lower()
     splitAddress = addressToVerify.split(' ')
     for a in splitAddress:
@@ -73,7 +73,7 @@ def extractEmail(address):
         match = re.match(regex, a)
         if match:
             return True, a
-    #Email Syntax Error      
+    #Email Syntax Error
     return False, address
 
 def testEmail(addressToVerify, testMailbox=False):
@@ -81,23 +81,23 @@ def testEmail(addressToVerify, testMailbox=False):
     Verifica si una adreça de correu és correcta
     Comprova sintaxis i domini vàlid.
     addressToVerify  string adreça que es vol verificar
-    testMailbox si és True també consulta al servidor corresponent, només 
+    testMailbox si és True també consulta al servidor corresponent, només
     té en compte el cas 550 Non-existent email address. Altres casos no es consideren error.
-    
+
     Retorna  0, adreçaOK  si s'ha obtingut una adreça vàlida
             -1, addressToVerify  si l'adreça és '' o None
             -2, addressToVerify  si sintaxis incorrecte
             -3, addressToVerify  si domini incorrecte
             -4, addressToVerify  si mailbox inexistent (codi 550)
-    
+
     '''
-    
+
     if not addressToVerify: return -1, addressToVerify
-    
+
     valida, addressToVerify=extractEmail(addressToVerify)
     if not valida:
         return -2, addressToVerify
-    
+
     splitAddress = addressToVerify.split('@')
     domain = str(splitAddress[1])
     try:
@@ -107,10 +107,10 @@ def testEmail(addressToVerify, testMailbox=False):
     except:
         #print('Domain Error',addressToVerify)
         return -3, addressToVerify
-    
+
     if not testMailbox:
         return 0, addressToVerify
-    
+
     # SMTP Conversation
     try:
         server = smtplib.SMTP(timeout=10)
@@ -120,22 +120,22 @@ def testEmail(addressToVerify, testMailbox=False):
         fromEmail=settings.DEFAULT_FROM_EMAIL.split(" ")
         fromEmail=fromEmail[len(fromEmail)-1]
         fromEmail=fromEmail[1:len(fromEmail)-1]
-        
+
         code, _ = server.docmd("MAIL", "FROM:<%s>" % fromEmail)
         code, _ = server.docmd("RCPT", "TO:<%s>" % str(addressToVerify))
-        
+
         server.quit()
         server.close()
     except:
         #print('Mailbox Error', addressToVerify);
         #No es pot identificar el problema, es considera vàlida
         return 0, addressToVerify
-    
+
     if code == 550:
         # 550 Non-existent email address
         #print('Mailbox Error', addressToVerify, code);
         return -4, addressToVerify
-    
+
     return 0, addressToVerify
 
 
@@ -143,7 +143,7 @@ def datemailTodatetime(dateEmail):
     '''
     Retorna objecte datetime a partir d'un string IMAP4 INTERNALDATE
     '''
-    
+
     date=None
     if dateEmail:
         date_tuple=email.utils.parsedate_tz(dateEmail)
@@ -155,7 +155,7 @@ def getEmailText(msg):
     '''
     Retorna el text del missatge dins de l'objecte email.message.Message msg
     '''
-    
+
     for part in msg.walk():
         if part.get('content-disposition', '').startswith('attachment;'):
             continue
@@ -174,17 +174,17 @@ def getEmailText(msg):
 
 def getMailsList(mail, num=None, dies=15):
     '''
-    Retorna la llista dels identificadors de correus rebuts al 
+    Retorna la llista dels identificadors de correus rebuts al
     servidor mail des del número num (no inclós) o els últims dies indicats.
     Es farà servir per al fetch de cada correu.
     mail connexió al servidor imaplib.IMAP4_SSL
     num en bytes, numeració a partir de la qual volem els correus (num no inclòs)
     dies enter, si num es None fa servir aquests dies per obtenir els correus
-    
+
     Retorna la llista (pot ser buida) o None en cas d'error.
-    
+
     '''
-    
+
     if mail:
         # Prepara el command corresponent
         if num:
@@ -196,7 +196,7 @@ def getMailsList(mail, num=None, dies=15):
             data=datetime.now()-timedelta(days=dies)
             data=str(data.day)+"-"+months[data.month-1]+"-"+str(data.year)
             cmd='(SENTSINCE "'+data+'")'
-        #print(cmd)        
+        #print(cmd)
         try:
             _ , dades = mail.search(None, cmd )
             mail_ids = dades[0]
@@ -222,9 +222,9 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     data datetime, en la qual el servidor va rebre el correu
     url string, enllaç per a fer el canvi de la configuració de l'usuari afectat
     Si l'usuari (no alumne) s'ha connectat al Djau des de la data aleshores també rep el missatge
-    
+
     '''
-    
+
     enviaUsuari=False
     if usuari:
         #  Si usuari s'ha connectat des de la data aleshores també se li comunica
@@ -233,7 +233,7 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
             dataDarreraConnexio = connexions[0].moment
             if dataDarreraConnexio>data:
                 enviaUsuari=True
-    
+
     missatge = MAIL_REBUTJAT
     tipus_de_missatge = tipusMissatge(missatge)
     missatge = missatge.format(str(usuari) if usuari else "desconegut", emailRetornat, str(data), motiu)
@@ -245,7 +245,7 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     if not destinataris or not destinataris.exists() or not usuari:
         destinataris= Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
         url=geturlconf('ADM',usuari)
-    msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge, 
+    msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
                 tipus_de_missatge = tipus_de_missatge, enllac=url )
     for d in destinataris:
         msg.envia_a_usuari( d , 'VI')
@@ -255,7 +255,7 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
         except:
             url=''
         if url!='':
-            msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge, 
+            msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
                         tipus_de_missatge = tipus_de_missatge, enllac=url )
             msg.envia_a_usuari( usuari , 'VI')
 
@@ -265,9 +265,9 @@ def informaNoCorreus(destinataris,usuari,url):
     destinataris  query d'usuaris (User)
     usuari  a qui fa referència el missatge (Alumne)
     url string, enllaç per a fer el canvi de la configuració de l'usuari afectat
-    
+
     '''
-    
+
     if usuari is None: return
     missatge = ALUMNE_SENSE_EMAILS
     tipus_de_missatge = tipusMissatge(missatge)
@@ -280,7 +280,7 @@ def informaNoCorreus(destinataris,usuari,url):
     if not destinataris or not destinataris.exists():
         destinataris= Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
         url=geturlconf('ADM',usuari)
-    msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge, 
+    msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
                 tipus_de_missatge = tipus_de_missatge, enllac=url )
     for d in destinataris:
         msg.envia_a_usuari( d , 'VI')
@@ -327,7 +327,7 @@ def informa(emailRetornat, status, action, data, diagnostic, text):
     Si correspon a un altre --> notifica als administradors
 
     '''
-    
+
     motiu=status+" "+ action +" "+ diagnostic
     # Fa recerca de l'usuari al text del missatge rebutjat
     # Podria ser que l'adreça de correu correspongui a varis usuaris
@@ -342,7 +342,7 @@ def informa(emailRetornat, status, action, data, diagnostic, text):
             usuari=text[pos1:pos2].split(":")[1].strip()
         else:
             usuari=None
-    
+
     altre=None
     administradors = Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
     if usuari is None:
@@ -398,8 +398,8 @@ def informa(emailRetornat, status, action, data, diagnostic, text):
                 if altre.email!=emailRetornat:
                     # El correu ja s'ha corregit
                     return
-                    
-        else: 
+
+        else:
             # Usuari inexistent
             altre=None
             motiu="Desconegut "+usuari+"\n"+motiu
@@ -413,19 +413,19 @@ def setUltimControl(num):
     email verificat
     num número de l'últim email (bytes)
     '''
-    
+
     usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
     if new:
         usuari_notificacions.is_active = False
         usuari_notificacions.first_name = u"Usuari Tasques Programades"
         usuari_notificacions.save()
-    Accio.objects.create( 
+    Accio.objects.create(
             tipus = 'DS',
             usuari = usuari_notificacions,
             l4 = False,
             impersonated_from = None,
             text = u"Comprovació emails rebutjats. ;"+num.decode()
-            )  
+            )
 
 def getUltimControl():
     '''
@@ -433,7 +433,7 @@ def getUltimControl():
     o retorna None si no n'hi ha cap
     Retorna en bytes, per a poder fer-lo servir al fetch
     '''
-    
+
     control=Accio.objects.filter(tipus='DS').order_by( '-moment' )
     if control.exists():
         ultimFetch=control[0].text.split(";")[1].encode()
@@ -446,10 +446,10 @@ def controlDSN(dies=15):
     Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
     de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
     Per cada correu identifica destinatari erroni i informa al tutor o a l'administrador de Django.
-    
+
     Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
     '''
-    
+
     mail=connectIMAP()
     if mail is None: return False
     ultimFetch=getUltimControl()
@@ -474,7 +474,7 @@ def controlDSN(dies=15):
                 # skipping the header at the first and the closing
                 # at the third
                 msg = email.message_from_bytes(response_part[1])
-                if (msg.is_multipart() and len(msg.get_payload()) > 1 and 
+                if (msg.is_multipart() and len(msg.get_payload()) > 1 and
                     msg.get_payload(1).get_content_type() == 'message/delivery-status'):
                     # email is DSN
                     text=''
@@ -495,15 +495,15 @@ def controlDSN(dies=15):
                             dc=dsn.get('diagnostic-code')
                             if dc: diagnostic=dc.split(';')[1]
                     informa(emailRetornat, status, action, data, diagnostic, text)
-    
+
     if len(id_list)>0: setUltimControl(id_list[len(id_list)-1])
     disconnectIMAP(mail)
     return True
 
 
 def enviaOneTimePasswd( email ):
-    q_correu_pare = Q( correu_relacio_familia_pare = email )
-    q_correu_mare = Q( correu_relacio_familia_mare = email )    
+    q_correu_pare = Q( correu_relacio_familia_pare__iexact = email )
+    q_correu_mare = Q( correu_relacio_familia_mare__iexact = email )
     nUsuaris = 0
     nErrors = 0
     errors = []
@@ -512,37 +512,37 @@ def enviaOneTimePasswd( email ):
         resultat = enviaOneTimePasswdAlumne( alumne )
         nUsuaris += 1
         if resultat['errors']:
-            nErrors += 1 
+            nErrors += 1
             errors.append( ', '.join( resultat['errors'] ) )
 
-    professors = Professor.objects.filter( email = email )
+    professors = Professor.objects.filter( email__iexact = email )
     for professor in professors:
         resultat = enviaOneTimePasswdProfessor(professor)
         nUsuaris += 1
         if resultat['errors']:
-            nErrors += 1 
+            nErrors += 1
             errors.append( ', '.join( resultat['errors'] ) )
-    
-    return   {  'errors':   [ u"Hi ha hagut errors recuperant la contrasenya:",  ] + errors 
-                            if nErrors>0 else [], 
-                'infos':    [ u"{0} correus enviats.".format( nUsuaris - nErrors  ), 
-                              u"Comprovi la seva bústia de correu." ] 
+
+    return   {  'errors':   [ u"Hi ha hagut errors recuperant la contrasenya:",  ] + errors
+                            if nErrors>0 else [],
+                'infos':    [ u"{0} correus enviats.".format( nUsuaris - nErrors  ),
+                              u"Comprovi la seva bústia de correu." ]
                             if nUsuaris - nErrors > 0 else [],
-                'warnings': [ u"No és possible recuperar aquest compte.", 
+                'warnings': [ u"No és possible recuperar aquest compte.",
                               u"Revisi l'adreça informada." ,
-                              u"Contacti amb el tutor o amb el cap d'estudis."  ] 
-                            if nUsuaris == 0 else [], }        
+                              u"Contacti amb el tutor o amb el cap d'estudis."  ]
+                            if nUsuaris == 0 else [], }
 
 def enviaOneTimePasswdAlumne( alumne, force = False ):
-    
+
     usuari = alumne.get_user_associat().username
-    actiu =  alumne.esta_relacio_familia_actiu()     
+    actiu =  alumne.esta_relacio_familia_actiu()
     correusFamilia = alumne.get_correus_relacio_familia()
-        
+
     infos = []
     warnings = []
     errors = []
-    
+
     #comprovo que no s'hagi enviat més de 2 recuperacions en un dia:
     fa_24h = datetime.now() - timedelta( days = 1 )
     total_enviats = OneTimePasswd.objects.filter( usuari =alumne.user_associat, moment_expedicio__gte = fa_24h  ).count()
@@ -558,11 +558,11 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
         #preparo el codi a la bdd:
         clau = str( random.randint( 100000, 999999) ) + str( random.randint( 100000, 999999) )
         OneTimePasswd.objects.create(usuari = alumne.user_associat, clau = clau)
-        
+
         #envio missatge:
         urlDjangoAula = settings.URL_DJANGO_AULA
         url = "{0}/usuaris/recoverPasswd/{1}/{2}".format( urlDjangoAula, usuari, clau )
-        txtCapcelera = u"Enviat missatge a {0} .".format( 
+        txtCapcelera = u"Enviat missatge a {0} .".format(
                                 u", ".join( correusFamilia )
                                                                 )
         infos.append(txtCapcelera)
@@ -580,7 +580,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
                      u"{0}".format( url ),
                      u"",
                      u"Aquest enllaç romandrà operatiu durant 30 minuts.",
-                     u"", 
+                     u"",
                      u"""Instruccions:""",
                      u"Punxeu o copieu l'enllaç al vostre navegador. El sistema us tornarà a informar del vostre nom d'usuari ({0}) ".format( usuari ),
                      u"i us preguntarà quina contrasenya voleu. Com a mesura suplementària de seguretat us demanarà també alguna altre dada.",
@@ -590,37 +590,37 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
                      u"  ",
                      settings.NOM_CENTRE,
                     ]
-    
+
         from django.core.mail import send_mail
         enviatOK = True
         try:
             fromuser = settings.DEFAULT_FROM_EMAIL
-            send_mail(assumpte, 
-                      u'\n'.join( missatge ), 
+            send_mail(assumpte,
+                      u'\n'.join( missatge ),
                       fromuser,
-                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
+                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ],
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
             infos = []
             enviatOK = False
-        
+
         if not enviatOK:
             errors.append( u'Hi ha hagut un error enviant la passwd.'  )
-        
+
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
 
 
 def enviaOneTimePasswdProfessor( professor, force = False ):
-    
+
     usuari = professor.getUser().username
     correu = professor.getUser().email
-        
+
     infos = []
     warnings = []
     errors = []
-    
+
     #comprovo que no s'hagi enviat més de 2 recuperacions en un dia:
     fa_24h = datetime.now() - timedelta( days = 1 )
     total_enviats = OneTimePasswd.objects.filter( usuari =professor.getUser(), moment_expedicio__gte = fa_24h  ).count()
@@ -636,15 +636,15 @@ def enviaOneTimePasswdProfessor( professor, force = False ):
         #preparo el codi a la bdd:
         clau = str( random.randint( 100000, 999999) ) + str( random.randint( 100000, 999999) )
         OneTimePasswd.objects.create(usuari = professor.getUser(), clau = clau)
-        
+
         #envio missatge:
         urlDjangoAula = settings.URL_DJANGO_AULA
         url = "{0}/usuaris/recoverPasswd/{1}/{2}".format( urlDjangoAula, usuari, clau )
-        txtCapcelera = u"Enviat missatge a {0} .".format( 
+        txtCapcelera = u"Enviat missatge a {0} .".format(
                                 correu
                                                                 )
         infos.append(txtCapcelera)
-        missatge = [ 
+        missatge = [
                      u"La pàgina principal del programa de relació famílies de l'Institut és:",
                      u"{0}".format( urlDjangoAula ),
                      u"El vostre codi d'usuari és: **  {0}  **".format( usuari ),
@@ -653,7 +653,7 @@ def enviaOneTimePasswdProfessor( professor, force = False ):
                      u"{0}".format( url ),
                      u"",
                      u"Aquest enllaç romandrà operatiu durant 30 minuts.",
-                     u"", 
+                     u"",
                      u"""Instruccions:""",
                      u"Punxeu o copieu l'enllaç al vostre navegador. El sistema us tornarà a informar del vostre nom d'usuari ({0}) ".format( usuari ),
                      u"i us preguntarà quina contrasenya voleu. Com a mesura suplementària de seguretat us demanarà també alguna altre dada.",
@@ -661,35 +661,35 @@ def enviaOneTimePasswdProfessor( professor, force = False ):
                      u"  ",
                      settings.NOM_CENTRE,
                     ]
-    
+
         from django.core.mail import send_mail
         enviatOK = True
         try:
             fromuser = settings.DEFAULT_FROM_EMAIL
-            send_mail(u"Accés a l'aplicatiu de {0}".format( settings.NOM_CENTRE), 
-                      u'\n'.join( missatge ), 
+            send_mail(u"Accés a l'aplicatiu de {0}".format( settings.NOM_CENTRE),
+                      u'\n'.join( missatge ),
                       fromuser,
-                      [  correu ] , 
+                      [  correu ] ,
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
             infos = []
             enviatOK = False
-        
+
         if not enviatOK:
             errors.append( u'Hi ha hagut un error enviant la passwd.'  )
-        
+
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
 
 def enviaBenvingudaAlumne( alumne, force = False ):
-        
+
     correusFamilia = alumne.get_correus_relacio_familia()
-        
+
     infos = []
     warnings = []
     errors = []
-    
+
     if not correusFamilia:
         warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels pares estigui informada")
         errors.append( u"Error enviant correu de benvinguda" )
@@ -699,66 +699,66 @@ def enviaBenvingudaAlumne( alumne, force = False ):
     else:
         #envio missatge:
         urlDjangoAula = settings.URL_DJANGO_AULA
-        textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL 
-        
-        txtCapcelera = u"Enviat missatge a {0} .".format( 
+        textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL
+
+        txtCapcelera = u"Enviat missatge a {0} .".format(
                                 u", ".join( correusFamilia )
                                                                 )
         infos.append(txtCapcelera)
         assumpte = u"Alta a l'aplicatiu Djau de {0}".format( settings.NOM_CENTRE )
 
         missatge = settings.CUSTOM_MESSAGE_BENVINGUDA_FAMILIES
-        
-      
-    
+
+
+
         from django.core.mail import send_mail
         enviatOK = True
         try:
             fromuser = settings.DEFAULT_FROM_EMAIL
-            send_mail(assumpte, 
-                      u'\n'.join( missatge ), 
+            send_mail(assumpte,
+                      u'\n'.join( missatge ),
                       fromuser,
-                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ], 
+                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ],
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
             infos = []
             enviatOK = False
-        
+
         if not enviatOK:
             errors.append( u'Hi ha hagut un error enviant la benvinguda.'  )
-        
+
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
 
 def bloqueja( alumne, motiu ):
-    actiu =  alumne.esta_relacio_familia_actiu() 
+    actiu =  alumne.esta_relacio_familia_actiu()
 
     infos = []
     warnings = []
     errors = []
-        
+
     if actiu and alumne.get_user_associat() is not None and alumne.user_associat.is_active:
         alumne.user_associat.is_active = False
         alumne.user_associat.save()
         alumne.motiu_bloqueig = motiu
         #alumne.credentials = credentials
         alumne.save()
-        infos.append(u'Accés desactivat amb èxit.')    
+        infos.append(u'Accés desactivat amb èxit.')
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
 def desbloqueja( alumne ):
-    actiu =  alumne.esta_relacio_familia_actiu() 
+    actiu =  alumne.esta_relacio_familia_actiu()
 
     infos = []
     warnings = []
     errors = []
-        
+
     if not actiu:
         #Si no té user associat en creo un:
         usuari_associat = alumne.get_user_associat()
-        
-        #Desbloquejo: 
+
+        #Desbloquejo:
         esPotDesbloquejar = alumne.get_correus_relacio_familia() \
                             and usuari_associat is not None \
                             and not alumne.esBaixa()
@@ -771,7 +771,7 @@ def desbloqueja( alumne ):
             infos.append(u'Accés activat amb èxit.')
         else:
             errors.append(u'No es pot desbloquejar, comprova que té adreça de correu dels pares i no és baixa.')
-   
+
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
 

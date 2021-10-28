@@ -16,6 +16,13 @@ Using Docker
 cp env.example .env
 make build
 make start
+
+# If you want to import demo data
+make load_demo_data
+
+# If you want to clean the DB
+make down
+make start
 ```
 
 Quick demo
