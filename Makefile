@@ -1,11 +1,9 @@
-COMPOSE_FILE := docker-compose.yml
-
-.PHONY: build start stop
+.PHONY: build start serve stop down load_demo_data
 
 
 build:
 	${INFO} "Creating builder image..."
-	@ docker-compose -f $(COMPOSE_FILE) build --no-cache web
+	@ docker-compose build --no-cache web
 	${INFO} "Build completed"
 
 start:
@@ -18,8 +16,16 @@ serve:
 
 stop:
 	${INFO} "Stoping services"
+	@ docker-compose stop
+
+down:
+	${INFO} "Stoping services and deleting the db"
 	@ docker-compose down
 
+load_demo_data:
+	${INFO} "Load demo data"
+	@ docker-compose exec web python manage.py loaddata aula/apps/*/fixtures/dades.json
+	@ docker-compose exec web python manage.py loaddemodata
 
 # Aesthetics
 YELLOW := "\e[1;33m"
