@@ -55,7 +55,7 @@ def reportBaixaCarpeta( request, dia, professors ):
                     
                        
     #from django.template import Context                              
-    import cgi
+    import html
     import os
     from django import http
     import time
@@ -86,7 +86,7 @@ def reportBaixaCarpeta( request, dia, professors ):
         response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = 'attachment; filename=professor-baixa.odt'
     else:
-        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % html.escape(excepcio))
 
     
     return response

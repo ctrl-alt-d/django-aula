@@ -18,7 +18,6 @@ import csv, time
 from aula.apps.extSaga.models import Grup2Aula
 
 from django.conf import settings
-from appy.pod.buffers import ELSE_WITHOUT_IF
 
 from aula.utils.tools import unicode
 

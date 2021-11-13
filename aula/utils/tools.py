@@ -7,7 +7,7 @@ from django.template import Context
 from django.conf import settings
 
 from io import StringIO
-import cgi
+import html
 from django.core.validators import validate_ipv4_address
 from django.core.exceptions import ValidationError
 from django.contrib.auth import logout
@@ -161,7 +161,7 @@ def write_pdf(template_src, context_dict):
         response = http.HttpResponse( result.getvalue(), mimetype='application/pdf')
         response['Content-Disposition'] = 'attachment; filename=qualitativa.pdf'
     else:
-        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % cgi.escape(html))
+        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % html.escape(html))
 
     
     return response

@@ -13,7 +13,7 @@ def report_cartaAbsentisme( request, carta ):
                        
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
-    import cgi
+    import html
     import os
     from django import http
     import time
@@ -84,7 +84,7 @@ def report_cartaAbsentisme( request, carta ):
         response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = 'attachment; filename=cartaAbsencies.odt'
     else:
-        response = http.HttpResponse('''Gremlin's ate you! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Gremlin's ate you! %s''' % html.escape(excepcio))
 
     
     return response

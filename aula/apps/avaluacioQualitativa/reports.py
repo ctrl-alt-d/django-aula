@@ -70,7 +70,7 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
                        
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
-    import cgi
+    import html
     import os
     from django import http
     import time
@@ -101,7 +101,7 @@ def reportQualitativa( qualitativa , alumnes = [], grups = [], request = None):
         response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = 'attachment; filename=qualitativa.odt'
     else:
-        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % html.escape(excepcio))
 
     
     return response
