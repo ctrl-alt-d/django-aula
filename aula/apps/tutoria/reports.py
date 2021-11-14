@@ -197,7 +197,7 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
                        
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
-    import cgi
+    import html
     import os
     from django import http
     import time
@@ -228,7 +228,7 @@ def reportFaltesIncidencies( dataInici, dataFi , alumnes_informe = [], alumnes_r
         response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
         response['Content-Disposition'] = 'attachment; filename=assistencia_i_incidencies.odt'
     else:
-        response = http.HttpResponse('''Els Gremlins odien el teu llistat! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Els Gremlins odien el teu llistat! %s''' % html.escape(excepcio))
 
     
     return response                       

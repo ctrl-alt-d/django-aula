@@ -127,7 +127,7 @@ def imprimir( request, pk, din = '4'):
 
     #from django.template import Context                              
     from appy.pod.renderer import Renderer
-    import cgi
+    import html
     import os
     from django import http
     
@@ -160,7 +160,7 @@ def imprimir( request, pk, din = '4'):
         response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format( "autoritzacio_sortida", pk )
                                                      
     else:
-        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
     
     return response
     
@@ -1051,7 +1051,7 @@ def sortidaExcel( request, pk ):
     })
 
     import os
-    import cgi
+    import html
     import time
     from django import http
     import xlsxwriter
@@ -1091,7 +1091,7 @@ def sortidaExcel( request, pk ):
         response['Content-Disposition'] = u'attachment; filename="sortida-{0}.xlsx"'.format( slugify( sortida.titol_de_la_sortida ))
 
     else:
-        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
 
     return response
 
