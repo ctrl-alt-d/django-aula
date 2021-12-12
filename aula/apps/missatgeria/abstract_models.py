@@ -54,19 +54,19 @@ class AbstractMissatge(models.Model):
             self.detallmissatge_set.create( detall = liniaDetall, tipus = 'I' )
         
     def afegeix_errors(self, liniesDetall):
-        if isinstance(liniesDetall, collections.Iterable):
+        if isinstance(liniesDetall, collections.abc.Iterable):
             self.desa()        
             for liniaDetall in liniesDetall:
                 self.afegeix_error(liniaDetall)
             
     def afegeix_warnings(self, liniesDetall):
-        if isinstance(liniesDetall, collections.Iterable):
+        if isinstance(liniesDetall, collections.abc.Iterable):
             self.desa()        
             for liniaDetall in liniesDetall:
                 self.afegeix_warning(liniaDetall)
 
     def afegeix_infos(self, liniesDetall):
-        if isinstance(liniesDetall, collections.Iterable):
+        if isinstance(liniesDetall, collections.abc.Iterable):
             self.desa()        
             for liniaDetall in liniesDetall:
                 self.afegeix_info(liniaDetall)
@@ -141,6 +141,6 @@ class AbstractDestinatari(models.Model):
             return 'danger'
         elif self.importancia == self.importancia_IN:
             return 'info'
-        elif self.importancia == self.importancia_IN:
+        elif self.importancia == self.importancia_PI:
             return 'success'
 

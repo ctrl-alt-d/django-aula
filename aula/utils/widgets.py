@@ -26,7 +26,7 @@ class SelectAjax( Select ):
     def render(self, name, value, attrs=None, renderer=None, choices=()):
         script =u'<script>%s</script>'%self.jquery
 
-        output = super(SelectAjax, self).render(name, value=value, attrs=attrs, choices=choices)
+        output = super(SelectAjax, self).render(name, value=value, attrs=attrs)  #, choices=choices)
         return mark_safe(script) + output
 
     def render_options(self, choices, selected_choices):
@@ -159,8 +159,8 @@ class bootStrapButtonSelect(Widget):
         selected_choices = set(force_text(v) for v in selected_choices)
         output = []
         for option_value, option_label in chain(self.choices, choices):
-          output.append(self.render_button(selected_choices, name, id_, num_id, option_value, option_label))
-          num_id = num_id + 1
+            output.append(self.render_button(selected_choices, name, id_, num_id, option_value, option_label))
+            num_id = num_id + 1
         return u'\n'.join(output)
     
 
@@ -169,16 +169,16 @@ class DateTimeTextImput(DateTimeInput):
     def render(self, name, value, attrs={}, renderer=None):
         pre_html = """
                          <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( attrs['id'] )
-        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
+        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
                            </span>
                          </div>
                       """
         javascript = """<script type="text/javascript">
                             $(function () {
                                 $('#datetime_""" + attrs['id'] + """').datetimepicker({
-                                    pickSeconds: false   ,
-                                    language: 'ca'      ,
-                                    weekStart: 1             
+                                    useCurrent: false,
+                                    locale: 'ca',
+                                    format: 'DD/MM/YYYY HH:mm'
                                 });
                             });
                         </script>"""
@@ -196,16 +196,16 @@ class DateTextImput(DateInput):
     def render(self, name, value, attrs={}, renderer=None):
         pre_html = """
                          <div class='input-group date' id='datetime_{0}' style="width:300px;" >""".format( attrs['id'] )
-        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span>
+        post_html = """    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
                            </span>
                          </div>
                       """
         javascript = """<script type="text/javascript">
                             $(function () {
                                 $('#datetime_""" + attrs['id'] + """').datetimepicker({
-                                    pickTime: false   ,
-                                    language: 'ca'       ,
-                                    weekStart: 1                                  
+                                    useCurrent: false,
+                                    locale: 'ca',
+                                    format: 'DD/MM/YYYY'
                                 });
                             });
                         </script>"""
@@ -217,6 +217,124 @@ class DateTextImput(DateInput):
         return mark_safe(pre_html  + super_html +  post_html + javascript   )
 
 
+class DataHoresAlumneAjax(DateInput):
+    '''
+    Widget que fa servir 2 datetimepicker, serveix per escollir dues dates amb hora inicial i final
+    segons horari de l'alumne.
+    id_selhores  select per escollir hora de la data seleccionada
+    almnid       id de l'alumne usuari actual
+    id_dt_end    id del segon datetimepicker per a la data final. Ha de ser None si el widget és el de
+                 la data final.
+    
+    '''
 
+    def __init__(self, attrs=None, format=None, id_selhores='', almnid=0, id_dt_end='', pd=None, ud=None):
+        self.id_selhores = id_selhores
+        self.almnid = str(almnid)
+        self.id_dt_end = id_dt_end
+        self.pd=str(pd)
+        self.ud=str(ud)
+        super().__init__(attrs, format)
 
- 
+    def render(self, name, value, attrs=None, renderer=None):
+        pre_html = """
+                    <div class='input-group date' id='datetime_""" + attrs['id'] + """' style="width:300px;">"""
+        post_html = """ <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                    """
+        dt_end = """
+                        $('#datetime_id_""" + self.id_dt_end + """').data("DateTimePicker").minDate(valor);
+                        $('#datetime_id_""" + self.id_dt_end + """').data("DateTimePicker").defaultDate(valor);
+                 """ if bool(self.id_dt_end) else ""
+        javascript = """
+            <script type="text/javascript">
+                $(function () {
+                    $('#datetime_""" + attrs['id'] + """').datetimepicker({
+                         useCurrent: false,
+                         locale: 'ca',
+                         daysOfWeekDisabled: [0, 6],
+                         minDate: new Date('""" + self.pd + """'),
+                         maxDate: new Date('""" + self.ud + """'),
+                         format: 'DD/MM/YYYY'
+                    });
+                    $('#datetime_""" + attrs['id'] + """').on("dp.change",function(e){
+                        if (!e.date) return;
+                        var alumne=\""""+self.almnid+"""\";
+                        var valor = new Date(e.date);
+                        var dia = valor.getFullYear()+"-"+(valor.getMonth()+1)+"-"+valor.getDate();
+                        """ + dt_end + """
+                        $('#datetime_""" + attrs['id'] + """').data("DateTimePicker").hide();
+                        $.ajax({type: "GET",
+                              url:"/open/horesAlumneAjax/"+alumne+"/"+dia,
+                              success:function( res, status) {
+                                    if (status == "success") {
+                                        $("select#id_""" + self.id_selhores + """").html( res );
+                                     }
+                                },
+                              error:function (xhr, ajaxOptions, thrownError){
+                                        alert(xhr.status);
+                                        alert(thrownError);
+                                } 
+                              });
+                    });
+                });
+            </script>"""
+
+        attrs.setdefault('class', "")
+        attrs['class'] += "form-control"
+        attrs['data-format'] = "dd/MM/yyyy"
+        super_html = super().render(name, value=value, attrs=attrs, renderer=renderer)
+
+        return mark_safe(pre_html + super_html + post_html + javascript)
+
+class image(TextInput):
+    def __init__(self, attrs=None):
+        super().__init__(attrs)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        pre_html = ""
+        post_html = """
+                       <span style="float:left;">
+                           <img src="""+"\""+value.url+"\""+""" style="width:60px;">
+                       </span>
+                    """ if bool(value) else ""
+        
+        return mark_safe(pre_html + post_html)
+    
+class modalButton(TextInput):
+    def __init__(self, attrs=None, bname=None, title=None, info=None):
+        self.bname=bname if bool(bname) else ""
+        self.title=title if bool(title) else ""
+        self.info=info if bool(info) else "Sense dades"
+        super().__init__(attrs)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        html = ""
+                            
+        if bool(value):
+            html = """
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#{idfield}">{bname}</button>
+            <div class="modal fade" id="{idfield}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel{idfield}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel{idfield}">{title}</h4>
+                        </div>
+                        <div class="modal-body">{info}</div>
+            
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Tancar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    """.format(idfield=attrs['id'], bname=self.bname, title=self.title, info=self.info)
+
+      
+        return mark_safe(html)
+    

@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from django.urls import path
 from aula.apps.relacioFamilies import views as relacioFamilies_views
 
 urlpatterns = [
@@ -22,4 +23,13 @@ urlpatterns = [
     
     url(r'^canviParametres/$', relacioFamilies_views.canviParametres,
         name="relacio_families__configuracio__canvi_parametres"),         
+    
+    path('blanc/', relacioFamilies_views.blanc, name="relacio_families__comunicats__blanc"),
+    
+    path('comunicat/', relacioFamilies_views.comunicatAbsencia, name="relacio_families__comunicats__absencia"),
+    
+    path('anteriors/', relacioFamilies_views.comunicatsAnteriors, name="relacio_families__comunicats__anteriors"),
+    
+    path('horesAlumneAjax/<idalumne>/<dia>/', relacioFamilies_views.horesAlumneAjax,
+        name="relacio_families__horesAlumneAjax"),         
 ]

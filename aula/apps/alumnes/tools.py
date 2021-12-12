@@ -174,3 +174,62 @@ def crea_alumne(nom, cognoms, dataNaixement, grup):
     a.tutors_volen_rebre_correu = False
     a.save()
 
+def controlsRang(alumne, datai, horai, dataf, horaf):
+    '''
+      Retorna els controlassistencia de l'alumne en les dates indicades.
+      Des de datai horai fins a dataf horaf
+    '''
+    if datai==dataf:
+        return alumne.controlassistencia_set.filter(
+            impartir__dia_impartir=datai, 
+            impartir__horari__hora__hora_inici__gte=horai, impartir__horari__hora__hora_fi__lte=horaf
+            )
+    else:
+        return alumne.controlassistencia_set.filter(
+            Q(impartir__dia_impartir=datai, impartir__horari__hora__hora_inici__gte=horai)
+            | Q(impartir__dia_impartir__gt=datai, impartir__dia_impartir__lt=dataf)
+            | Q(impartir__dia_impartir=dataf, impartir__horari__hora__hora_fi__lte=horaf)
+            )
+
+def properdiaclasse(alumne, desdeDiaHora):
+    return alumne.controlassistencia_set.filter(
+            Q(impartir__dia_impartir=desdeDiaHora.date(), impartir__horari__hora__hora_fi__gt=desdeDiaHora.time())
+            | Q(impartir__dia_impartir__gt=desdeDiaHora.date())
+            ).order_by('impartir__dia_impartir','impartir__horari__hora__hora_inici').first().impartir.dia_impartir
+            
+def ultimdiaclasse(alumne, finsDia):
+    return alumne.controlassistencia_set.filter(impartir__dia_impartir__lte=finsDia)\
+        .order_by('impartir__dia_impartir','impartir__horari__hora__hora_inici').last().impartir.dia_impartir
+    
+def ordHores(h):
+    '''
+    Es fa servir a get_hores. Permet ordenar per hores una llista del tipus:
+    [( id, "hh:mm-hh:mm"), ( id, "hh:mm-hh:mm"), ( id, "hh:mm-hh:mm"), ]
+    Retorna el segon element de h = ( id, "hh:mm-hh:mm")
+    '''
+    return h[1]
+
+def get_hores(alumne, dia, actual=True):
+    '''
+    Retorna la llista d'hores de classe de l'alumne en el dia indicat.
+    Ordena la llista segons les hores.
+    [( id, "hh:mm-hh:mm"), ( id, "hh:mm-hh:mm"), ( id, "hh:mm-hh:mm"), ]
+    '''
+    if not bool(alumne): return []
+    ara=datetime.datetime.now();
+    if actual and dia==ara.date():
+        qdata = Q(impartir__dia_impartir=dia, impartir__horari__hora__hora_fi__gt=ara.time())
+    else:
+        qdata = Q(impartir__dia_impartir=dia)
+    controlOnEslAlumneData = alumne.controlassistencia_set.filter(qdata)
+    grup = alumne.grup
+    horesDelGrupData = { x for x in grup.horari_set.filter(qdata).filter(es_actiu=True) }
+    horesDeAlumneData = {c.impartir.horari for c in controlOnEslAlumneData}
+    # llistes Horari -->  obtenir hores
+    hores=[ h.hora for h in horesDelGrupData ]
+    hores=hores+[ h.hora for h in horesDeAlumneData ]
+    hores=list(set(hores))
+    hores=[ (str(hora.id), hora.hora_inici.strftime("%H:%M")+"-"+hora.hora_fi.strftime("%H:%M")) for hora in hores ]
+    hores.sort(key=ordHores)
+
+    return hores

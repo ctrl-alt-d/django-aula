@@ -365,9 +365,9 @@ def passaLlista(request, pk):
                 impartir.save()
 
                 # si hi ha retards, recordar que un retard provoca una incidència.
-                if hiHaRetard:
+                if hiHaRetard and settings.CUSTOM_RETARD_PROVOCA_INCIDENCIA:
                     url_incidencies = reverse("aula__horari__posa_incidencia", kwargs={'pk': pk})
-                    msg = u"""Has posat 'Retard', recorda que els retars provoquen incidències, 
+                    msg = u"""Has posat 'Retard', recorda que els retards provoquen incidències, 
                     s'hauran generat automàticament, valora si cal 
                     <a href="{url_incidencies}">gestionar les faltes</a>.""".format(url_incidencies=url_incidencies)
                     messages.warning(request, SafeText(msg))
@@ -440,6 +440,7 @@ def passaLlista(request, pk):
          "feelLuckyEnabled": True,
          "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA,
          "els_meus_tutorats": els_meus_tutorats,
+         "oneline": True,
          },
         )
 
@@ -1282,6 +1283,7 @@ def anularImpartir(request, pk):
         for control in controls.exclude(q_already_anulats).filter(q_sense_passar_llista|q_falta).all():
             control.nohadeseralaula_set.create(motiu=NoHaDeSerALAula.ANULLADA)
             control.estat_backup = control.estat
+            control.professor_backup = control.professor
             control.swaped = True
             control.estat = None
             try:
@@ -1329,6 +1331,7 @@ def desanularImpartir(request, pk):
             control.nohadeseralaula_set.filter(motiu=NoHaDeSerALAula.ANULLADA).delete()
             if control.swaped:
                 control.estat = control.estat_backup
+                control.professor = control.professor_backup
                 control.swaped = False
             try:
                 control.save()

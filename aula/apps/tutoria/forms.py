@@ -3,8 +3,9 @@ from aula.utils.widgets import DateTextImput
 
 from django import forms as forms
 import datetime
-from aula.apps.alumnes.models import Alumne, Grup
+from aula.apps.alumnes.models import Alumne, Grup, AlumneGrup
 from django.forms.widgets import Widget
+from aula.django_select2.forms import ModelSelect2Widget
 
 class elsMeusAlumnesTutoratsEntreDatesForm( forms.Form ):
     grup = forms.ChoiceField(   )
@@ -29,10 +30,23 @@ class elsMeusAlumnesTutoratsEntreDatesForm( forms.Form ):
                 
 
 class justificaFaltesW1Form(forms.Form):
-    alumne = forms.ModelChoiceField( queryset= Alumne.objects.none(), 
-                                          required = False, 
-                                          empty_label="(Justificador)",
-                                          help_text=u"""Alumne al que vols justificar faltes.(Justificador per tot el grup)"""  )
+    from django.forms.models import ModelChoiceField
+    
+    alumne = ModelChoiceField( 
+                widget=ModelSelect2Widget(
+                                     queryset=AlumneGrup.objects.none(),
+                                     search_fields = [
+                                         'cognoms__icontains',
+                                         'nom__icontains',
+                                         'nom_sentit__icontains',
+                                         'grup__descripcio_grup__icontains'
+                                         ],
+                                     attrs={'style':"'width': '100%'"},
+                                     ),        
+                queryset= AlumneGrup.objects.all(),
+                required = False, 
+                #empty_label="(Justificador)",
+                help_text=u"""Alumne al que vols justificar faltes.(En blanc per tot el grup)"""  )
 
     data = forms.DateField(label=u'Data faltes a justificar', 
                                        initial=datetime.date.today,
@@ -45,7 +59,7 @@ class justificaFaltesW1Form(forms.Form):
     def __init__(self, *args, **kwargs):
         self.queryset = kwargs.pop('queryset', None)
         super(justificaFaltesW1Form,self).__init__(*args,**kwargs)
-        self.fields['alumne'].queryset = self.queryset        
+        self.fields['alumne'].widget.queryset = self.queryset
         
 class informeSetmanalForm(forms.Form):
     grup = forms.ModelChoiceField( queryset= Grup.objects.none(), 

@@ -30,7 +30,7 @@ $(document).ready(function()
 
    $('#ca{{ca.pk}}').tooltip(
    {
-      title: '{{ca.estat2show|escapejs}}, Prof.: {{ca.professor2show|escapejs}}'
+          title: '{{ca.descripcio|escapejs}}'
    });
    
    $('#ca{{ca.pk}},sca{{ca.pk}}').hover(function() {
@@ -65,11 +65,7 @@ $(document).ready(function()
 					content: newcontent,
 					color: "#FFFFFF"
 			   });
-			   $('#ca{{ca.pk}}').tooltip("destroy");
-			   $('#ca{{ca.pk}}').tooltip({
-			      title: data.missatge
-			   });	
-			   $('#ca{{ca.pk}}').tooltip("hide");
+			   $('#ca{{ca.pk}}').attr('title', data.missatge).tooltip('fixTitle').tooltip('show');
 			   
     		} else {
 				$.each( data.errors,  function(index, value) { 
@@ -150,7 +146,7 @@ $(document).ready(function()
   		{% for ca in cella.c %}
   		<div id="ca{{ca.pk}}" style="margin: 0px 0px 0px 0px;">
   		   <span id="sca{{ca.pk}}" class="label
-  		   	  {% if ca.swaped %}label-info
+  		   	  {% if ca.estat.codi_estat == "J" %}label-info
   		   	  {%elif ca.estat.codi_estat == "F" %}label-danger
   		   	  {%elif ca.estat.codi_estat == "R" %}label-warning
   		   	  {%else%}label-default

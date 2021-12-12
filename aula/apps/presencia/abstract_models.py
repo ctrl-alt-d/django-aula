@@ -186,6 +186,8 @@ class AbstractControlAssistencia(models.Model):
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
     
+    comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
+    
     class Meta:
         abstract = True
         verbose_name = u'Entrada al Control d\'Assistencia'
@@ -206,6 +208,13 @@ class AbstractControlAssistencia(models.Model):
                      .exists()
                     )
 
+    @property
+    def descripcio(self):
+        text=u'{0}:{1}  Prof.: {2}'.format( self.estat or "", self.impartir.horari.assignatura if self.impartir.horari else "" ,
+                                            self.professor or ( self.impartir.horari.professor if self.impartir.horari else "" ) )
+        if self.comunicat:
+            text=text+". "+self.comunicat.text_missatge
+        return text
 
 
 class AbstractNoHaDeSerALAula(models.Model):

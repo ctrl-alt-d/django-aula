@@ -1,6 +1,6 @@
 # Configurar Estados de Asistencia y Tipos de Asignatura
 
-Seguimos con los preparativos antes de la carga de datos, ahora configuraremos los Estados de asistencia. Cuando pasemos lista por cada alumno deberemos elegir un estado \(Presente, Falta, Retardo .. etc\) 
+Seguimos con los preparativos antes de la carga de datos, ahora configuraremos los Estados de asistencia. Cuando pasemos lista por cada alumno deberemos elegir un estado \(Presente, Falta, Retraso .. etc\) 
 
 ![](../../.gitbook/assets/image%20%288%29.png)
 

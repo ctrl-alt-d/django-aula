@@ -31,7 +31,7 @@ from aula.utils.my_paginator import DiggPaginator
 from django.contrib import messages
 from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES, CONSERGERIA_A_TUTOR, tipusMissatge, \
     CONSERGERIA_A_CONSERGERIA, ERROR_AL_PROGRAMA, ACUS_REBUT_ERROR_AL_PROGRAMA, ACUS_REBUT_ENVIAT_A_PROFE_O_PAS, \
-    EMAIL_A_FAMILIES
+    EMAIL_A_FAMILIES, AVIS_ABSENCIA
 from aula.apps.relacioFamilies.notifica import enviaEmailFamilies
 import collections
 
@@ -73,6 +73,33 @@ def elMeuMur( request, pg ,tipus = 'all'):
                     },
                  )
     
+def enviaMsg(user, credentials, alumne, datai, horai, dataf, horaf, motiu, observ):
+    from aula.apps.alumnes.tools import controlsRang
+    
+    msg = Missatge( remitent = user )
+    msg.credentials = credentials
+    msg.text_missatge = AVIS_ABSENCIA
+    msg.enllac = '/tutoria/justificaFaltes/{0}/{1}/{2}/{3}'.format(alumne.pk, datai.year, datai.month, datai.day)
+    msg.tipus_de_missatge = tipusMissatge(msg.text_missatge)
+    msg.text_missatge=msg.text_missatge.format(alumne, 
+                                               datai.strftime( '%d/%m' ),
+                                               horai.strftime( '%H:%M' ), 
+                                               dataf.strftime( '%d/%m' ), 
+                                               horaf.strftime( '%H:%M' ), 
+                                               motiu+((" - "+ observ) if bool(observ) else ""))
+    msg.save()
+    
+    ctrlqs=controlsRang(alumne, datai, horai, dataf, horaf)
+    # enllaça Missatge amb ControlAssistència
+    for c in ctrlqs:
+        c.comunicat=msg
+        c.save()
+        
+    tutors = alumne.tutorsDeLAlumne()
+    if len( tutors ) > 0:
+        for tutor in tutors:
+            msg.envia_a_usuari(tutor.getUser(), 'IN')
+
 @login_required
 @group_required(['professors','professional','consergeria'])
 def enviaMissatgeTutors( request ):

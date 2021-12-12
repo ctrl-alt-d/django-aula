@@ -66,8 +66,16 @@ $.fn.bootstrapDP = null;
 
 <script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min.js"></script>
 <script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
-<script src="{{STATIC_URL}}eonasdan-dt-picker/js/bootstrap-datetimepicker.min.js"></script>
-<script src="{{STATIC_URL}}eonasdan-dt-picker/js/catala.js"></script>
+<!--
+Es fan servir còpies d'aquests arxius:
+https://github.com/Eonasdan/tempus-dominus/blob/v4/build/css/bootstrap-datetimepicker.css
+https://github.com/moment/moment/blob/develop/min/moment-with-locales.min.js
+Versió modificada de https://github.com/Eonasdan/tempus-dominus/blob/v4/src/js/bootstrap-datetimepicker.js
+-->
+<link href="{{STATIC_URL}}datetimepicker/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<script type="text/javascript" src="{{STATIC_URL}}datetimepicker/js/moment-with-locales.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}datetimepicker/js/bootstrap-datetimepicker.js"></script>
+
 <script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min_new.js"></script>
 <script type="text/javascript">
   $('button[data-toggle=popover]').popover();

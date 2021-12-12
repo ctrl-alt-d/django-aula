@@ -44,24 +44,25 @@ class MissatgesTable(tables.Table):
 
 
     def render_Remitent(self,record):
+        try:
+            missatge_class = list(MISSATGES[record.missatge.tipus_de_missatge].keys())[0]
+        except:
+            missatge_class = 'dark'
+        missatge='<span class="text-' + missatge_class + '">'
+        
         if record.missatge.remitent.groups.filter( name = 'alumne' ).exists():
             alumne = get_object_or_404(Alumne, user_associat=record.missatge.remitent)
-            return u"Missatge des del portal famílies de: {alumne} ({tutors})".format( alumne=alumne,
-                                                                                       tutors = alumne.tutorsDeLAlumne_display() )
+            missatge = missatge + u"Missatge des del portal famílies de: {alumne}".format(alumne=alumne)
         else:
-            try:
-                missatge_class = list(MISSATGES[record.missatge.tipus_de_missatge].keys())[0]
-            except:
-                missatge_class = 'dark'
-            missatge='<span class="text-' + missatge_class + '">'
             if record.missatge.remitent.last_name:
                 missatge = missatge + record.missatge.remitent.first_name + ' ' + record.missatge.remitent.last_name
                 if record.missatge.remitent.email:
                     missatge = missatge + '\n' + record.missatge.remitent.email
             else:
                 missatge = missatge + record.missatge.remitent.username
-            missatge = missatge + '</span>'
-            return mark_safe(missatge)
+            
+        missatge = missatge + '</span>'
+        return mark_safe(missatge)
 
     @register.simple_tag
     def Missatges_content(key):
