@@ -553,7 +553,7 @@ def elMeuInforme( request, pk = None ):
             camp.enllac = None
             camp.contingut = u'{0} a {1} ({2})'.format(
                                                  control.estat,
-                                                 control.impartir.horari.assignatura,
+                                                 control.impartir.horari.assignatura.nom_assignatura,
                                                  control.impartir.horari.hora 
                                     )        
             camp.negreta = False if control.relacio_familia_revisada else True      

@@ -300,7 +300,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Notificacions", 'varis__elmur__veure', di or pr or pl or co or pg , ( nMissatgesDelta, 'info' if nMissatgesDelta < 10 else 'danger' ) if nMissatgesDelta >0 else None, None ),
                       ("Missatge a professorat o PAS", 'varis__prof_i_pas__envia_professors_i_pas', pr or pl or co, None, None ),
-                      ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', tots, None, None ),
+                      ("Avisos de Seguretat", 'varis__avisos__envia_avis_administradors', ad or di or pr or pl or co or pg, None, None ),
                       ("Email a les famílies", 'varis__mail__enviaEmailFamilies', di, None, None ),
                       ("Estadístiques", 'varis__estadistiques__estadistiques', pr, None, None),
                       ("About", 'varis__about__about', tots, None, None ),
