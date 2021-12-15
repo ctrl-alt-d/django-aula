@@ -13,6 +13,7 @@ from aula.apps.sortides.models import Sortida
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from ctypes import _endian
 
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
@@ -192,14 +193,18 @@ def controlsRang(alumne, datai, horai, dataf, horaf):
             )
 
 def properdiaclasse(alumne, desdeDiaHora):
-    return alumne.controlassistencia_set.filter(
+    dia=alumne.controlassistencia_set.filter(
             Q(impartir__dia_impartir=desdeDiaHora.date(), impartir__horari__hora__hora_fi__gt=desdeDiaHora.time())
             | Q(impartir__dia_impartir__gt=desdeDiaHora.date())
-            ).order_by('impartir__dia_impartir','impartir__horari__hora__hora_inici').first().impartir.dia_impartir
+            ).order_by('impartir__dia_impartir','impartir__horari__hora__hora_inici').first()
+    if dia: return dia.impartir.dia_impartir
+    else: return None
             
 def ultimdiaclasse(alumne, finsDia):
-    return alumne.controlassistencia_set.filter(impartir__dia_impartir__lte=finsDia)\
-        .order_by('impartir__dia_impartir','impartir__horari__hora__hora_inici').last().impartir.dia_impartir
+    dia=alumne.controlassistencia_set.filter(impartir__dia_impartir__lte=finsDia)\
+        .order_by('impartir__dia_impartir','impartir__horari__hora__hora_inici').last()
+    if dia: return dia.impartir.dia_impartir
+    else: return None
     
 def ordHores(h):
     '''

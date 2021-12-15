@@ -498,6 +498,8 @@ def comunicatAbsencia( request ):
         return HttpResponseRedirect('/')
     
     ultimdia=ultimdiaclasse(alumne,primerdia+datetime.timedelta(days=diesantelacio))
+    if not ultimdia:
+        ultimdia=primerdia
     if request.method == 'POST':
         form = comunicatForm(alumne, primerdia, ultimdia, request.POST)
         if form.is_valid():
