@@ -454,18 +454,31 @@ def choices_hores(alumne, dia, actual=True):
     hores=[("0","- dia complet -")]+hores
 
     return hores
+
 #--------------------- AJAX per seleccionar hores segons alumne i dia --------------------------------------------#
 @login_required
 def horesAlumneAjax( request, idalumne, dia ):
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+
+    alumne = Alumne.objects.filter( user_associat = user )
+    if alumne and alumne[0].id!=int(idalumne):
+        return HttpResponse("")
+    
+    # Es manté idalumne per futures ampliacions a on professorat 
+    # farà servir aquest view    
     if request.method == 'GET':  #request.is_ajax()
-        alumne = Alumne.objects.get( id=idalumne )
+        try:
+            alumne = Alumne.objects.get( id=idalumne )
+        except Alumne.DoesNotExist as e:
+            return HttpResponse("")
         dia=datetime.strptime(dia, "%Y-%m-%d").date()
         hores = get_hores(alumne, dia)
         message = u'<option value="0" selected>- dia complet -</option>' ;
         for h in hores:
             message +=  u'<option value="%s">%s</option>'% (h[0], h[1] )
         return HttpResponse(message)
-
+    
 @login_required
 def comunicatAbsencia( request ):
     from aula.apps.missatgeria.views import enviaMsg
