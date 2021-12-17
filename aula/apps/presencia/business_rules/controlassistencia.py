@@ -105,7 +105,7 @@ def controlAssistencia_clean( instance ):
     if justificadaDB and posat_pel_tutor:
         instance.professor = instance.instanceDB.professor
     # Si es tracta d'una rectificació al Justificador, deixa el professor anterior.
-    if not instance.swaped and instance.instanceDB.swaped:
+    if not instance.swaped and instance.instanceDB and instance.instanceDB.swaped:
         instance.professor = instance.instanceDB.professor_backup    
 
 def controlAssistencia_pre_delete( sender, instance, **kwargs):
