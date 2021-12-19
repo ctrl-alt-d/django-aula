@@ -2,7 +2,7 @@ wheel
 openpyxl
 git+https://github.com/lino-framework/appypod.git#egg=appy ; python_version < '3.6'
 appy ; python_version >= '3.6'
-Django
+Django <4.0
 django-extensions
 django-environ
 lxml
