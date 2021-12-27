@@ -29,6 +29,8 @@ CONSERGERIA_A_TUTOR = u'''Missatge relatiu a un teu alumne tutorat'''
 
 CONSERGERIA_A_CONSERGERIA = u'''Enviat avís a tutors de l'alumne {0} ({1}). El text de l'avís és: "{2}"'''
 
+AVIS_ABSENCIA = u"Avís d'absència de l'alumne {0}. Dates absència: {1} {2} fins {3} {4}. Motiu: {5}"
+
 ERROR_AL_PROGRAMA = u'''Avís d'error al programa: {0}'''
 
 ACUS_REBUT_ERROR_AL_PROGRAMA = u'''Avís a administradors enviat correctament. El text de l'avís és: "{0}"'''
@@ -138,6 +140,7 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                        CAL_TRAMITAR_EXPULSIO,}},
              'MISSATGERIA': {'info': {CONSERGERIA_A_TUTOR,
                                       CONSERGERIA_A_CONSERGERIA,
+                                      AVIS_ABSENCIA,
                                       ACUS_REBUT_ENVIAT_A_PROFE_O_PAS,
                                       EMAIL_A_FAMILIES,
                                       PROFESSOR_RESERVA_MASSIVA}},

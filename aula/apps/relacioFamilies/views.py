@@ -20,11 +20,12 @@ from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
-from aula.apps.relacioFamilies.forms import AlumneModelForm
+from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
+from aula.apps.alumnes.tools import get_hores, properdiaclasse, ultimdiaclasse
 
 #qualitativa
 
@@ -33,7 +34,7 @@ from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 from datetime import date
 
 #exceptions
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from aula.apps.usuaris.models import User2Professor, AlumneUser
 from aula.apps.tutoria.models import Tutor
 from aula.utils.decorators import group_required
@@ -46,10 +47,12 @@ from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
+from django.contrib import messages
 import json
 from django.utils.html import escapejs
 import django.utils.timezone
 from aula.apps.matricula.views import inforgpd
+from aula.apps.missatgeria.models import Missatge
 
 #@login_required
 #@group_required(['professors'])
@@ -442,6 +445,150 @@ def canviParametres( request ):
                      'formSetDelimited':True,
                      'rgpd': inforgpd()},
                 )
+
+#--------------------------------------------------------------------------------------------------------
+
+def choices_hores(alumne, dia, actual=True):
+    if not bool(alumne): hores=[]
+    else: hores=get_hores(alumne, dia, actual)
+    hores=[("0","- dia complet -")]+hores
+
+    return hores
+
+#--------------------- AJAX per seleccionar hores segons alumne i dia --------------------------------------------#
+@login_required
+def horesAlumneAjax( request, idalumne, dia ):
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+
+    alumne = Alumne.objects.filter( user_associat = user )
+    if alumne and alumne[0].id!=int(idalumne):
+        return HttpResponse("")
+    
+    # Es manté idalumne per futures ampliacions a on professorat 
+    # farà servir aquest view    
+    if request.method == 'GET':  #request.is_ajax()
+        try:
+            alumne = Alumne.objects.get( id=idalumne )
+        except Alumne.DoesNotExist as e:
+            return HttpResponse("")
+        dia=datetime.strptime(dia, "%Y-%m-%d").date()
+        hores = get_hores(alumne, dia)
+        message = u'<option value="0" selected>- dia complet -</option>' ;
+        for h in hores:
+            message +=  u'<option value="%s">%s</option>'% (h[0], h[1] )
+        return HttpResponse(message)
+    
+@login_required
+def comunicatAbsencia( request ):
+    from aula.apps.missatgeria.views import enviaMsg
+    from aula.apps.horaris.models import FranjaHoraria
+    import datetime
+    
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+    
+    diesantelacio = 6
+
+    alumne = Alumne.objects.filter( user_associat = user )
+    
+    if alumne:
+        alumne=alumne[0]
+    else:
+        messages.info( request, u"No és possible fer comunicats." )
+        return HttpResponseRedirect('/')
+    
+    ara=datetime.datetime.now()
+    primerdia=properdiaclasse(alumne, ara)
+    if not primerdia:
+        messages.info( request, u"No és possible fer comunicats." )
+        return HttpResponseRedirect('/')
+
+    if primerdia > (ara+datetime.timedelta(days=diesantelacio)).date():
+        messages.info( request, 
+                u"Només es poden fer comunicats amb antelació màxima d'una setmana. La propera classe serà el dia {0}."\
+                .format(primerdia.strftime( '%d/%m' )))
+        return HttpResponseRedirect('/')
+    
+    ultimdia=ultimdiaclasse(alumne,primerdia+datetime.timedelta(days=diesantelacio))
+    if not ultimdia:
+        ultimdia=primerdia
+    if request.method == 'POST':
+        form = comunicatForm(alumne, primerdia, ultimdia, request.POST)
+        if form.is_valid():
+            datai=form.cleaned_data['datainici']
+            horai=form.cleaned_data['horainici']
+            dataf=form.cleaned_data['datafi']
+            horaf=form.cleaned_data['horafi']
+            motiu = form.cleaned_data['motiu']
+            motiu = dict(form.fields['motiu'].choices)[motiu]
+            observ=form.cleaned_data['observacions']
+            if int(horai)==0:
+                hores=get_hores(alumne, datai)
+                horai=hores[0][0] if hores and hores[0] else FranjaHoraria.objects.first().id
+            if int(horaf)==0:
+                hores=get_hores(alumne, dataf)
+                horaf=hores[-1][0] if hores and hores[-1] else FranjaHoraria.objects.last().id
+            horai=FranjaHoraria.objects.get(id=horai).hora_inici
+            horaf=FranjaHoraria.objects.get(id=horaf).hora_fi
+            enviaMsg(user, credentials, alumne, datai, horai, dataf, horaf, motiu, observ)
+            url_next = reverse_lazy('relacio_families__informe__el_meu_informe')
+            messages.info( request, u"Comunicat d'absència per {}, enviat correctament".format(unicode(alumne.nom)) )
+            return HttpResponseRedirect( url_next )
+        else:
+            datai=form.cleaned_data.get('datainici',None)
+            if datai:
+                form.initial['datainici']=datai.strftime('%d/%m/%Y')
+                form.fields['horainici'].choices=choices_hores(alumne, datai)
+            dataf=form.cleaned_data.get('datafi',None)
+            if dataf:
+                form.initial['datafi']=dataf.strftime('%d/%m/%Y')
+                form.fields['horafi'].choices=choices_hores(alumne, dataf)
+
+    else:
+        form = comunicatForm(alumne, primerdia, ultimdia)
+
+    return render(
+                request,
+                'form.html',
+                {'form': form,
+                 'head': u'Comunicat d\'absència' ,
+                 },
+                )
+    
+import django_tables2 as tables
+
+class ComunicatsTable(tables.Table):
+ 
+    class Meta:
+        model = Missatge
+        # add class="paleblue" to <table> tag
+        attrs = {"class": "paleblue table table-striped"}
+        template = 'bootable2.html'
+        fields = ("data", "text_missatge")
+        order_by = ("-data" )
+
+@login_required
+def comunicatsAnteriors(request):
+    from django_tables2 import RequestConfig
+    from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, AVIS_ABSENCIA
+    from aula.utils.my_paginator import DiggPaginator
+    
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    tipus = tipusMissatge(AVIS_ABSENCIA)
+    
+    q = user.missatge_set.filter(tipus_de_missatge=tipus)
+
+    table = ComunicatsTable(q)
+    RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 25}).configure(table)
+  
+    return render(
+                    request,
+                    'table2.html',
+                    {'table': table,
+                    },
+                 )
 
 @login_required
 def elMeuInforme( request, pk = None ):
@@ -1451,8 +1598,5 @@ def pintaNoves( numero ):
         txt = u'({0} noves)'.format( numero )
     return txt
 
-
-    
-    
-    
-    
+def blanc(request):
+    return render(request, 'blanc.html', {},)

@@ -15,7 +15,7 @@ def notifica_pendents():
     for ep in EmailPendent.objects.all():
         r=0
         try:
-            email = EmailMessage(subject=ep.subject, body=ep.message, from_email=ep.fromemail, bcc=eval(ep.toemail))
+            email = EmailMessage(subject=ep.subject, body=ep.message, from_email=ep.fromemail, reply_to=[ep.fromemail], bcc=eval(ep.toemail))
             r=email.send(fail_silently=False)
         except Exception as e:
             print (u'Error {0} enviant missatge pendent a {1}'.format(e, eval(ep.toemail)))
@@ -242,9 +242,11 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
 
     email = EmailMessage(subject, u'\n'.join( body ),fromuser, 
                              reply_to=[fromuser], connection=connection)
-    for f in fitxers:
-        f.seek(0) 
-        email.attach(f.name, f.read(), f.content_type)
+    
+    if fitxers:
+        for f in fitxers:
+            f.seek(0) 
+            email.attach(f.name, f.read(), f.content_type)
 
     while cont<total:
         if cont+maxdest<=total:

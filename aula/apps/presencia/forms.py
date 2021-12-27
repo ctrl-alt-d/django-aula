@@ -10,8 +10,12 @@ from aula.apps.usuaris.models import Professor
 from django.utils.datetime_safe import datetime
 from aula.apps.alumnes.models import Nivell, Grup
 from aula.utils.widgets import bootStrapButtonSelect
+from django.conf import settings
 
 class ControlAssistenciaForm(ModelForm):
+    from aula.utils.widgets import image
+    
+    foto = forms.ImageField(label='', required=False, widget=image(attrs={'readonly': True}))
     estat = forms.ModelChoiceField( 
                         label = "x",
                         #queryset= EstatControlAssistencia.objects.all(),
@@ -19,15 +23,29 @@ class ControlAssistenciaForm(ModelForm):
                         empty_label=None,
                         widget = bootStrapButtonSelect( attrs={'class':'presenciaEstat'}, ),
                     )
+    comunicat=forms.ModelChoiceField( label='', queryset = None, required=False )
+    
     class Meta:
         model = ControlAssistencia
-        fields = ('estat', )
-
+        fields = ('foto', 'estat', 'comunicat', )
+        
     def __init__(self, *args, **kwargs):
+        from aula.utils.widgets import modalButton
+        from aula.apps.missatgeria.models import Missatge
+        
         super(ControlAssistenciaForm, self).__init__(*args, **kwargs)
         self.fields['estat'].queryset = EstatControlAssistencia.objects.all()
         #self.fields['estat'].widget = bootStrapButtonSelect( attrs={'class':'presenciaEstat'}, ),
+        if self.instance.comunicat:
+            self.fields['comunicat'].initial=Missatge.objects.get(pk=self.instance.comunicat.id)
+            self.fields['comunicat'].widget = modalButton(bname='Comunicat', info=self.instance.comunicat.text_missatge)
+        else:
+           self.fields['comunicat'].initial=None
+           self.fields['comunicat'].widget = forms.HiddenInput()
+        self.fields['foto'].initial=self.instance.alumne.foto
 
+    def clean_comunicat(self):
+        return self.instance.comunicat
 
 class ControlAssistenciaFormFake(forms.Form):
     estat = forms.ChoiceField( required= False,  choices = [], widget = RadioSelect() )
@@ -198,7 +216,7 @@ class alertaAssistenciaForm(forms.Form):
     tpc = forms.IntegerField( label = u'filtre %', 
                               max_value=100, 
                               min_value=1, initial = 25  ,
-                              help_text=u'''Filtra alumnes amb % de absència superior a aquet valor.''' ,
+                              help_text=u'''Filtra alumnes amb % d'absència superior a aquest valor.''' ,
                               widget = TextInput(attrs={'class':"slider"} )  )
     
     nivell = forms.ModelChoiceField( 

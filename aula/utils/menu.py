@@ -289,7 +289,13 @@ def calcula_menu( user , path, sessioImpersonada ):
                       ("Paràmetres", 'relacio_families__configuracio__canvi_parametres', al if settings.CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES else None, None, None ),
                       ("Matrícula", 'matricula:relacio_families__matricula__dades', 
                        al if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, None ),
-                   )
+                      ("Comunicats", 'relacio_families__comunicats__blanc', al if settings.CUSTOM_FAMILIA_POT_COMUNICATS else None, None,
+                          (
+                            ("Nou comunicat d'absència", 'relacio_families__comunicats__absencia', al if settings.CUSTOM_FAMILIA_POT_COMUNICATS else None, None ),
+                            ("Anteriors", 'relacio_families__comunicats__anteriors', al if settings.CUSTOM_FAMILIA_POT_COMUNICATS else None, None ),
+                          ),                        
+                      ),                       
+                  )
                ),
              )
     
@@ -517,6 +523,9 @@ psico__informes_alumne
 matricula:relacio_families__matricula__dades
 relacio_families__configuracio__canvi_parametres
 relacio_families__informe__el_meu_informe
+relacio_families__comunicats__absencia
+relacio_families__comunicats__anteriors
+relacio_families__horesAlumneAjax
 triaAlumneAlumneAjax
 triaAlumneCursAjax
 triaAlumneGrupAjax
