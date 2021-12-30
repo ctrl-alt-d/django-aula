@@ -38,6 +38,7 @@ from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
 from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
 from aula.utils.tools import getClientAdress
+#from aula.apps.matricula.views import get_url_alumne
 
 from django.contrib import messages
 from django.conf import settings
@@ -106,7 +107,8 @@ def canviDadesUsuari(request):
     head = u'''Dades d'usuari'''
     infoForm = [(u'Codi Usuari', user.username), ]
 
-    formset = [formUsuari, formDadesAddicionals]
+    if formDadesAddicionals: formset = [formUsuari, formDadesAddicionals]
+    else: formset = [formUsuari]
 
     resposta = render(
         request,

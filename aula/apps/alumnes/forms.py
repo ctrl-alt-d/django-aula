@@ -6,7 +6,7 @@ from django.forms import ModelForm
 
 from aula.apps.alumnes.models import Nivell, Curs, Grup, Alumne,  AlumneGrup, AlumneNomSentitGrup
 from aula.apps.usuaris.models import Professor
-from aula.django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget
 from django.forms.models import ModelChoiceField
 
 
@@ -14,57 +14,57 @@ from django.forms.models import ModelChoiceField
 
     
 class triaAlumneForm(forms.Form):    
-    #TODO: ha de suportar prefixos per si cal triar més d'un alumne    
-    jquery_ajax = """
-        var {busco}_done = function(res, status) {{
-          if (status == "success") {{
-              $("select#id_{busco}").html( res )
-          }}
-          else {{
-            // display an explanation of failure
-          }}
-        }}
-    
-        var get_{busco} = function() {{
-       
-          var d = $("#id_{soc}").val()
-          if (d != "" ) {{
-            var args = {{ 
-                type:"GET", 
-                url:"/alumnes/triaAlumne{buscoCap}Ajax/"+d, 
-                success:{busco}_done,
-                error:function (xhr, ajaxOptions, thrownError){{
-                        alert(xhr.status);
-                        alert(thrownError);
-                }}   
-             }};
-            $.ajax(args);
-          }}
-          else {{
-            // display an explanation of failure
-          }}
-          return false;
-        }};
-    """
-    
-    jquery_nivell = jquery_ajax.format( soc='nivell', busco='curs', buscoCap='Curs' ) 
-    jquery_curs = jquery_ajax.format(soc='curs',  busco='grup', buscoCap='Grup' ) 
-    jquery_grup = jquery_ajax.format( soc='grup', busco='alumne', buscoCap='Alumne' ) 
-    
     nivell = forms.ModelChoiceField( queryset = Nivell.objects.all(), required = False,
-                                     widget =  SelectAjax( jquery=jquery_nivell,  
-                                                           buit=False,attrs={'onchange':'get_curs();'} ) )
+                                     widget = ModelSelect2Widget(
+                                        model=Nivell,
+                                        search_fields = [
+                                            'descripcio_nivell__icontains',
+                                            'nom_nivell__icontains',
+                                            ],
+                                        attrs={'style':"width: 100%;",
+                                               'data-minimum-input-length':0},
+                                        ),
+                                     )
     
     curs = forms.ModelChoiceField( queryset = Curs.objects.all(),required = False,
-                                     widget =  SelectAjax( jquery=jquery_curs, 
-                                                           buit=True, attrs={'onchange':'get_grup();'} ) )
+                                     widget = ModelSelect2Widget(
+                                        model=Curs,
+                                        search_fields = [
+                                            'nom_curs_complert__icontains',
+                                            'nom_curs__icontains',
+                                            ],
+                                        dependent_fields={'nivell': 'nivell'},
+                                        attrs={'style':"width: 100%;",
+                                               'data-minimum-input-length':0},
+                                        ),
+                                     )
     
     grup = forms.ModelChoiceField( queryset = Grup.objects.all(), required = False,
-                                     widget =  SelectAjax( jquery=jquery_grup , 
-                                                           buit=True, attrs={'onchange':'get_alumne();'} ) )
+                                     widget = ModelSelect2Widget(
+                                        model=Grup,
+                                        search_fields = [
+                                            'descripcio_grup__icontains',
+                                            'nom_grup__icontains',
+                                            ],
+                                        dependent_fields={'curs': 'curs'},
+                                        attrs={'style':"width: 100%;",
+                                               'data-minimum-input-length':0},
+                                        ),
+                                     )
 
-    alumne = forms.ModelChoiceField( queryset = Alumne.objects.all(),
-                                     widget =  SelectAjax( buit=True ) )
+    alumne = forms.ModelChoiceField( queryset = AlumneGrup.objects.all(),
+                                     widget = ModelSelect2Widget(
+                                        model=Alumne,
+                                        search_fields = [
+                                            'cognoms__icontains',
+                                            'nom__icontains',
+                                            'nom_sentit__icontains',
+                                            ],
+                                        dependent_fields={'grup': 'grup'},
+                                        attrs={'style':"width: 100%;",
+                                               'data-minimum-input-length':0},
+                                        ),
+                                     )
     
 #---form assignar grup -----------------------------------------------------------------------------------------
 class grupForm(ModelForm):

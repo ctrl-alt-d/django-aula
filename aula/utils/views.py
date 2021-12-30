@@ -361,7 +361,7 @@ def estadistiques(request):
 @login_required
 def pagamentOnLine(request):
 
-    if not CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+    if not settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE and not settings.CUSTOM_QUOTES_ACTIVES:
         raise Http404()
 
     credentials = tools.getImpersonateUser(request)

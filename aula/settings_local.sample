@@ -11,6 +11,9 @@ DEBUG = True
 NOM_CENTRE = 'Centre de Demo'
 LOCALITAT = u"Badia del Vallés"
 
+#Per a fer importació de la preinscripció
+CODI_CENTRE = u"00000000"
+
 #URL Por donde contestará la aplicación (Cambiar schema a https si se activa el tráfico TSL)
 URL_DJANGO_AULA = r'http://elteudomini.cat'
 
@@ -63,15 +66,16 @@ STATIC_ROOT= os.path.join(PROJECT_DIR,'static/')
 COMPRESS_ENABLED = False
 
 #Passphrase que usara la app para cifrar las credenciales
-# python manage.py generate_secret_key
-SECRET_KEY = 'changeit ---u&qj0e$ig=&4-b%l23$!ba1gysai5z!aw*5%p_$35)2e9-*@r'
+# changeit --> python manage.py generate_secret_key
+SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'
 
 CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 
 #Componente que utilizará Django para serializar los objetos
 SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 
-PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+# Path de datos privados
+PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2022/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 

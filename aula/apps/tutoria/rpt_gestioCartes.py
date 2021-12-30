@@ -110,7 +110,7 @@ def gestioCartesRpt(professor, l4):
         else:
             consulta_alumnes = Q( grup =  grup )           
         
-        for alumne in Alumne.objects.filter(consulta_alumnes ):
+        for alumne in Alumne.objects.filter(consulta_alumnes, data_baixa__isnull=True ):
             
             filera = []
             

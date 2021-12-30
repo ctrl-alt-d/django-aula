@@ -5,7 +5,7 @@ from django import forms as forms
 import datetime
 from aula.apps.alumnes.models import Alumne, Grup, AlumneGrup
 from django.forms.widgets import Widget
-from aula.django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget
 
 class elsMeusAlumnesTutoratsEntreDatesForm( forms.Form ):
     grup = forms.ChoiceField(   )
@@ -41,12 +41,12 @@ class justificaFaltesW1Form(forms.Form):
                                          'nom_sentit__icontains',
                                          'grup__descripcio_grup__icontains'
                                          ],
-                                     attrs={'style':"'width': '100%'"},
+                                     attrs={'style':"'width': '100%'",
+                                            'data-placeholder': "(Justificador)"},
                                      ),        
                 queryset= AlumneGrup.objects.all(),
                 required = False, 
-                #empty_label="(Justificador)",
-                help_text=u"""Alumne al que vols justificar faltes.(En blanc per tot el grup)"""  )
+                help_text=u"""Alumne al que vols justificar faltes.(Justificador per tot el grup)"""  )
 
     data = forms.DateField(label=u'Data faltes a justificar', 
                                        initial=datetime.date.today,

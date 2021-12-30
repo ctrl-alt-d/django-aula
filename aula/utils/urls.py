@@ -1,27 +1,27 @@
-from django.conf.urls import url
+from django.urls import re_path
 from aula.utils.views import carregaInicial, calendariDevelop, blanc, about, pagamentOnLine, initDB, estadistiques
 
 urlpatterns = [
                        
-    url(r'^carregaInicial/$', carregaInicial,
+    re_path(r'^carregaInicial/$', carregaInicial,
         name ="administracio__configuracio__carrega_inicial" )    ,
                        
-    url(r'^about/$', about,
+    re_path(r'^about/$', about,
         name ="varis__about__about" )    ,
 
-    url(r'^estadistiques/$', estadistiques,
+    re_path(r'^estadistiques/$', estadistiques,
         name="varis__estadistiques__estadistiques"),
 
-    url(r'^pagamentOnLine/$', pagamentOnLine,
+    re_path(r'^pagamentOnLine/$', pagamentOnLine,
         name ="varis__pagament__pagament_online" )    ,
                        
-    url(r'^calendariDevelop/$', calendariDevelop,
+    re_path(r'^calendariDevelop/$', calendariDevelop,
         name ="help__calendari__calendari" )    ,
 
-    url(r'^opcionsSincro/$', blanc,
+    re_path(r'^opcionsSincro/$', blanc,
         name ="administracio__sincronitza__blanc" )    ,
 
-    url(r'^initDB/$', initDB,
+    re_path(r'^initDB/$', initDB,
         name ="administracio__init__inicialitzaDB" )    ,
 
 ]

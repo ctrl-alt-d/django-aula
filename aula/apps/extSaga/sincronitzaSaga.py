@@ -85,7 +85,7 @@ def sincronitza(f, user = None):
         #a.correu_tutors = ''
 
         for columnName, value in iter(row.items()):
-            if bool(value):
+            if bool(value) and isinstance(value, str):
                 value=value.strip()
             columnName = unicode(columnName,'iso-8859-1')
             #columnName = unicode( rawColumnName, 'iso-8859-1'  )

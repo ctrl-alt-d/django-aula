@@ -1,59 +1,59 @@
-from django.conf.urls import url
+from django.urls import re_path
 from aula.apps.alumnes import views as alumnes_views
 urlpatterns = [
-   url(r'^triaAlumne/$', alumnes_views.triaAlumne ,
+   re_path(r'^triaAlumne/$', alumnes_views.triaAlumne ,
        name="obsolet__tria_alumne"),
                        
-   url(r'^triaAlumneCursAjax/(?P<id_nivell>\d+)/$', alumnes_views.triaAlumneCursAjax,
+   re_path(r'^triaAlumneCursAjax/(?P<id_nivell>\d+)/$', alumnes_views.triaAlumneCursAjax,
        name="triaAlumneCursAjax"),
 
-   url(r'^triaAlumneGrupAjax/(?P<id_curs>\d+)/$', alumnes_views.triaAlumneGrupAjax,
+   re_path(r'^triaAlumneGrupAjax/(?P<id_curs>\d+)/$', alumnes_views.triaAlumneGrupAjax,
        name="triaAlumneGrupAjax"),
                        
-   url(r'^triaAlumneAlumneAjax/(?P<id_grup>\d+)/$', alumnes_views.triaAlumneAlumneAjax,
+   re_path(r'^triaAlumneAlumneAjax/(?P<id_grup>\d+)/$', alumnes_views.triaAlumneAlumneAjax,
        name="triaAlumneAlumneAjax"),
                        
-   url(r'^assignaTutors/$', alumnes_views.assignaTutors,
+   re_path(r'^assignaTutors/$', alumnes_views.assignaTutors,
        name="professorat__tutors__tutors_grups"),
                        
-   url(r'^elsMeusAlumnesAndAssignatures/$', alumnes_views.elsMeusAlumnesAndAssignatures,
+   re_path(r'^elsMeusAlumnesAndAssignatures/$', alumnes_views.elsMeusAlumnesAndAssignatures,
        name="aula__alumnes__alumnes_i_assignatures"),
                        
-   url(r'^llistaTutorsIndividualitzats/$', alumnes_views.llistaTutorsIndividualitzats,
+   re_path(r'^llistaTutorsIndividualitzats/$', alumnes_views.llistaTutorsIndividualitzats,
        name="professorat__tutors__tutors_individualitzats"),
                        
-   url(r'^gestionaAlumnesTutor/(?P<pk>\d+)/$', alumnes_views.gestionaAlumnesTutor,
+   re_path(r'^gestionaAlumnesTutor/(?P<pk>\d+)/$', alumnes_views.gestionaAlumnesTutor,
        name="professorat__tutors__gestio_alumnes_tutor"),
                        
-   url(r'^informePsicopedagoc/$', alumnes_views.informePsicopedagoc,
+   re_path(r'^informePsicopedagoc/$', alumnes_views.informePsicopedagoc,
        name="psico__informes_alumne__list"),
                        
-   url(r'^nomsentitw1/$', alumnes_views.canviarNomSentitW1,
+   re_path(r'^nomsentitw1/$', alumnes_views.canviarNomSentitW1,
        name="psico__nomsentit__w1"),
                        
-   url(r'^nomsentitw2/(?P<pk>\d+)/$', alumnes_views.canviarNomSentitW2,
+   re_path(r'^nomsentitw2/(?P<pk>\d+)/$', alumnes_views.canviarNomSentitW2,
        name="psico__nomsentit__w2"),
                        
-   url(r'^duplicats/$', alumnes_views.duplicats,
+   re_path(r'^duplicats/$', alumnes_views.duplicats,
        name="administracio__sincronitza__duplicats" ),
                        
-   url(r'^fusiona/(?P<pk>\d+)/$', alumnes_views.fusiona,
+   re_path(r'^fusiona/(?P<pk>\d+)/$', alumnes_views.fusiona,
        name="administracio__sincronitza__fusiona"),
    
-   url(r'^blanc/$', alumnes_views.blanc,
+   re_path(r'^blanc/$', alumnes_views.blanc,
        name="aula__materies__blanc"),
 
-   url(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', alumnes_views.detallAlumneHorari,
+   re_path(r'^detallAlumneHorari/(?P<pk>\d+)/(?P<detall>\w+)/$', alumnes_views.detallAlumneHorari,
         name="gestio__usuari__cercaresultat"),
 
-   url(r'^cercaUsuari/$', alumnes_views.cercaUsuari,
+   re_path(r'^cercaUsuari/$', alumnes_views.cercaUsuari,
         name="gestio__usuari__cerca"),
 
-    url(r'^blanc/$', alumnes_views.blanc,
+    re_path(r'^blanc/$', alumnes_views.blanc,
         name="aula__alumnes__blanc"),                       
 
     #amorilla@xtec.cat             
-    url(r'^Llista completa/$', alumnes_views.llistaAlumnescsv,
+    re_path(r'^Llista completa/$', alumnes_views.llistaAlumnescsv,
         name="coordinacio_alumnes__llistaAlumnescsv__llistat" ),  
 
 

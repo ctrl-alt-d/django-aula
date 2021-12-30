@@ -10,7 +10,6 @@ from selenium import webdriver
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.firefox import webelement
 
 from aula.apps.alumnes.models import Nivell, Curs, Grup
 from aula.apps.horaris.models import DiaDeLaSetmana, FranjaHoraria, Horari

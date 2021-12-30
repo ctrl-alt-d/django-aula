@@ -28,9 +28,6 @@
 	
 	$(document).ready(function() {
 
-		$("#id_professors_responsables").select2();
-	    $("#id_altres_professors_acompanyants").select2();
-
 		$( "#id_data_inici" ).change(function() {
 		  actualitzaDatesCalendari();
 		});
@@ -46,8 +43,6 @@
 		$( "#id_franja_fi" ).change(function() {
 		  actualitzaDatesCalendari();
 		});
-		
-		$('#datetime_id_data_inici').bind('changeDate', actualitzaDatesCalendari);
 
 	});
 				

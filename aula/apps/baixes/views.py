@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from django import forms
 from django.contrib.auth.decorators import login_required
-from aula.django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget
 from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.utils.tools import unicode

@@ -10,7 +10,7 @@ from django.forms.models import ModelChoiceField, ModelForm
 
 from aula.apps.usuaris.forms import triaProfessorSelect2Form
 from aula.apps.usuaris.models import Professor
-from aula.django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget
 from django.utils.datetime_safe import datetime
 from aula.utils.widgets import DateTextImput
 
@@ -20,7 +20,8 @@ class disponibilitatRecursPerRecursForm(forms.Form):
                    widget=ModelSelect2Widget(
                                         queryset=Recurs.objects.filter(reservable = True),
                                         search_fields = ['nom_recurs__icontains','descripcio_recurs__icontains' ],
-                                        attrs={'style':"'width': '100%'"},
+                                        attrs={'style':"'width': '100%'",
+                                               'data-minimum-input-length':0},
                                         ),
                    queryset=Recurs.objects.all(),
                    required=True,
@@ -63,7 +64,7 @@ class disponibilitatRecursPerFranjaForm(forms.Form):
                            )
         primera_franja = franges_del_dia.first()
         darrera_franja = franges_del_dia.last()
-        if franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi:
+        if not franja or not primera_franja or not darrera_franja or (franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi):
             raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
 
         return cleaned_data
@@ -86,7 +87,8 @@ class reservaRecursForm(ModelForm):
                    widget=ModelSelect2Widget(
                                         queryset=Recurs.objects.all(),
                                         search_fields = ['nom_recurs__icontains','descripcio_recurs__icontains' ],
-                                        attrs={'style':"'width': '100%'"},
+                                        attrs={'style':"'width': '100%'",
+                                               'data-minimum-input-length':0},
                                         ),
                    queryset=Recurs.objects.all(),
                    required=True,
@@ -182,7 +184,8 @@ class reservaMassivaRecursForm(ModelForm):
                    widget=ModelSelect2Widget(
                                         queryset=Recurs.objects.all(),
                                         search_fields = ['nom_recurs__icontains','descripcio_recurs__icontains' ],
-                                        attrs={'style':"'width': '100%'"},
+                                        attrs={'style':"'width': '100%'",
+                                               'data-minimum-input-length':0},
                                         ),
                    queryset=Recurs.objects.all(),
                    required=True,

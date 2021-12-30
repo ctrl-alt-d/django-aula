@@ -243,7 +243,7 @@ def configuraConnexio( request , pk ):
                     {'form': form,
                      'image': imageUrl,
                      'infoForm': infoForm,
-                     'head': u'Gestió relació familia' ,
+                     'head': u'Gestió relació família' ,
                      'formSetDelimited':True},
                 )
 
@@ -728,7 +728,8 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)    
         if not semiImpersonat:
-            controlsNous = controls.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara )
+            controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            controlsNous.update( relacio_familia_revisada = ara )           
     
 
         
@@ -802,7 +803,8 @@ def elMeuInforme( request, pk = None ):
         
         report.append(taula)
         if not semiImpersonat:
-            observacionsNoves = observacions.update(  relacio_familia_notificada = ara, relacio_familia_revisada = ara)
+            observacionsNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            observacionsNoves.update( relacio_familia_revisada = ara )           
                     
     #----incidències --------------------------------------------------------------------
         incidencies = alumne.incidencia_set.filter( tipus__es_informativa = False )
@@ -878,7 +880,8 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)
         if not semiImpersonat:
-            incidenciesNoves.update( relacio_familia_notificada =  ara, relacio_familia_revisada = ara )
+            incidenciesNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            incidenciesNoves.update( relacio_familia_revisada = ara )           
         
 
     #----Expulsions --------------------------------------------------------------------
@@ -968,7 +971,8 @@ def elMeuInforme( request, pk = None ):
             
         report.append(taula)        
         if not semiImpersonat:
-            expulsionsNoves.update( relacio_familia_notificada =  ara , relacio_familia_revisada = ara)
+            expulsionsNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            expulsionsNoves.update( relacio_familia_revisada = ara )           
 
     #----Sancions -----------------------------------------------------------------------------   
     if detall in ['all', 'incidencies']:
@@ -1039,7 +1043,8 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)
         if not semiImpersonat:
-            sancionsNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
+            sancionsNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            sancionsNoves.update( relacio_familia_revisada = ara )           
 
     #---dades alumne---------------------------------------------------------------------
     if detall in ['all','dades']:
@@ -1084,7 +1089,7 @@ def elMeuInforme( request, pk = None ):
         filera = []
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'Data Neixement'        
+        camp.contingut = u'Data Naixement'        
         filera.append(camp)
     
         camp = tools.classebuida()
@@ -1175,7 +1180,7 @@ def elMeuInforme( request, pk = None ):
     pagquotesNoves = pagquotes.filter(pagament_realitzat=False)
     infQuota=detall in ['all', 'sortides'] and pagquotes and settings.CUSTOM_QUOTES_ACTIVES
 
-    if settings.CUSTOM_QUOTES_ACTIVES:
+    if settings.CUSTOM_MODUL_MATRICULA_ACTIU or settings.CUSTOM_QUOTES_ACTIVES:
         titol_sortides = 'Activitats/Pagaments'
     else:
         titol_sortides = 'Activitats/Sortides'
@@ -1319,7 +1324,7 @@ def elMeuInforme( request, pk = None ):
                 #pagament corresponent a una sortida i un alumne
                 pagament_sortida_alumne = get_object_or_404(SortidaPagament, alumne=alumne, sortida=act)
                 # Pagaments pendents o ja fets. Si sortida caducada no mostra pagament pendent.
-                if act.termini_pagament >= datetime.now() or pagament_sortida_alumne.pagamentFet:
+                if (act.termini_pagament and act.termini_pagament >= datetime.now()) or not bool(act.termini_pagament) or pagament_sortida_alumne.pagamentFet:
                     camp = tools.classebuida()
                     camp.id = pagament_sortida_alumne.id
                     camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
@@ -1338,7 +1343,8 @@ def elMeuInforme( request, pk = None ):
         if not infQuota: report.append(taula)
 
         if not semiImpersonat:
-            sortidesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
+            sortidesNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            sortidesNoves.update( relacio_familia_revisada = ara )           
 
     #----Quotes -----------------------------------------------------------------------------   
     if infQuota:
@@ -1577,7 +1583,8 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)
         if not semiImpersonat:
-            respostesNoves.update( relacio_familia_notificada = ara, relacio_familia_revisada = ara)
+            respostesNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            respostesNoves.update( relacio_familia_revisada = ara )           
 
     return render(
                 request,

@@ -1,7 +1,7 @@
 import datetime
 from django import forms
 from django.conf import settings
-from aula.django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget
 from django.forms.models import ModelChoiceField
 from aula.apps.alumnes.models import Curs
 from aula.apps.sortides.models import Sortida, Quota, QuotaPagament, TipusQuota, TPV
@@ -58,14 +58,14 @@ def year_choices():
     '''
     Retorna choices d'anys possibles per als pagaments
     '''
-    primer=QuotaPagament.objects.filter(data_hora_pagament__isnull=False).order_by('data_hora_pagament').first()
-    ultim=QuotaPagament.objects.filter(data_hora_pagament__isnull=False).order_by('data_hora_pagament').last()
-    if primer:
-        primer = primer.data_hora_pagament.year
+    primer=Quota.objects.all().order_by('any').first()
+    ultim=Quota.objects.all().order_by('any').last()
+    if bool(primer):
+        primer=primer.any
     else:
         primer=current_year()
-    if ultim:
-        ultim = ultim.data_hora_pagament.year
+    if bool(ultim):
+        ultim=ultim.any
     else:
         ultim=current_year()
     primerCurs=Curs.objects.filter(data_inici_curs__isnull=False).order_by('data_inici_curs').first()
@@ -78,11 +78,11 @@ def year_choices():
 
 def current_year():
     '''
-    Retorna any de l'últim pagament registrat o any actual
+    Retorna any de l'última quota registrada o any actual
     '''
-    ultim=QuotaPagament.objects.filter(data_hora_pagament__isnull=False).order_by('data_hora_pagament').last()
+    ultim=Quota.objects.all().order_by('any').last()
     if ultim:
-        ultim = ultim.data_hora_pagament.year
+        ultim = ultim.any
     else:
         ultim = datetime.date.today().year
     return ultim
@@ -127,8 +127,9 @@ class PagQuotesForm(forms.Form):
 
     quota = ModelChoiceField(
         widget=ModelSelect2Widget(
-            queryset=Quota.objects.all(),
+            model=Quota,
             search_fields=('importQuota__icontains', 'descripcio__icontains',),
+            attrs={'data-minimum-input-length':0},
         ),
         queryset=Quota.objects.all(),
         required=False,

@@ -1,16 +1,16 @@
-from django.conf.urls import url
+from django.urls import re_path
 from aula.apps.extKronowin.views import sincronitzaKronowin,assignaGrups,assignaFranges,creaNivellCursGrupDesDeKronowin
 urlpatterns = [
-   url(r'^sincronitzaKronowin/$', sincronitzaKronowin,
+   re_path(r'^sincronitzaKronowin/$', sincronitzaKronowin,
        name="administracio__sincronitza__kronowin"),
                        
-   url(r'^assignaGrups/$', assignaGrups,
+   re_path(r'^assignaGrups/$', assignaGrups,
        name="administracio__configuracio__assigna_grups_kronowin"),
                        
-   url(r'^assignaFranges/$', assignaFranges,
+   re_path(r'^assignaFranges/$', assignaFranges,
        name="administracio__configuracio__assigna_franges_kronowin"),
 
-   url(r'^creaNivellCursGrupDesDeKronowin/$', creaNivellCursGrupDesDeKronowin,
+   re_path(r'^creaNivellCursGrupDesDeKronowin/$', creaNivellCursGrupDesDeKronowin,
        name="administracio__configuracio__crea_grups_des_de_kronowin"),
 
 ]

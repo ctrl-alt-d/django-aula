@@ -10,8 +10,8 @@ def grupsPromocionar():
     Retorna queryset dels grups
     '''
     
-    idsgrupsDesdoblaments=Agrupament.objects.annotate(grupValue=F('grup_horari__id')).values('grupValue').difference( \
-                        Agrupament.objects.annotate(grupValue=F('grup_alumnes__id')).values('grupValue'))
+    idsgrupsDesdoblaments=list(set(Agrupament.objects.annotate(grupValue=F('grup_horari__id')).values('grupValue'))-\
+                        set(Agrupament.objects.annotate(grupValue=F('grup_alumnes__id')).values('grupValue')))
     return Grup.objects.exclude(id__in = idsgrupsDesdoblaments).order_by('descripcio_grup')
 
 def llistaIdsAgrupament(grupid):

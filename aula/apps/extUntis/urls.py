@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 from aula.apps.extUntis.views import sincronitzaUntis
 urlpatterns = [
-   url(r'^sincronitzaUntis/$', sincronitzaUntis,
+   re_path(r'^sincronitzaUntis/$', sincronitzaUntis,
        name="administracio__sincronitza__Untis"),
 
 ]

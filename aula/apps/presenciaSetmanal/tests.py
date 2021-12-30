@@ -6,7 +6,7 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 
-from django.utils.http import quote
+import urllib
 
 from django.test import TestCase
 from aula.utils.testing.tests import TestUtils
@@ -123,7 +123,7 @@ class PresenciaSetmanalTestCase(TestCase):
     def _canviEstat(self, client, estatInicial):
         #type: () => HttpResponse
         url = self.urlBase + 'presenciaSetmanal/modificaEstatControlAssistencia/{2}/{0}/{1}'.format(
-            self.alumne.pk, self.impartirDilluns.pk, quote(estatInicial))
+            self.alumne.pk, self.impartirDilluns.pk, urllib.parse.quote(estatInicial))
         #print ("debug:::", url)
         return client.get(url) 
 

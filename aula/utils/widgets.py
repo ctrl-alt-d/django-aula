@@ -8,7 +8,7 @@ from time import strftime
 from django.utils.safestring import mark_safe
 from django.utils.html import conditional_escape, escape, format_html
 from django.forms.utils import flatatt
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from itertools import chain
 
 #-----------------------------------------------------------------------------------
@@ -31,13 +31,13 @@ class SelectAjax( Select ):
 
     def render_options(self, choices, selected_choices):
         
-        selected_choices = set([force_text(v) for v in selected_choices])
+        selected_choices = set([force_str(v) for v in selected_choices])
         output = []
         for option_value, option_label in chain(self.choices, choices):
-            if (not self.buit) or (force_text(option_value) in selected_choices):
+            if (not self.buit) or (force_str(option_value) in selected_choices):
                 if isinstance(option_label, (list, tuple)):
                     output.append(u'<optgroup label="%s">' % escape
-                     (force_text(option_value)))
+                     (force_str(option_value)))
                     for option in option_label:
                         output.append(self.render_option(selected_choices, *option))
                     
@@ -134,7 +134,7 @@ class bootStrapButtonSelect(Widget):
         return mark_safe(u'\n'.join(output))
 
     def render_button(self, selected_choices, name, id_, num_id, option_value, option_label):
-        option_value = force_text(option_value)
+        option_value = force_str(option_value)
         if option_value in selected_choices:
             label_selected_html = u' active'
             input_selected_html = u' checked'
@@ -146,17 +146,17 @@ class bootStrapButtonSelect(Widget):
             input_selected_html = ''
         return u"""<label class="btn btn-default btn%s%s" id="label_%s_%s">
                    <input type="radio" class="rad rad%s" name="%s" value="%s" id="rad_%s_%s" %s />%s</label>""" % (
-            conditional_escape(force_text(option_label)),
+            conditional_escape(force_str(option_label)),
             label_selected_html, id_, num_id,
-            conditional_escape(force_text(option_label)),
+            conditional_escape(force_str(option_label)),
             name, escape(option_value),
             id_, num_id,
             input_selected_html,
-            conditional_escape(force_text(option_label)))
+            conditional_escape(force_str(option_label)))
 
     def render_buttons(self, choices, name, id_, num_id, selected_choices):
         # Normalize to strings.
-        selected_choices = set(force_text(v) for v in selected_choices)
+        selected_choices = set(force_str(v) for v in selected_choices)
         output = []
         for option_value, option_label in chain(self.choices, choices):
             output.append(self.render_button(selected_choices, name, id_, num_id, option_value, option_label))

@@ -49,6 +49,14 @@ CACHES = {
     }
 }
 
+# Es fan servir els fitxers indicats a base.html
+# És l'única manera de que funcioni amb els formset.
+SELECT2_JS = ''
+SELECT2_CSS = ''
+SELECT2_I18N_PATH = ''
+
+SELECT2_CACHE_BACKEND = "select2"
+
 CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT = u"""Podeu fer el pagament amb targeta de crèdit a qualsevol caixer de CaixaBank, amb el codi de barres o amb el codi entitat: XXXXXXXXXX"""
 CUSTOM_SORTIDES_PAGAMENT_ONLINE = False
 CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE = 1

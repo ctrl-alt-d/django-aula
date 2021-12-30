@@ -9,9 +9,9 @@
             <select name="curs_desti" class="form-control col-lg-3">
             <option value="{{ grup_actual.id }}" disabled selected>{{ grup_actual.descripcio_grup}}</option>
                 {% for grup in grups %}
-                    {% ifnotequal  grup.descripcio_grup grup_actual.descripcio_grup %}
+                    {% if grup.descripcio_grup != grup_actual.descripcio_grup %}
                         <option value="{{ grup.id }}">{{ grup.descripcio_grup }}</option>
-                    {% endifnotequal %}
+                    {% endif %}
                 {% endfor %}
             </select>
         </div>

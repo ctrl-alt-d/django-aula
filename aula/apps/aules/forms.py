@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from aula.apps.aules.models import Aula, ReservaAula
 from aula.apps.horaris.models import FranjaHoraria
 from django.forms.models import ModelChoiceField, ModelForm
-from aula.django_select2.forms import ModelSelect2Widget
+from django_select2.forms import ModelSelect2Widget
 from django.utils.datetime_safe import datetime
 from aula.utils.widgets import DateTextImput
 
@@ -17,7 +17,8 @@ class disponibilitatAulaPerAulaForm(forms.Form):
                    widget=ModelSelect2Widget(
                                         queryset=Aula.objects.filter(reservable = True),
                                         search_fields = ['nom_aula__icontains','descripcio_aula__icontains' ],
-                                        attrs={'style':"'width': '100%'"},
+                                        attrs={'style':"'width': '100%'",
+                                               'data-minimum-input-length':0},
                                         ),
                    queryset=Aula.objects.all(),
                    required=True,
@@ -92,7 +93,8 @@ class reservaAulaForm(ModelForm):
                    widget=ModelSelect2Widget(
                                         queryset=Aula.objects.all(),
                                         search_fields = ['nom_aula__icontains','descripcio_aula__icontains' ],
-                                        attrs={'style':"'width': '100%'"},
+                                        attrs={'style':"'width': '100%'",
+                                               'data-minimum-input-length':0},
                                         ),
                    queryset=Aula.objects.all(),
                    required=True,

@@ -1215,7 +1215,7 @@ def ResumLlistat(nany):
     
     cursos=Curs.objects.filter(confirmacio_oberta=True).distinct().order_by('nom_curs_complert')
     for c in cursos:
-        worksheet = workbook.add_worksheet(u'{0}-Confirmades'.format( str( c ) ))
+        worksheet = workbook.add_worksheet((u'{0}-Confirmades'.format( str( c ) ))[:31])
         cap=['Cognoms','Nom', 'Grup actual', 'Resposta']
         worksheet.set_column(0, 0, 25)
         worksheet.set_column(1, 3, 15)
@@ -1230,7 +1230,7 @@ def ResumLlistat(nany):
             worksheet.write_string(fila,3,a.matricula.get(any=nany).get_confirma_matricula_display() if MatContestada(a,nany) else 'Sense resposta')
             fila=fila+1
         
-        worksheet = workbook.add_worksheet(u'{0}-No confirmades'.format( str( c ) ))
+        worksheet = workbook.add_worksheet((u'{0}-No confirmades'.format( str( c ) ))[:31])
         cap=['Cognoms','Nom', 'Grup actual', 'Resposta']
         worksheet.set_column(0, 0, 25)
         worksheet.set_column(1, 3, 15)

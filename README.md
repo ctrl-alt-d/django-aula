@@ -28,11 +28,11 @@ make start
 Quick demo
 =========
 
-On Ubuntu Server 18.04 LTS 64 bits:
+On Ubuntu Server 20.04 LTS 64 bits:
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-venv python-dev git
+sudo apt-get install python3 python3-venv python3-dev git
 sudo apt-get install python3-lxml python3-libxml2 libxml2-dev libxslt-dev lib32z1-dev
 mkdir djau
 cd djau

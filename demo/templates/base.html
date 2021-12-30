@@ -14,9 +14,8 @@
 <title>-djAu- Programari control de presència i incidències per a Instituts, Escoles i Acadèmies.</title>
 <meta name="description" content = "-djAu- Permet passar llista amb pocs clics així com la gestió completa de les incidències. 
                                     Les principals característiques són: estalviar temps, millorar la gestió i el rendiment dels alumnes." >
-<link rel="canonical" href="http://djau.ctrlaltd.webfactional.com/">          
 <meta name="google-site-verification" content="z4fDCMr0_vg8aGobrZoWtw6m2vKkdWSfygBL2nqX4fw" />                          
-<script src="{{STATIC_URL}}jquery/jquery-2.1.4.min.js"></script>
+<script src="{{STATIC_URL}}jquery/jquery-3.4.1.min.js"></script>
 <script> 
 $.fn.bootstrapDP = null;                 
 </script>
@@ -39,8 +38,12 @@ $.fn.bootstrapDP = null;
   container { background-color: white; }
   .select2-container {width: 100% !important;}
 </style>
-<link href="{{STATIC_URL}}static-select2/css/select2.min_new.css" type="text/css" media="screen" rel="stylesheet" />	
-	
+<!--
+Es fa servir còpia de:
+https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/css/select2.min.css
+-->
+<link href="/site-css/select2/select2.min.css" type="text/css" media="screen" rel="stylesheet">
+<link href="/site-css/django_select2/django_select2.css" type="text/css" media="screen" rel="stylesheet">
 </head>
 
 <body {%if l4%}style="background-color:#FF0000;"{%endif%}>
@@ -72,8 +75,6 @@ $.fn.bootstrapDP = null;
   
   </div> <!--container-->
 
-<script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}static-select2/js/heavy_data.min.js"></script>
 <script src="{{STATIC_URL}}bootstrap/js/bootstrap.min.js"></script>
 <!--
 Es fan servir còpies d'aquests arxius:
@@ -84,8 +85,6 @@ Versió modificada de https://github.com/Eonasdan/tempus-dominus/blob/v4/src/js/
 <link href="{{STATIC_URL}}datetimepicker/css/bootstrap-datetimepicker.css" rel="stylesheet">
 <script type="text/javascript" src="{{STATIC_URL}}datetimepicker/js/moment-with-locales.min.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}datetimepicker/js/bootstrap-datetimepicker.js"></script>
-
-<script type="text/javascript" src="{{STATIC_URL}}static-select2/js/select2.min_new.js"></script>	
 <script type="text/javascript">
   $('button[data-toggle=popover]').popover();
 </script>
@@ -97,7 +96,6 @@ Versió modificada de https://github.com/Eonasdan/tempus-dominus/blob/v4/src/js/
 		<div itemscope itemtype="http://data-vocabulary.org/Product">
 		  <span itemprop="brand">ctrl.alt.d</span> 
 		  <span itemprop="name">-djAu-</span>
-		  <img itemprop="image" src="http://djau.ctrlaltd.webfactional.com/site-css/demo/desktop-tablet-phone-lg.png" />
 		
 		  <span itemprop="description">Programari de gestió de presència, incidències i més per a Instituts, Escoles i Acadèmies.</span>
 		  Category: <span itemprop="category" content="Software" > Attendance </span>
@@ -113,7 +111,14 @@ Versió modificada de https://github.com/Eonasdan/tempus-dominus/blob/v4/src/js/
 		</div>
 		</div>
 
-
+<!--
+Es fan servir còpies de:
+https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.min.js
+https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/i18n/ca.js
+-->
+<script src="/site-css/select2/select2.min.js"></script>
+<script src="/site-css/select2/ca.js"></script>
+<script src="/site-css/django_select2/django_select2.js"></script>
 </body>
 </html>
 
