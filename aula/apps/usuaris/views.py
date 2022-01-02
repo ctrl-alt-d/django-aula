@@ -127,7 +127,7 @@ def canviDadesUsuari(request):
 @login_required
 @group_required(['direcció'])
 def resetPasswd(request):
-    head=u'Impersonar-se' 
+    head=u'Reset contrasenya' 
 
     url_next = '/'  
     if request.method == 'POST':
@@ -147,6 +147,7 @@ def resetPasswd(request):
             
     else:
         form = triaUsuariForm()
+        form.fields['professor'].help_text='Tria l\'usuari a resetejar.'
     
     return render(
                 request,

@@ -12,7 +12,7 @@ apt-get upgrade
 apt-get install python3 python3-venv libxml2-dev libxslt-dev python3-lxml python3-libxml2 python3-dev lib32z1-dev git
 ```
 
-Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/).
+Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
 
 Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el repositorio del proyecto.
 
@@ -118,7 +118,7 @@ En el siguiente apartado se configura la variable `PRIVATE_STORAGE_ROOT` con el 
 
 Django Aula tiene 3 archivos principales de configuración
 
-* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más [info](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/manuals/parametritzacions.txt)**.
+* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más [info](../../manuals/parametritzacions.txt)**.
 * **`settings_local.py` (Aquí esta la configuración principal )**.
 * **`wsgi.py` (Es el script que se encargará de levantar la aplicación, Apache utilizará este archivo para servir la app a través de él)**.
 
@@ -279,7 +279,7 @@ application = get_wsgi_application()
 
 ```
 
-Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/2.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
+Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/4.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
 
 ```text
 djau@djau:/opt/djau2022# source venv/bin/activate
@@ -321,7 +321,7 @@ a.save()
 quit()
 ```
 
-Como paso final de configuración, vamos a juntar todo el contenido estático \(js,css..etc\) del proyecto a un solo directorio, para que la instalación sea mas limpia. Más información sobre el contenido estático en django [aqui](https://docs.djangoproject.com/en/2.0/howto/static-files/).
+Como paso final de configuración, vamos a juntar todo el contenido estático \(js,css..etc\) del proyecto a un solo directorio, para que la instalación sea mas limpia. Más información sobre el contenido estático en django [aqui](https://docs.djangoproject.com/en/4.0/howto/static-files/).
 
 ```text
 djau@djau:/opt/djau2022# source venv/bin/activate

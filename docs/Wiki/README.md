@@ -17,7 +17,7 @@ El Proyecto es Open-source, y aquí se encuentra su repositorio Git: [https://gi
 # Table of contents
 
 * [Django-Aula](README.md)
-* [Caracteristicas](caracteristicas.md)
+* [Características](caracteristicas.md)
 * [Funcionalidades](funcionalidades.md)
 * [Instalación](instalacion-2/README.md)
   * [Instalación en Ubuntu Server 20.04 LTS](instalacion-2/instalacion.md)

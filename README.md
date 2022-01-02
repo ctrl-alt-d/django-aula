@@ -1,13 +1,13 @@
 django-aula
 ===========
 
-Gestió de presencia, incidències i més per a Instituts, Escoles i Acadèmies.
+Gestió de presència, incidències i més per a Instituts, Escoles i Acadèmies.
 
 School Attendance Software
 
 ![Imgur](http://i.imgur.com/YlCRTap.png)
 
-**[Llicència i Crèdits](https://github.com/ctrl-alt-d/django-aula/blob/master/LICENSE)**
+**[Llicència i Crèdits](LICENSE)**
 
 Using Docker
 ============
@@ -51,7 +51,7 @@ Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd
 Deployment Docs
 =============
 
-[Documentació pas a pas per a fer el desplegament.](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/Wiki/README.md)
+[Documentació pas a pas per a fer el desplegament.](docs/Wiki/README.md)
 
 Vols col·laborar-hi?
 =============
