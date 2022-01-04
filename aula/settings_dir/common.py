@@ -186,6 +186,7 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.sites',
     'django_extensions',
     'django_tables2',
+    'django_select2',
     'django.contrib.humanize',
     'formtools',
     'django.forms',

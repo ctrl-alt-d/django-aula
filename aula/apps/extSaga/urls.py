@@ -1,11 +1,11 @@
-from django.conf.urls import url
+from django.urls import re_path
 from aula.apps.extSaga.views import sincronitzaSaga,assignaGrups
 
 urlpatterns = [
-   url(r'^sincronitzaSaga/$', sincronitzaSaga,
+   re_path(r'^sincronitzaSaga/$', sincronitzaSaga,
        name="administracio__sincronitza__saga"),
                        
-   url(r'^assignaGrups/$', assignaGrups,
+   re_path(r'^assignaGrups/$', assignaGrups,
        name="administracio__configuracio__assigna_grups_saga"),
                        
 ]

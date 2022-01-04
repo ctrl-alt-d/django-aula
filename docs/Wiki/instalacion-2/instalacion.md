@@ -1,4 +1,4 @@
-# Instalación en Ubuntu Server 18.04 LTS
+# Instalación en Ubuntu Server 20.04 LTS
 
 > **Atención:**  Todas las instrucciones de este documento se deben ejecutar con permisos elevados
 
@@ -7,19 +7,19 @@
 El primer paso es preparar un entorno de desarrollo **[Python](https://www.python.org/)** en nuestro sistema, para ello instalamos los siguientes paquetes:
 
 ```bash
-apt-get update  
+apt-get update
 apt-get upgrade
-apt-get install python3-venv libxml2-dev libxslt-dev python3-libxml2 python3-dev lib32z1-dev git 
+apt-get install python3 python3-venv libxml2-dev libxslt-dev python3-lxml python3-libxml2 python3-dev lib32z1-dev git
 ```
 
-Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/guides/installing-using-pip-and-virtualenv/).
+Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
 
 Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el repositorio del proyecto.
 
 ```bash
-cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2019 
-sudo chown -R :www-data djau2019  #opcionalmente se puede cambiar el propietario para no utilizar root.
-cd djau2019
+cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2022 
+sudo chown -R :www-data djau2022  #opcionalmente se puede cambiar el propietario para no utilizar root.
+cd djau2022
 ```
 
 
@@ -29,24 +29,24 @@ cd djau2019
 El siguiente paso es montar nuestro **entorno virtual Python** sobre la carpeta del proyecto, este comando creará un entorno virtual en un directorio llamado **venv**.
 
 ```text
-djau@djau:/opt/djau2019#  python3 -m venv venv
+djau@djau:/opt/djau2022#  python3 -m venv venv
 ```
 
 Una vez creado el entorno virtual debemos activarlo, para ello ejecutamos:
 
 ```text
-djau@djau:/opt/djau2019# source venv/bin/activate
+djau@djau:/opt/djau2022# source venv/bin/activate
 ```
 
 Si todo ha ido bien el **[prompt](https://es.wikipedia.org/wiki/Prompt)** debería haber cambiado a algo parecido a:
 
-**(venv) djau@djau:/opt/djau2019$**
+**(venv) djau@djau:/opt/djau2022$**
 
 Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias **[pip3](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)**.
 
 ```text
-(venv) djau@djau:/opt/djau2019# pip3 install wheel
-(venv) djau@djau:/opt/djau2019# pip3 install -r requirements.txt
+(venv) djau@djau:/opt/djau2022# pip3 install wheel
+(venv) djau@djau:/opt/djau2022# pip3 install -r requirements.txt
 ```
 
 ### Instalación de Apache y Base de datos
@@ -58,14 +58,14 @@ Además instalaremos la base de datos que usará django-aula y su conector pytho
 **Postgresql  (recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python-psycopg2 postgresql postgresql-server-dev-10
+apt-get install apache2 libapache2-mod-wsgi-py3 python3-psycopg2 postgresql postgresql-server-dev-12
 pip3 install wheel psycopg2
 ```
 
 **Mysql (no recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python-mysqldb mysql-server  
+apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev
 pip3 install wheel mysqlclient
 ```
 
@@ -77,22 +77,25 @@ Una vez elegido el motor de base de datos, hay que crear la base de datos de la 
 ```text
 sudo su postgres
 psql
-CREATE DATABASE djau2019;
-CREATE USER djau2019 WITH PASSWORD 'XXXXXXXXXX';
-GRANT ALL PRIVILEGES ON DATABASE djau2019 TO djau2019;
+CREATE DATABASE djau2022;
+CREATE USER djau2022 WITH PASSWORD 'XXXXXXXXXX';
+GRANT ALL PRIVILEGES ON DATABASE djau2022 TO djau2022;
 \q
+exit
 ```
 
 **Para Mysql**
 
 ```
-mysql -u root -p
-CREATE DATABASE djau2019 CHARACTER SET utf8;
-CREATE USER 'djau2019'@'localhost' IDENTIFIED BY 'XXXXXXXX'
-GRANT ALL PRIVILEGES ON djau2019.* TO 'djau2019'@'localhost';
-USE djau2019;
-SET storage-engine=INNODB;
+sudo su
+mysql
+CREATE DATABASE djau2022 CHARACTER SET utf8;
+CREATE USER 'djau2022'@'localhost' IDENTIFIED BY 'XXXXXXXX';
+GRANT ALL PRIVILEGES ON djau2022.* TO 'djau2022'@'localhost';
+USE djau2022;
+SET default_storage_engine=INNODB;
 QUIT
+exit
 ```
 
 ### Configurando Private Storage
@@ -103,9 +106,9 @@ Actualmente las fotos de los alumnos.
 Para ello hay que crear una carpeta donde guardar esa información.
 
 ```bash
-mkdir -p /opt/djau-dades-privades-2020
-chmod 770 djau-dades-privades-2020
-chgrp :www-data djau-dades-privades-2020 
+mkdir -p /opt/djau-dades-privades-2022
+chmod 770 /opt/djau-dades-privades-2022
+chgrp www-data /opt/djau-dades-privades-2022 
 ```
 
 En el siguiente apartado se configura la variable `PRIVATE_STORAGE_ROOT` con el path escogido.
@@ -115,7 +118,7 @@ En el siguiente apartado se configura la variable `PRIVATE_STORAGE_ROOT` con el 
 
 Django Aula tiene 3 archivos principales de configuración
 
-* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más [info](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/manuals/parametritzacions.txt)**.
+* **`settings.py` (Aquí se encuentra la parametrización Custom de la app, no hay que tocar este fichero, sobreescribir los settings que se desee en `settings_local.py`) más [info](../../manuals/parametritzacions.txt)**.
 * **`settings_local.py` (Aquí esta la configuración principal )**.
 * **`wsgi.py` (Es el script que se encargará de levantar la aplicación, Apache utilizará este archivo para servir la app a través de él)**.
 
@@ -123,13 +126,14 @@ A continuación dejo una configuración válida para los 2 archivos citados ante
 
 Los archivos están comentados para entenderlos mejor.
 
-**`/opt/djau2019/aula/settings_local.py"`**
+**`/opt/djau2022/aula/settings_local.py"`**
 
 ```python
 # This Python file uses the following encoding: utf-8
 # Django settings for aula project.
 
 from .settings_dir.common import *
+from .settings import CUSTOM_PORTAL_FAMILIES_TUTORIAL
 
 #En producción dejar en False
 DEBUG = True
@@ -137,6 +141,9 @@ DEBUG = True
 #Información del Centro
 NOM_CENTRE = 'Centre de Demo'
 LOCALITAT = u"Badia del Vallés"
+
+#Per a fer importació de la preinscripció
+CODI_CENTRE = u"00000000"
 
 #URL Por donde contestará la aplicación (Cambiar schema a https si se activa el tráfico TSL)
 URL_DJANGO_AULA = r'http://elteudomini.cat'
@@ -190,14 +197,16 @@ STATIC_ROOT= os.path.join(PROJECT_DIR,'static/')
 COMPRESS_ENABLED = False
 
 #Passphrase que usara la app para cifrar las credenciales
-# python manage.py generate_secret_key
-SECRET_KEY = 'changeit ---u&qj0e$ig=&4-b%l23$!ba1gysai5z!aw*5%p_$35)2e9-*@r'
+# changeit --> python manage.py generate_secret_key
+SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'
 
 CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 
 #Componente que utilizará Django para serializar los objetos
 SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
 
+# Path de datos privados
+PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2022/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
@@ -214,12 +223,51 @@ DATABASES = {
     }
 }
 
-# Path de datos privados
-PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2020'
+# TermesICondicions (copiar els samples amb un altre nom i apuntar als nous fitxers)
+DADES_FISCALS_FILE = location( r'../customising/TermesIcondicions/DADESFISCALS.sample' )
+POLITICA_VENDA_FILE = location( r'../customising/TermesIcondicions/POLITICAVENDA.sample' )
+#Fitxer de text amb les condicions de matrícula, es poden fer servir marques HTML.
+CUSTOM_MODUL_MATRICULA_ACTIU = True
+CONDICIONS_MATRICULA = location( r'../customising/TermesIcondicions/MATRICULA.sample' )
+
+# S'ha de considerar si és volen fer servir els següents fitxers
+#Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
+#Es mostra a la part inferior de les pantalles d'entrada de dades com la de "Canvi de paràmetres".
+#INFORGPD = location( r'../customising/TermesIcondicions/INFORGPD.sample' )
+#Els següents fitxers es fan servir en les condicions dels pagaments online
+#Política de cookies.
+#POLITICA_COOKIES = location( r'../customising/TermesIcondicions/POLITICACOOKIES.sample' )
+#Informació sobre protecció de dades de caràcter personal.
+#POLITICA_RGPD = location( r'../customising/TermesIcondicions/POLITICARGPD.sample' )
+
+CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [ u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis a aquest correu, el missatge no serà llegit per ningú.",
+                     u"",
+                     u"Benvolgut/da,",
+                     u"",
+                     u"És molt important que et donis d’alta de l’aplicació DjAu per tal que hi hagi una comunicació fluida entre el centre i les famílies.",
+                     u"",
+                     u"L’aplicació DjAu et permetrà fer un seguiment diari del teu fill/a. Hi trobaràs dades d'assistència, de disciplina, i observacions del professorat. També tindràs accés a informació i pagament d’activitats i sortides.",
+                     u"",
+                     u"Segueix les instruccions per a donar-te d'alta al DjAu:",
+                     u"",
+                     u" 1.- Entra a {0}".format(URL_DJANGO_AULA),
+                     u" 2.- Clica l'enllaç 'Obtenir o recuperar accés'. ",
+                     u" 3.- Escriu l’adreça de correu electrònic on has rebut aquest correu. ",
+                     u" 4.- Clica el botó Enviar.",
+                     u" 5.- Consulta el correu electrònic on hi trobaràs el teu nom d’usuari i un missatge amb les instruccions per completar el procés d'accés al Djau.",
+                     u"",
+                     u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                     u"",
+                     u"Cordialment,",
+                     u"",
+                     NOM_CENTRE,
+                     u"",
+                     u"{0}".format( CUSTOM_PORTAL_FAMILIES_TUTORIAL ),
+                     ]
 
 ```
 
-**`/opt/djau2019/aula/wsgi.py`**
+**`/opt/djau2022/aula/wsgi.py`**
 
 ```python
 import os
@@ -231,17 +279,17 @@ application = get_wsgi_application()
 
 ```
 
-Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/2.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
+Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/4.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
 
 ```text
-djau@djau:/opt/djau2019# source venv/bin/activate
-(venv) djau@djau:/opt/djau2019# python manage.py migrate
+djau@djau:/opt/djau2022# source venv/bin/activate
+(venv) djau@djau:/opt/djau2022# python manage.py migrate
 ```
 
 Ahora que tenemos las tablas creadas, hay que llenarlas con algunos datos esenciales para que la app arranque, para ello ejecutamos el siguiente script:
 
 ```text
-(venv) djau@djau:/opt/djau2019# bash scripts/fixtures.sh
+(venv) djau@djau:/opt/djau2022# bash scripts/fixtures.sh
 ```
 
 
@@ -251,8 +299,8 @@ Ahora que tenemos las tablas creadas, hay que llenarlas con algunos datos esenci
 Ahora debemos crear un usuario administrador que pueda gestionar la app, para ello ejecutamos:
 
 ```text
-djau@djau:/opt/djau2019# source venv/bin/activate
-(venv) djau@djau:/opt/djau2019# python manage.py createsuperuser
+djau@djau:/opt/djau2022# source venv/bin/activate
+(venv) djau@djau:/opt/djau2022# python manage.py createsuperuser
 ```
 
 Nos pedirá el nombre del usuario y su contraseña \(en este ejemplo lo he llamado **admin**\).
@@ -260,8 +308,8 @@ Nos pedirá el nombre del usuario y su contraseña \(en este ejemplo lo he llama
 Para que nuestro administrador pueda iniciar sesión en la aplicación, debe de estar en el grupo de **dirección,profesores y profesional** de la base de datos, para ello abrimos una shell de django y escribimos línea a línea lo siguiente:
 
 ```text
-djau@djau:/opt/djau2019# source venv/bin/activate
-(venv) djau@djau:/opt/djau2019# python manage.py shell
+djau@djau:/opt/djau2022# source venv/bin/activate
+(venv) djau@djau:/opt/djau2022# python manage.py shell
 
 from django.contrib.auth.models import User, Group
 g1, _ = Group.objects.get_or_create( name = 'direcció' )
@@ -273,11 +321,11 @@ a.save()
 quit()
 ```
 
-Como paso final de configuración, vamos a juntar todo el contenido estático \(js,css..etc\) del proyecto a un solo directorio, para que la instalación sea mas limpia. Más información sobre el contenido estático en django [aqui](https://docs.djangoproject.com/en/2.0/howto/static-files/).
+Como paso final de configuración, vamos a juntar todo el contenido estático \(js,css..etc\) del proyecto a un solo directorio, para que la instalación sea mas limpia. Más información sobre el contenido estático en django [aqui](https://docs.djangoproject.com/en/4.0/howto/static-files/).
 
 ```text
-djau@djau:/opt/djau2019# source venv/bin/activate
-(venv) djau@djau:/opt/djau2019# python manage.py collectstatic
+djau@djau:/opt/djau2022# source venv/bin/activate
+(venv) djau@djau:/opt/djau2022# python manage.py collectstatic
 ```
 
 Esto generará un directorio llamado **static** donde se alojarán todos los assets de la aplicación.
@@ -313,32 +361,32 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv python-path=/opt/djau2019 \
+        WSGIDaemonProcess djau python-home=/opt/djau2022/venv python-path=/opt/djau2022 \
 			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
+        WSGIScriptAlias / /opt/djau2022/aula/wsgi.py 
         
         #Alias para contenido estatico de la app
         
-        Alias /site-css/admin /opt/djau2019/aula/static/admin/
-        Alias /site-css /opt/djau2019/aula/static/
+        Alias /site-css/admin /opt/djau2022/aula/static/admin/
+        Alias /site-css /opt/djau2022/aula/static/
 
         ErrorLog /var/log/apache2/djau_error.log
 
         #Dando acceso a apache a los directorios de la app
-        <Directory /opt/djau2019/aula>
+        <Directory /opt/djau2022/aula>
                 <Files wsgi.py>
                         Require all granted
                 </Files>
         </Directory>
 
-        <Directory /opt/djau2019/aula/static/>
+        <Directory /opt/djau2022/aula/static/>
                 Require all granted
         </Directory>
 
 
-        <Directory /opt/djau2019/aula/static/admin/>
+        <Directory /opt/djau2022/aula/static/admin/>
                 Require all granted
         </Directory>
 
@@ -365,7 +413,7 @@ El segundo escenario sirve la app por SSL \(https\)
 **Segundo Escenario `/etc/apache2/sites-available/djau_ssl.conf`**
 
 ```apache
-#Recuerda cambiar lo necesario en el archivo /opt/djau2019/aula/settings_local.py
+#Recuerda cambiar lo necesario en el archivo /opt/djau2022/aula/settings_local.py
 #Para que la app pueda ir por SSL (TLS)
 #Tambien activa si no lo esta el modulo ssl:
 # a2enmod ssl
@@ -375,32 +423,32 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2019/venv python-path=/opt/djau2019 \
+        WSGIDaemonProcess djau python-home=/opt/djau2022/venv python-path=/opt/djau2022 \
 			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/djau2019/aula/wsgi.py 
+        WSGIScriptAlias / /opt/djau2022/aula/wsgi.py 
         
         #Alias para contenido estatico de la app
         
-        Alias /site-css/admin /opt/djau2019/aula/static/admin/
-        Alias /site-css /opt/djau2019/aula/static/
+        Alias /site-css/admin /opt/djau2022/aula/static/admin/
+        Alias /site-css /opt/djau2022/aula/static/
 
         ErrorLog /var/log/apache2/djau_ssl_error.log
 
         #Dando acceso a apache a los directorios de la app
-        <Directory /opt/djau2019/aula>
+        <Directory /opt/djau2022/aula>
                 <Files wsgi.py>
                         Require all granted
                 </Files>
         </Directory>
 
-        <Directory /opt/djau2019/aula/static/>
+        <Directory /opt/djau2022/aula/static/>
                 Require all granted
         </Directory>
 
 
-        <Directory /opt/djau2019/aula/static/admin/>
+        <Directory /opt/djau2022/aula/static/admin/>
                 Require all granted
         </Directory>
 
@@ -431,10 +479,10 @@ El segundo escenario sirve la app por SSL \(https\)
 Una vez creado el VirtualHost,  deshabilitamos el Vhost que trae por defecto Apache para que no nos de problemas y reiniciamos el servidor web
 
 ```text
-djau@djau:# a2dissite 000.default.conf  # potser el fitxer és diu: 000-default.conf
+djau@djau:# a2dissite 000-default.conf  # podría tener un nombre diferente
 djau@djau:# a2ensite djau.conf
 djau@djau:# a2ensite djau_ssl.conf
-djau@djau:# service apache2 reload
+djau@djau:# systemctl reload apache2
 ```
 
 Si todo ha ido bien, la aplicación ya esta desplegada en producción , si accedemos a su dominio en mi caso "http://el_teu_domini.cat" o "https://el_teu_domini.cat" según escenario, deberá abrirse el Panel de Login de Django-Aula. **¡Felicidades!**
@@ -448,10 +496,10 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 **CronTab**
 
 ```text
-0,20,40 * * * * su - djau /opt/djau2019/backup-bdd-2019.sh
-42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
-41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
-20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2019/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+0,20,40 * * * * su - djau /opt/djau2022/backup-bdd-2019.sh
+42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
 
@@ -469,7 +517,7 @@ directori="/opt/django/djauBK/"
 copia="${directori}bdd-ara-${ara}.sql"
 extensio=".bz2"
 mkdir $directori
-/usr/bin/pg_dump -U djau2019 djau2019 > $copia
+/usr/bin/pg_dump -U djau2022 djau2022 > $copia
 /bin/bzip2 $copia
 cat "${copia}${extensio}" > "${directori}bdd-hora-${hora}.sql${extensio}" 
 cat "${copia}${extensio}" > "${directori}bdd-dia-${dia}.sql${extensio}" 

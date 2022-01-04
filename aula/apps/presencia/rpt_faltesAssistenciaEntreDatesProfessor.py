@@ -240,6 +240,8 @@ def faltesAssistenciaEntreDatesProfessorRpt(
 
 
 def alertaAssitenciaReport( data_inici, data_fi, nivell, tpc ):
+    from aula.apps.alumnes.models import Alumne
+
     report = []
 
     taula = tools.classebuida()

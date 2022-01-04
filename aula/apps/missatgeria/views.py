@@ -338,22 +338,23 @@ def EmailFamilies(request):
         if msgForm.is_valid():
             subject = msgForm.cleaned_data['assumpte']
             message = msgForm.cleaned_data['missatge']
-            attach = request.FILES.getlist('adjunts')
-            contOk, contErr = enviaEmailFamilies(subject, message, attach)
-
-            # envio al que ho envia:
-            missatge = EMAIL_A_FAMILIES
-            tipus_de_missatge = tipusMissatge(missatge)
-            msg = Missatge(remitent=user,
-                            text_missatge=missatge.format(contOk, "\n"+subject+":\n"+message+"\n\nadjunts:"+
-                                                          str( [ f.name for f in attach if f.name ])),
-                            tipus_de_missatge= tipus_de_missatge)
-            msg.envia_a_usuari(user, 'PI')
-            msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
-
-            messages.info(request, u"Email a famílies enviat a {0} adreces".format(contOk)+
-                          (", error en {0} adreces".format(contErr) if contErr>0 else ""))
-
+            attach = request.FILES.getlist('adjunts') if request.FILES else []
+            try:
+                contOk, contErr = enviaEmailFamilies(subject, message, attach)
+                # envio al que ho envia:
+                missatge = EMAIL_A_FAMILIES
+                tipus_de_missatge = tipusMissatge(missatge)
+                msg = Missatge(remitent=user,
+                                text_missatge=missatge.format(contOk, "\n"+subject+":\n"+message+"\n\nadjunts:"+
+                                                              (str( [ f.name for f in attach if f.name ]) if attach else "")),
+                                tipus_de_missatge= tipus_de_missatge)
+                msg.envia_a_usuari(user, 'PI')
+                msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
+    
+                messages.info(request, u"Email a famílies enviat a {0} adreces".format(contOk)+
+                              (", error en {0} adreces".format(contErr) if contErr>0 else ""))
+            except:
+                messages.error(request, u"No s'ha pogut fer l'enviament, torneu a intentar en uns minuts")
             url = '/missatgeria/elMeuMur/'
             return HttpResponseRedirect(url)
     else:

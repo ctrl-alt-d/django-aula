@@ -731,7 +731,7 @@ def mostraGrupPromocionar(request, grup=""):
                     alumne.save()
 
 
-                if (decisio == "0"):
+                if (decisio == "0" and curs_vinent):
 
                     id = form.cleaned_data['id'].id
                     alumne = Alumne.objects.get(id = id)

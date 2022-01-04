@@ -150,12 +150,101 @@ CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = False
 CUSTOM_GRUPS_PODEN_VEURE_FOTOS = ['direcció', 'professors', 'professional', 'consergeria', 'psicopedagog']
 CUSTOM_TIPUS_MIME_FOTOS = ['image/gif','image/jpeg','image/png']
 PRIVATE_STORAGE_ROOT ='/dades/fitxers_privats_djAu/'
+
+# Codis pel TPV, no fan falta si es defineixen a la base de dades.
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
+
+# Permet a la família accedir i modificar paràmetres de notificacions, emails i foto alumne.
+CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES = False
+# Permet a la família fer comunicats d'absència
+CUSTOM_FAMILIA_POT_COMUNICATS = False
+
+# Per a la matrícula online.
+CUSTOM_MODUL_MATRICULA_ACTIU = False
+CUSTOM_TIPUS_QUOTA_MATRICULA = None
+#Fitxer de text amb les condicions de matrícula, es poden fer servir marques HTML.
+CONDICIONS_MATRICULA = location( r'../customising/TermesIcondicions/MATRICULA.sample' )
+
+# Si True permet utilitzar pagaments de quotes (material, llibres, ...).
+CUSTOM_QUOTES_ACTIVES = False
+
+# TermesICondicions (copiar els samples amb un altre nom i apuntar als nous fitxers)
+DADES_FISCALS_FILE = location( r'../customising/TermesIcondicions/DADESFISCALS.sample' )
+POLITICA_VENDA_FILE = location( r'../customising/TermesIcondicions/POLITICAVENDA.sample' )
+
+# S'ha de considerar si és volen fer servir els següents fitxers
+#Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
+#Es mostra a la part inferior de les pantalles d'entrada de dades com la de "Canvi de paràmetres".
+INFORGPD = location( r'../customising/TermesIcondicions/INFORGPD.sample' )
+#Els següents fitxers es fan servir en les condicions dels pagaments online
+#Política de cookies.
+POLITICA_COOKIES = location( r'../customising/TermesIcondicions/POLITICACOOKIES.sample' )
+#Informació sobre protecció de dades de caràcter personal.
+POLITICA_RGPD = location( r'../customising/TermesIcondicions/POLITICARGPD.sample' )
+
+# Per afegir altres dades dels alumnes des de Sincronitza / Dades addicionals alumnat
+CUSTOM_DADES_ADDICIONALS_ALUMNE = [
+    # {
+    #     'label':  'Drets imatge',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Autorització sortides',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Salut i Escola',
+    #     'esautoritzacio': True,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    # {
+    #     'label':  'Responsable Preferent',
+    #     'esautoritzacio': False,
+    #     'visibilitat': ['Tutor'],
+    # },
+    # {
+    #     'label':  'Dades mèdiques',
+    #     'esautoritzacio': False,
+    #     'visibilitat': ['Familia','Professor'],
+    # },
+    ]
+
+# Missatge del correu de Benvinguda.
+# S'ha de definir a settings_local.py
+CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [ u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis a aquest correu, el missatge no serà llegit per ningú.",
+                     u"",
+                     u"Benvolgut/da,",
+                     u"",
+                     u"És molt important que et donis d’alta de l’aplicació DjAu per tal que hi hagi una comunicació fluida entre el centre i les famílies.",
+                     u"",
+                     u"L’aplicació DjAu et permetrà fer un seguiment diari del teu fill/a. Hi trobaràs dades d'assistència, de disciplina, i observacions del professorat. També tindràs accés a informació i pagament d’activitats i sortides.",
+                     u"",
+                     u"Segueix les instruccions per a donar-te d'alta al DjAu:",
+                     u"",
+                     u" 1.- Entra a {0}".format(URL_DJANGO_AULA),
+                     u" 2.- Clica l'enllaç 'Obtenir o recuperar accés'. ",
+                     u" 3.- Escriu l’adreça de correu electrònic on has rebut aquest correu. ",
+                     u" 4.- Clica el botó Enviar.",
+                     u" 5.- Consulta el correu electrònic on hi trobaràs el teu nom d’usuari i un missatge amb les instruccions per completar el procés d'accés al Djau.",
+                     u"",
+                     u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                     u"",
+                     u"Cordialment,",
+                     u"",
+                     NOM_CENTRE,
+                     u"",
+                     u"{0}".format( CUSTOM_PORTAL_FAMILIES_TUTORIAL ),
+                     ]
 
 
 A la base de dades
 ------------------
+
+Extkronowin
+
 ParametreKronowin.assignatures amb professor
     Assignatures optatives amb el mateix nom però que en realitat son diferents: s'afegeix el codi del professor al nom de l'assignatura.
     Exemple de valor: AO,AC,OP,OE
@@ -177,6 +266,8 @@ ParametreKronowin.KronowinToUntis
     Automàticament canvia a 'False' quan acaba.
     Més informació a la documentació "docs/Wiki/manual-de-uso/carga-inicial-de-datos/README.md"
 
+Extsaga
+
 ParametreSaga.grups estatics
     Quan es realitza una importació de SAGA, els alumnes que pertanyen a aquests grups no es canvien.
     
@@ -185,5 +276,10 @@ ParametreSaga.autoRalc
     Genera RALC per als alumnes que no tenen, p.ex: CAM i CIS.
     El RALC es crea amb el prefix+DNI
 
+ExtEsfera
+
 ParametreEsfera.grups estatics
     Quan es realitza una importació d'Esfera, els alumnes que pertanyen a aquests grups no es canvien.
+    
+Sortides TPVs
+    Definició dels TPVs, Nom, Codi Comerç, Key, Descripció.

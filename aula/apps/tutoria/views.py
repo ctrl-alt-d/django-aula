@@ -678,8 +678,8 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True,
 
         for dia, hores in dades.dia_hores.itemsEnOrdre():
             
-            hora_inici = FranjaHoraria.objects.get( hora_inici = dades.marc_horari[dia]['desde'] )
-            hora_fi    = FranjaHoraria.objects.get( hora_inici = dades.marc_horari[dia]['finsa'] )
+            hora_inici = FranjaHoraria.objects.filter( hora_inici = dades.marc_horari[dia]['desde'] ).first()
+            hora_fi    = FranjaHoraria.objects.filter( hora_inici = dades.marc_horari[dia]['finsa'] ).last()
 
             q_controls = Q( impartir__dia_impartir = dia ) & \
                          Q( impartir__horari__hora__gte = hora_inici) & \
@@ -811,7 +811,7 @@ def informeSetmanal(request):
     (user, l4) = credentials
     professor = User2Professor(user)
         
-    head='Informe setmana'
+    head='Informe setmanal'
     
     grups = Grup.objects.filter( tutor__professor = professor )
 

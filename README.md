@@ -1,13 +1,13 @@
 django-aula
 ===========
 
-Gestió de presencia, incidències i més per a Instituts, Escoles i Acadèmies.
+Gestió de presència, incidències i més per a Instituts, Escoles i Acadèmies.
 
 School Attendance Software
 
 ![Imgur](http://i.imgur.com/YlCRTap.png)
 
-**[Llicència i Crèdits](https://github.com/ctrl-alt-d/django-aula/blob/master/LICENSE)**
+**[Llicència i Crèdits](LICENSE)**
 
 Using Docker
 ============
@@ -28,11 +28,11 @@ make start
 Quick demo
 =========
 
-On Ubuntu Server 18.04 LTS 64 bits:
+On Ubuntu Server 20.04 LTS 64 bits:
 
 ```bash
 sudo apt-get update
-sudo apt-get install python3 python3-venv python-dev git
+sudo apt-get install python3 python3-venv python3-dev git
 sudo apt-get install python3-lxml python3-libxml2 libxml2-dev libxslt-dev lib32z1-dev
 mkdir djau
 cd djau
@@ -51,7 +51,7 @@ Open browser at http://127.0.0.1:8000 ( User M1, M2, ..., T1, T2, .. .All passwd
 Deployment Docs
 =============
 
-[Documentació pas a pas per a fer el desplegament.](https://github.com/ctrl-alt-d/django-aula/blob/master/docs/Wiki/README.md)
+[Documentació pas a pas per a fer el desplegament.](docs/Wiki/README.md)
 
 Vols col·laborar-hi?
 =============

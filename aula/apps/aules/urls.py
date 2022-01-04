@@ -1,47 +1,47 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from aula.apps.aules import views as aula_views
 from aula.apps.aules import api_views as aula_api_views
 
 urlpatterns = [
 
-    url(r'^lesMevesReservesDAula/$', aula_views.reservaAulaList,
+    re_path(r'^lesMevesReservesDAula/$', aula_views.reservaAulaList,
         name="gestio__reserva_aula__list"),
 
     # wizard per aula
-    url(r'^consultaAulaPerAula/$', aula_views.consultaAulaPerAula,
+    re_path(r'^consultaAulaPerAula/$', aula_views.consultaAulaPerAula,
         name="gestio__reserva_aula__consulta"),
-    url(r'^detallAulaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$', 
+    re_path(r'^detallAulaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$', 
         aula_views.detallAulaReserves,
         name="gestio__reserva_aula__detallaulareserves"),
 
     # wizard per franja
-    url(r'^consultaAulaPerFranja/$', aula_views.consultaAulaPerFranja,
+    re_path(r'^consultaAulaPerFranja/$', aula_views.consultaAulaPerFranja,
         name="gestio__reserva_aula__consulta"),
-    url(r'^detallFranjaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$', 
+    re_path(r'^detallFranjaReserves/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/(?P<pk>\d+)/$', 
         aula_views.detallFranjaReserves,
         name="gestio__reserva_aula__detallfranjareserves"),
 
     # wizard last step
-    url(r'^tramitarReservaAula/(?P<pk_aula>\d+)/(?P<pk_franja>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', 
+    re_path(r'^tramitarReservaAula/(?P<pk_aula>\d+)/(?P<pk_franja>\d+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', 
         aula_views.tramitarReservaAula,
         name="gestio__reserva_aula__tramitarreservaaula"),
     
     # wizard last step
-    url(r'^tramitarReservaAula/$', 
+    re_path(r'^tramitarReservaAula/$', 
         aula_views.tramitarReservaAula,
         name="gestio__reserva_aula__tramitarreservaaulal4"),
     
 
-    url(r'^eliminarReservaAula/(?P<pk>\d+)/$', 
+    re_path(r'^eliminarReservaAula/(?P<pk>\d+)/$', 
         aula_views.eliminarReservaAula,
         name="gestio__reserva_aula__eliminarreservaaula"),
 
-    url(r'^getStatus',
+    re_path(r'^getStatus',
         aula_api_views.getStatus,
         name="gestio__reserva_aula__getStatus"),
 
-    url(r'^assignaComentaris/',
+    re_path(r'^assignaComentaris/',
             aula_views.assignaComentarisAAules,
             name="gestio__aula__assignacomentari"),
 

@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from django.forms.models import ModelMultipleChoiceField
 
-from aula.django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
+from django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
 from aula.utils.widgets import DateTextImput
 from django.forms import ModelForm, ModelChoiceField
 from django import forms
