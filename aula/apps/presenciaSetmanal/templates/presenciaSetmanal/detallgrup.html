@@ -29,7 +29,7 @@ function clickBotoAssistencia(idAlumne, idImpartir)
                 }
             }
         }
-        var query = '{{request.path}}presenciaSetmanal/modificaEstatControlAssistencia/' + encodeURIComponent(lletraEstat) + '/' + idAlumne + '/' + idImpartir;
+        var query = '/presenciaSetmanal/modificaEstatControlAssistencia/' + encodeURIComponent(lletraEstat) + '/' + idAlumne + '/' + idImpartir;
         //Fa una petició sincrona.
         //console.error ("Intent petició " + query);
         xmlhttp.open("GET",query, false);
