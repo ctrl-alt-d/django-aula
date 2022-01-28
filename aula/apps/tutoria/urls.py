@@ -55,9 +55,6 @@ urlpatterns = [
 
     re_path(r'^faltaNext/(?P<pk>\d+)/$', tutoria_views.faltaNext,
         name="tutoria__justificar__faltaNext"),
-
-    re_path(r'^calendariCursEscolarTutor/$', tutoria_views.calendariCursEscolarTutor,
-        name="tutoria__obsolet__treure"),
                        
     re_path(r'^seguimentTutorialPreguntes/$', tutoria_views.seguimentTutorialPreguntes,
         name="coordinacio_pedagogica__seguiment_tutorial__preguntes"),
