@@ -56,7 +56,7 @@ class posaIncidenciaAulaForm(forms.Form):
                                               clic amb el ratolí."""  )
 
     
-    frase = forms.CharField( label=u'o bé escriu incidència', max_length = 250, required=False,
+    frase = forms.CharField( label=u'o bé escriu incidència', max_length = 350, required=False,
                             widget=forms.Textarea,
                              help_text=u"""Pots escriure tu mateix la frase de la incidència en cas que no aparegui a les 
                                          frases predefinides. 
