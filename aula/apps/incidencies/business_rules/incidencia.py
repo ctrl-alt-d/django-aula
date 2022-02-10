@@ -217,19 +217,24 @@ def incidencia_despres_de_posar(instance):
         tipus_de_missatge = tipusMissatge(missatge)
         msg1 = Missatge( remitent = remitent.getUser(), text_missatge = text_missatge, tipus_de_missatge = tipus_de_missatge )
         #si és una unitat formativa envio a tots:
-        if Cursa_nivell( u"CICLES", instance.alumne):
-            Professor = apps.get_model( 'usuaris','Professor')
-            professors_que_tenen_aquest_alumne_a_classe = Professor.objects.filter( horari__impartir__controlassistencia__alumne = instance.alumne ).exclude( pk = instance.professional.pk ).distinct()
-            for professor in professors_que_tenen_aquest_alumne_a_classe:
-                esTutor = True if professor in instance.alumne.tutorsDeLAlumne() else False
-                importancia = 'VI' if esTutor else 'PI'
-                msg1.envia_a_usuari( professor.getUser(), importancia )
-        else:
-            professors_tutors_de_l_alumne = [ p for p in instance.alumne.tutorsDeLAlumne() ]
-            for professor in professors_tutors_de_l_alumne:
-                importancia = 'PI'
-                msg1.envia_a_usuari( professor.getUser(), importancia )
-        
+        # if Cursa_nivell( u"CICLES", instance.alumne):
+        #     Professor = apps.get_model( 'usuaris','Professor')
+        #     professors_que_tenen_aquest_alumne_a_classe = Professor.objects.filter( horari__impartir__controlassistencia__alumne = instance.alumne ).exclude( pk = instance.professional.pk ).distinct()
+        #     for professor in professors_que_tenen_aquest_alumne_a_classe:
+        #         esTutor = True if professor in instance.alumne.tutorsDeLAlumne() else False
+        #         importancia = 'VI' if esTutor else 'PI'
+        #         msg1.envia_a_usuari( professor.getUser(), importancia )
+        # else:
+        #     professors_tutors_de_l_alumne = [ p for p in instance.alumne.tutorsDeLAlumne() ]
+        #     for professor in professors_tutors_de_l_alumne:
+        #         importancia = 'PI'
+        #         msg1.envia_a_usuari( professor.getUser(), importancia )
+
+        professors_tutors_de_l_alumne = [p for p in instance.alumne.tutorsDeLAlumne()]
+        for professor in professors_tutors_de_l_alumne:
+            importancia = 'PI'
+            msg1.envia_a_usuari(professor.getUser(), importancia)
+
         if instance.tipus.notificar_equip_directiu:
             #es notifica aquest tipus d'incidència a tots els membres de l'equip directiu
             Professor = apps.get_model( 'usuaris','Professor')
