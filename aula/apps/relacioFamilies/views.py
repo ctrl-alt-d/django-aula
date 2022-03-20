@@ -188,15 +188,15 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    telefons_alumne = [alumne.rp1_telefon, alumne.rp1_mobil, alumne.rp2_telefon, alumne.rp2_mobil, alumne.altres_telefons]
-    noms_responsables = [alumne.rp1_nom, alumne.rp2_nom]
-    correus_responsables_saga = [alumne.rp1_correu, alumne.rp2_correu]
+    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil, alumne.rp1_correu]
+    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil, alumne.rp2_correu]
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
-          ('Telèfons Alumne', ','.join(filter(None,telefons_alumne))),
-          ('Noms responsables', ' / '.join(filter(None,noms_responsables))),
-          ('Correus responsables (Esfer@/Saga)', ','.join(filter(None,correus_responsables_saga))),]
+          ('Dades responsable 1', ' - '.join(filter(None,dades_resp1))),
+          ('Dades responsable 2', ' - '.join(filter(None,dades_resp2))),
+          ('Altres telèfons alumne', alumne.altres_telefons),
+    ]
 
     if alumne.dadesaddicionalsalumne_set.exists():
         for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:

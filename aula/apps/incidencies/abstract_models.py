@@ -10,7 +10,7 @@ from aula.utils.tools import unicode
 class AbstractFrassesIncidenciaAula(models.Model):
     tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
 
-    frase = models.CharField("Frase",max_length=240, unique=True, help_text=u"Escriu una frase que podrà ser triada a l'hora de posar una incidència")
+    frase = models.CharField("Frase",max_length=350, unique=True, help_text=u"Escriu una frase que podrà ser triada a l'hora de posar una incidència")
     class Meta:
         abstract = True
         verbose_name = u'Frase'
@@ -219,7 +219,7 @@ class AbstractIncidencia(models.Model):
     franja_incidencia = models.ForeignKey('horaris.FranjaHoraria', 
                                            help_text=u"Moment en que es va produir la incidència", on_delete=models.CASCADE )
 
-    descripcio_incidencia = models.CharField(max_length=250,
+    descripcio_incidencia = models.CharField(max_length=350,
                                              help_text=u"Frase curta que descriu la incidència. Aquesta informació la veuran els pares.")
 
     provoca_expulsio = models.ForeignKey('incidencies.Expulsio', 
