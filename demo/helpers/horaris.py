@@ -3,13 +3,18 @@
 import random
 import csv
 from aula.utils.tools import unicode
+from os.path import exists
 
-def generaFitxerKronowin( path, nivellsCursosGrups, nivellsMatins, frangesMatins, frangesTardes ):
-    #sample
-    #'assignatura', 'professor', 'grup', 'mati_tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
-    #"TUVP";"DIDV";;;;;;;;4,00;5,00;1,00
-    #"TE";"TEJC";"E3D";"M";"ESO";"3";"D";"209";;1,00;1,00;1,00
-    
+def generaFitxerKronowin( path, nivellsCursosGrups, nivellsMatins, frangesMatins, frangesTardes, override ):
+    # Format:
+    # 'assignatura', 'professor', 'grup', 'mati_tarda', 'nivell', 'curs', 'lletra', 'aula', 'unk2', 'dia', 'franja', 'unk3' )
+    # "TUVP";"DIDV";;;;;;;;4,00;5,00;1,00
+    # "TE";"TEJC";"E3D";"M";"ESO";"3";"D";"209";;1,00;1,00;1,00
+
+    fileexists = exists(path)
+    if (not override and fileexists):
+        return
+
     horaris_matins = generaHoraris( [ g for g in nivellsCursosGrups if g[0] in nivellsMatins ],  frangesMatins, 'M')
     horaris_tardes = generaHoraris( [ g for g in nivellsCursosGrups if g[0] not in nivellsMatins ],  frangesTardes, 'T')
     
