@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+ 
+{% block extrahead %}
+  <script type="text/javascript" src="{{STATIC_URL}}Winwheel/Winwheel.min.js"></script>
+  <script type="text/javascript" src="{{STATIC_URL}}Winwheel/TweenMax.min.js"></script>
+  <style>
+    td.the_wheel
+      {
+          background-image: url("{{STATIC_URL}}Winwheel/wheel_back.png");
+          background-position: center;
+          background-repeat: no-repeat;
+      }
+  </style>
+{% endblock %}
+
+ 
+{% block content  %}
+{%if hi_ha_prous_alumnes %}
+
+<table cellpadding="0" cellspacing="0" border="0">
+  <tr>
+      <td width="438" height="582" class="the_wheel" align="center" valign="center">
+          <canvas id='canvas' width='434' height='434'>
+            El guanyador és {{guanyador_no_ui}}
+          </canvas>
+      </td>
+  </tr>
+</table>
+
+
+  {% autoescape off %}
+  <script>
+    let wheelSpinning = false;
+    let theWheel = new Winwheel({
+    'numSegments'    : {{n}},
+    'segments'       : {{items_ruleta}},
+    'animation' :
+      {
+          'type'     : 'spinToStop',
+          'duration' : 5,
+          'spins'    : 8,
+          'callbackSound'    : playSound,   
+          'callbackFinished' : whellstops,
+          'soundTrigger'     : 'segment'        // Specify pins are to trigger the sound, the other option is 'segment'.      }
+        }
+    });    
+  {% endautoescape %}
+
+  let audio = new Audio('{{STATIC_URL}}Winwheel/tick.mp3');  // Create audio object and load tick.mp3 file.
+
+  function whellstops(i)
+  {
+    wheelSpinning = false;
+  }
+  function playSound()
+  {
+      // Stop and rewind the sound if it already happens to be playing.
+      audio.pause();
+      audio.currentTime = 0;
+
+      // Play the sound.
+      audio.play();
+  }
+
+
+  function startSpin()
+  {
+      if (!wheelSpinning) {
+          theWheel.stopAnimation(false);  // Stop the animation, false as param so does not call callback function.
+          theWheel.rotationAngle = 0;     // Re-set the wheel angle to 0 degrees.
+          theWheel.draw();                // Call draw to render changes to the wheel.        
+          theWheel.startAnimation();
+          wheelSpinning = true;
+      }
+  }
+  </script>
+  {% else %}
+    Sembla que no hi ha prous alumnes com per triar-ne un a l'atzar.
+  {% endif %}
+
+  <div class="row" style="margin-top: 20px;">
+    <div class="col-12 col-md-6 col-lg-2"><a class="btn btn-success " onClick="startSpin();">Fer rodar</a>    </div>
+    <div class="col-12 col-md-6 col-lg-2"><a class="btn btn-primary ml-4" href="{{passa_llista_url}}">Tornar a la pàgina anterior</a></div>
+  </div>
+  
+{% endblock %}
+

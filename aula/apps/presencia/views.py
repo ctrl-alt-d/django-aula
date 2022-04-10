@@ -1,4 +1,6 @@
 # This Python file uses the following encoding: utf-8
+from itertools import count
+import random
 from django.conf import settings
 #templates
 from django.forms.utils import ErrorDict
@@ -439,6 +441,7 @@ def passaLlista(request, pk):
          "info": info,
          "feelLuckyEnabled": True,
          "permetCopiarDUnaAltreHoraEnabled": settings.CUSTOM_PERMET_COPIAR_DES_DUNA_ALTRE_HORA,
+         "permetWinwheel": settings.CUSTOM_RULETA_ACTIVADA,         
          "els_meus_tutorats": els_meus_tutorats,
          "oneline": True,
          },
@@ -1356,3 +1359,68 @@ def desanularImpartir(request, pk):
                            u"S'han trobat errors des-anul·lant aquesta hora de classe: {}".format(u", ".join(errors)))
         next_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
     return HttpResponseRedirect(next_url)
+
+# ------------
+@login_required
+@group_required(['professors'])
+def winwheel(request, pk):
+
+    """
+    Aquesta pàgina mostra un ruleta i serveix per triar un alumne a l'atzar.
+
+    La documentació de la ruleta la trobem a: https://github.com/zarocknz/javascript-winwheel
+    """
+
+    passa_llista_url = reverse("aula__horari__passa_llista", kwargs={'pk': pk})
+    winwheel_url = reverse("aula__horari__winwheel", kwargs={'pk': pk})
+
+    if not settings.CUSTOM_RULETA_ACTIVADA:        
+        return HttpResponseRedirect(passa_llista_url)
+
+    credentials = getImpersonateUser(request)
+    (user, l4) = credentials
+    impartir = get_object_or_404( Impartir, pk = pk)
+
+    alumnes = [
+        c.alumne
+        for c in impartir.controlassistencia_set.all()
+        if (
+            not c.alumne.esBaixa() and
+            not c.nohadeseralaula_set.exists()
+        )
+    ]
+
+    Alumne
+
+    nom_i_inicials = lambda a: (a.nom_sentit or a.nom ) + " " + ".".join([ x[:1] for x in a.cognoms.split(" ")]) + "."
+
+    noms = [
+        nom_i_inicials(a)
+        for a in alumnes
+    ]
+
+    hi_ha_prous_alumnes = len(noms) > 1
+
+    random.shuffle(noms)
+
+    guanyador_no_ui = noms[0] if hi_ha_prous_alumnes else None
+
+    colors = ['#eae56f', '#89f26e', '#7de6ef', '#e7706f', ]
+    
+    items_ruleta = [
+        {'fillStyle' : colors[idx%4], 'text' : nom}
+        for idx, nom in enumerate(noms)
+    ]
+
+    return render(
+                request,
+                  "presencia/winwheel.html", 
+                  {
+                      "n": len(items_ruleta),
+                      "hi_ha_prous_alumnes": hi_ha_prous_alumnes,
+                      "items_ruleta": items_ruleta,
+                      "guanyador_no_ui": guanyador_no_ui,
+                      "passa_llista_url": passa_llista_url,
+                      "winwheel_url": winwheel_url,
+                   },
+                )    

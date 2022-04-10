@@ -61,6 +61,10 @@ urlpatterns = [
     re_path(r'^desanularImpartir/(?P<pk>\d+)/$', presencia_views.desanularImpartir,
        name="aula__horari__desanularImpartir"),
 
+    re_path(r'^winwheel/(?P<pk>\d+)/$', presencia_views.winwheel,
+        name="aula__horari__winwheel" ),
+                       
+
 ]
 
 

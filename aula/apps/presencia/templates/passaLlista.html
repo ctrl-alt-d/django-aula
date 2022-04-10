@@ -167,6 +167,9 @@
 			  <p><a href="/presencia/copiarAlumnesLlista/{{id_impartir}}" >Copiar alumnes d'una altre hora</a></p>
 			  {% endif %}
 			  <p><a href="/incidencies/posaIncidenciaAula/{{id_impartir}}">Incidències</a></p>
+			  {% if permetWinwheel %}
+			  <p><a href="/presencia/winwheel/{{id_impartir}}" >Triar un alumne a l'atzar</a></p>
+			  {% endif %}
 			  <p><a href="/baixes/feina/{{id_impartir}}" > 
 			    Feina a Realitzar 
 			    {% if impartir.feina.feina_a_fer %}<span style="color:red;font-weight:bold;">!</span>{% endif %} 
