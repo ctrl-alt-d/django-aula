@@ -80,16 +80,7 @@
           wheelSpinning = true;
       }
   }
-  function startSpin()
-  {
-      if (!wheelSpinning) {
-          theWheel.stopAnimation(false);  // Stop the animation, false as param so does not call callback function.
-          theWheel.rotationAngle = 0;     // Re-set the wheel angle to 0 degrees.
-          theWheel.draw();                // Call draw to render changes to the wheel.        
-          theWheel.startAnimation();
-          wheelSpinning = true;
-      }
-  }
+
   </script>
   {% else %}
     Sembla que no hi ha prous alumnes com per triar-ne un a l'atzar.
