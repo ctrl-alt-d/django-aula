@@ -156,6 +156,9 @@ CUSTOM_DADES_ADDICIONALS_ALUMNE = [
     # },
     ]
 
+# A la pantalla de passar llista apareix una opció per mostrar ruleta d'alumnes
+# amb la ruleta el professor pot triar un alumne a l'atzar.
+CUSTOM_RULETA_ACTIVADA = True
 
 try:
     from .settings_local import *

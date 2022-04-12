@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+ 
+{% block extrahead %}
+  <script type="text/javascript" src="{{STATIC_URL}}Winwheel/Winwheel.min.js"></script>
+  <script type="text/javascript" src="{{STATIC_URL}}Winwheel/TweenMax.min.js"></script>
+  <style>
+    td.the_wheel
+      {
+          background-image: url("{{STATIC_URL}}Winwheel/wheel_back.png");
+          background-position: center;
+          background-repeat: no-repeat;
+      }
+  </style>
+{% endblock %}
+
+ 
+{% block content  %}
+{%if hi_ha_prous_alumnes %}
+
+<table cellpadding="0" cellspacing="0" border="0">
+  <tr>
+      <td width="438" height="582" class="the_wheel" align="center" valign="center">
+          <canvas id='canvas' width='434' height='434'>
+            El guanyador és {{guanyador_no_ui}}
+          </canvas>
+      </td>
+  </tr>
+</table>
+
+
+  {% autoescape off %}
+  <script>
+    let wheelSpinning = false;
+    let theWheel = new Winwheel({
+    'numSegments'    : {{n}},
+    'segments'       : {{items_ruleta}},
+    'animation' :
+      {
+          'type'     : 'spinToStop',
+          'duration' : getRandomInt(15,20),
+          'spins'    : getRandomInt(3,6),
+          'callbackSound'    : playSound,   
+          'callbackFinished' : whellstops,
+          'soundTrigger'     : 'segment' 
+        }
+    });    
+  {% endautoescape %}
+
+  let audio = new Audio('{{STATIC_URL}}Winwheel/tick.mp3'); 
+
+  function whellstops(i)
+  {
+    wheelSpinning = false;
+    $('#go').removeClass('disabled');
+  }
+  function playSound()
+  {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.play();
+  }
+
+  function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+  }
+
+  function startSpin()
+  {
+      if (wheelSpinning) return;
+      $('#go').addClass('disabled');
+      duration = getRandomInt(15,20);
+      spins = (duration+2)/5;
+      theWheel.stopAnimation(false);  
+      theWheel.rotationAngle = 0;     
+      theWheel.animation.duration = duration;
+      theWheel.animation.spins = spins;
+      theWheel.draw();               
+      theWheel.startAnimation();
+      wheelSpinning = true;
+  }
+  </script>
+  {% else %}
+    Sembla que no hi ha prous alumnes com per triar-ne un a l'atzar.
+  {% endif %}
+
+  <div class="row" style="margin-top: 20px;">
+    <div class="col-12 col-md-6 col-lg-2"><button type="button" class="btn btn-success" id="go" onClick="startSpin();">Fer rodar</button>    </div>
+    <div class="col-12 col-md-6 col-lg-2"><a class="btn btn-primary ml-4" href="{{passa_llista_url}}">Tornar a la pàgina de control d'assistència</a></div>
+  </div>
+  
+{% endblock %}
+
