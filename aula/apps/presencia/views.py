@@ -1381,8 +1381,13 @@ def winwheel(request, pk):
     (user, l4) = credentials
     impartir = get_object_or_404( Impartir, pk = pk)
 
-    alumnes = [
-        c.alumne
+    ControlAssistencia
+
+    # es_present? Servirà per triar el color. Si sabem que falta el pintem en gris.
+    es_present = lambda c: c is None or c.estat is None or c.estat.codi_estat != 'F'
+
+    alumnes_i_presencialitat = [
+        (c.alumne, es_present(c) )
         for c in impartir.controlassistencia_set.all()
         if (
             not c.alumne.esBaixa() and
@@ -1390,26 +1395,33 @@ def winwheel(request, pk):
         )
     ]
 
-    Alumne
-
+    # nom_i_inicials: No hi ha gaire espai a la ruleta, pintem 'Laia B.C.'
     nom_i_inicials = lambda a: (a.nom_sentit or a.nom ) + " " + ".".join([ x[:1] for x in a.cognoms.split(" ")]) + "."
 
-    noms = [
-        nom_i_inicials(a)
-        for a in alumnes
+    noms_i_presencialitat = [
+        (nom_i_inicials(alumne), presencialitat)
+        for alumne, presencialitat in alumnes_i_presencialitat
     ]
 
-    hi_ha_prous_alumnes = len(noms) > 1
+    hi_ha_prous_alumnes = len(noms_i_presencialitat) > 1
 
-    random.shuffle(noms)
+    random.shuffle(noms_i_presencialitat)
 
-    guanyador_no_ui = noms[0] if hi_ha_prous_alumnes else None
+    guanyador_no_ui = noms_i_presencialitat[0][0] if hi_ha_prous_alumnes else None
 
     colors = ['#eae56f', '#89f26e', '#7de6ef', '#e7706f', ]
+    color_falta = ['#aaaaaa'] # color amb el que pintem els alumnes que falten
+
+    # tria_color: Va alternant colors, pinta gris si no hi és a l'aula
+    tria_color = lambda idx, present: color_falta if not present else colors[idx%4]
     
+    # items_ruleta: llista de diccionaris amb el color i el nom
     items_ruleta = [
-        {'fillStyle' : colors[idx%4], 'text' : nom}
-        for idx, nom in enumerate(noms)
+        {
+            'fillStyle' : tria_color(idx, nom_i_presencialitat[1]),
+            'text' : nom_i_presencialitat[0]
+        }
+        for idx, nom_i_presencialitat in enumerate(noms_i_presencialitat)
     ]
 
     return render(
