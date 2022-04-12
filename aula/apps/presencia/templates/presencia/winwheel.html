@@ -51,6 +51,7 @@
   function whellstops(i)
   {
     wheelSpinning = false;
+    $('#go').removeClass('disabled');
   }
   function playSound()
   {
@@ -68,17 +69,17 @@
 
   function startSpin()
   {
+      if (wheelSpinning) return;
+      $('#go').addClass('disabled');
       duration = getRandomInt(15,20);
       spins = (duration+2)/5;
-      if (!wheelSpinning) {
-          theWheel.stopAnimation(false);  // Stop the animation, false as param so does not call callback function.
-          theWheel.rotationAngle = 0;     // Re-set the wheel angle to 0 degrees.
-          theWheel.animation.duration = duration;
-          theWheel.animation.spins = spins;
-          theWheel.draw();                // Call draw to render changes to the wheel.        
-          theWheel.startAnimation();
-          wheelSpinning = true;
-      }
+      theWheel.stopAnimation(false);  
+      theWheel.rotationAngle = 0;     
+      theWheel.animation.duration = duration;
+      theWheel.animation.spins = spins;
+      theWheel.draw();               
+      theWheel.startAnimation();
+      wheelSpinning = true;
   }
   </script>
   {% else %}
@@ -86,8 +87,8 @@
   {% endif %}
 
   <div class="row" style="margin-top: 20px;">
-    <div class="col-12 col-md-6 col-lg-2"><a class="btn btn-success " onClick="startSpin();">Fer rodar</a>    </div>
-    <div class="col-12 col-md-6 col-lg-2"><a class="btn btn-primary ml-4" href="{{passa_llista_url}}">Tornar a la pàgina anterior</a></div>
+    <div class="col-12 col-md-6 col-lg-2"><button type="button" class="btn btn-success" id="go" onClick="startSpin();">Fer rodar</button>    </div>
+    <div class="col-12 col-md-6 col-lg-2"><a class="btn btn-primary ml-4" href="{{passa_llista_url}}">Tornar a la pàgina de control d'assistència</a></div>
   </div>
   
 {% endblock %}
