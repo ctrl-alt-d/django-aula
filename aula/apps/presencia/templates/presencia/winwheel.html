@@ -41,12 +41,12 @@
           'spins'    : getRandomInt(3,6),
           'callbackSound'    : playSound,   
           'callbackFinished' : whellstops,
-          'soundTrigger'     : 'segment'        // Specify pins are to trigger the sound, the other option is 'segment'.      }
+          'soundTrigger'     : 'segment' 
         }
     });    
   {% endautoescape %}
 
-  let audio = new Audio('{{STATIC_URL}}Winwheel/tick.mp3');  // Create audio object and load tick.mp3 file.
+  let audio = new Audio('{{STATIC_URL}}Winwheel/tick.mp3'); 
 
   function whellstops(i)
   {
@@ -55,11 +55,8 @@
   }
   function playSound()
   {
-      // Stop and rewind the sound if it already happens to be playing.
       audio.pause();
       audio.currentTime = 0;
-
-      // Play the sound.
       audio.play();
   }
 
