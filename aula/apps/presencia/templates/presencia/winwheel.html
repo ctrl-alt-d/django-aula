@@ -62,7 +62,24 @@
       audio.play();
   }
 
+  function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+  }
 
+  function startSpin()
+  {
+      duration = getRandomInt(15,20);
+      spins = (duration+2)/5;
+      if (!wheelSpinning) {
+          theWheel.stopAnimation(false);  // Stop the animation, false as param so does not call callback function.
+          theWheel.rotationAngle = 0;     // Re-set the wheel angle to 0 degrees.
+          theWheel.animation.duration = duration;
+          theWheel.animation.spins = spins;
+          theWheel.draw();                // Call draw to render changes to the wheel.        
+          theWheel.startAnimation();
+          wheelSpinning = true;
+      }
+  }
   function startSpin()
   {
       if (!wheelSpinning) {
