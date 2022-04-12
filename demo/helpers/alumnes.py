@@ -6,6 +6,7 @@ from datetime import timedelta, date
 from django.template.defaultfilters import slugify
 import csv
 from aula.utils.tools import unicode
+from os.path import exists
 
 def random_date(start, end):
     """
@@ -24,10 +25,14 @@ def getRandomNomICognoms():
 def getRandomRalc():
     return random.randint(10000000000,99999999999)
 
-def generaFitxerSaga( path, nivellsCursosGrups ):
+def generaFitxerSaga( path, nivellsCursosGrups, override ):
 
+    # Format:
+    # 1,"Aasss, ssss","09/03/1995","ssss , dfdfdfd","","","","","","","","CR Tarragona fdfd","Figueres","","+34-6543434343 (Primer telèfon de l)","17001218, Institut Ramon Muntaner, Figueres","CF adm 2"    
 
-#1,"Aasss, ssss","09/03/1995","ssss , dfdfdfd","","","","","","","","CR Tarragona fdfd","Figueres","","+34-6543434395 (Primer telèfon de l)","17001218, Institut Ramon Muntaner, Figueres","CF adm 2"    
+    fileexists = exists(path)
+    if (not override and fileexists):
+        return
 
     with open(path, 'w') as csvfile:
         spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)

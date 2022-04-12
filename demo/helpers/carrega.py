@@ -59,8 +59,8 @@ def fesCarrega( ):
                          )
 
     print (u"#GENEREM FITXERS DE DADES  ")                        
-    generaFitxerSaga(fitxerSaga, nivellsCursosGrups  )
-    generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes )
+    generaFitxerSaga(fitxerSaga, nivellsCursosGrups, override=False  )
+    generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes, override=False )
     
     print (u"#CREEM NIVELL-CURS-GRUP")
     handlerKronowin=open( fitxerKronowin, 'r' )
