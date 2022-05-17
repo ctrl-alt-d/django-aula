@@ -157,6 +157,14 @@ def notifica():
                         print (u'Error enviant missatge a {0}'.format( alumne ))
                     enviatOK = False
 
+                    # actualitzo info per a l'app mòbil
+                    if hiHaNovetats:
+                        alumne.modificacions_portal_set.novetats_detectades_moment=ara
+                        n_tokens = alumne.modificacions_portal_set.save()
+
+                    enviatOK = enviatOK or bool(n_tokens)  # s'ha enviat per algun dels mitjants
+
+
             if enviatOK:                    
                 noves_sortides.update( relacio_familia_notificada = ara )
                 #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
