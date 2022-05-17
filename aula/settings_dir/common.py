@@ -219,6 +219,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.extUntis',
     'aula.apps.matricula',
     'aula.apps.extPreinscripcio',
+    'aula.appMobil',
 ]
 
 #select2
@@ -228,7 +229,7 @@ AUTO_RENDER_SELECT2_STATICS=False
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
-INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA + ['private_storage',]
+INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA + ['private_storage',] + ['rest_framework',] + ['rest_framework_simplejwt',]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 

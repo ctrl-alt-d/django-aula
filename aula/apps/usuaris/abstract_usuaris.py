@@ -3,7 +3,9 @@
 from django.db import models
 #from django.db.models import get_model
 from django.contrib.auth.models import User
+
 from aula.utils.tools import unicode
+from django.db.models import PROTECT
 
 #-------------------------------------------------------------
 
@@ -73,5 +75,15 @@ class AbstractOneTimePasswd(models.Model):
     moment_expedicio = models.DateTimeField( auto_now_add = True )
     clau = models.CharField(max_length=40 )
     reintents = models.IntegerField( default = 0 )
+
+class AbstractModificationPortal(models.Model):
+    alumne_referenciat = models.OneToOneField("alumnes.Alumne", db_index=True, on_delete=PROTECT,
+        related_name="modificacions_portal_set",
+        related_query_name="modificacions_portal")
+    darrera_sincronitzacio = models.DateTimeField(blank=True, null=True)
+    novetats_detectades_moment = models.DateTimeField(blank=True, null=True)
+
+class Meta:
+            abstract = True
 
 

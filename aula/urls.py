@@ -6,6 +6,7 @@ from aula.utils.views import keepalive,menu,logout_page
 from aula.apps.alumnes.views import mostraGrupPromocionar,nouAlumnePromocionar,llistaGrupsPromocionar
 from django.contrib.auth.views import PasswordChangeView
 from django.views.static import serve
+from rest_framework_simplejwt.views import TokenRefreshView
 
 admin.autodiscover()
 admin.site.enable_nav_sidebar = False
@@ -16,6 +17,8 @@ site_media_site_css = os.path.join(os.path.dirname(__file__), 'site-css' )
 site_media_web_demo = os.path.join(os.path.dirname(__file__), '../demo/static-web/demo' )
 
 urlpatterns = [
+    path('api/token/', include('aula.appMobil.urls')),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     re_path(r'^keepalive$', keepalive, name="blanc__blanc__keepalive"),
     path("select2/", include("django_select2.urls")),
     re_path(r'^menu/$', menu),

@@ -27,3 +27,5 @@ django-formtools
 invoke
 psycopg2-binary
 django_select2
+djangorestframework
+djangorestframework-simplejwt
