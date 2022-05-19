@@ -51,6 +51,7 @@ class Sortida(models.Model):
                     ( 'AP', u'A peu',),
                     ( 'CO', u'Combinat',),
                     ( 'ND', u'No cal desplaçament',),
+                    ('MP', u'Mitjans propis',),
                                )
 
     ESTAT_CHOICES = (
