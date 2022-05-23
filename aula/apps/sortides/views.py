@@ -1599,7 +1599,9 @@ def detallPagament(request, pk):
     professor = User2Professor(user)
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
     sortida = get_object_or_404(Sortida, pk=pk)
-    potEntrar = (sortida.tipus_de_pagament == 'ON' and (professor in sortida.professors_responsables.all() or fEsDireccioOrGrupSortides))
+    potEntrar = (sortida.tipus_de_pagament == 'ON' and (professor in sortida.professors_responsables.all()
+                                                        or fEsDireccioOrGrupSortides
+                                                        or professor in sortida.altres_professors_acompanyants.all()))
     if not potEntrar:
         raise Http404
 
