@@ -37,29 +37,29 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def notificacions_mes(request, mes, format=None):
     """
     Rep la darrera data de sincronització (i un jwt) i retorna tots valors actuals.
     """
     ara = datetime.now()
-    data = JSONParser().parse(request)
+    #data = JSONParser().parse(request)
 
 
-    serializer = DarreraSincronitzacioSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError("ups! petició amb errors")
+    #serializer = DarreraSincronitzacioSerializer(data=data)
+    # if not serializer.is_valid():
+    #     raise serializers.ValidationError("ups! petició amb errors")
 
-    darrera_sincronitzacio = serializer.validated_data["last_sync_date"]
+    #darrera_sincronitzacio = serializer.validated_data["last_sync_date"]
     alumne= Alumne.objects.get(user_associat__username=request.user)
     myportaltoken, created = ModificationPortal.objects.get_or_create(alumne_referenciat=alumne)
 
 
     # No hi ha novetats:
-    print (myportaltoken.novetats_detectades_moment, " , ", darrera_sincronitzacio)
-    if myportaltoken.novetats_detectades_moment and myportaltoken.novetats_detectades_moment <= darrera_sincronitzacio:
-        content = {"status": "All is up-to-date"}
-        return Response(content)
+    # print (myportaltoken.novetats_detectades_moment, " , ", darrera_sincronitzacio)
+    # if myportaltoken.novetats_detectades_moment and myportaltoken.novetats_detectades_moment <= darrera_sincronitzacio:
+    #     content = {"status": "All is up-to-date"}
+    #     return Response(content, content_type='application/json; charset=UTF-8')
 
     # Sí hi ha novetats, s'envia tot:
     alumne = myportaltoken.alumne_referenciat
@@ -138,7 +138,7 @@ def notificacions_mes(request, mes, format=None):
     myportaltoken.darrera_sincronitzacio = ara
     myportaltoken.save()
 
-    return Response(content)
+    return Response(content, content_type='application/json; charset=UTF-8')
 
 
 
@@ -166,7 +166,7 @@ def notificacions_news(request, format=None):
 
     content = {"resultat": "Sí"} if (myportaltoken.novetats_detectades_moment and myportaltoken.novetats_detectades_moment > darrera_sincronitzacio) else {"resultat": "No"}
 
-    return Response(content)
+    return Response(content, content_type='application/json; charset=UTF-8')
 
 
 
