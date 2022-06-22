@@ -25,7 +25,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
-        data['accessToken'] = str(refresh.access_token)
 
         # Add extra responses here
         nom = Alumne.objects.get(user_associat__username=self.user.username)
