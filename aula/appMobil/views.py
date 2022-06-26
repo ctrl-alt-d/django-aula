@@ -39,28 +39,13 @@ class MyTokenObtainPairView(TokenObtainPairView):
 @api_view(['GET'])
 def notificacions_mes(request, mes, format=None):
     """
-    Rep la darrera data de sincronització (i un jwt) i retorna tots valors actuals.
+    Retorna les notificacions del mes corresponent
     """
     ara = datetime.now()
-    #data = JSONParser().parse(request)
 
-
-    #serializer = DarreraSincronitzacioSerializer(data=data)
-    # if not serializer.is_valid():
-    #     raise serializers.ValidationError("ups! petició amb errors")
-
-    #darrera_sincronitzacio = serializer.validated_data["last_sync_date"]
     alumne= Alumne.objects.get(user_associat__username=request.user)
     myportaltoken, created = ModificationPortal.objects.get_or_create(alumne_referenciat=alumne)
 
-
-    # No hi ha novetats:
-    # print (myportaltoken.novetats_detectades_moment, " , ", darrera_sincronitzacio)
-    # if myportaltoken.novetats_detectades_moment and myportaltoken.novetats_detectades_moment <= darrera_sincronitzacio:
-    #     content = {"status": "All is up-to-date"}
-    #     return Response(content, content_type='application/json; charset=UTF-8')
-
-    # Sí hi ha novetats, s'envia tot:
     alumne = myportaltoken.alumne_referenciat
     content = [{
         "id": alumne.id,
@@ -144,7 +129,6 @@ def notificacions_mes(request, mes, format=None):
 
 
 @api_view(['POST'])
-# @permission_classes((EsUsuariDeLaAPI,))
 def notificacions_news(request, format=None):
     """
     Rep la darrera data de sincronització (i un jwt) i retorna tots valors actuals.
