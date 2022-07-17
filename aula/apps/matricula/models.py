@@ -4,6 +4,7 @@ from aula.apps.sortides.models import Quota, QuotaPagament, return_any_actual
 from aula.apps.extPreinscripcio.models import Preinscripcio
 from private_storage.fields import PrivateFileField
 from django.conf import settings
+from aula.apps.matricula.business_rules.document import document_post_delete
 
 class Matricula(models.Model):
     ESTAT_CHOICES=[
@@ -82,4 +83,6 @@ class Document(models.Model):
               
     def __str__(self):
         return str(self.fitxer.name) + ((' '+str(self.matricula)) if self.matricula else '')
-    
+
+from django.db.models.signals import post_delete
+post_delete.connect(document_post_delete, sender = Document )

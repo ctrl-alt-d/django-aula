@@ -21,18 +21,27 @@ from aula.apps.alumnes.models import Grup
 CONST_ERROR_CODE = '_'
 
 class ProfeNoPot(Exception):
-    def __init__(self, *args):
-        if args:
-            self.message = args[0]
-        else:
-            self.message = None
-    
+    def __init__(self, message, code=None, params=None):
+        super().__init__(message, code, params)
+        self.message = message
+        self.code = code
+        self.params = params
+            
     def __str__(self):
-        if self.message:
-            return self.message
+        if hasattr(self, 'message') and bool(self.message):
+            if isinstance(self.message, dict):
+                return str(list(self.message))
+            return str(self.message)
         else:
-            return 'ProfeNoPot: No correspon professor a l\'horari'
+            return '(ProfeNoPot)No correspon professor a l\'horari'
 
+    @property
+    def message_dict(self):
+        if hasattr(self, 'message') and bool(self.message):
+            if isinstance(self.message, dict):
+                return self.message
+        return {}
+    
 #Veure els grups disponibles.
 @login_required
 @group_required(['professors'])
@@ -259,9 +268,12 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
         cadenaError = u''
         for v in e.message_dict[NON_FIELD_ERRORS]:
             cadenaError += str(v) + u"<br>"
-        return HttpResponse(CONST_ERROR_CODE + cadenaError, status=500)
+        return HttpResponse(CONST_ERROR_CODE + cadenaError, status=200)
     except ProfeNoPot as e:
-        return HttpResponse(CONST_ERROR_CODE + str(e), status=200)
+        cadenaError = u''
+        for v in e.message_dict[NON_FIELD_ERRORS]:
+            cadenaError += str(v) + u"<br>"
+        return HttpResponse(CONST_ERROR_CODE + cadenaError, status=200)
     except Exception as e:
         #print (CONST_ERROR_CODE, str(traceback.format_exc()))
         #return HttpResponse(CONST_ERROR_CODE + unicode(e) + u"-" + unicode(traceback.format_exc(), 'utf-8'))
@@ -316,9 +328,12 @@ def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
         cadenaError = u''
         for v in e.message_dict[NON_FIELD_ERRORS]:
             cadenaError += str(v) + u"<br>"
-        return HttpResponse(CONST_ERROR_CODE + cadenaError, status=500)
+        return HttpResponse(CONST_ERROR_CODE + cadenaError, status=200)
     except ProfeNoPot as e:
-        return HttpResponse(CONST_ERROR_CODE + str(e), status=200)
+        cadenaError = u''
+        for v in e.message_dict[NON_FIELD_ERRORS]:
+            cadenaError += str(v) + u"<br>"
+        return HttpResponse(CONST_ERROR_CODE + cadenaError, status=200)
     except Exception as e:
         #print (CONST_ERROR_CODE, str(traceback.format_exc()))
         return HttpResponse(CONST_ERROR_CODE + str(e), status=500)       
@@ -344,7 +359,11 @@ def _comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir):
     pertany_al_professor = user.pk in [impartir.horari.professor.pk, \
                                 impartir.professor_guardia.pk if impartir.professor_guardia else -1]
     if not (l4 or pertany_al_professor):
-        raise ProfeNoPot(u"Error al modificar l'assistència del grup, el profe no és propietari de l'hora assignada")
+        raise ProfeNoPot(
+            {NON_FIELD_ERRORS:
+             [u"Error al modificar l'assistència del grup, el profe no és propietari de l'hora assignada",],
+             }
+            )
 
 
 #Realitza el recompte d'hores per cada dia.

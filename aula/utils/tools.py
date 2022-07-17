@@ -192,16 +192,19 @@ def executaAmbOSenseThread(objecteThread):
         objecteThread.start()
 
 def initComplet():
-    from aula.apps.alumnes.models import Alumne,  Curs
+    from aula.apps.alumnes.models import Alumne,  Curs, DadesAddicionalsAlumne
     from aula.apps.incidencies.models import Sancio, Expulsio, Incidencia
     from aula.apps.presencia.models import Impartir, ControlAssistencia, NoHaDeSerALAula
     from aula.apps.baixes.models import Feina
     from aula.apps.horaris.models import Horari, Festiu
     from aula.apps.aules.models import ReservaAula
-    from aula.apps.tutoria.models import Tutor, TutorIndividualitzat, CartaAbsentisme
+    from aula.apps.tutoria.models import SeguimentTutorial, ResumAnualAlumne, SeguimentTutorialRespostes, Actuacio, Tutor, \
+                                        TutorIndividualitzat, CartaAbsentisme
     from aula.apps.usuaris.models import LoginUsuari
-
-    from django.db.models import Q
+    from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
+    from aula.apps.extPreinscripcio.models import Preinscripcio
+    from aula.apps.sortides.models import Pagament, NotificaSortida
+    from aula.apps.matricula.models import Matricula, Document
     
     try:
         avui=datetime.now()
@@ -226,9 +229,37 @@ def initComplet():
         TutorIndividualitzat.objects.all().delete()
         
         LoginUsuari.objects.filter(moment__lt=avui).delete()
+        
+        # Selecciona alumnes què són baixa
+        esborrar=Alumne.objects.filter(data_baixa__isnull=False)
+        
+        # Manté els pagaments fets, però desvinculats dels alumnes que són baixa
+        Pagament.objects.filter(alumne__in=esborrar, pagament_realitzat=True).update(alumne=None)
+        
+        #Esborra dades relacionades
+        RespostaAvaluacioQualitativa.objects.filter(alumne__in=esborrar).delete()
+        NotificaSortida.objects.filter(alumne__in=esborrar).delete()
+        Pagament.objects.filter(alumne__in=esborrar).delete()
+        Actuacio.objects.filter(alumne__in=esborrar).update(moment_actuacio=avui)
+        Actuacio.objects.filter(alumne__in=esborrar).delete()
+        SeguimentTutorialRespostes.objects.filter(seguiment_tutorial__alumne__in=esborrar).delete()
+        ResumAnualAlumne.objects.filter(seguiment_tutorial__alumne__in=esborrar).delete()
+        SeguimentTutorial.objects.filter(alumne__in=esborrar).delete()
+        DadesAddicionalsAlumne.objects.filter(alumne__in=esborrar).delete()
+        Preinscripcio.objects.filter(matricula__alumne__in=esborrar).delete()
+        Preinscripcio.objects.filter(matricula__isnull=True, any__lt=avui.date().year).delete()
+        Document.objects.filter(matricula__alumne__in=esborrar).delete()
+        Matricula.objects.filter(alumne__in=esborrar).delete()
+        
+        #Esborra les baixes
+        esborrar.delete()
+        
 
     except Exception as e:
         return ["Error:"+str(e)]
+    
+    #Esborra pagaments pendents d'anys anteriors, només al tpv principal 'centre'
+    Pagament.objects.filter(quota__any__lt=avui.date().year, pagament_realitzat=False, quota__tpv__nom='centre').delete()
 
     # Esborra usuaris alumne sense alumne associat
     User.objects.filter(username__startswith='almn',alumne__isnull=True).delete()

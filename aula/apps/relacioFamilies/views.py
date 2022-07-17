@@ -190,6 +190,7 @@ def configuraConnexio( request , pk ):
 
     dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil, alumne.rp1_correu]
     dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil, alumne.rp2_correu]
+
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
@@ -197,6 +198,7 @@ def configuraConnexio( request , pk ):
           ('Dades responsable 2', ' - '.join(filter(None,dades_resp2))),
           ('Altres telèfons alumne', alumne.altres_telefons),
     ]
+
 
     if alumne.dadesaddicionalsalumne_set.exists():
         for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:

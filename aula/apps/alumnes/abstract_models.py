@@ -27,6 +27,7 @@ class AbstractNivell(models.Model):
     matricula_oberta = models.BooleanField("Matrícula oberta", default=False)
     limit_matricula = models.DateField("Límit matrícula", null=True, blank=True, help_text=u"Dia límit per fer confirmació de matrícula")
     taxes = models.ForeignKey('sortides.TipusQuota', on_delete=models.PROTECT, blank=True, null=True, default=None)
+    preexclusiva = models.BooleanField("Matrícula exclusiva de Preinscripció", default=False)
     
     class Meta:
         abstract = True        

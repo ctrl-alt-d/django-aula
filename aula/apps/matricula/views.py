@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from formtools.wizard.views import SessionWizardView
 from aula.utils.decorators import group_required
 from aula.apps.matricula.forms import DadesForm1, DadesForm2, DadesForm2b, DadesForm3, \
-                                    AcceptaCond, ConfirmaMat
+                                    ConfirmaMat, escollirMat
 from aula.apps.matricula.models import Document, Matricula
 from aula.apps.sortides.models import QuotaPagament, Quota, TPV
 from aula.apps.alumnes.models import Alumne, Curs
@@ -37,11 +37,20 @@ def acceptaCondicions(alumne, nany=None):
 
 def MatContestada(alumne, nany):
     '''
+    ES considerada contestada si ha acceptat les condicions
+    Retorna True o False
+    '''
+    
+    mt=Matricula.objects.filter(alumne=alumne, any=nany)
+    return (mt and mt[0].acceptar_condicions)
+
+def ConfContestada(alumne, nany):
+    '''
     Es considera confirmada o no, si ha donat una resposta
     Retorna True o False
     '''
     mt=Matricula.objects.filter(alumne=alumne, any=nany)
-    return (mt and bool(mt[0].confirma_matricula))
+    return mt and bool(mt[0].confirma_matricula) and (mt[0].acceptar_condicions or mt[0].confirma_matricula=='N')
 
 def ConfirmacioActivada(alumne):
     '''
@@ -50,34 +59,138 @@ def ConfirmacioActivada(alumne):
     return alumne.grup.curs.confirmacio_oberta and \
         (not alumne.grup.curs.limit_confirmacio or django.utils.timezone.now().date()<=alumne.grup.curs.limit_confirmacio)
     
-def MatriculaOberta(alumne):
+def FlagMatriculaOberta(alumne, preinscripcio=None):
     '''
-    Retorna True si l'alumne té oberta la matrícula
+    Comprova si es pot fer matrícula segons el curs actual de l'alumne o segons la preinscripció
+    Retorna True si és oberta la matrícula
     '''
-    return alumne.grup.curs.nivell.matricula_oberta and \
-        (not alumne.grup.curs.nivell.limit_matricula or django.utils.timezone.now().date()<=alumne.grup.curs.nivell.limit_matricula)
+    if alumne.grup.curs.nivell.matricula_oberta: return True
+    if not bool(preinscripcio): return False
+    curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
+    return curs.nivell.matricula_oberta
     
+def MatriculaOberta(alumne, preinscripcio=None):
+    '''
+    Comprova si es pot fer matrícula segons el curs actual de l'alumne o segons la preinscripció
+    Retorna True si és oberta la matrícula i no ha finalizat el període
+    '''
+    if FlagMatriculaOberta(alumne, preinscripcio):
+        if (not alumne.grup.curs.nivell.limit_matricula or \
+            (django.utils.timezone.now().date()<=alumne.grup.curs.nivell.limit_matricula)):
+            return True
+        if not bool(preinscripcio): return False
+        curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
+        return (not curs.nivell.limit_matricula or django.utils.timezone.now().date()<=curs.nivell.limit_matricula)
+    return False
+
 def get_url_alumne(usuari):
     '''
-    Retorna la url inicial per omplir informació:
+    Retorna la url inicial per omplir informació de matrícula:
         Confirmació de matrícula si encara no ha omplert el formulari
-        Matrícula si no fa confirmació o té preinscripció
+        Matrícula si encara no ha acceptat les condicions
     en altre cas retorna None
     '''
     
     try:
         if usuari.alumne:
             nany=django.utils.timezone.now().year
-            if ConfirmacioActivada(usuari.alumne):
-                p=Preinscripcio.objects.filter(ralc=usuari.alumne.ralc, any=nany)
-                if not p and not MatContestada(usuari.alumne, nany):
-                    return reverse_lazy('matricula:relacio_families__matricula__confirma', kwargs={"nany": nany})
-            if MatriculaOberta(usuari.alumne):
-                if not acceptaCondicions(usuari.alumne, nany):
-                    return reverse_lazy('matricula:relacio_families__matricula__dades')
+            # situacioMat determina el pas a fer de la matrícula
+            info = situacioMat(usuari.alumne, nany)
+            if info=='M' and not MatContestada(usuari.alumne, nany):
+                return reverse_lazy('matricula:relacio_families__matricula__dades')
+            if info=='C' and not ConfContestada(usuari.alumne, nany):
+                return reverse_lazy('matricula:relacio_families__matricula__confirma', kwargs={"nany": nany})
+        return None
     except Exception:
         return None
-    return None
+
+def matriculaDoble(alumne, nany):
+    '''
+    Comprova si l'alumne ja ha fet una matrícula i
+    a més a més té una preinscripció per a fer una segona matrícula.
+    Si té una matrícula no completada, aleshores l'esborra i la prepara per a 
+    la nova matrícula segons la preinscripció.
+    Retorna True si té opció de una segona matrícula
+    '''
+    
+    p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada')
+    if p: p=p[0]
+    else: p=None
+    if not ConfirmacioActivada(alumne) and not MatriculaOberta(alumne, p): return False
+    mt=Matricula.objects.filter(alumne=alumne, any=nany)
+    if not mt or not p: return False
+    mt=mt[0]
+    curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+    if curs==mt.curs: return False
+    #  Curs preinscripció != curs matrícula
+    if not mt.acceptar_condicions or mt.confirma_matricula=='N':
+        # Matrícula incompleta, es pot modificar
+        QuotaPagament.objects.filter(alumne=alumne, quota__any=nany,
+                                     quota__tipus__nom__in=[curs.nivell.taxes, settings.CUSTOM_TIPUS_QUOTA_MATRICULA,],
+                                     pagament_realitzat=False).delete()
+        mt.estat='A'
+        mt.curs=curs
+        q=Quota.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+        mt.quota=q[0] if q else None
+        mt.acceptar_condicions='False'
+        mt.acceptacio_en=None
+        mt.confirma_matricula=None
+        mt.preinscripcio=p
+        mt.save()
+
+        return False
+    else:
+        # Matrícula ja feta diferent de la preinscripció, curs diferent. 
+        return True
+
+def situacioMat(alumne, nany):
+    '''
+    Determina quin pas és el següent en el procés de matrícula de l'alumne.
+    Retorna un missatge informatiu o una 'C' o una 'M'.
+    'C' indica que ha de fer confirmació de matrícula
+    'M' indica que ha de fer matrícula amb posible aportacions de documents
+    En altre cas es tracta d'un missatge informatiu sobre l'estat de la matrícula, segons
+    el diccionari "situacions".
+    '''
+    url=format_html("<a href='{}'>{}</a>",
+                  reverse_lazy('relacio_families__informe__el_meu_informe'),
+                  'Activitats/Pagaments')
+    situacions={'nomatricula':'No és període de matrícula.',
+                'matpendent':'Matrícula en espera de revisió.',
+                'matfinal':'Matrícula finalitzada. Procés completat. Gestiona els pagaments des de l\'apartat '+url,
+                'confinal':'Confirmació rebuda i completa.',
+                'conpendent':'Confirmació rebuda, en espera de revisió.',
+                'doblemat':'Doble matrícula. Contacte amb secretaria.',
+                }
+    if matriculaDoble(alumne, nany):
+        return 'D' 
+    mt=Matricula.objects.filter(alumne=alumne, any=nany)
+    p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany)  # Qualsevol preinscripció no permet confirmació
+    if alumne.grup.curs.confirmacio_oberta and not p:
+        if ConfContestada(alumne, nany):
+            if mt[0].estat=='F':
+                return situacions.get('confinal')
+            else:
+                return situacions.get('conpendent')
+        else:
+            if (mt and not mt[0].preinscripcio or not mt) and (not alumne.grup.curs.limit_confirmacio \
+                or django.utils.timezone.now().date()<=alumne.grup.curs.limit_confirmacio): return 'C'
+    p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada') # Només preinscripcions actuals, última tanda
+    if p: 
+        p=p[0]
+        curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+    else: 
+        p=None
+        curs=alumne.grup.curs
+    if FlagMatriculaOberta(alumne, p):
+        if mt and mt[0].estat=='F':
+            return situacions.get('matfinal')
+        if MatriculaOberta(alumne, p):
+            if (not curs.nivell.preexclusiva or p) and not Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany).exclude(estat='Enviada'):
+                return 'M'
+        if MatContestada(alumne, nany):
+            return situacions.get('matpendent')
+    return situacions.get('nomatricula')
 
 def alumneExisteix(idalum):
     '''
@@ -99,8 +212,9 @@ def alumneExisteix(idalum):
 def enviamail(subject, message, from_email, to_email, connection=None):
     from aula.apps.relacioFamilies.models import EmailPendent
     r=0
-    if isinstance(to_email,list): to_email=tuple(to_email)
-    if not isinstance(to_email,tuple): to_email=(to_email,)
+    if isinstance(to_email,str): to_email=[to_email,]
+    if isinstance(to_email,tuple): to_email=list(to_email)
+    if not isinstance(to_email,list): to_email=[to_email,]
     try:
         if to_email:
             email=EmailMessage(subject, message, from_email, bcc=to_email, connection=connection)
@@ -118,15 +232,17 @@ def mailMatricula(tipus, email, alumne, connection=None):
     '''
     Envia email segons tipus de matrícula
     tipus de missatge ('P', 'A', 'C', 'F')
-    P  matrícula amb Preinscripció
-    A  Altres matrícules
-    C  Confirmació de matrícula
-    F  Finalitza matrícula
+        P  matrícula amb Preinscripció
+        A  Altres matrícules
+        C  Confirmació de matrícula
+        F  Finalitza matrícula
     email adreces email destinataries, pot ser una llista.
     alumne objecte Alumne
     connection servidor correu
+    Retorna True si correcte, False si error.
     '''
     
+    if not email: return False
     username=alumne.get_user_associat().username
     urlDjangoAula = settings.URL_DJANGO_AULA
     if tipus!='F':
@@ -188,6 +304,7 @@ def mailMatricula(tipus, email, alumne, connection=None):
             cos="\n".join([cos,"Durant el procés de matrícula serà necessari pujar la documentació requerida:",
             "      DNI alumne/a (si el té)",
             "      DNI del pare, mare o tutors legals",
+            "      Llibre de família (pàgina dels pares i pàgina de l’alumne/a)",
             "      Carnet de vacunacions",
             "      Targeta sanitària",
             ])
@@ -195,8 +312,12 @@ def mailMatricula(tipus, email, alumne, connection=None):
             cos="\n".join([cos,"Durant el procés de matrícula serà necessari pujar la documentació requerida:",
             "      DNI alumne/a",
             "      DNI del pare, mare o tutors legals (si alumnat menor d'edat)",
-            "      Titulació aportada",
+            "      Titulació aportada per accedir als estudis",
+            "      Llibre de família (si alumnat menor d'edat)",
             "      Targeta sanitària",
+            "      Carnet família nombrosa/monoparental si s’escau",
+            "      Carnet discapacitat si s’escau",
+            "      Credencial de beca si s’escau",
             ])
     if tipus!='F':
         cos="\n".join([cos,"","Si encara no ha obtingut la contrasenya, entreu a {0} per escollir-la.".format(url), ])
@@ -238,7 +359,7 @@ def següentCurs(alumne):
     except:
         return None
 
-def quotaSegüentCurs(tipus, nany, alumne):
+def quotaSegüentCurs(nomtipus, nany, alumne):
     '''
     Selecciona una quota del tipus i any adequada per al següent curs de l'alumne
     Exemple:
@@ -249,12 +370,12 @@ def quotaSegüentCurs(tipus, nany, alumne):
     c=alumne.grup.curs
     try:
         ncurs=str(int(c.nom_curs)+1)
-        quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=nany, tipus=tipus)
+        quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=nany, tipus__nom=nomtipus)
     except:
         quotacurs=None
     if not quotacurs:
         # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
-        quotacurs=Quota.objects.filter(any=nany, tipus=tipus)
+        quotacurs=Quota.objects.filter(any=nany, tipus__nom=nomtipus)
         if quotacurs.count()!=1:
             # Si troba varies no selecciona cap, si només troba una aleshores la fa servir per defecte
             quotacurs=None
@@ -267,26 +388,36 @@ def quotaSegüentCurs(tipus, nany, alumne):
 
 def creaAlumne(preinscripcio):
     '''
-    Crea l'alumne, assigna grup sense lletra. Activa l'usuari per a poder fer Login.
-    preinscripcio amb les dades que s'assignen a l'alumne
+    Crea l'alumne si no existeix.
+    Si crea l'alumne li assigna les dades segons la preinscripció i amb grup sense lletra.
+    Activa l'usuari per a poder fer Login.
+    preinscripcio: amb les dades que s'assignen a l'alumne
     Retorna objecte Alumne
     '''
     
     al=alumneExisteix(preinscripcio.ralc)
     if not al:
         al=Alumne(ralc=preinscripcio.ralc)
-    curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
-    grup , _ = creaGrup(curs.nivell.nom_nivell,curs.nom_curs,'-',None,None)
-    al.grup = grup
-    al.nom = preinscripcio.nom
-    al.cognoms = preinscripcio.cognoms
-    al.data_neixement = preinscripcio.naixement
-    al.estat_sincronitzacio = 'MAN'
+        curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
+        grup , _ = creaGrup(curs.nivell.nom_nivell,curs.nom_curs,'-',None,None)
+        al.grup = grup
+        al.nom = preinscripcio.nom
+        al.cognoms = preinscripcio.cognoms
+        al.data_neixement = preinscripcio.naixement
     al.correu_relacio_familia_pare = preinscripcio.correu if al.primer_responsable==0 else al.correu_relacio_familia_pare
     al.correu_relacio_familia_mare = preinscripcio.correu if al.primer_responsable==1 else al.correu_relacio_familia_mare
+    al.correu = preinscripcio.correu
+    activaAlumne(al)
+    return al
+
+def activaAlumne(al):
+    '''
+    Activa l'usuari per a poder fer Login.
+    '''
+    
+    al.estat_sincronitzacio = 'MAN'
     al.motiu_bloqueig = ''
     al.tutors_volen_rebre_correu = True
-    al.correu = preinscripcio.correu
     if not al.data_alta or al.data_baixa: 
         al.data_alta = django.utils.timezone.now()
         al.data_baixa = None
@@ -296,39 +427,34 @@ def creaAlumne(preinscripcio):
     al.save()
     al.user_associat.is_active=True
     al.user_associat.save()
-    return al
 
-def activaAlumne(al):
-    al.estat_sincronitzacio = 'MAN'
-    al.motiu_bloqueig = ''
-    al.tutors_volen_rebre_correu = True
-    if not al.data_alta or al.data_baixa: 
-        al.data_alta = django.utils.timezone.now()
-        al.data_baixa = None
-    al.periodicitat_faltes = 7
-    al.periodicitat_incidencies = True
-    al.save()
-    al.user_associat.is_active=True
-    al.user_associat.save()
-
-def creaPagament(alumne, quota, fracciona=False):
+def creaPagament(matricula, quota=None, fracciona=False):
     '''
     Crea pagament de la quota per a l'alumne
     '''
     
+    if not quota: quota=matricula.quota
     if not quota: return
+    alumne=matricula.alumne
     p=QuotaPagament.objects.filter(alumne=alumne, quota=quota)
     if not p and quota:
+        dataLimit=matricula.curs.nivell.limit_matricula + relativedelta(weeks=+3)
+        if not quota.dataLimit:
+            quota.dataLimit=dataLimit
+            quota.save()
+        else:
+            if dataLimit<quota.dataLimit:
+                dataLimit=quota.dataLimit
         if fracciona and quota.importQuota!=0:
             import1=round(float(quota.importQuota)/2.00,2)
             import2=float(quota.importQuota)-import1
-            p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
+            p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import1, dataLimit=dataLimit)
             p.save()
             p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import2, 
-                            dataLimit=quota.dataLimit + relativedelta(months=+1))
+                            dataLimit=dataLimit + relativedelta(months=+1))
             p.save()
         else:
-            p=QuotaPagament(alumne=alumne, quota=quota)
+            p=QuotaPagament(alumne=alumne, quota=quota, dataLimit=dataLimit)
             p.save()
 
 def enviaMissatge(missatge):
@@ -366,7 +492,7 @@ def gestionaPag(matricula, importTaxes):
         else:
             #  Es crea la quota de taxes
             quotatax=Quota(importQuota=importTaxes, 
-                  dataLimit=django.utils.timezone.now() + relativedelta(months=+1), 
+                  dataLimit=matricula.curs.nivell.limit_matricula + relativedelta(weeks=+3),
                   any=matricula.any, 
                   descripcio='Taxes', 
                   tpv=TPV.objects.get(nom='centre'), 
@@ -399,7 +525,7 @@ def gestionaPag(matricula, importTaxes):
         if (pag[0].quota!=quotamat and not pag.filter(pagament_realitzat=True)):
             # esborra antiga si no s'ha pagat, crea nova
             pag.delete()
-            creaPagament(matricula.alumne, quotamat)
+            creaPagament(matricula)
         else:
             if pag[0].quota!=quotamat and pag.filter(pagament_realitzat=True):
                 # quota canviada i antiga pagada ???
@@ -411,7 +537,7 @@ def gestionaPag(matricula, importTaxes):
                     pag[0].quota=quotamat
                     pag[0].save()
     else:
-        creaPagament(matricula.alumne, quotamat)
+        creaPagament(matricula)
     
     # Quota taxes
     pag=QuotaPagament.objects.filter(alumne=matricula.alumne, quota__any=matricula.any, 
@@ -422,15 +548,15 @@ def gestionaPag(matricula, importTaxes):
              pag[0].fracciona!=fracciona):        
             # esborra antiga, crea nova
             pag.delete()
-            creaPagament(matricula.alumne, quotatax, fracciona)
+            creaPagament(matricula, quotatax, fracciona)
         else:
             if pag[0].quota!=quotatax and pag.filter(pagament_realitzat=True):
                 # taxes canviades i antigues pagades
                 enviaMissatge("Taxes pagades no corresponen. Matrícula:{0}-{1}".format(matricula.idAlumne, matricula.any))
     else:
-        creaPagament(matricula.alumne, quotatax, fracciona)
+        creaPagament(matricula, quotatax, fracciona)
 
-def alumne2Mat(alumne, nany=None):
+def alumne2Mat(alumne, nany=None, p=None):
     '''
     Busca la Matricula amb les dades de l'alumne per l'any indicat o l'any actual.
     Si no existeix, agafa les dades de la preinscripció o de l'alumme si no té preinscripció.
@@ -439,20 +565,8 @@ def alumne2Mat(alumne, nany=None):
     if not nany:
         nany=django.utils.timezone.now().year
     mat=Matricula.objects.filter(alumne=alumne, any=nany)
-    p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany)
     if mat:
         mat=mat[0]
-        if mat.curs!=alumne.grup.curs:
-            if p: mat.preinscripcio=p[0]
-            else: mat.preinscripcio=None
-            mat.curs=alumne.grup.curs
-            mat.confirma_matricula=None
-            mat.estat='A'
-            mat.acceptar_condicions=False
-            mat.acceptacio_en=None
-            mat.curs_complet=False
-            mat.quantitat_ufs=0
-            mat.llistaufs=None
     else:
         mat=Matricula()
         mat.alumne=alumne
@@ -475,7 +589,8 @@ def alumne2Mat(alumne, nany=None):
             mat.rp1_correu=p.correu
             mat.rp2_nom=p.nomtut2+" "+p.cognomstut2 if p.nomtut2 and p.cognomstut2 else ''
             mat.preinscripcio=p
-            mat.curs=alumne.grup.curs  # Els alumnes amb preinscripció ja tenen el curs correcte
+            curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+            mat.curs=curs
         else:
             mat.nom=alumne.nom
             mat.cognoms=alumne.cognoms
@@ -704,10 +819,16 @@ def Confirma(request, nany):
     user=request.user
     infos=[]
     try:
-        if user.alumne and ConfirmacioActivada(user.alumne) and not MatContestada(user.alumne, nany):
-            mat=alumne2Mat(user.alumne, nany)
-            mat.save()
-            if mat.estat=='A' and not bool(mat.confirma_matricula):
+        if user.alumne:
+            nany=django.utils.timezone.now().year
+            info = situacioMat(user.alumne, nany)
+            if info=='D':
+                return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__escollir'))
+            if info=='M':
+                return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__dades'))
+            if info=='C':
+                mat=alumne2Mat(user.alumne, nany)
+                mat.save()
                 if request.method == 'POST':
                     form = ConfirmaMat(request.user, request.POST, instance=mat)
                     if form.is_valid():
@@ -716,15 +837,17 @@ def Confirma(request, nany):
                         item.confirma_matricula=form.cleaned_data['opcions']
                         item.acceptacio_en=django.utils.timezone.now()
                         item.save()
-                        if item.confirma_matricula=='C' and item.quota:
-                            creaPagament(item.alumne, item.quota)
+                        if item.confirma_matricula=='C' and item.quota: #TODO millor fer ara els pagaments ?
+                            creaPagament(item)
                             url=format_html("<a href='{}'>{}</a>",
                                             reverse_lazy('relacio_families__informe__el_meu_informe'),
                                             'Activitats/Pagaments')            
                             infos.append('Dades guardades correctament. '\
+                                         'Una vegada siguin revisades per secretaria rebrà un missatge. ' \
                                          'Gestioni els pagaments des de l\'apartat '+url)
                         else:
-                            infos.append('Dades guardades correctament')
+                            infos.append('Dades guardades correctament. ' \
+                                         'Una vegada siguin revisades per secretaria rebrà un missatge.')
                         return render(
                                     request,
                                     'resultat.html', 
@@ -735,20 +858,12 @@ def Confirma(request, nany):
                                        initial={'acceptar_condicions':False,
                                                 'opcions':mat.confirma_matricula,
                                                 })
-                return render(request, 'confirma_form.html', {'form': form, 'curs':mat.curs, 'quota':mat.quota})
-
-        else:
-            if user.alumne:
-                if MatContestada(user.alumne, nany):
-                    mat=Matricula.objects.filter(alumne=user.alumne, any=nany)
-                    if mat[0].estat=='F':
-                        infos.append('Confirmació rebuda i completa.')
-                    else:
-                        infos.append('Confirmació rebuda, en espera de revisió.')
-                else:
-                    infos.append('Sense necessitat de dades.')
+                return render(request, 'confirma_form.html', {'form': form, 'curs':mat.curs, 'quota':mat.quota, 
+                                                              'rgpd':inforgpd(), })
             else:
-                infos.append('Sense necessitat de dades.')
+                infos.append(info)
+        else:
+            infos.append('Sense necessitat de dades.')
         
     except Exception as e:
         print(str(e))
@@ -860,11 +975,17 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         This method is used to postprocess the form files. By default, it
         returns the raw `form.files` dictionary.
         """
+        import unicodedata
+        
         files = form.files
         pk = self.kwargs.get('pk', None)
         mat=Matricula.objects.get(pk=pk)
         for key in files.keys():
             for value in files.getlist(key):
+                # Elimina accents
+                newname=unicodedata.normalize('NFKD',value.name).encode('ascii','ignore').decode('UTF-8')
+                if value.name!=newname:
+                    value.name=newname
                 file_instance = Document(fitxer=value)
                 file_instance.matricula=mat
                 file_instance.save()
@@ -980,73 +1101,98 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
 def OmpleDades(request):
     '''
     Omple la Matrícula de l'alumne
-    Comprova que estigui obert el termini
     '''
     user=request.user
     infos=[]
     try:
         if user.alumne:
             nany=django.utils.timezone.now().year
-            if MatriculaOberta(user.alumne):
-                # Matrícula oberta per al nivell de l'alumne
-                p=Preinscripcio.objects.filter(ralc=user.alumne.ralc, any=nany)
-                if p or (not ConfirmacioActivada(user.alumne) and not MatContestada(user.alumne, nany)):
-                    # Matrícula segons preinscripcio o de continuitat
-                    mat=alumne2Mat(user.alumne, nany)
-                    mat.save()
-                    if mat.estat=='A':
-                        nomAlumne=(mat.nom+" "+mat.cognoms) if mat.nom and mat.cognoms else mat.idAlumne
-                        titol="Dades de matrícula de "+nomAlumne+" a "+mat.curs.nivell.nom_nivell+ \
-                                                   (("("+mat.preinscripcio.torn+")") if mat.preinscripcio else '')
-                        #get the initial data to include in the form
-                        fields0 = ['curs','nom','cognoms','centre_de_procedencia','data_naixement','alumne_correu','adreca','localitat','cp',]
-                        fields1 = ['rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',]
-                        fields2 = ['curs_complet', 'quantitat_ufs', 'bonificacio', 'llistaufs',]
-                        fields3 = ['fracciona_taxes', 'acceptar_condicions',]
-                        if user.alumne.getNivellCustom()=='CICLES':
-                            form_list = [DadesForm1, DadesForm2, DadesForm2b, DadesForm3]
-                            initial = {'0': dict([(f,getattr(mat,f)) for f in fields0]),
-                                       '1': dict([(f,getattr(mat,f)) for f in fields1]),
-                                       '2': dict([(f,getattr(mat,f)) for f in fields2]),
-                                       '3': dict([(f,getattr(mat,f)) for f in fields3]),
-                                       }
-                        else:
-                            form_list = [DadesForm1, DadesForm2, DadesForm3]
-                            initial = {'0': dict([(f,getattr(mat,f)) for f in fields0]),
-                                       '1': dict([(f,getattr(mat,f)) for f in fields1]),
-                                       '3': dict([(f,getattr(mat,f)) for f in fields3]),
-                                       }
-                        initial['3']['acceptar_condicions']=False
-                        return DadesView.as_view(initial_dict=initial, form_list=form_list)(request, pk=mat.pk, titol=titol)
+            info = situacioMat(user.alumne, nany)
+            if info=='D':
+                return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__escollir'))
+            if info=='C':
+                return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
+            if info=='M':
+                # Matrícula segons preinscripcio o de continuitat
+                p=Preinscripcio.objects.filter(ralc=user.alumne.ralc, any=nany, estat='Enviada')
+                mat=alumne2Mat(user.alumne, nany, p)
+                mat.save()
+                if mat.estat=='A':
+                    nomAlumne=(mat.nom+" "+mat.cognoms) if mat.nom and mat.cognoms else mat.idAlumne
+                    titol="Dades de matrícula de "+nomAlumne+" a "+mat.curs.nivell.nom_nivell+ \
+                                               (("("+mat.preinscripcio.torn+")") if mat.preinscripcio else '')
+                    #get the initial data to include in the form
+                    fields0 = ['curs','nom','cognoms','centre_de_procedencia','data_naixement','alumne_correu','adreca','localitat','cp',]
+                    fields1 = ['rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',]
+                    fields2 = ['curs_complet', 'quantitat_ufs', 'bonificacio', 'llistaufs',]
+                    fields3 = ['fracciona_taxes', 'acceptar_condicions',]
+                    if user.alumne.getNivellCustom()=='CICLES':
+                        form_list = [DadesForm1, DadesForm2, DadesForm2b, DadesForm3]
+                        initial = {'0': dict([(f,getattr(mat,f)) for f in fields0]),
+                                   '1': dict([(f,getattr(mat,f)) for f in fields1]),
+                                   '2': dict([(f,getattr(mat,f)) for f in fields2]),
+                                   '3': dict([(f,getattr(mat,f)) for f in fields3]),
+                                   }
                     else:
-                        infos.append('Matrícula finalitzada.')
-                
-                else:
-                    return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
-            
+                        form_list = [DadesForm1, DadesForm2, DadesForm3]
+                        initial = {'0': dict([(f,getattr(mat,f)) for f in fields0]),
+                                   '1': dict([(f,getattr(mat,f)) for f in fields1]),
+                                   '3': dict([(f,getattr(mat,f)) for f in fields3]),
+                                   }
+                    initial['3']['acceptar_condicions']=False
+                    return DadesView.as_view(initial_dict=initial, form_list=form_list)(request, pk=mat.pk, titol=titol)
             else:
-                # No és període de matrícula
-                if MatContestada(user.alumne, nany):
-                    return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
-                if ConfirmacioActivada(user.alumne):
-                    return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
-                mat=Matricula.objects.filter(alumne=user.alumne, any=nany)
-                if mat:
-                    mat=mat[0]
-                    if mat.estat=='F':
-                        infos.append('Matrícula finalitzada.')
-                    else:
-                        if mat.acceptar_condicions:
-                            infos.append('Matrícula en espera de revisió.')
-                        else:
-                            infos.append('No és període de matrícula.') 
-                else:
-                    infos.append('No és període de matrícula.') 
+                infos.append(info)
         else:
             infos.append('Sense necessitat de dades.')
     except Exception as e:
         print(str(e))
-        infos.append('Error a l\'accedir a les dades de matrícula: '+str(e))
+        infos.append('Error a accedint a les dades de matrícula: '+str(e))
+        
+    return render(
+                request,
+                'resultat.html', 
+                {'msgs': {'errors': [], 'warnings': [], 'infos': infos} },
+             )
+
+@login_required
+def matDobleview(request):
+    user=request.user
+    infos=[]
+    if user.alumne:
+        nany=django.utils.timezone.now().year
+        info = situacioMat(user.alumne, nany)
+        if info=='D':
+            if request.method == 'POST':
+                form = escollirMat(request.user, user.alumne, nany, request.POST)
+                if form.is_valid():
+                    escollida=form.cleaned_data['escollida']
+                    if escollida=='M':
+                        Preinscripcio.objects.filter(ralc=user.alumne.ralc, any=nany, estat='Enviada').update(estat='Caducada')
+                    else:
+                        p=Preinscripcio.objects.get(ralc=user.alumne.ralc, any=nany, estat='Enviada')
+                        mt=Matricula.objects.get(alumne=user.alumne, any=nany)
+                        curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+                        QuotaPagament.objects.filter(alumne=user.alumne, quota__any=nany,
+                             quota__tipus__nom__in=[curs.nivell.taxes, settings.CUSTOM_TIPUS_QUOTA_MATRICULA,],
+                             pagament_realitzat=False).delete()
+                        mt.estat='A'
+                        mt.curs=curs
+                        q=Quota.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+                        mt.quota=q[0] if q else None
+                        mt.acceptar_condicions='False'
+                        mt.acceptacio_en=None
+                        mt.confirma_matricula=None
+                        mt.preinscripcio=p
+                        mt.save()
+                    return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__dades'))
+            else:
+                form = escollirMat(request.user, user.alumne, nany)
+            return render(request, 'form.html', {'form': form, 'head': u'Selecciona la matrícula' ,})
+        else:
+            return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__dades'))
+    else:
+        infos.append('Sense necessitat de dades.')
         
     return render(
                 request,
@@ -1064,9 +1210,19 @@ def taxesPagades(matricula):
                                      quota__tipus=taxes, pagament_realitzat=True)
     return pag.exists()
 
-def enviaIniciMat(nivell, tipus, nany):
+def enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail=False, senseEmails=False):
     '''
     Envia emails als alumnes amb instruccions de matrícula
+    nivell  dels alumnes escollits
+    tipus matrícula
+        P  matrícula amb Preinscripció
+        A  Altres matrícules
+        C  Confirmació de matrícula
+    nany any inici curs
+    ultimCursNoEmail si True NO envia mail als alumnes d'últim curs. 
+            Djau no té les qualificacions i no podem saber si l'alumne ha obtingut títol.
+    senseEmails si True NO envia mail a cap alumne. 
+            Adequat si alguns alumnes continuen, altres abandonen, altres obtenen el títol.
     '''
     
     from django.core import mail
@@ -1075,31 +1231,19 @@ def enviaIniciMat(nivell, tipus, nany):
     # Obre la connexió
     connection.open()
     if tipus=='P':
-        for m in Preinscripcio.objects.filter(codiestudis=nivell.nom_nivell, any=nany, estat='Assignada', 
+        for p in Preinscripcio.objects.filter(codiestudis=nivell.nom_nivell, any=nany, estat='Assignada', 
                                               naixement__isnull=False):
-            mat=Matricula.objects.filter(idAlumne=m.ralc, any=nany)
-            curs=Curs.objects.get(nivell__nom_nivell=m.codiestudis, nom_curs=m.curs)
-            if mat and mat[0].curs!=curs \
-                and (mat[0].estat=='F' or taxesPagades(mat[0]) or mat[0].pagamentFet):
-                # Matrícula ja finalitzada i pagada en un altre curs
-                enviaMissatge("Matrícula feta en un altre nivell-curs. Matrícula:{0}-{1}-{2}".format(mat[0].idAlumne, mat[0].any, mat[0].curs))
-            else:
-                if (mat and (not mat[0].acceptar_condicions or mat[0].confirma_matricula=='N' \
-                    or mat[0].curs!=curs)) or not mat:
-                    alumne=creaAlumne(m)
-                    mailMatricula(tipus, m.correu, alumne, connection)
+            alumne=creaAlumne(p)
+            if not senseEmails: mailMatricula(tipus, p.correu, alumne, connection)
+            p.estat='Enviada'
+            p.save()
     if tipus=='A' or tipus=='C':
         for a in Alumne.objects.filter(grup__curs__nivell=nivell, data_baixa__isnull=True):
-            if tipus=='C' and ConfirmacioActivada(a) or tipus=='A':
-                pr=Preinscripcio.objects.filter(ralc=a.ralc, any=nany, estat='Assignada', naixement__isnull=False)
-                mat=Matricula.objects.filter(idAlumne=a.ralc, any=nany)
-                if not pr and ((mat and not mat[0].confirma_matricula and not mat[0].acceptar_condicions) or not mat):
-                    # Si no té preinscripció i tampoc matrícula confirmada
-                    activaAlumne(a)
-                    correus=a.get_correus_relacio_familia()
-                    if not correus:
-                        correus=a.get_correus_tots()
-                    mailMatricula(tipus, correus, a, connection)
+            activaAlumne(a)
+            correus=a.get_correus_relacio_familia()
+            if not correus: correus=a.get_correus_tots()
+            if següentCurs(a) or not ultimCursNoEmail:
+                if not senseEmails: mailMatricula(tipus, correus, a, connection)
     # tanca la connexió
     if connection: connection.close()
 
@@ -1118,6 +1262,9 @@ def ActivaMatricula(request):
             nivell=form.cleaned_data['nivell']
             datalimit=form.cleaned_data['datalimit']
             tipus=form.cleaned_data['tipus']
+            ultimCursNoEmail=form.cleaned_data['ultimCursNoEmail']
+            senseEmails=form.cleaned_data['senseEmails']
+            preexclusiva=form.cleaned_data['exclusiu']
             nany=django.utils.timezone.now().year
             if tipus=='P':
                 llista = Preinscripcio.objects.filter(codiestudis=nivell.nom_nivell, any=nany, estat='Assignada', naixement__isnull=False)
@@ -1128,14 +1275,31 @@ def ActivaMatricula(request):
                                 'resultat.html', 
                                 {'msgs': {'errors': [], 'warnings': [], 'infos': infos} },
                                  )
-            if tipus=='C':
-                Curs.objects.filter(nivell=nivell).update(limit_confirmacio=datalimit, confirmacio_oberta=True)
-            else:
+                # Marca Preinscripcions 'Enviada' del mateix nivell com a 'Caducada'
+                # Així s'evita que preinscripcions anteriors puguin continuar la matrícula
+                Preinscripcio.objects.filter(estat='Enviada', codiestudis=nivell.nom_nivell, any=nany).update(estat='Caducada')
                 nivell.limit_matricula=datalimit
                 nivell.matricula_oberta=True
+                nivell.preexclusiva=preexclusiva
+                if preexclusiva:
+                    Curs.objects.filter(nivell=nivell).update(limit_confirmacio=None, confirmacio_oberta=False)
                 nivell.save()
-            enviaIniciMat(nivell, tipus, nany)
-            infos.append('Matrícula activada, emails enviats.')
+            if tipus=='C':
+                Curs.objects.filter(nivell=nivell).update(limit_confirmacio=datalimit, confirmacio_oberta=True)
+                nivell.preexclusiva=False
+                nivell.save()
+            if tipus=='A':
+                nivell.limit_matricula=datalimit
+                nivell.matricula_oberta=True
+                nivell.preexclusiva=False
+                Curs.objects.filter(nivell=nivell).update(limit_confirmacio=None, confirmacio_oberta=False)
+                nivell.save()
+                
+            enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail, senseEmails)
+            if senseEmails:
+                infos.append('Matrícula activada.')
+            else:
+                infos.append('Matrícula activada, emails enviats.')
             return render(
                         request,
                         'resultat.html', 
@@ -1216,7 +1380,7 @@ def ResumLlistat(nany):
     cursos=Curs.objects.filter(confirmacio_oberta=True).distinct().order_by('nom_curs_complert')
     for c in cursos:
         worksheet = workbook.add_worksheet((u'{0}-Confirmades'.format( str( c ) ))[:31])
-        cap=['Cognoms','Nom', 'Grup actual', 'Resposta']
+        cap=['RALC', 'Cognoms', 'Nom', 'Grup actual', 'Curs Mat.', 'Resposta']  # TODO
         worksheet.set_column(0, 0, 25)
         worksheet.set_column(1, 3, 15)
         worksheet.write_row(0,0,cap)
@@ -1224,26 +1388,30 @@ def ResumLlistat(nany):
                 .order_by('grup__nom_grup', 'cognoms', 'nom')
         fila=1
         for a in alumConf:
-            worksheet.write_string(fila,0,a.cognoms)
-            worksheet.write_string(fila,1,a.nom)
-            worksheet.write_string(fila,2,str(a.grup))
-            worksheet.write_string(fila,3,a.matricula.get(any=nany).get_confirma_matricula_display() if MatContestada(a,nany) else 'Sense resposta')
+            worksheet.write_string(fila,0,a.ralc)
+            worksheet.write_string(fila,1,a.cognoms)
+            worksheet.write_string(fila,2,a.nom)
+            worksheet.write_string(fila,3,str(a.grup))
+            worksheet.write_string(fila,4,str(a.matricula.get(any=nany).curs) if ConfContestada(a,nany) else '')
+            worksheet.write_string(fila,5,a.matricula.get(any=nany).get_confirma_matricula_display() if ConfContestada(a,nany) else 'Sense resposta')
             fila=fila+1
         
         worksheet = workbook.add_worksheet((u'{0}-No confirmades'.format( str( c ) ))[:31])
-        cap=['Cognoms','Nom', 'Grup actual', 'Resposta']
+        cap=['RALC', 'Cognoms', 'Nom', 'Grup actual', 'Curs Mat.', 'Resposta']  # TODO
         worksheet.set_column(0, 0, 25)
         worksheet.set_column(1, 3, 15)
         worksheet.write_row(0,0,cap)
-        alumNoConf=Alumne.objects.filter(grup__curs=c, data_baixa__isnull=True).exclude(matricula__any=nany, matricula__confirma_matricula='C')\
-                .order_by('grup__nom_grup', 'cognoms', 'nom')
+        alumNoConf=Alumne.objects.filter(grup__curs=c, data_baixa__isnull=True).order_by('grup__nom_grup', 'cognoms', 'nom')
         fila=1
         for a in alumNoConf:
-            worksheet.write_string(fila,0,a.cognoms)
-            worksheet.write_string(fila,1,a.nom)
-            worksheet.write_string(fila,2,str(a.grup))
-            worksheet.write_string(fila,3,a.matricula.get(any=nany).get_confirma_matricula_display() if MatContestada(a,nany) else 'Sense resposta')
-            fila=fila+1
+            if not ConfContestada(a,nany) or a.matricula.get(any=nany).confirma_matricula!='C':
+                worksheet.write_string(fila,0,a.ralc)
+                worksheet.write_string(fila,1,a.cognoms)
+                worksheet.write_string(fila,2,a.nom)
+                worksheet.write_string(fila,3,str(a.grup))
+                worksheet.write_string(fila,4,str(a.matricula.get(any=nany).curs) if ConfContestada(a,nany) else '')
+                worksheet.write_string(fila,5,a.matricula.get(any=nany).get_confirma_matricula_display() if ConfContestada(a,nany) else 'Sense resposta')
+                fila=fila+1
         
     workbook.close()
     return output

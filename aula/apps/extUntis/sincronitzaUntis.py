@@ -73,7 +73,7 @@ def creaAgrupaments(gruph, llista, di, df, senseGrups):
     for nomg in llista:
         nomg=nomg[3:]
         galum, n, c, g = esGrupAlumnes(nomg,senseGrups)
-
+        
         if (galum):
             # Si és un grup d'alumnes el crea
             grupnomg, warn=creaGrup(n,c,g,di,df)
@@ -81,13 +81,13 @@ def creaAgrupaments(gruph, llista, di, df, senseGrups):
         else:
             warnings.append(u'No es crea Agrupament, grup erroni: \'%s\' --> \'%s\'' % (nomg, str(gruph)) )
             continue
-
+        
         c_agrup=Agrupament.objects.filter(grup_alumnes=grupnomg, grup_horari=gruph)
         if not c_agrup.exists():
             agrup=Agrupament.objects.create(grup_alumnes=grupnomg, grup_horari=gruph)
             agrup.save()
             warnings.append(u'Nou agrupament: \'%s\'' % (agrup))
-            
+    
     return warnings
 
 def fusionaGrups(llgrup, di, df, senseGrups):
@@ -213,7 +213,7 @@ def fusionaGrups(llgrup, di, df, senseGrups):
                 except ObjectDoesNotExist:
                     pass
                 return grupc, tipus, warnings            
-
+            
             grups=''
             for g in llista:
                 grups=grups+g[3:]
@@ -228,7 +228,7 @@ def fusionaGrups(llgrup, di, df, senseGrups):
 def creaGrup(n, c, g, di, df):
     '''
     Crea el grup.
-
+    
     n nivell
     c curs
     g grup (i subgrup)
@@ -273,7 +273,7 @@ def creaGrup(n, c, g, di, df):
                 grup.descripcio_grup=g
         warnings.append(u'Nou grup: \'%s\'' % (grup))
         grup.save()
-
+    
     return grup, warnings
 
 def sincronitza(xml, usuari):

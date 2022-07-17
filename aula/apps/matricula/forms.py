@@ -1,4 +1,5 @@
 from django import forms
+from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.matricula.models import Matricula
 from aula.apps.sortides.models import QuotaPagament
 from aula.apps.alumnes.models import Curs, Nivell
@@ -88,7 +89,7 @@ class DadesForm2b(forms.ModelForm):
             self.fields['bonificacio'].help_text='No s\'apliquen taxes en aquest curs'
             self.fields['bonificacio'].disabled=True
         pag=QuotaPagament.objects.filter(alumne=mat.alumne, quota__any=mat.any, quota__tipus=taxes, pagament_realitzat=True)
-        if pag:
+        if pag and mat.acceptar_condicions:
             self.fields['curs_complet'].disabled=True
             self.fields['quantitat_ufs'].disabled=True
             self.fields['llistaufs'].disabled=True
@@ -110,9 +111,11 @@ class DadesForm2b(forms.ModelForm):
 
 
 class CustomClearableFileInput(forms.ClearableFileInput):
+    from django.utils.safestring import mark_safe
+    
     template_name = 'widgets/uploadfiles.html'
     eliminaFitxers = []
-    input_text = 'Selecciona els arxius necessaris'
+    input_text = mark_safe('<b>Selecciona TOTS els arxius necessaris</b>')
 
     def value_from_datadict(self, data, files, name):
         upload = super().value_from_datadict(data, files, name)
@@ -133,13 +136,17 @@ class DadesForm3(forms.ModelForm):
     fitxers = forms.FileField(widget=CustomClearableFileInput(attrs={'multiple': True}))
 
     def __init__(self, *args, **kwargs):
+        from django.utils.safestring import mark_safe
+
         super(DadesForm3, self).__init__(*args, **kwargs)
         self.fields['acceptar_condicions'].required=True
         mat=kwargs['initial'].get('matricula')
         if mat.curs.nivell.nom_nivell=='ESO':
-            self.fields['fitxers'].help_text="Carnet de vacunes, targeta sanitària, documents identificació."
+            self.fields['fitxers'].help_text=mark_safe('<b style="color:darkgreen">Targeta sanitària, carnet de vacunacions, \
+                            llibre de família, documents identificació ...</b>')
         else:
-            self.fields['fitxers'].help_text="Targeta sanitària, documents identificació, titulació aportada (ESO, Batxillerat, ...), compliment de les bonificacions."
+            self.fields['fitxers'].help_text=mark_safe('<b style="color:darkgreen">Targeta sanitària, documents identificació, \
+                            titulació aportada (ESO, Batxillerat, ...), compliment de les bonificacions ...</b>')
         importTaxes = kwargs['initial'].get('importTaxes')
         docs=kwargs['initial'].get('documents')
         self.fields['fitxers'].widget.clear_checkbox_label='Esborra'
@@ -165,7 +172,8 @@ class DadesForm3(forms.ModelForm):
             for key in files.keys():
                 for value in files.getlist(key):
                     if value.size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
-                        self.add_error('fitxers', "Mida màxima de cada fitxer és 20MB")
+                        self.add_error('fitxers', "Mida màxima de cada fitxer és "+
+                                       str(settings.FILE_UPLOAD_MAX_MEMORY_SIZE/1024/1024)+"MB")
         nous = cleaned_data.get('fitxers')
         esborra=self.fields['fitxers'].widget.eliminaFitxers
         antics=self.fields['fitxers'].widget.attrs['files']
@@ -177,20 +185,6 @@ class DadesForm3(forms.ModelForm):
     class Meta:
         model=Matricula
         fields = ['quotaMat', 'importTaxes', 'fracciona_taxes', 'fitxers', 'acceptar_condicions',]
-
-class AcceptaCond(forms.ModelForm):
-    
-    def __init__(self, user, *args, **kwargs):
-        super(AcceptaCond, self).__init__(*args, **kwargs)
-        self.fields['acceptar_condicions'].required=True
-        self.fields['acceptar_condicions'].label=""
-        self.fields['alumne_correu'].required=True
-        self.fields['alumne_correu'].label="Correu per notificacions"
-        self.fields['alumne_correu'].initial=user.alumne.correu
-
-    class Meta:
-        model=Matricula
-        fields = ['alumne_correu', 'acceptar_condicions',]
 
 class ConfirmaMat(forms.ModelForm):
     
@@ -245,6 +239,25 @@ class ConfirmaMat(forms.ModelForm):
         if opcions=='N' and condicions==None:
             cleaned_data['acceptar_condicions'] = False
         return cleaned_data
+
+class escollirMat(forms.Form):
+    
+    escollida=forms.ChoiceField(label=u"Selecciona la matrícula que vols fer servir",
+                                required=True,
+                                widget=forms.RadioSelect())
+    
+    def __init__(self, user, alumne, nany, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada')
+        mt=Matricula.objects.filter(alumne=alumne, any=nany)
+        self.fields['escollida'].choices=[
+                                    ('M','Matrícula actual a {0}{1}'.format(
+                                        mt[0].curs.nivell.nom_nivell,mt[0].curs.nom_curs)
+                                    ),
+                                    ('P','Fer nova matrícula segons preinscripció a {0}{1} ({2})'.format(
+                                        p[0].codiestudis,p[0].curs,p[0].torn)
+                                    ),
+                                    ]
 
 def year_choices():
     '''
@@ -312,6 +325,13 @@ class ActivaMatsForm(forms.Form):
                                          ('C','Confirmacions'),
                                          ('A','Altres'),
                                          ])
+    ultimCursNoEmail=forms.BooleanField(label=u'No envia emails a alumnes d\'últim curs',required = False,
+                                help_text=u'Sense emails a alumnes d\'últim curs, segurament ja tenen el títol.')
+    senseEmails=forms.BooleanField(label=u'No envia emails',required = False,
+                                help_text=u'Si ja s\'ha donat la informació directament als alumnes. \
+                                Opció adequada si no es pot concretar qui continua, canvia de centre o obté el títol.')
+    exclusiu=forms.BooleanField(label=u'Exclusivament preinscripcions',required = False,
+                                help_text=u'Només es permet matrícula amb preinscripció. Els alumnes que continuen al centre no podran accedir.')
     
     def __init__(self, user, *args, **kwargs):
         super(ActivaMatsForm, self).__init__(*args, **kwargs)

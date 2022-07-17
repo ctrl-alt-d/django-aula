@@ -80,3 +80,9 @@ def getDocuments(matricula):
     Documents de la matrícula
     '''
     return Document.objects.filter(matricula=matricula).order_by('pk')
+
+from urllib.parse import unquote_plus
+
+@register.filter
+def urldecode(value):
+    return unquote_plus(value)

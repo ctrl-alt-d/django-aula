@@ -69,6 +69,7 @@ from django.http.response import HttpResponse
 from django.db.models.deletion import ProtectedError
 from django.apps import apps
 from django.db.models import Q
+from aula.apps.presenciaSetmanal.views import ProfeNoPot
 
 
 #vistes -----------------------------------------------------------------------------------
@@ -1159,7 +1160,7 @@ def sancio( request, pk ):
                 text = u"""Creada sanció de l'alumne {0}.""".format( sancio.alumne )
             )   
 
-    except ValidationError as e:
+    except (ProfeNoPot, ValidationError) as e:
         resultat = { 'errors': list( itertools.chain( *e.message_dict.values() ) ), 
                     'warnings':  [], 'infos':  [], 'url_next': url_next }
         return render(
@@ -1634,7 +1635,7 @@ def esborrarSancio( request, pk ):
         sancio.delete()
 
         
-    except ValidationError as e:
+    except (ProfeNoPot, ValidationError) as e:
         #Com que no és un formulari de model cal tractar a mà les incidències del save:
         for _, v in e.message_dict.items():
             for x in v:
