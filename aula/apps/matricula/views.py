@@ -66,7 +66,7 @@ def FlagMatriculaOberta(alumne, preinscripcio=None):
     '''
     if alumne.grup.curs.nivell.matricula_oberta: return True
     if not bool(preinscripcio): return False
-    curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
+    curs=preinscripcio.getCurs()
     return curs.nivell.matricula_oberta
     
 def MatriculaOberta(alumne, preinscripcio=None):
@@ -79,7 +79,7 @@ def MatriculaOberta(alumne, preinscripcio=None):
             (django.utils.timezone.now().date()<=alumne.grup.curs.nivell.limit_matricula)):
             return True
         if not bool(preinscripcio): return False
-        curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
+        curs=preinscripcio.getCurs()
         return (not curs.nivell.limit_matricula or django.utils.timezone.now().date()<=curs.nivell.limit_matricula)
     return False
 
@@ -120,7 +120,7 @@ def matriculaDoble(alumne, nany):
     mt=Matricula.objects.filter(alumne=alumne, any=nany)
     if not mt or not p: return False
     mt=mt[0]
-    curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+    curs=p.getCurs()
     if curs==mt.curs: return False
     #  Curs preinscripció != curs matrícula
     if not mt.acceptar_condicions or mt.confirma_matricula=='N':
@@ -178,7 +178,7 @@ def situacioMat(alumne, nany):
     p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada') # Només preinscripcions actuals, última tanda
     if p: 
         p=p[0]
-        curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+        curs=p.getCurs()
     else: 
         p=None
         curs=alumne.grup.curs
@@ -228,7 +228,7 @@ def enviamail(subject, message, from_email, to_email, connection=None):
         ep.save()
         return 0
 
-def mailMatricula(tipus, email, alumne, connection=None):
+def mailMatricula(tipus, curs, email, alumne, connection=None):
     '''
     Envia email segons tipus de matrícula
     tipus de missatge ('P', 'A', 'C', 'F')
@@ -236,6 +236,7 @@ def mailMatricula(tipus, email, alumne, connection=None):
         A  Altres matrícules
         C  Confirmació de matrícula
         F  Finalitza matrícula
+    curs a on s'ha de fer la matrícula
     email adreces email destinataries, pot ser una llista.
     alumne objecte Alumne
     connection servidor correu
@@ -258,12 +259,12 @@ def mailMatricula(tipus, email, alumne, connection=None):
         'F': u"Matrícula completada - {0}".format(settings.NOM_CENTRE ),
         }
     
-    if alumne.grup.curs.nivell.limit_matricula:
-        data_mat="La data límit és {0}.".format(alumne.grup.curs.nivell.limit_matricula.strftime("%A %-d %B"))
+    if curs.nivell.limit_matricula:
+        data_mat="La data límit és {0}.".format(curs.nivell.limit_matricula.strftime("%A %-d %B"))
     else:
         data_mat=''
-    if alumne.grup.curs.limit_confirmacio:
-        data_conf="La data límit és {0}.".format(alumne.grup.curs.limit_confirmacio.strftime("%A %-d %B"))
+    if curs.limit_confirmacio:
+        data_conf="La data límit és {0}.".format(curs.limit_confirmacio.strftime("%A %-d %B"))
     else:
         data_conf=''
     
@@ -300,7 +301,7 @@ def mailMatricula(tipus, email, alumne, connection=None):
         }
     cos=cosmissatge.get(tipus)
     if tipus=='P':
-        if alumne.grup.curs.nivell.nom_nivell=='ESO':
+        if curs.nivell.nom_nivell=='ESO':
             cos="\n".join([cos,"Durant el procés de matrícula serà necessari pujar la documentació requerida:",
             "      DNI alumne/a (si el té)",
             "      DNI del pare, mare o tutors legals",
@@ -398,7 +399,7 @@ def creaAlumne(preinscripcio):
     al=alumneExisteix(preinscripcio.ralc)
     if not al:
         al=Alumne(ralc=preinscripcio.ralc)
-        curs=Curs.objects.get(nivell__nom_nivell=preinscripcio.codiestudis, nom_curs=preinscripcio.curs)
+        curs=preinscripcio.getCurs()
         grup , _ = creaGrup(curs.nivell.nom_nivell,curs.nom_curs,'-',None,None)
         al.grup = grup
         al.nom = preinscripcio.nom
@@ -589,7 +590,7 @@ def alumne2Mat(alumne, nany=None, p=None):
             mat.rp1_correu=p.correu
             mat.rp2_nom=p.nomtut2+" "+p.cognomstut2 if p.nomtut2 and p.cognomstut2 else ''
             mat.preinscripcio=p
-            curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+            curs=p.getCurs()
             mat.curs=curs
         else:
             mat.nom=alumne.nom
@@ -806,7 +807,8 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
         self.object.save()
         updateAlumne(self.object.alumne, self.object)
         gestionaPag(self.object, 0)
-        mailMatricula(self.object.estat, self.object.alumne.get_correus_relacio_familia(), self.object.alumne)
+        mailMatricula(self.object.estat, self.object.alumne.grup.curs, 
+                      self.object.alumne.get_correus_relacio_familia(), self.object.alumne)
         return HttpResponseRedirect(self.get_success_url())
 
 @login_required
@@ -898,7 +900,8 @@ def changeEstat(request, pk, tipus):
     mat.estat='F'
     mat.save()
     updateAlumne(mat.alumne, mat)
-    if mat.confirma_matricula!='N': mailMatricula(mat.estat, mat.alumne.get_correus_relacio_familia(), mat.alumne)
+    if mat.confirma_matricula!='N':
+        mailMatricula(mat.estat, mat.alumne.grup.curs, mat.alumne.get_correus_relacio_familia(), mat.alumne)
     return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
                                 kwargs={'curs':mat.curs.id, 'nany':mat.any, 'tipus':tipus},
                                 ))
@@ -1172,7 +1175,7 @@ def matDobleview(request):
                     else:
                         p=Preinscripcio.objects.get(ralc=user.alumne.ralc, any=nany, estat='Enviada')
                         mt=Matricula.objects.get(alumne=user.alumne, any=nany)
-                        curs=Curs.objects.get(nivell__nom_nivell=p.codiestudis, nom_curs=p.curs)
+                        curs=p.getCurs()
                         QuotaPagament.objects.filter(alumne=user.alumne, quota__any=nany,
                              quota__tipus__nom__in=[curs.nivell.taxes, settings.CUSTOM_TIPUS_QUOTA_MATRICULA,],
                              pagament_realitzat=False).delete()
@@ -1234,7 +1237,8 @@ def enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail=False, senseEmails=False
         for p in Preinscripcio.objects.filter(codiestudis=nivell.nom_nivell, any=nany, estat='Assignada', 
                                               naixement__isnull=False):
             alumne=creaAlumne(p)
-            if not senseEmails: mailMatricula(tipus, p.correu, alumne, connection)
+            curs=p.getCurs()
+            if not senseEmails: mailMatricula(tipus, curs, p.correu, alumne, connection)
             p.estat='Enviada'
             p.save()
     if tipus=='A' or tipus=='C':
@@ -1243,7 +1247,7 @@ def enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail=False, senseEmails=False
             correus=a.get_correus_relacio_familia()
             if not correus: correus=a.get_correus_tots()
             if següentCurs(a) or not ultimCursNoEmail:
-                if not senseEmails: mailMatricula(tipus, correus, a, connection)
+                if not senseEmails: mailMatricula(tipus, a.curs, correus, a, connection)
     # tanca la connexió
     if connection: connection.close()
 

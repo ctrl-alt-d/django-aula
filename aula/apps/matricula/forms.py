@@ -7,19 +7,6 @@ from aula.utils.widgets import DateTextImput
 import django.utils.timezone
 from django.conf import settings
 
-def obteCurs(preinscripcio):
-    '''
-    Retorna el curs segons la preinscripció
-    Per defecte 1r ESO
-    
-    '''
-    
-    if not preinscripcio:
-        return Curs.objects.get(nivell__nom_nivell='ESO', nom_curs=1)
-    codiestudis=preinscripcio.codiestudis
-    curs=preinscripcio.curs
-    return Curs.objects.get(nivell__nom_nivell=codiestudis, nom_curs=curs)
-
 class DadesForm1(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
