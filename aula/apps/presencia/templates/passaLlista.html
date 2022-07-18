@@ -91,23 +91,21 @@
             $("div[id^='prediccio']").remove();
             {% for f in formset %}
               if(! $('#label_id_{{f.prefix}}-estat_2').hasClass('active') ) {
+                $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
+                $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
                 $('#label_id_{{f.prefix}}-estat_3').removeClass('active');
                 $('#rad_id_{{f.prefix}}-estat_3').prop("checked", false);
+                $('#label_id_{{f.prefix}}-estat_4').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_4').prop("checked", false);
                 {% if f.hora_anterior == 0  %}
-                  $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
-                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
                   $('#label_id_{{f.prefix}}-estat_0').addClass('active');
                   $('#rad_id_{{f.prefix}}-estat_0').prop("checked", true);
                 {% elif f.hora_anterior == 1  %}
-                  $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
-                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
                   $('#label_id_{{f.prefix}}-estat_1').addClass('active');
                   $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
 				{% elif f.hora_anterior == 2  %}
-				  $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
-                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
-                  $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
-                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
                   $('#label_id_{{f.prefix}}-estat_4').addClass('active');
                   $('#rad_id_{{f.prefix}}-estat_4').prop("checked", true);
                 {% endif %}
@@ -120,18 +118,23 @@
             $("div[id^='prediccio']").remove();
             {% for f in formset %}
               if(! $('#label_id_{{f.prefix}}-estat_2').hasClass('active') ) {
+                $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
+                $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
                 $('#label_id_{{f.prefix}}-estat_3').removeClass('active');
                 $('#rad_id_{{f.prefix}}-estat_3').prop("checked", false);
+                $('#label_id_{{f.prefix}}-estat_4').removeClass('active');
+                $('#rad_id_{{f.prefix}}-estat_4').prop("checked", false);
                 {% if f.prediccio == 0 %}
-                  $('#label_id_{{f.prefix}}-estat_1').removeClass('active');
-                  $('#rad_id_{{f.prefix}}-estat_1').prop("checked", false);
                   $('#label_id_{{f.prefix}}-estat_0').addClass('active');
                   $('#rad_id_{{f.prefix}}-estat_0').prop("checked", true);
                 {% elif f.prediccio == 1 %}
-                  $('#label_id_{{f.prefix}}-estat_0').removeClass('active');
-                  $('#rad_id_{{f.prefix}}-estat_0').prop("checked", false);
                   $('#label_id_{{f.prefix}}-estat_1').addClass('active');
                   $('#rad_id_{{f.prefix}}-estat_1').prop("checked", true);
+				{% elif f.prediccio == 2 %}
+                  $('#label_id_{{f.prefix}}-estat_4').addClass('active');
+                  $('#rad_id_{{f.prefix}}-estat_4').prop("checked", true);
                 {% endif %}
                 $( "label[for|='id_{{f.prefix}}-estat']" ).after( "<div id='prediccio_{{f.prefix}}'><div style='max-width:100px;' class='pull-right hidden-xs label label-{{f.avis}}'>Predicció {{f.avis_pct}}</div></div>" );
               }
