@@ -188,8 +188,8 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil, alumne.rp1_correu]
-    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil, alumne.rp2_correu]
+    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil if alumne.rp1_mobil else alumne.rp1_telefon, alumne.rp1_correu]
+    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil if alumne.rp2_mobil else alumne.rp2_telefon, alumne.rp2_correu]
 
     infoForm = [
           ('Alumne',unicode( alumne) ),

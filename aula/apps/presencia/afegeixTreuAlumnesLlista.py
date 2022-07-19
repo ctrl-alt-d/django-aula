@@ -97,7 +97,7 @@ class afegeixThread(Thread):
 
         if len(errors)>0:
             missatge = FI_PROCES_AFEGIR_ALUMNES_AMB_ERRORS
-            msg.afegeix_error([missatge,])
+            msg.afegeix_error([missatge.format( self.impartir ),])
             msg.tipus_de_missatge = tipusMissatge(missatge)
             importancia = 'VI'
             msg.save()

@@ -807,6 +807,9 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
         self.object.save()
         updateAlumne(self.object.alumne, self.object)
         gestionaPag(self.object, 0)
+        grup , _ = creaGrup(self.object.curs.nivell.nom_nivell,self.object.curs.nom_curs,'-',None,None)
+        self.object.alumne.grup=grup
+        self.object.alumne.save()
         mailMatricula(self.object.estat, self.object.alumne.grup.curs, 
                       self.object.alumne.get_correus_relacio_familia(), self.object.alumne)
         return HttpResponseRedirect(self.get_success_url())
@@ -1088,6 +1091,9 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         infos=[]
         url_next=[]
         gestionaPag(mat, importTaxes)
+        grup , _ = creaGrup(mat.curs.nivell.nom_nivell,mat.curs.nom_curs,'-',None,None)
+        mat.alumne.grup=grup
+        mat.alumne.save()
         url=format_html("<a href='{}'>{}</a>",
                   reverse_lazy('relacio_families__informe__el_meu_informe'),
                   'Activitats/Pagaments')            
@@ -1129,7 +1135,7 @@ def OmpleDades(request):
                     fields1 = ['rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',]
                     fields2 = ['curs_complet', 'quantitat_ufs', 'bonificacio', 'llistaufs',]
                     fields3 = ['fracciona_taxes', 'acceptar_condicions',]
-                    if user.alumne.getNivellCustom()=='CICLES':
+                    if mat.curs.nivell.nom_nivell not in ['ESO','BAT']:
                         form_list = [DadesForm1, DadesForm2, DadesForm2b, DadesForm3]
                         initial = {'0': dict([(f,getattr(mat,f)) for f in fields0]),
                                    '1': dict([(f,getattr(mat,f)) for f in fields1]),
