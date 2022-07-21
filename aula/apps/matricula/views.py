@@ -1135,7 +1135,7 @@ def OmpleDades(request):
                     fields1 = ['rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',]
                     fields2 = ['curs_complet', 'quantitat_ufs', 'bonificacio', 'llistaufs',]
                     fields3 = ['fracciona_taxes', 'acceptar_condicions',]
-                    if mat.curs.nivell.nom_nivell not in ['ESO','BAT']:
+                    if mat.curs.nivell.nom_nivell in settings.CUSTOM_NIVELLS['CICLES']:
                         form_list = [DadesForm1, DadesForm2, DadesForm2b, DadesForm3]
                         initial = {'0': dict([(f,getattr(mat,f)) for f in fields0]),
                                    '1': dict([(f,getattr(mat,f)) for f in fields1]),
