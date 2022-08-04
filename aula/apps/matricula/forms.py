@@ -23,6 +23,10 @@ class DadesForm1(forms.ModelForm):
             nivell=self.initial['curs'].nivell
             self.fields['curs'].queryset = Curs.objects.filter(nivell=nivell,
                                                     ).order_by('nom_curs_complert').distinct()
+        self.fields['adreca'].required=True
+        self.fields['localitat'].required=True
+        self.fields['cp'].required=True
+        
     def clean(self):
         from aula.apps.usuaris.tools import testEmail
         
@@ -39,6 +43,12 @@ class DadesForm1(forms.ModelForm):
         fields = ['curs', 'nom','cognoms', 'centre_de_procedencia','data_naixement','alumne_correu','adreca','localitat','cp',]
 
 class DadesForm2(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['rp1_nom'].required=True
+        self.fields['rp1_telefon'].required=True
+        self.fields['rp1_correu'].required=True
     
     def clean(self):
         from aula.apps.usuaris.tools import testEmail

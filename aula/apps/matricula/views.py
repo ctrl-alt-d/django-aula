@@ -807,10 +807,7 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
         self.object.save()
         updateAlumne(self.object.alumne, self.object)
         gestionaPag(self.object, 0)
-        grup , _ = creaGrup(self.object.curs.nivell.nom_nivell,self.object.curs.nom_curs,'-',None,None)
-        self.object.alumne.grup=grup
-        self.object.alumne.save()
-        mailMatricula(self.object.estat, self.object.alumne.grup.curs, 
+        mailMatricula(self.object.estat, self.object.curs, 
                       self.object.alumne.get_correus_relacio_familia(), self.object.alumne)
         return HttpResponseRedirect(self.get_success_url())
 
@@ -842,7 +839,7 @@ def Confirma(request, nany):
                         item.confirma_matricula=form.cleaned_data['opcions']
                         item.acceptacio_en=django.utils.timezone.now()
                         item.save()
-                        if item.confirma_matricula=='C' and item.quota: #TODO millor fer ara els pagaments ?
+                        if item.confirma_matricula=='C' and item.quota:
                             creaPagament(item)
                             url=format_html("<a href='{}'>{}</a>",
                                             reverse_lazy('relacio_families__informe__el_meu_informe'),
@@ -1340,8 +1337,10 @@ def totalsAlumnes(nany):
     mes=datetime.timedelta(days=30)
     quantitats=Curs.objects.filter(grup__alumne__isnull=False, data_inici_curs__isnull=False).distinct().order_by('nom_curs_complert') \
                 .annotate(inici=Count('grup__alumne', 
-                            filter=Q(~Q(grup__alumne__data_baixa__lt=(F('data_inici_curs') + mes)) & 
-                                      Q(grup__alumne__data_alta__lte=(F('data_inici_curs') + mes))),
+                            filter=Q(
+                                (Q(grup__alumne__data_baixa__isnull=True) | Q(grup__alumne__data_baixa__gt=(F('data_inici_curs') + mes))) &
+                                Q(grup__alumne__data_alta__lte=(F('data_inici_curs') + mes))
+                                      ),
                             distinct=True
                             )) \
                 .annotate(ara=Count('grup__alumne', 
@@ -1390,7 +1389,7 @@ def ResumLlistat(nany):
     cursos=Curs.objects.filter(confirmacio_oberta=True).distinct().order_by('nom_curs_complert')
     for c in cursos:
         worksheet = workbook.add_worksheet((u'{0}-Confirmades'.format( str( c ) ))[:31])
-        cap=['RALC', 'Cognoms', 'Nom', 'Grup actual', 'Curs Mat.', 'Resposta']  # TODO
+        cap=['RALC', 'Cognoms', 'Nom', 'Grup actual', 'Curs Mat.', 'Resposta']
         worksheet.set_column(0, 0, 25)
         worksheet.set_column(1, 3, 15)
         worksheet.write_row(0,0,cap)
@@ -1407,7 +1406,7 @@ def ResumLlistat(nany):
             fila=fila+1
         
         worksheet = workbook.add_worksheet((u'{0}-No confirmades'.format( str( c ) ))[:31])
-        cap=['RALC', 'Cognoms', 'Nom', 'Grup actual', 'Curs Mat.', 'Resposta']  # TODO
+        cap=['RALC', 'Cognoms', 'Nom', 'Grup actual', 'Curs Mat.', 'Resposta']
         worksheet.set_column(0, 0, 25)
         worksheet.set_column(1, 3, 15)
         worksheet.write_row(0,0,cap)
