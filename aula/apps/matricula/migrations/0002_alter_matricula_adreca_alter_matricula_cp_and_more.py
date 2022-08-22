@@ -13,31 +13,31 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='matricula',
             name='adreca',
-            field=models.CharField(blank=True, default='', max_length=250, null=True, verbose_name='Adreça'),
+            field=models.CharField(blank=True, default='', max_length=250, verbose_name='Adreça'),
         ),
         migrations.AlterField(
             model_name='matricula',
             name='cp',
-            field=models.CharField(blank=True, default='', max_length=10, null=True, verbose_name='Codi postal'),
+            field=models.CharField(blank=True, default='', max_length=10, verbose_name='Codi postal'),
         ),
         migrations.AlterField(
             model_name='matricula',
             name='localitat',
-            field=models.CharField(blank=True, default='', max_length=250, null=True, verbose_name='Localitat'),
+            field=models.CharField(blank=True, default='', max_length=250, verbose_name='Localitat'),
         ),
         migrations.AlterField(
             model_name='matricula',
             name='rp1_correu',
-            field=models.EmailField(blank=True, default='', max_length=254, null=True, verbose_name='Correu 1r responsable'),
+            field=models.EmailField(blank=True, default='', max_length=254, verbose_name='Correu 1r responsable'),
         ),
         migrations.AlterField(
             model_name='matricula',
             name='rp1_nom',
-            field=models.CharField(blank=True, default='', max_length=250, null=True, verbose_name='Nom complet 1r responsable'),
+            field=models.CharField(blank=True, default='', max_length=250, verbose_name='Nom complet 1r responsable'),
         ),
         migrations.AlterField(
             model_name='matricula',
             name='rp1_telefon',
-            field=models.CharField(blank=True, default='', max_length=15, null=True, verbose_name='Telèfon 1r responsable'),
+            field=models.CharField(blank=True, default='', max_length=15, verbose_name='Telèfon 1r responsable'),
         ),
     ]

@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from aula.apps.alumnes.models import Nivell, Curs
 
 class Preinscripcio(models.Model):
@@ -53,7 +54,7 @@ class Preinscripcio(models.Model):
     def getCurs(self):
         try:
             return Curs.objects.get(nivell__nom_nivell=self.codiestudis, nom_curs=self.curs)
-        except Exception:
+        except ObjectDoesNotExist:
             return None
     
 class Nivell2Aula(models.Model):

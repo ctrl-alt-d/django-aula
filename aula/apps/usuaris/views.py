@@ -297,7 +297,7 @@ def elsProfessors( request ):
         
 
 def loginUser( request ):
-    from aula.apps.matricula.views import get_url_alumne
+    from aula.apps.matricula.viewshelper import get_url_alumne
     
     head=u'Login' 
 
@@ -419,7 +419,7 @@ def recoverPasswd( request , username, oneTimePasswd ):
     return alumneRecoverPasswd( request , username, oneTimePasswd )
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
-    from aula.apps.matricula.views import get_url_alumne, MatriculaOberta
+    from aula.apps.matricula.viewshelper import get_url_alumne, MatriculaOberta
     
     # Comprova que correspongui a dades vàlides actuals
     if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):

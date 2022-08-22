@@ -51,7 +51,7 @@ from django.contrib import messages
 import json
 from django.utils.html import escapejs
 import django.utils.timezone
-from aula.apps.matricula.views import inforgpd
+from aula.apps.matricula.viewshelper import inforgpd
 from aula.apps.missatgeria.models import Missatge
 
 #@login_required
