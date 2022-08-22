@@ -246,10 +246,9 @@ def initComplet():
         ResumAnualAlumne.objects.filter(seguiment_tutorial__alumne__in=esborrar).delete()
         SeguimentTutorial.objects.filter(alumne__in=esborrar).delete()
         DadesAddicionalsAlumne.objects.filter(alumne__in=esborrar).delete()
-        Preinscripcio.objects.filter(matricula__alumne__in=esborrar).delete()
-        Preinscripcio.objects.filter(matricula__isnull=True, any__lt=avui.date().year).delete()
         Document.objects.filter(matricula__alumne__in=esborrar).delete()
         Matricula.objects.filter(alumne__in=esborrar).delete()
+        Preinscripcio.objects.filter(matricula__isnull=True, any__lt=avui.date().year).delete()
         
         #Esborra les baixes
         esborrar.delete()
