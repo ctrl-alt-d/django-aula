@@ -51,7 +51,7 @@ from django.contrib import messages
 import json
 from django.utils.html import escapejs
 import django.utils.timezone
-from aula.apps.matricula.views import inforgpd
+from aula.apps.matricula.viewshelper import inforgpd
 from aula.apps.missatgeria.models import Missatge
 
 #@login_required
@@ -188,8 +188,9 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil, alumne.rp1_correu]
-    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil, alumne.rp2_correu]
+    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil if alumne.rp1_mobil else alumne.rp1_telefon, alumne.rp1_correu]
+    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil if alumne.rp2_mobil else alumne.rp2_telefon, alumne.rp2_correu]
+
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
@@ -197,6 +198,7 @@ def configuraConnexio( request , pk ):
           ('Dades responsable 2', ' - '.join(filter(None,dades_resp2))),
           ('Altres telèfons alumne', alumne.altres_telefons),
     ]
+
 
     if alumne.dadesaddicionalsalumne_set.exists():
         for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:

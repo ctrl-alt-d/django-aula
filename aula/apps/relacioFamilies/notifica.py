@@ -7,21 +7,35 @@ from django.conf import settings
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.apps.sortides.models import NotificaSortida, QuotaPagament
 from aula.apps.sortides.utils_sortides import notifica_sortides
+from django.core import mail
 from django.core.mail import EmailMessage
 from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
-from aula.apps.relacioFamilies.models import EmailPendent
+from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
 def notifica_pendents():
-    for ep in EmailPendent.objects.all():
-        r=0
-        try:
-            email = EmailMessage(subject=ep.subject, body=ep.message, from_email=ep.fromemail, reply_to=[ep.fromemail], bcc=eval(ep.toemail))
-            r=email.send(fail_silently=False)
-        except Exception as e:
-            print (u'Error {0} enviant missatge pendent a {1}'.format(e, eval(ep.toemail)))
-            continue
-        if r==1: ep.delete()
+    connection = mail.get_connection()
+    # Obre la connexió
+    connection.open()
 
+    for ep in EmailPendent.objects.all():
+        if not bool(ep.toemail):
+            ep.delete()
+            continue
+        fitxers=DocAttach.objects.filter(email=ep.id)
+        _, errors, pendents=enviaEmail(subject=ep.subject, body=ep.message, from_email=ep.fromemail, 
+                                               bcc=list(eval(ep.toemail)), connection=connection, attachments=fitxers)
+        if errors>0:
+            ep.toemail=pendents
+            ep.save()
+            print (u'Error enviant missatge pendent a {0}'.format(ep.toemail))
+            return
+        if errors==0:
+            #TODO  missatge informatiu, falta usuari
+            ep.delete()
+        
+    # tanca la connexió
+    connection.close()
+    
 def notifica():
     from aula.apps.alumnes.models import Alumne
     from django.db import transaction
@@ -33,7 +47,7 @@ def notifica():
     from aula.apps.presencia.models import ControlAssistencia
     from django.core.mail import send_mail, EmailMessage
     from aula.apps.usuaris.models import Accio
-        
+    
     urlDjangoAula = settings.URL_DJANGO_AULA
     textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL
     
@@ -182,18 +196,83 @@ def notifica():
         except ObjectDoesNotExist:
             pass
 
+def pendentEmail(subject, body, from_email, bcc, attachments=None):
+    '''
+    Prepara un EmailPendent.
+    bcc és una llista
+    '''
+    
+    ep=EmailPendent(subject=subject, message=body, fromemail=from_email, toemail=str(bcc))
+    ep.save()                
+    if attachments:
+        for f in attachments:
+            file_instance = DocAttach(fitxer=f)
+            file_instance.email=ep
+            file_instance.save()
+    
+def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None):
+    '''
+    Envia email a llista de destinataris bcc. Fracciona la llista de destinataris si fa falta.
+    bcc és una llista.
+    retorna quantitat ok, quantitat errors, llista destinataris pendents
+    '''
+    
+    email = EmailMessage(subject, body, from_email, reply_to=[from_email], connection=connection)
+    cont=0
+    total=len(bcc)
+    correctes=0
+    errors=0
+    maxdest=settings.CUSTOM_MAX_EMAIL_RECIPIENTS
+    if maxdest<=0: maxdest=10
+        
+    if attachments:
+        for f in attachments:
+            if isinstance(f, DocAttach):
+                name=f.fitxer.name
+                content_type=None
+                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name))
+            else:
+                name=f.name
+                content_type=f.content_type
+            f.seek(0)
+            email.attach(name, f.read(), content_type)
+
+    while cont<total:
+        if cont+maxdest<=total:
+            destinataris=bcc[cont:cont+maxdest]
+        else:
+            destinataris=bcc[cont:total]
+
+        try:          
+            email.to=[]
+            email.cc=[]
+            email.bcc=destinataris
+            if settings.DEBUG:
+                print (u'Enviant mail a {0} adreces'.format(len(destinataris)))
+            if email.send()==1: correctes=correctes + len(destinataris)
+            else:
+                errors = total-cont
+                return correctes, errors, bcc[cont:total]
+        except:
+            errors = total-cont
+            return correctes, errors, bcc[cont:total]
+        
+        cont=cont+maxdest    
+
+    return correctes, 0, []
+
 def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     '''Envia email a tots els correus d'alumnes
     
     Envia a tots el mateix assumpte, missatge i fitxers adjunts.
     Utilitza la configuració dels settings per al remitent
     Retorna la quantitat de correus als que s'ha enviat el missatge i la quantitat als que no
+    Deixa pendents els que no s'han enviat. Els missatges pendents s'envien amb l'script notifica_families.sh. 
     '''
     
     from aula.apps.alumnes.models import Alumne
     from django.db.models import Q
     from django.utils.datetime_safe import datetime
-    from django.core import mail
       
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
@@ -209,7 +288,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
             informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
 
     correus_alumnes = Alumne.objects.filter(q_no_es_baixa).values_list(
-        'correu_relacio_familia_pare','correu_relacio_familia_mare') # ,'correu_tutors', 'rp1_correu', 'rp2_correu', 'correu')
+        'correu_relacio_familia_pare','correu_relacio_familia_mare')
     
     # crea llista de correus
     correus_alumnes=[item for sublist in list(correus_alumnes) for item in sublist]
@@ -222,59 +301,33 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     # Obre la connexió
     connection.open()
     
-    cont=0
-    total=len(correus_alumnes)
-    correctes=0
-    errors=0
-    maxdest=settings.CUSTOM_MAX_EMAIL_RECIPIENTS
-    if maxdest<=0: maxdest=1
-    
     subject = u"{0} - {1}".format(assumpte, settings.NOM_CENTRE )
-    body = [u"{0}".format( missatge ),
+    body = u'\n'.join(
+        [u"{0}".format( missatge ),
                 u"",
                 u"",
                 u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
                 u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
                 u"",
                 ]
+        )
                    
     fromuser = settings.DEFAULT_FROM_EMAIL
-
-    email = EmailMessage(subject, u'\n'.join( body ),fromuser, 
-                             reply_to=[fromuser], connection=connection)
     
-    if fitxers:
-        for f in fitxers:
-            f.seek(0) 
-            email.attach(f.name, f.read(), f.content_type)
+    if settings.DEBUG:
+        print (u'Enviant mail famílies a {0} adreces'.format(len(correus_alumnes)))
 
-    while cont<total:
-        if cont+maxdest<=total:
-            destinataris=correus_alumnes[cont:cont+maxdest]
-        else:
-            destinataris=correus_alumnes[cont:total]
-        cont=cont+maxdest
+    correctes, errors, pendents=enviaEmail(subject, body, from_email=fromuser, bcc=correus_alumnes, connection=connection, attachments=fitxers)
+    if errors>0:
+        pendentEmail(subject, body, from_email=fromuser, bcc=pendents, attachments=fitxers)
         
-        try:          
-            if settings.DEBUG:
-                print (u'Enviant mail famílies a {0} adreces'.format(len(destinataris)))
-            email.to=[]
-            email.cc=[]
-            email.bcc=destinataris
-            email.send()
-                 
-            correctes=correctes + len(destinataris)
-        except:
-            errors=errors + len(destinataris)
-    
     if settings.DEBUG:
         # Enviament per a verificació si DEBUG
         print (u'Enviant còpia mail famílies als administradors')
-        email.to=[x[1] for x in settings.ADMINS]
-        email.cc=[]
-        email.bcc=[]
-        email.send()
-
+        _, erradm, _ = enviaEmail(subject, body, from_email=fromuser, bcc=[x[1] for x in settings.ADMINS], connection=connection, attachments=fitxers)
+        if erradm>0:
+            pendentEmail(subject, body, from_email=fromuser, bcc=[x[1] for x in settings.ADMINS], attachments=fitxers)
+            
     # tanca la connexió
     connection.close()
     

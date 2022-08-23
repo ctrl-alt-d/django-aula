@@ -1740,7 +1740,10 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                 pka = pg.get('pka')
                 if pkp!='None' and int(pkp) in fraccions_esborrades:
                     continue
-                pagament=QuotaPagament.objects.get(pk=pkp) if pkp!='None' else None
+                try:
+                    pagament=QuotaPagament.objects.get(pk=pkp) if pkp!='None' else None
+                except:
+                    pagament=None
                 a=Alumne.objects.get(pk=pka)
                 if quota:
                     fracciona = pg.get('fracciona') and quota.importQuota>0
@@ -1798,7 +1801,7 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                             'pka': a.pk,
                             'cognoms': a.cognoms,
                             'nom':  a.nom ,
-                            'grup': a.grup,
+                            'grup': a.grup.descripcio_grup[:10],
                             'correu': email,
                             'quota': pg.quota,
                             'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
@@ -1861,7 +1864,7 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                         'pka': a.pk,
                         'cognoms': a.cognoms,
                         'nom':  a.nom,
-                        'grup': a.grup,
+                        'grup': a.grup.descripcio_grup[:10],
                         'correu': email,
                         'quota': pg.quota,
                         'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
@@ -1873,7 +1876,7 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                     'pka': a.pk,
                     'cognoms': a.cognoms,
                     'nom':  a.nom ,
-                    'grup': a.grup,
+                    'grup': a.grup.descripcio_grup[:10],
                     'correu': email,
                     'quota': quotacurs,
                     'estat': 'No assignat',

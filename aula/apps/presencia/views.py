@@ -58,6 +58,7 @@ from aula.apps.alumnes.gestioGrups import grupsPotencials
 from django.template.defaultfilters import date as _date
 from django.contrib import messages
 from django.urls import reverse
+from aula.apps.presenciaSetmanal.views import ProfeNoPot
   
 #vistes -----------------------------------------------------------------------------------
 @login_required
@@ -336,7 +337,7 @@ def passaLlista(request, pk):
                     control_aux = form.save()
                     hiHaRetard |= bool(control_aux.estat.codi_estat) and (control_aux.estat.codi_estat == "R")
                     quelcomBe |= True
-                except ValidationError as e:
+                except (ProfeNoPot, ValidationError) as e:
                     totBe = False
                     # Com que no és un formulari de model cal tractar a mà les incidències del save:
                     form = helper_tuneja_item_nohadeseralaula(request, control_a,
@@ -1137,7 +1138,7 @@ def copiarAlumnesLlista(request, pk):
     credentials = getImpersonateUser(request) 
     (user, l4) = credentials   
     
-    head=u'Copiar alumnes a la llista a partir d\'una altre hora' 
+    head=u'Copiar alumnes a la llista a partir d\'una altra hora' 
 
     pk = int(pk)
     impartir = Impartir.objects.get ( pk = pk )
@@ -1291,7 +1292,7 @@ def anularImpartir(request, pk):
             control.estat = None
             try:
                 control.save()
-            except ValidationError as e:
+            except (ProfeNoPot, ValidationError) as e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 
@@ -1338,7 +1339,7 @@ def desanularImpartir(request, pk):
                 control.swaped = False
             try:
                 control.save()
-            except ValidationError as e:
+            except (ProfeNoPot, ValidationError) as e:
                 for _, v in e.message_dict.items():
                     errors.append(v)
 

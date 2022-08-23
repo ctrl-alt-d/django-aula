@@ -206,6 +206,7 @@ def sincronitza(f, user = None):
     else:
         peticions=True
     
+    totsCodiEstudis=set()
     for row in rows[1:]:
        
         preinscripcio=creaPreins(row, col_indexs)
@@ -214,8 +215,12 @@ def sincronitza(f, user = None):
             preinscripcio['naixement'] = datetime.strptime(preinscripcio['naixement'], '%d/%m/%Y')
         #if 'cp' in preinscripcio and preinscripcio['cp'].startswith("="): 
         #    preinscripcio['cp']=preinscripcio['cp'][2:7] # '="NNNNN"'
-        if 'any' in preinscripcio and preinscripcio['any'].find("/")!=-1: 
-            preinscripcio['any']=int(preinscripcio['any'][-9:-5])  # 'XXXXXXXXXXXX 20xx/20yy'
+        if 'any' in preinscripcio and not isinstance(preinscripcio['any'],int):
+            try:
+                nany=int(preinscripcio['any'][-9:-5])  # 'XXXXXXXXXXXX 20xx/20yy'
+            except Exception as e:
+                nany=datetime.today().year
+            preinscripcio['any']=nany
         #if 'centreassignat' in preinscripcio and preinscripcio['centreassignat'].startswith("="): 
         #    preinscripcio['centreassignat']=preinscripcio['centreassignat'][2:10]  # '="NNNNNNNN"'
         if 'adreça' in preinscripcio:
@@ -247,13 +252,30 @@ def sincronitza(f, user = None):
                     p=query[0]
                     estat=preinscripcio.pop('estat','')
                     if estat=='Assignada': preinscripcio.update({'estat':estat})
+                    else:
+                        if p.estat.startswith('Marca'):
+                            preinscripcio.update({'estat': p.estat[5:]})
                     for field, value in iter(preinscripcio.items()):
                         setattr(p, field, value)
+                p.estat='Marca'+p.estat
                 p.codiestudis=convertirCodiEstudis(p.codiestudis)
+                #guarda el conjunt de tots els codiestudis
+                totsCodiEstudis.add(p.codiestudis)
                 p.save()
                 info_nAlumnesLlegits += 1
             except Exception as e:
                 errors.append(str(e)+": "+str(preinscripcio))
+                
+    # Delete preinscripcions sense matrícula dels mateixos estudis, què no apareixen ara al fitxer
+    llp=Preinscripcio.objects.filter(estat__startswith='Marca')
+    if llp:
+        nany=llp[0].any
+    else:
+        nany=datetime.today().year
+    Preinscripcio.objects.filter(any=nany, matricula__isnull=True, estat__in=['Validada','Assignada',], codiestudis__in=totsCodiEstudis).delete()
+    # Elimina 'Marca especial' de la resta
+    Preinscripcio.objects.filter(estat='MarcaValidada').update(estat='Validada')
+    Preinscripcio.objects.filter(estat='MarcaAssignada').update(estat='Assignada')
     
     infos.append(u'{0} alumnes llegits'.format(info_nAlumnesLlegits) )
 

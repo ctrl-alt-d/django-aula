@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from django.db import models
-from aula.apps.alumnes.models import Nivell
+from django.core.exceptions import ObjectDoesNotExist
+from aula.apps.alumnes.models import Nivell, Curs
 
 class Preinscripcio(models.Model):
     nom=models.CharField('Nom', max_length=50, null=True, blank=True)
@@ -49,7 +50,13 @@ class Preinscripcio(models.Model):
         
     def __str__(self):
         return str(self.cognoms) + ', ' + str(self.nom) + ': ' + str(self.codiestudis) + ' ' + str(self.curs)
-
+    
+    def getCurs(self):
+        try:
+            return Curs.objects.get(nivell__nom_nivell=self.codiestudis, nom_curs=self.curs)
+        except ObjectDoesNotExist:
+            return None
+    
 class Nivell2Aula(models.Model):
     nivellgedac =  models.CharField(max_length=60, unique=True, blank=True)
     nivellDjau = models.ForeignKey(Nivell, null=True, related_name="nivell2djau_set", on_delete=models.CASCADE)

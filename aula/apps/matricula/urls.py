@@ -1,12 +1,13 @@
 from django.urls import path
 from aula.apps.matricula.views import OmpleDades, changeEstat, condicions, LlistaMatFinals, LlistaMatConf,\
-            Confirma, VerificaConfirma, ActivaMatricula, blanc, ResumConfirmacions
+    Confirma, VerificaConfirma, ActivaMatricula, blanc, ResumConfirmacions, matDobleview
             
 app_name = 'matricula'
 
 urlpatterns = [
     path('confirma/<int:nany>/', Confirma, name='relacio_families__matricula__confirma'),
     path('resum/', ResumConfirmacions, name='gestio__resum__matricula'),
+    path('escollir/', matDobleview, name='relacio_families__matricula__escollir'),
     path('dades/', OmpleDades, name='relacio_families__matricula__dades'),
     path('activa/', ActivaMatricula, name='gestio__activa__matricula'),
     path('matricula/', LlistaMatConf, name='gestio__llistat__matricula'),

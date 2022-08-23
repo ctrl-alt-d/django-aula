@@ -4,6 +4,7 @@ from aula.apps.sortides.models import Quota, QuotaPagament, return_any_actual
 from aula.apps.extPreinscripcio.models import Preinscripcio
 from private_storage.fields import PrivateFileField
 from django.conf import settings
+from aula.apps.matricula.business_rules.document import document_post_delete
 
 class Matricula(models.Model):
     ESTAT_CHOICES=[
@@ -37,12 +38,12 @@ class Matricula(models.Model):
     centre_de_procedencia = models.CharField("Centre de procedència", max_length=50, null=True, blank=True)
     data_naixement = models.DateField("Data de naixement", default=None)
     alumne_correu = models.EmailField("Correu de l'alumne", help_text = u'Correu de notificacions de l\'alumne', null=True)
-    adreca = models.CharField("Adreça", max_length=250, default='')
-    localitat = models.CharField("Localitat", max_length=250, default='')
-    cp = models.CharField("Codi postal", max_length=10, default='')
-    rp1_nom = models.CharField("Nom complet 1r responsable", max_length=250, default='') #responsable 1
-    rp1_telefon = models.CharField("Telèfon 1r responsable", max_length=15, default='')
-    rp1_correu = models.EmailField( "Correu 1r responsable", default='')
+    adreca = models.CharField("Adreça", max_length=250, default='', blank=True)
+    localitat = models.CharField("Localitat", max_length=250, default='', blank=True)
+    cp = models.CharField("Codi postal", max_length=10, default='', blank=True)
+    rp1_nom = models.CharField("Nom complet 1r responsable", max_length=250, default='', blank=True) #responsable 1
+    rp1_telefon = models.CharField("Telèfon 1r responsable", max_length=15, default='', blank=True)
+    rp1_correu = models.EmailField( "Correu 1r responsable", default='', blank=True)
     rp2_nom = models.CharField("Nom complet 2n responsable", max_length=250, null=True, blank=True) #responsable 2
     rp2_telefon = models.CharField("Telèfon 2n responsable", max_length=15, null=True, blank=True)
     rp2_correu = models.EmailField( "Correu 2n responsable", null=True, blank=True)
@@ -82,4 +83,6 @@ class Document(models.Model):
               
     def __str__(self):
         return str(self.fitxer.name) + ((' '+str(self.matricula)) if self.matricula else '')
-    
+
+from django.db.models.signals import post_delete
+post_delete.connect(document_post_delete, sender = Document )

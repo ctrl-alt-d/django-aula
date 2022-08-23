@@ -35,7 +35,7 @@ class AbstractReservaAula(models.Model):
     hora = models.ForeignKey('horaris.FranjaHoraria',
                              null=True, blank=True,
                              verbose_name='Franja Horaria', on_delete=models.CASCADE)
-    usuari = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuari = models.ForeignKey(User, on_delete=models.PROTECT)
     motiu = models.CharField(max_length=120, 
                              blank=False, 
                              help_text="""Explica el propòsit de la reserva o del canvi d'aula.

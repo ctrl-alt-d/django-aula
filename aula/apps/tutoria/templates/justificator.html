@@ -74,7 +74,8 @@ $(document).ready(function()
 					       value   
 					    ).slideDown('slow')
 					);
-				});        		   
+				});
+				$('#ca{{ca.pk}}').attr('title', data.errors).tooltip('fixTitle').tooltip('show');        		   
     		}
   		},
         error:function (xhr, ajaxOptions, thrownError){

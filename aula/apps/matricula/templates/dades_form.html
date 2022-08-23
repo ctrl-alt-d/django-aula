@@ -21,7 +21,7 @@
 	{% endif %}
 	</table>
 	{% if wizard.steps.step1 == wizard.steps.count %}
-		He llegit i accepto les <a target = _blank href="{% url  'matricula:varis__condicions__matricula' %}">condicions de matrícula</a>
+		<b>He llegit i accepto les</b> <a target = _blank href="{% url  'matricula:varis__condicions__matricula' %}">condicions de matrícula</a>
 		<br><br>
 	{% endif %}
 	{% if wizard.steps.prev %}

@@ -342,8 +342,8 @@ def EmailFamilies(request):
             try:
                 contOk, contErr = enviaEmailFamilies(subject, message, attach)
                 # envio al que ho envia:
-                missatge = EMAIL_A_FAMILIES
-                tipus_de_missatge = tipusMissatge(missatge)
+                missatge = EMAIL_A_FAMILIES + ("\nNo enviat a {0} adreces. Els missatges pendents seran enviats més endavant.".format(contErr) if contErr>0 else "")
+                tipus_de_missatge = tipusMissatge(EMAIL_A_FAMILIES)
                 msg = Missatge(remitent=user,
                                 text_missatge=missatge.format(contOk, "\n"+subject+":\n"+message+"\n\nadjunts:"+
                                                               (str( [ f.name for f in attach if f.name ]) if attach else "")),
@@ -352,7 +352,7 @@ def EmailFamilies(request):
                 msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
     
                 messages.info(request, u"Email a famílies enviat a {0} adreces".format(contOk)+
-                              (", error en {0} adreces".format(contErr) if contErr>0 else ""))
+                              (", no enviat a {0} adreces. Els missatges pendents seran enviats més endavant.".format(contErr) if contErr>0 else "."))
             except:
                 messages.error(request, u"No s'ha pogut fer l'enviament, torneu a intentar en uns minuts")
             url = '/missatgeria/elMeuMur/'

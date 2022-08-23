@@ -292,7 +292,7 @@ class Pagament(models.Model):
     
     @property
     def getdataLimit(self):
-        return self.dataLimit if self.fracciona else self.quota.dataLimit if self.quota else \
+        return self.dataLimit if self.fracciona or self.dataLimit else self.quota.dataLimit if self.quota else \
             self.sortida.termini_pagament if self.sortida else ''
     
 class QuotaPagamentManager(models.Manager):
