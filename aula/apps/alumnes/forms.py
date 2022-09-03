@@ -78,7 +78,7 @@ class tutorsForm(forms.Form):
     tutor1 = ModelChoiceField(
         widget=ModelSelect2Widget(
             queryset=Professor.objects.all(),
-            search_fields=('last_name__icontains', 'first_name__icontains',),
+            search_fields=('last_name__icontains', 'first_name__icontains','username__icontains',),
             attrs={'style': "'width': '100%'"}
         ),
         queryset=Professor.objects.all(),
@@ -86,7 +86,7 @@ class tutorsForm(forms.Form):
     tutor2 = ModelChoiceField(
         widget=ModelSelect2Widget(
             queryset=Professor.objects.all(),
-            search_fields=('last_name__icontains', 'first_name__icontains',),
+            search_fields=('last_name__icontains', 'first_name__icontains','username__icontains',),
             attrs={'style': "'width': '100%'"}
         ),
         queryset=Professor.objects.all(),
@@ -94,7 +94,7 @@ class tutorsForm(forms.Form):
     tutor3 = ModelChoiceField(
         widget=ModelSelect2Widget(
             queryset=Professor.objects.all(),
-            search_fields=('last_name__icontains', 'first_name__icontains',),
+            search_fields=('last_name__icontains', 'first_name__icontains','username__icontains',),
             attrs={'style': "'width': '100%'"}
         ),
         queryset=Professor.objects.all(),
