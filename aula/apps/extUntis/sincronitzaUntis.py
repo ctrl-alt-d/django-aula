@@ -392,7 +392,9 @@ def sincronitza(xml, usuari):
     for gr in dades['document']['classes']['class']:
         nomgrup=gr['@id'][3:]
         tut=gr.get('class_teacher','') # tutor. De moment no es fa servir
-        
+        if ' ' in nomgrup:
+            errors.append('Nom de grup "'+nomgrup+'" inadequat, consulta manual')
+            return {'errors': errors, 'warnings': warnings, 'infos': infos}
         galum, n, c, g = esGrupAlumnes(nomgrup,False)
         if (galum):
             grupc, warn=creaGrup(n,c,g,inicurs,ficurs)
@@ -466,8 +468,12 @@ def sincronitza(xml, usuari):
         if bool(ngrup):
             ngrup=ngrup['@id']
             #  Crear grupo xxxxxNABCD... 
-            grup, tipus, warn=fusionaGrups(ngrup, inicurs, ficurs, senseGrups)
-            warnings.extend(warn)  
+            try:
+                grup, tipus, warn=fusionaGrups(ngrup, inicurs, ficurs, senseGrups)
+                warnings.extend(warn)  
+            except:
+                errors.append('Noms de grup inadequats, consulta manual')
+                return {'errors': errors, 'warnings': warnings, 'infos': infos}
         if 'times' in l and l['times'] and 'time' in l['times'] and l['times']['time']:
             cl=l.get('times').get('time')
             if type(cl)!=list:
