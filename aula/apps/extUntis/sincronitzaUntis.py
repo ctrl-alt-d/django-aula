@@ -392,7 +392,9 @@ def sincronitza(xml, usuari):
     for gr in dades['document']['classes']['class']:
         nomgrup=gr['@id'][3:]
         tut=gr.get('class_teacher','') # tutor. De moment no es fa servir
-        
+        if ' ' in nomgrup:
+            errors.append('Nom de grup "'+nomgrup+'" inadequat, consulta manual')
+            return {'errors': errors, 'warnings': warnings, 'infos': infos}
         galum, n, c, g = esGrupAlumnes(nomgrup,False)
         if (galum):
             grupc, warn=creaGrup(n,c,g,inicurs,ficurs)
