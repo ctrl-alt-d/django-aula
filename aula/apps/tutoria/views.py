@@ -668,7 +668,10 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True,
             dades.marc_horari[dia] = { 'desde':forquilla['desde'],'finsa':forquilla['finsa']}
             dades.dia_hores[dia] = llista()
             for hora in FranjaHoraria.objects.filter( hora_inici__gte = forquilla['desde'],
-                                                      hora_inici__lte = forquilla['finsa'] ).order_by('hora_inici'):
+                                                      hora_inici__lte = forquilla['finsa'],
+                                                    # S'han de diferenciar les hores segons el dia
+                                                      horari__dia_de_la_setmana__n_dia_ca=delta ).distinct()\
+                                                      .order_by('hora_inici'):
                 dades.dia_hores[dia].append(hora)            
         
     dades.quadre = tools.diccionari()
@@ -678,27 +681,27 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True,
         dades.quadre[unicode(alumne)] = []
 
         for dia, hores in dades.dia_hores.itemsEnOrdre():
-            
-            hora_inici = FranjaHoraria.objects.filter( hora_inici = dades.marc_horari[dia]['desde'] ).first()
-            hora_fi    = FranjaHoraria.objects.filter( hora_inici = dades.marc_horari[dia]['finsa'] ).last()
+            # guardem les hores, no les franjes
+            hora_inici = FranjaHoraria.objects.filter( hora_inici = dades.marc_horari[dia]['desde'] ).first().hora_inici
+            hora_fi    = FranjaHoraria.objects.filter( hora_inici = dades.marc_horari[dia]['finsa'] ).last().hora_inici
 
             q_controls = Q( impartir__dia_impartir = dia ) & \
-                         Q( impartir__horari__hora__gte = hora_inici) & \
-                         Q( impartir__horari__hora__lte = hora_fi) & \
+                         Q( impartir__horari__hora__hora_inici__gte = hora_inici) & \
+                         Q( impartir__horari__hora__hora_inici__lte = hora_fi) & \
                          Q( alumne = alumne )
 
             controls = [ c for c in ControlAssistencia.objects.filter( q_controls ) ]
 
             q_incidencia = Q(dia_incidencia = dia) & \
-                            Q(franja_incidencia__gte = hora_inici) & \
-                            Q(franja_incidencia__lte = hora_fi) & \
+                            Q(franja_incidencia__hora_inici__gte = hora_inici) & \
+                            Q(franja_incidencia__hora_inici__lte = hora_fi) & \
                             Q(alumne = alumne)
 
             incidencies = [ i for i in  Incidencia.objects.filter( q_incidencia ) ]                                   
 
             q_expulsio = Q(dia_expulsio = dia) & \
-                         Q(franja_expulsio__gte = hora_inici) & \
-                         Q(franja_expulsio__lte = hora_fi) & \
+                         Q(franja_expulsio__hora_inici__gte = hora_inici) & \
+                         Q(franja_expulsio__hora_inici__lte = hora_fi) & \
                          Q(alumne = alumne) & \
                          ~Q(estat = 'ES') 
 
@@ -751,7 +754,7 @@ def informeSetmanalMKTable(request, pk, year, month, day, inclouControls = True,
                     else:
                         cella.color = 'white'
                 
-                if hora == hora_inici:
+                if hora.hora_inici == hora_inici:
                     cella.primera_hora = True
                 else:
                     cella.primera_hora = False
