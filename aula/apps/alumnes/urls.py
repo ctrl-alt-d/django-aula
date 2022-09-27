@@ -28,6 +28,9 @@ urlpatterns = [
    re_path(r'^informePsicopedagoc/$', alumnes_views.informePsicopedagoc,
        name="psico__informes_alumne__list"),
                        
+   re_path(r'^nomsentitw0/$', alumnes_views.canviarNomSentitW0,
+       name="psico__nomsentit__w0"),
+                       
    re_path(r'^nomsentitw1/$', alumnes_views.canviarNomSentitW1,
        name="psico__nomsentit__w1"),
                        
