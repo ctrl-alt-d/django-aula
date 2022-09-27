@@ -1,92 +1,87 @@
 [
     {
-        "fields": {
-            "frase": "Ha millorat el seu rendiment.", 
-            "tipus": 2
-        }, 
-        "model": "incidencies.frassesincidenciaaula", 
-        "pk": 1
-    }, 
+      "model": "incidencies.frassesincidenciaaula",
+      "pk": 1,
+      "fields": {
+        "tipus": 2,
+        "frase": "Ha millorat el seu rendiment."
+      }
+    },
     {
-        "fields": {
-            "frase": "No porta el material.", 
-            "tipus": 2
-        }, 
-        "model": "incidencies.frassesincidenciaaula", 
-        "pk": 2
-    }, 
+      "model": "incidencies.frassesincidenciaaula",
+      "pk": 2,
+      "fields": {
+        "tipus": 2,
+        "frase": "No porta el material."
+      }
+    },
     {
-        "fields": {
-            "frase": "No ha fet els deures.", 
-            "tipus": 2
-        }, 
-        "model": "incidencies.frassesincidenciaaula", 
-        "pk": 3
-    }, 
+      "model": "incidencies.frassesincidenciaaula",
+      "pk": 3,
+      "fields": {
+        "tipus": 2,
+        "frase": "No ha fet els deures."
+      }
+    },
     {
-        "fields": {
-            "frase": "No realitza les tasques encomanades.", 
-            "tipus": 2
-        }, 
-        "model": "incidencies.frassesincidenciaaula", 
-        "pk": 4
-    }, 
+      "model": "incidencies.frassesincidenciaaula",
+      "pk": 4,
+      "fields": {
+        "tipus": 2,
+        "frase": "No realitza les tasques encomanades."
+      }
+    },
     {
-        "fields": {
-            "frase": "Parla, molesta i no deixa treballar als companys.", 
-            "tipus": 3
-        }, 
-        "model": "incidencies.frassesincidenciaaula", 
-        "pk": 5
-    }, 
+      "model": "incidencies.frassesincidenciaaula",
+      "pk": 7,
+      "fields": {
+        "tipus": 5,
+        "frase": "Parla, molesta i no deixa treballar als companys."
+      }
+    },
     {
-        "fields": {
-            "frase": "Interromp reiteradament la explicaci\u00f3 del professor.", 
-            "tipus": 3
-        }, 
-        "model": "incidencies.frassesincidenciaaula", 
-        "pk": 6
-    }, 
+      "model": "incidencies.frassesincidenciaaula",
+      "pk": 8,
+      "fields": {
+        "tipus": 5,
+        "frase": "Interromp reiteradament la explicació del professor."
+      }
+    },
     {
-        "fields": {
-            "carta_slug": "serveis", 
-            "justificar": false, 
-            "tipus": "Serveis a la comunitat"
-        }, 
-        "model": "incidencies.tipussancio", 
-        "pk": 2
-    }, 
+      "model": "incidencies.tipussancio",
+      "pk": 2,
+      "fields": {
+        "tipus": "Serveis a la comunitat",
+        "carta_slug": "serveis",
+        "justificar": false
+      }
+    },
     {
-        "fields": {
-            "carta_slug": "tasques", 
-            "justificar": false, 
-            "tipus": "Tasques educatives"
-        }, 
-        "model": "incidencies.tipussancio", 
-        "pk": 3
-    }, 
+      "model": "incidencies.tipussancio",
+      "pk": 3,
+      "fields": {
+        "tipus": "Tasques educatives",
+        "carta_slug": "tasques",
+        "justificar": false
+      }
+    },
     {
-        "fields": {
-            "es_informativa": true, 
-            "tipus": "Acad\u00e8mica"
-        }, 
-        "model": "incidencies.tipusincidencia", 
-        "pk": 2
-    }, 
+      "model": "incidencies.tipusincidencia",
+      "pk": 2,
+      "fields": {
+        "tipus": "Informativa",
+        "es_informativa": true,
+        "notificar_equip_directiu": false
+      }
+    },
     {
-        "fields": {
-            "es_informativa": false, 
-            "tipus": "Lleu"
-        }, 
-        "model": "incidencies.tipusincidencia", 
-        "pk": 3
-    }, 
-    {
-        "fields": {
-            "es_informativa": false, 
-            "tipus": "Greu"
-        }, 
-        "model": "incidencies.tipusincidencia", 
-        "pk": 4
+      "model": "incidencies.tipusincidencia",
+      "pk": 5,
+      "fields": {
+        "tipus": "Incidència",
+        "es_informativa": false,
+        "notificar_equip_directiu": false
+      }
     }
-]
+    ]
+    
