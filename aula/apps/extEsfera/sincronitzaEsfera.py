@@ -186,6 +186,7 @@ def sincronitza(f, user = None):
         else:
             #TODO: si canvien dades importants avisar al tutor.
             a.pk = alumneDadesAnteriors.pk
+            a.nom_sentit = alumneDadesAnteriors.nom_sentit
             a.estat_sincronitzacio = 'S-U'
             info_nAlumnesModificats+=1
 

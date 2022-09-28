@@ -38,3 +38,33 @@ class HorariAlumneTable(tables.Table):
         attrs = {"class": "paleblue table table-striped"}
         template = 'bootable2.html'
 
+class AlumneNomSentitTable(tables.Table):
+
+    nom_sentit = tables.TemplateColumn(
+                        verbose_name='Nom Sentit',
+                        template_code=u"""
+                        {{ record.nom_sentit }}
+                        """,
+                        order_by='nom_sentit',
+                        )
+
+    nom_i_cognoms = tables.TemplateColumn(
+                        verbose_name='Alumne',
+                        template_code=u"""
+                        {{ record.cognom_nom }}
+                        """,
+                        order_by='cognom_nom',
+                        )
+
+    actioin = tables.TemplateColumn(
+                        verbose_name='',
+                        template_code=u"""
+                        <a href="{% url 'psico__nomsentit__w2' record.id %}" class="btn btn-primary btn-xs">Canviar</a>
+                        
+                        """,
+                        orderable=False,
+                        )
+    class Meta:
+        # add class="paleblue" to <table> tag
+        attrs = {"class": "paleblue table table-striped"}
+        template = 'bootable2.html'

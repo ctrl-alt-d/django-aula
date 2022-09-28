@@ -203,7 +203,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Informe d'Alumne", 'psico__informes_alumne__list', pg or di, None, None ),
                       ("Actuacions", 'psico__actuacions__list', pg or di, None, None ),
-                      ("Alumne, canvi nom sentit", 'psico__nomsentit__w1', pg or di, None, None ),
+                      ("Alumne, nom sentit", 'psico__nomsentit__w0', pg or di, None, None ),
                    )
                ),
 
