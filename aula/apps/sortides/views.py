@@ -2150,7 +2150,8 @@ def fullcalculQuotes(tpv, nany=None):
         worksheet.write_string(fila, 0, p.quota.descripcio )
         worksheet.write_string(fila, 1, str(p.alumne) )
         worksheet.write_number(fila, 2, p.quota.importQuota if not p.fracciona else p.importParcial )
-        worksheet.write_datetime(fila, 3, p.quota.dataLimit if not p.fracciona else p.dataLimit, date_format )
+        dataquota= p.quota.dataLimit if not p.fracciona else p.dataLimit
+        if dataquota: worksheet.write_datetime(fila, 3, dataquota, date_format )
         worksheet.write_string(fila, 4, 'SI' if p.fracciona else 'NO' )
         fila=fila+1
     for p in pags:
