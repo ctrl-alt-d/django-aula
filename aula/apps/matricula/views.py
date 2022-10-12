@@ -449,7 +449,7 @@ def OmpleDades(request):
             infos.append('Sense necessitat de dades.')
     except Exception as e:
         print(str(e))
-        infos.append('Error a accedint a les dades de matrícula: '+str(e))
+        infos.append('Error accedint a les dades de matrícula: '+str(e))
         
     return render(
                 request,

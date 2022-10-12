@@ -200,6 +200,12 @@ class ConfirmaMat(forms.ModelForm):
         super(ConfirmaMat, self).__init__(*args, **kwargs)
         self.fields['acceptar_condicions'].label=""
         self.fields['alumne_correu'].required=True
+        self.fields['adreca'].required=True
+        self.fields['localitat'].required=True
+        self.fields['cp'].required=True
+        self.fields['rp1_nom'].required=True
+        self.fields['rp1_telefon'].required=True
+        self.fields['rp1_correu'].required=True
         self.fields['nom'].widget.attrs['readonly'] = True
         self.fields['cognoms'].widget.attrs['readonly'] = True
         self.fields['data_naixement'].widget.attrs['readonly'] = True
