@@ -128,8 +128,8 @@ def assignaTutors( request ):
                 tutor2 = form.cleaned_data['tutor2']
                 tutor3 = form.cleaned_data['tutor3']
                 if tutor1:  parellesProfessorGrup.append( (tutor1.pk, grup)  )
-                if tutor2:  parellesProfessorGrup.append( (tutor2.pk, grup)  )
-                if tutor3:  parellesProfessorGrup.append( (tutor3.pk, grup)  )
+                if tutor2 and tutor2!=tutor1:  parellesProfessorGrup.append( (tutor2.pk, grup)  )
+                if tutor3 and tutor3!=tutor2 and tutor3!=tutor1:  parellesProfessorGrup.append( (tutor3.pk, grup)  )
             else:
                 pass
                 #totBe = False
