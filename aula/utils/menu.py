@@ -16,10 +16,6 @@ def calcula_menu( user , path, sessioImpersonada ):
 
     if not user.is_authenticated:
         return
-    
-    # No permet impersonació com a administrador
-    if sessioImpersonada and Group.objects.get_or_create(name= 'administradors' )[0] in user.groups.all():
-        return
 
     #mire a quins grups està aquest usuari:
     al = Group.objects.get_or_create(name= 'alumne' )[0] in user.groups.all()
