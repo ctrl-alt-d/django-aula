@@ -29,6 +29,7 @@ from aula.utils.forms import ckbxForm
 from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd,\
     Accio
 from django.utils.datetime_safe import datetime
+from django.utils.safestring import SafeText
 from datetime import timedelta
 from django.db.models import Q
 
@@ -181,10 +182,12 @@ def impersonacio(request):
             l4 = formckbx.cleaned_data['ckbx']
             request.session['l4'] = l4
             # No deixa fer impersonació com a un usuari del grup administradors
-            user=request.session['impersonacio']
-            if user.is_staff or user.is_superuser \
-                        or Group.objects.get_or_create(name= 'administradors' )[0] in user.groups.all():
-                return HttpResponseRedirect(reverse("usuari__impersonacio__reset"))
+            if request.session.has_key('impersonacio'):
+                user=request.session['impersonacio']
+                if user and (user.is_staff or user.is_superuser \
+                        or Group.objects.get_or_create(name= 'administradors' )[0] in user.groups.all()):
+                    messages.info(request, SafeText('No es pot fer impersonació com usuari administrador.'))
+                    return HttpResponseRedirect(reverse("usuari__impersonacio__reset"))
             return HttpResponseRedirect( url_next )
     else:
         form = triaUsuariForm()
@@ -352,6 +355,7 @@ def loginUser( request ):
                             limitLoginFail=int(limitLoginFail.valor_parametre)
                         except:
                             limitLoginFail=3
+                        if limitLoginFail<3: limitLoginFail=3
                         #fa_5_minuts = datetime.now() - timedelta(minutes = 5)
                         logins_anteriors = LoginUsuari.objects.filter( 
                                                 usuari = user 
