@@ -349,13 +349,16 @@ def loginUser( request ):
                     if user.is_active:
                         #comprova els intents fallits des del darrer intent bó.
                         #Utilitza el paràmetre 'limitLogin' de ParametreKronowin
+                        #El valor per defecte és l'indicat a LIMITLOGIN dels settings
+                        defecte=settings.LIMITLOGIN
                         try:
                             limitLoginFail, _ = ParametreKronowin.objects.get_or_create(nom_parametre='limitLogin',
-                                                            defaults={'valor_parametre': '3', })
+                                                            defaults={'valor_parametre': str(defecte), })
                             limitLoginFail=int(limitLoginFail.valor_parametre)
                         except:
-                            limitLoginFail=3
-                        if limitLoginFail<3: limitLoginFail=3
+                            limitLoginFail=defecte
+                        #No es permet un valor inferior al de defecte
+                        if limitLoginFail<defecte: limitLoginFail=defecte
                         #fa_5_minuts = datetime.now() - timedelta(minutes = 5)
                         logins_anteriors = LoginUsuari.objects.filter( 
                                                 usuari = user 

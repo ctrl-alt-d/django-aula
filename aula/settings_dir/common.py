@@ -266,3 +266,7 @@ LOGGING = {
 
 
 PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_private_files'
+
+#Quantitat, per defecte, de logins errònis abans de bloquejar usuari
+#Aquest valor és el mínim, es pot augmentar amb el paràmetre 'limitLogin' de ParametreKronowin
+LIMITLOGIN = 3
