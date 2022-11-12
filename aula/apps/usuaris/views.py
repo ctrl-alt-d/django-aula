@@ -29,6 +29,7 @@ from aula.utils.forms import ckbxForm
 from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd,\
     Accio
 from django.utils.datetime_safe import datetime
+from django.utils.safestring import SafeText
 from datetime import timedelta
 from django.db.models import Q
 
@@ -180,6 +181,13 @@ def impersonacio(request):
                 request.session['impersonacio'] = form.cleaned_data['professor'].getUser()
             l4 = formckbx.cleaned_data['ckbx']
             request.session['l4'] = l4
+            # No deixa fer impersonació com a un usuari del grup administradors
+            if request.session.has_key('impersonacio'):
+                user=request.session['impersonacio']
+                if user and (user.is_staff or user.is_superuser \
+                        or Group.objects.get_or_create(name= 'administradors' )[0] in user.groups.all()):
+                    messages.info(request, SafeText('No es pot fer impersonació com usuari administrador.'))
+                    return HttpResponseRedirect(reverse("usuari__impersonacio__reset"))
             return HttpResponseRedirect( url_next )
     else:
         form = triaUsuariForm()
@@ -339,14 +347,16 @@ def loginUser( request ):
                     #apunto el fallo:
                     LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)                    
                     if user.is_active:
-                        #comprova 3 intents fallits des del darrer intent bó.
+                        #comprova els intents fallits des del darrer intent bó.
+                        #El valor és l'indicat a LIMITLOGIN dels settings
+                        limitLoginFail=settings.LIMITLOGIN
                         #fa_5_minuts = datetime.now() - timedelta(minutes = 5)
                         logins_anteriors = LoginUsuari.objects.filter( 
                                                 usuari = user 
                                                 #,moment__gte = fa_5_minuts 
-                                                                      ).order_by( '-moment' )[:3]                                                     
-                        tresFallos = logins_anteriors.count() == 3 and all( not x.exitos for x in logins_anteriors ) 
-                        if tresFallos and user.is_active:
+                                                                      ).order_by( '-moment' )[:limitLoginFail]                                                     
+                        superaFallos = logins_anteriors.count() == limitLoginFail and all( not x.exitos for x in logins_anteriors ) 
+                        if superaFallos and user.is_active:
                             user.is_active = False
                             user.save()
                             #no aviso per no donar pistes de que això sigui un usuari real.                    
@@ -357,11 +367,12 @@ def loginUser( request ):
                                 alumne.save()
                             except:
                                 pass
+                        form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'Usuari o paraula de pas incorrecte'  )
+                    else:
+                        form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''Aquest compte està desactivat. Punxa a l'enllaç de recuperar contrasenya.'''  )
                             
                 except:
-                    pass
-
-                form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'Usuari o paraula de pas incorrecte'  )
+                    form._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'Usuari o paraula de pas incorrecte'  )
     else:
         form = loginUsuariForm()
 

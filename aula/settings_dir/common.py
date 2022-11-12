@@ -266,3 +266,6 @@ LOGGING = {
 
 
 PRIVATE_STORAGE_AUTH_FUNCTION = 'aula.utils.views.allow_private_files'
+
+#Quantitat, per defecte, de logins errònis abans de bloquejar usuari
+LIMITLOGIN = 3
