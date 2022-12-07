@@ -125,9 +125,9 @@ class Sortida(models.Model):
     termini_pagament = models.DateTimeField( u"Termini pagament", blank=True, null=True, help_text=u"Omplir si hi ha data límit per a realitzar el pagament.")
 
     programa_de_la_sortida = models.TextField(verbose_name=u"Descripció de l'activitat",
-                                              help_text=u"Aquesta informació arriba a les famílies. Descriu per als pares el programa de l'activitat: horaris, objectius, pagaments a empreses, recomanacions (crema solar, gorra, insecticida, ...), cal portar (boli, llibreta), altres informacions d'interès per a la família. Si no cal portar res cal indicar-ho.")
+                                              help_text=u"Aquesta informació arriba a les famílies. Descriu l'activitat incloent altres informacions d'interès (desenvolupament, tipus d'activitat, horaris, objectius, ...)")
 
-    condicions_generals = models.TextField(blank=True, help_text=u"Aquesta informació arriba a les famílies. Condicions generals. (mètode de pagament, entrepans, entrades, comentaris...")
+    condicions_generals = models.TextField(blank=True, help_text=u"Aquesta informació arriba a les famílies. Indica què cal portar (boli, llibreta, portàtil,...), recomanacions (crema solar, gorra, insecticida, ...),  menjar i beguda,...  Si no cal portar res cal indicar-ho.")
 
     participacio = models.CharField(u"Participació", editable=False, default=u"N/A", max_length=100,help_text=u"Nombre d’alumnes participants sobre el total possible. Per exemple: 46 de 60")
 
