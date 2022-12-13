@@ -4,7 +4,7 @@ from django.db import models
 #from django.db.models import get_model
 from django.contrib.auth.models import User
 from aula.utils.tools import unicode
-
+import uuid
 #-------------------------------------------------------------
 
 class AbstractDepartament(models.Model):
@@ -85,3 +85,5 @@ class AbstractQRPortal(models.Model):
     clau = models.CharField(max_length=40, db_index=True)
     numero_de_mobil = models.CharField(max_length=40, blank = True )
 
+    def calcula_clau(self):
+        self.clau = str( uuid.uuid4() )
