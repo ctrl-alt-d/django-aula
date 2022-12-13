@@ -227,12 +227,16 @@ INSTALLED_APPS_AULA = [
 AUTO_RENDER_SELECT2_STATICS=False
 #---
 
-#rest framework
+#rest framework & JWT
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
 }
+
 #---
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'

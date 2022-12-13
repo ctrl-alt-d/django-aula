@@ -6,6 +6,7 @@ from aula.utils.views import keepalive,menu,logout_page
 from aula.apps.alumnes.views import mostraGrupPromocionar,nouAlumnePromocionar,llistaGrupsPromocionar
 from django.contrib.auth.views import PasswordChangeView
 from django.views.static import serve
+from rest_framework_jwt.views import obtain_jwt_token,refresh_jwt_token, verify_jwt_token
 
 admin.autodiscover()
 admin.site.enable_nav_sidebar = False
@@ -16,6 +17,9 @@ site_media_site_css = os.path.join(os.path.dirname(__file__), 'site-css' )
 site_media_web_demo = os.path.join(os.path.dirname(__file__), '../demo/static-web/demo' )
 
 urlpatterns = [
+    re_path(r'^api-token-auth/', obtain_jwt_token),
+    re_path(r'^api-token-refresh/', refresh_jwt_token),
+    re_path(r'^api-token-verify/', verify_jwt_token),
     re_path(r'^keepalive$', keepalive, name="blanc__blanc__keepalive"),
     path("select2/", include("django_select2.urls")),
     re_path(r'^menu/$', menu),
