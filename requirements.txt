@@ -31,3 +31,4 @@ djangorestframework
 markdown
 django-filter
 djangorestframework-jwt
+qrcode==6.0
