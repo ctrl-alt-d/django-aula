@@ -190,6 +190,7 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.humanize',
     'formtools',
     'django.forms',
+    'rest_framework',
 ]
     
 INSTALLED_APPS_AULA = [
@@ -219,12 +220,20 @@ INSTALLED_APPS_AULA = [
     'aula.apps.extUntis',
     'aula.apps.matricula',
     'aula.apps.extPreinscripcio',
+    'aula.mblapp'
 ]
 
 #select2
 AUTO_RENDER_SELECT2_STATICS=False
 #---
 
+#rest framework
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+#---
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 

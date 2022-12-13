@@ -74,4 +74,13 @@ class AbstractOneTimePasswd(models.Model):
     clau = models.CharField(max_length=40 )
     reintents = models.IntegerField( default = 0 )
 
+class AbstractQRPortal(models.Model):
+    alumne_referenciat = models.ForeignKey( "alumnes.Alumne", db_index = True,
+                                            related_name="qr_portal_set",
+                                            related_query_name="qr_portal" , on_delete=models.CASCADE)
+    usuari_referenciat = models.ForeignKey( User, db_index = True, blank = True, null = True, on_delete=models.CASCADE)
+    moment_expedicio = models.DateTimeField( auto_now_add = True )
+    moment_captura = models.DateTimeField( blank = True, null = True )
+    clau = models.CharField(max_length=40 )
+    numero_de_mobil = models.CharField(max_length=40, blank = True )
 
