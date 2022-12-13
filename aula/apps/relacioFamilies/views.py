@@ -165,6 +165,14 @@ def bloquejaDesbloqueja( request , pk ):
                     },
                 )
 
+
+@login_required
+@group_required(['professors'])
+def qrTokens( request , pk ):
+    pass
+
+
+
 @login_required
 @group_required(['professors'])
 def configuraConnexio( request , pk ):
@@ -360,8 +368,10 @@ def dadesRelacioFamilies( request ):
                 camp.enllac = None
                 accio_list = [ (u'Configura', '/open/configuraConnexio/{0}'.format(alumne.pk) ), 
                                #(u'Bloquejar' if alumne.esta_relacio_familia_actiu() else u'Desbloquejar', '/open/bloquejaDesbloqueja/{0}'.format(alumne.pk)),
-                               (u'Envia benvinguda' , '/open/enviaBenvinguda/{0}'.format(alumne.pk)),  
-                               (u'Veure Portal' , '/open/elMeuInforme/{0}'.format(alumne.pk)),] 
+                               (u'Envia benvinguda' , '/open/enviaBenvinguda/{0}'.format(alumne.pk)),
+                               (u'Veure Portal', '/open/elMeuInforme/{0}'.format(alumne.pk)),
+                               (u'Gestió tokens QR App', '/open/qrTokens/{0}'.format(alumne.pk)),
+                               ]
                 camp.multipleContingut = accio_list
                 filera.append(camp)
                 
