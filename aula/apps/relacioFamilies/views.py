@@ -202,7 +202,7 @@ def qrTokens( request , pk=None ):
     for copia, alumne in itertools.product( [1,2,], alumnes ):
         # munto el token
         qr_token = QRPortal()
-        qr_token.calcula_clau()
+        qr_token.calcula_clau_i_localitzador()
         qr_token.alumne_referenciat = alumne
         qr_token.save()
 
@@ -229,6 +229,7 @@ def qrTokens( request , pk=None ):
         o.alumne = unicode(alumne)
         o.grup = unicode(alumne.grup)
         o.copia = copia
+        o.clau = qr_text if settings.DEBUG else ""
         report.append(o)
         o.barres = nom_fitxer
 
