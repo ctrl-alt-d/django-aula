@@ -16,6 +16,10 @@ def calcula_menu( user , path, sessioImpersonada ):
 
     if not user.is_authenticated:
         return
+    
+    # No permet impersonació com a administrador
+    if sessioImpersonada and Group.objects.get_or_create(name= 'administradors' )[0] in user.groups.all():
+        return
 
     #mire a quins grups està aquest usuari:
     al = Group.objects.get_or_create(name= 'alumne' )[0] in user.groups.all()
@@ -266,6 +270,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                           ("Aules", 'gestio__aula__assignacomentari', di, None),
                           ("Material", 'gestio__recurs__assignacomentari', di, None),
                           ("Reprograma", 'administracio__sincronitza__regenerar_horaris', di , None  ),
+                          ("Importar actuacions d'un curs antic", 'importaActuacions__connexio__DB', di , None  ),
                         ),
                       ),
                       ("Reset Passwd", 'administracio__professorat__reset_passwd', di, None, None ),

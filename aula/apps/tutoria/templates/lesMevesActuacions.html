@@ -7,13 +7,34 @@
 
 {% block posttaula %} 
 
+	{% if not veure_dades_actuacions_antigues %}
+
 	<div class="row row-padded" style="background-color:white">
-	        <div class="col-sm-4  col-xs-12label_tag">
+			<div class="col-sm-4  col-xs-12label_tag">
 				<a href="/tutoria/novaActuacio" class="btn btn-primary active" 
 				role="button"> Nova Actuació</a>      
-	        </div>
+			</div>
+	</div>
+	<br>
+
+		{% if habilita_link_actuacions_antigues %}
+		<div class="alert alert-info" role="alert">
+			<p>Les <strong>actuacions dutes a terme en cursos anteriors</strong> es poden consultar <a href="/tutoria/lesMevesActuacions/actuacionsAntigues" class="alert-link">en aquest enllaç</a>.
+		</div>
+		<br>
+		{% endif %}
+
+	{% else %}
+
+	<div class="row row-padded" style="background-color:white">
+		<div class="col-sm-4  col-xs-12label_tag">
+			<a href="/tutoria/lesMevesActuacions" class="btn btn-primary active" 
+			role="button"> Tornar a les actuacions del present curs</a>      
+		</div>
     </div> 
-	
+	<br>
+	{% endif %}	
+
 {% endblock %}
 
 

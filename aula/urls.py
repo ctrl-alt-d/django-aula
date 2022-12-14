@@ -47,6 +47,7 @@ urlpatterns = [
     re_path(r'^extUntis/', include('aula.apps.extUntis.urls')),
     re_path(r'^matricula/', include('aula.apps.matricula.urls', namespace='matricula')),
     re_path(r'^extPreinscripcio/', include('aula.apps.extPreinscripcio.urls')),
+    re_path(r'^importaActuacions/', include('aula.apps.importaActuacions.urls')), # ImportaActuacions - rfern26@xtec.cat @rafatecno1
     # Uncomment the next line to enable the admin:
     path('admin/', admin.site.urls),
     # Login i logout automàtics
@@ -57,7 +58,6 @@ urlpatterns = [
     re_path(r'^site-css/(?P<path>.*)$', serve,{'document_root': site_media_site_css}),
     re_path(r'^error500$', TemplateView.as_view(template_name='500.html') ),
     re_path('^private-media/', include(private_storage.urls)),
-
 ]
 
 

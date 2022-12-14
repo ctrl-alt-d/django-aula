@@ -1,0 +1,65 @@
+{% extends "table2.html" %}
+{% load i18n %}
+{% load django_tables2 %}
+{% load static %}
+{% load humanize %}
+
+
+{% block extrahead %} {% endblock %}
+ 
+{% block content  %}
+
+    {% block head %}
+    {% if head %}
+        <h2 style="margin-bottom: 25px;">{{ head }}</h2>
+        <p/>
+        <p/>
+    {% endif %}
+    {% endblock %}
+
+    {% block preform %}{% endblock %}
+
+
+    <p>A continuaci&oacute; es mostra el resultat de la importaci&oacute;. En primer lloc un llistat de les actuacions finalment importades, mentre que en segon lloc es mostren totes les actuacions del curs actual despr&eacute;s d'haver fet la importaci&oacute;.</p>
+    <br>
+    
+    <!-- ACTUACIONS IMPORTADES -->
+
+    <p style="padding: 10px; font-size:large; font-weight: bold; color: white; background-color: blue; border-radius: 5px;">Actuacions importades</p>
+
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#actuacions_importades" aria-expanded="false" aria-controls="actuacions_importades">
+        Mostrar / Ocultar les actuacions que s'han importat al curs actual
+    </button>
+
+    <div class="collapse" id="actuacions_importades" style="margin-left: 10px;">
+        {% render_table table_actuacions_importades %}
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <!-- FI ACTUACIONS IMPORTADES -->
+
+
+
+    <!-- ACTUACIONS CURS ACTUAL -->
+
+    <p style="padding: 10px; font-size:large; font-weight: bold; color: white; background-color: blue; border-radius: 5px;">Llistat final d'actuacions del curs actual</p>
+
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#actuacions_curs_actual" aria-expanded="false" aria-controls="actuacions_curs_actual">
+        Mostrar / Ocultar el llistat final de les actuacions del curs actual
+    </button>
+
+    <div class="collapse" id="actuacions_curs_actual" style="margin-left: 10px;">
+        {% render_table table %}
+    </div>
+    <br>
+    <br>
+    <br>
+
+    <!-- FI ACTUACIONS CURS ACTUAL -->
+
+    <br>
+
+
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+ 
+{% block content  %}
+
+	{% block head %}
+	{% if head %}
+	<h2 style="margin-bottom: 25px;">{{ head }}</h2>
+	<p/>
+	<p/>
+	{% endif %}
+	{% endblock %}
+
+	{% block preform %}{% endblock %}
+
+    <div class="btn-group" role="group" aria-label="Informació sobre el mòdul per importar actuacions">
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#queson" aria-expanded="false" aria-controls="queson">
+            Qu&egrave; s&oacute;n les actuacions i per qu&egrave; importar-les?
+        </button>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#comferho" aria-expanded="false" aria-controls="comferho">
+            Requeriments per a la importaci&oacute;
+        </button>
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#quinainfo" aria-expanded="false" aria-controls="quinainfo">
+            Quina informaci&oacute; en tindr&eacute; abans de la importaci&oacute;?
+        </button>
+        <br>
+    </div>
+    <br>
+
+    <div class="collapse" id="queson"><br>
+        <p>Les actuacions s&oacute;n intervencions pedag&ograve;giques fetes entre un professional del centre, normalment tutors, coordinador pedag&ograve;gic o cap d'estudis, i un alumne concret. No obstant, les actuacions generades en cursos anteriors s&oacute;n inaccessibles en aquest curs per defecte. La decisi&oacute; de no incorporar-les al nou curs ve donada per raons de disseny del DjAu, que cal ser instal·lat de nou cada curs escolar.</p>
+        <p>Per poder consultar-les cal mantenir les instal·lacions del DjAu dels cursos anteriors actives per&ograve; inaccessibles per l'&uacute;s habitual. D'aquesta manera, determinats usuaris, eventualment els adscrits a Direcci&oacute; i/o a psicopedagogia, poden encara consultar-les si en fos menester.</p>
+        <br>
+        <p><strong>Aquest m&ograve;dul del DjAu importa les actuacions dels cursos anteriors al curs actual</strong>, integrant-les igual que les actuals actuacions i permetent no haver d'accedir a instal·lacions anteriors per consultar antigues actuacions.</p>
+        <div class="alert alert-info" role="alert">
+            <strong>La importaci&oacute;</strong> de les actuacions d'un altre curs en el curs actual <strong>&eacute;s completament opcional</strong> i no modifica el funcionament habitual del DjAu.
+        </div>
+    </div>
+
+    <div class="collapse" id="comferho"><br>
+        <p>Per aconseguir importar les actuacions d'un curs anterior a l'actual caldr&agrave;:</p>
+        <ul>
+            <li>
+                Proporcionar les dades d'acc&eacute;s a la base de dades del curs origen de les actuacions a importar, normalment del curs anterior, facilitant el nom de la base de dades, el nom de l'usuari principal d'aquesta i la seva contrasenya.
+            </li>
+            <br>
+            <li>
+                Comprovar que <strong>els noms dels usuaris</strong> dels professionals <srong>del curs anterior</srong> (el nom de l'usuari amb el que el professional entra al DjAu) <strong>es corresponen exactament amb els</strong> noms dels usuaris dels professionals <strong>del curs actual</strong>. Si no hi ha correspond&egrave;ncia, el m&ograve;dul interpretar&agrave; que el professional ja no es troba al centre educatiu.
+                <br><br>
+                Despr&eacute;s de connectar amb la base de dades del curs anterior, es proporciona una eina que facilita relacionar els noms antics dels usuaris dels professionals amb els noms actuals. Aquesta eina no modifica permanentment els noms dels usuaris del curs anterior.
+            </li>
+        </ul>
+        <br>
+        <div class="alert alert-danger" role="alert">
+            <p><span class="alert-heading" style="font-weight: bold; font-size: large;">Atenci&oacute;!</span>
+                Es recomana fer una c&ograve;pia de la base de dades actual abans de fer la importaci&oacute;.</p>
+        </div>
+    </div>
+
+    <div class="collapse" id="quinainfo"><br>
+        <p>Un cop connectat a la base de dades del curs origen de les actuacions, el sistema du a terme les següents accions:</p>
+        <ol>
+            <li>Detecci&oacute; de l'alumnat amb actuacions a importar que ja no es troba al centre educatiu, t&iacute;picament l'alumnat desmatriculat.</li>
+            <li>Detecci&oacute; dels professionals que van crear actuacions a importar que ja no es troben al centre educatiu.</li>
+            <li>Comprovaci&oacute; de no duplicitat de les actuacions per evitar importar actuacions ja existents, t&iacute;picament per haver-les ja importat amb anterioritat.</li>
+        </ol>
+        <br>
+
+        <p>Abans de dur a terme la importaci&oacute;, el sistema mostrar&agrave; la següent informaci&oacute; per facilitar-ne la revisi&oacute;:</p>
+        <ul>
+            <li>Llistat de les <span style="font-weight: bold;">actuacions amb alumnat desmatriculat</span>, si n'hi hagu&egrave;ssin. <span style="font-weight: bold;">Aquestes actuacions NO s'hi importaran</span>.</li>
+            <li>Llistat de les <span style="font-weight: bold;">actuacions dutes a terme per professionals que ja no hi s&oacute;n</span>, si n'hi hagu&egrave;ssin. <span style="font-weight: bold;">Aquestes actuacions SÍ que s'hi importaran</span>, per&ograve; el text de l'actuaci&oacute; mostrar&agrave; aquesta particularitat.</li>
+            <li>Si s'hagu&egrave;ssin trobat <span style="font-weight: bold;">actuacions a importar per&ograve; que ja es troben en el curs actual</span>, se n'informar&agrave; mostrant-les i <span style="font-weight: bold;">seran descartades</span> de les actuacions a importar.</li>
+            <li>Finalment, el llistat de les actuacions que s&iacute; que s'importaran.</li>
+        </ul>
+        <br>
+        <p>Un cop feta la importaci&oacute; de les actuacions del curs anterior amb &egrave;xit se'n mostraran totes les actuacions del curs actual, ja fusionades amb les del curs antic, per facilitar-ne la revisi&oacute; final.</p>
+        <br>
+    </div>
+    <br>
+    <br>
+
+    <!-- INICI CÒPIA FORM.HTML PER IMPOSSIBILITAT MEVA D'INCORPORAR UN TEXT EXPLICATIU ABANS I DESPRÉS DEL FORMULARI -->
+	
+	{% if form.non_field_errors %}
+    <div class="row" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+      	  <div class="alert alert-danger">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {% for error in form.non_field_errors %}
+              {{error}}
+          {% endfor %}
+          </div>
+    </div>
+    {% endif %}
+	
+		{%if titol_formulari %}<h2>{{titol_formulari}}</h2>{%endif%}
+
+	<form action="." method="post" enctype="multipart/form-data"  target="{%if target %}{{target}}{%else%}_self{%endif%}">{% csrf_token %}
+
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+
+        {% for label, value in infoForm %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+	        <div class="col-sm-4 col-xs-12 label_tag">
+	          <p class="text-right hidden-xs"><label>{{ label }}</label></p>
+              <p class="visible-xs"><label>{{ label }}</label></p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12">      
+	          {{ value }}
+      		</div>
+      	</div>
+	    {% endfor %}		
+
+ 		{% for field in form.visible_fields %}
+        <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
+	        <div class="col-sm-4  col-xs-12label_tag">
+	          <p class="text-right hidden-xs">
+	          	{{ field.label_tag }}
+	          </p>
+              <p class="visible-xs">
+              	{{ field.label_tag }}
+              	{% if field.help_text %}
+	              	<button type="button" class="btn btn-info btn-xs" data-container="body" data-toggle="popover" data-placement="bottom" data-content="{{ field.help_text }}">
+					  <span class="glyphicon glyphicon-info-sign"></span>
+					</button>
+				{% endif %}
+              </p>
+	        </div>
+	        <div class="col-sm-8 col-xs-12 tria_tag">
+	            {{ field }}
+	            {% if field.help_text %}
+	            <p class="hidden-xs"><em>{{ field.help_text }}</em></p>
+	            {% endif %}
+		        {% if field.errors %}		        	
+			        <div class="alert alert-danger">
+			        <button type="button" class="close" data-dismiss="alert">&times;</button>
+				        <ul>
+				          {% for error in field.errors%}
+				          <li>{{ error }}</li>
+			              {% endfor %}
+			            </ul>
+		         	</div>
+		        {% endif %}
+	        </div>
+        </div>
+        {% endfor %}
+
+	    <div class="row row-padded" >
+	    	<div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
+	      		<button type="submit" class="btn btn-primary">Enviar dades</button>
+	      </div>
+	    </div>
+    
+	</form>
+	{% block postform  %}{% endblock %}
+
+
+    <!-- FI CÒPIA FORM.HTML -->
+
+
+{% endblock %}

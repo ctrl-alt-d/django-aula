@@ -34,7 +34,7 @@ from datetime import timedelta
 from aula.apps.tutoria.models import Actuacio, Tutor, SeguimentTutorialPreguntes,\
     SeguimentTutorial, SeguimentTutorialRespostes, ResumAnualAlumne,\
     CartaAbsentisme
-from aula.apps.alumnes.models import Alumne, Grup, AlumneGrupNom, AlumneGrup
+from aula.apps.alumnes.models import Alumne, Grup, AlumneGrupNom, AlumneGrup, Curs
 from django.forms.models import modelform_factory, modelformset_factory
 from django import forms
 from django.db.models import Min, Max, Q
@@ -234,30 +234,43 @@ def tutorPosaExpulsioPerAcumulacio(request, pk):
 
 @login_required
 @group_required(['professors','professional'])
-def lesMevesActuacions(request):
+def lesMevesActuacions(request, old_actuacions=''):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     
-    professional = User2Professional( user )     
+    professional = User2Professional( user )
     
-    actuacions = ( Actuacio
-                   .objects
-                   .filter( professional = professional )
-                   .distinct()
-                  )
+    data_inici_curs = list(Curs.objects.values_list('data_inici_curs').order_by('data_inici_curs').first())[0]
+    
+    actuacions = Actuacio.objects.filter( professional = professional, moment_actuacio__gte = data_inici_curs ).distinct()
 
-    table = Table2_Actuacions( list( actuacions ) ) 
-    table.order_by = '-moment_actuacio' 
+    # Cal fer la cerca, perquè si n' hi ha de velles, s'habilita el botó per veure-les.
+    actuacions_antigues = Actuacio.objects.filter( professional = professional, moment_actuacio__lte = data_inici_curs ).distinct()
+                  
+    habilita_link_actuacions_antigues = False
+    veure_dades_actuacions_antigues = False
+
+    if not old_actuacions or old_actuacions != 'actuacionsAntigues':            #Cas normal
+        table = Table2_Actuacions( actuacions )
+        if actuacions_antigues: habilita_link_actuacions_antigues = True
+    else:
+        table = Table2_Actuacions( actuacions_antigues )
+        veure_dades_actuacions_antigues = True
     
+    table.order_by = 'moment_actuacio' 
+
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 20}).configure(table)
-        
+
     return render(
                   request, 
                   'lesMevesActuacions.html', 
                   {'table': table,
+                  'habilita_link_actuacions_antigues':habilita_link_actuacions_antigues,
+                  'veure_dades_actuacions_antigues':veure_dades_actuacions_antigues,
                    }
                  )       
+
 #     
 #     -----------------------------###  OBSOLET ###-----------------------------
 #
@@ -428,11 +441,19 @@ def editaActuacio(request, pk):
     professor = User2Professor(user)
     
     #seg-------------------
-    te_permis = (l4 or 
-                actuacio.professional.pk == user.pk or  
-                professor in actuacio.alumne.tutorsDeLAlumne() or
-                user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
-                )
+
+    if actuacio.professional:   # Si l'actuació va ser importada, el professional ja no és al centre.
+        te_permis = (l4 or 
+                    actuacio.professional.pk == user.pk or  
+                    professor in actuacio.alumne.tutorsDeLAlumne() or
+                    user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
+                    )
+    else:
+        te_permis = (l4 or 
+                    professor in actuacio.alumne.tutorsDeLAlumne() or
+                    user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
+                    )
+    
     if  not te_permis:
         raise Http404() 
     
@@ -448,6 +469,12 @@ def editaActuacio(request, pk):
     formActuacioF = modelform_factory(Actuacio, exclude=['alumne','professional'], widgets = widgets)
     #formActuacioF.base_fields['moment_actuacio'].widget = forms.DateTimeInput(attrs={'class':'DateTimeAnyTime'} )
     formset = []
+
+    #Si la data de l'actuació és d'un altre curs, no es podrà editar
+    data_inici_curs = list(Curs.objects.values_list('data_inici_curs').order_by('data_inici_curs').first())[0]
+    if actuacio.moment_actuacio.date() < data_inici_curs: actuacioNoEditable = True
+    else: actuacioNoEditable = False
+
     if request.method == 'POST':
         
         formActuacio = formActuacioF(request.POST, instance = actuacio ) 
@@ -484,6 +511,7 @@ def editaActuacio(request, pk):
                      'infoForm': infoForm,
                      'head': 'Actuació' ,
                      'titol_formulari': u"Edició d'una actuació",
+                     'actuacioNoEditable': actuacioNoEditable,
                     },
                 )
 

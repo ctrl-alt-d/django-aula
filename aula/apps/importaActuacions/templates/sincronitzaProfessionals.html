@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+ 
+{% block content  %}
+
+    {% block head %}
+    {% if head %}
+        <h2 style="margin-bottom: 25px;">{{ head }}</h2>
+        <p/>
+        <p/>
+    {% endif %}
+    {% endblock %}
+
+    {% if professionals_repetits %}
+
+    <div class="alert alert-danger" role="alert">
+        <p><span class="alert-heading" style="font-weight: bold; font-size: large;">Atenci&oacute;!</span>
+            S'han detectat repeticions en les assignacions, &eacute;s a dir, m&eacute;s d'un professional del curs actual assignat a un mateix professional del curs anterior.</p>
+    </div>
+
+    <p>Els noms d'usuari dels professionals repetits en les assignacions s&oacute;n els següents:</p>
+    <ul>
+        {% for username in professionals_repetits %}
+        <li>Nom d'usuari: <strong>{{ username }}</strong></li>
+        {% endfor %}
+    </ul>
+
+    <div class="alert alert-info" role="alert">
+        <span style="font-weight: bold;">Revisi les dades introduïdes i torni a intentar-ho.</span> Si no ho aconsegueix, contacti amb l'administrador del DjAu.
+    </div>    
+    
+    {% endif %}
+
+
+    <p>Com a pas previ, <strong>cal comprovar que els noms dels usuaris</strong> dels professionals <srong>del curs anterior</srong> (el nom de l'usuari amb el que entra al DjAu) <strong>es corresponen exactament amb els noms dels usuaris dels professionals del curs actual</strong>.</p>
+    <br>
+
+    <p>A continuaci&oacute; <strong>es mostren els professionals del curs anterior que sembla que no es troben en el curs actual</strong>.</p>
+    <ul>
+        <li>En el cas que en el llistat aparegui algun professional que s&iacute; que es troba en el curs actual, caldr&agrave; associar-lo correctament.</li>
+        <li>Si un professional del curs anterior no es troba en el curs actual, caldr&agrave; deixar-lo sense associar.</li>
+    </ul>
+    <p>Com &eacute;s l&ograve;gic, un usuari del curs actual no es pot associar a m&eacute;s d'un usuari del curs anterior.</p>
+
+
+    <form method="POST" action="."> {% csrf_token %}
+        
+        <table class="table table-hover" style="margin-top: 10px; font-size: smaller;">
+            <thead class="thead-dark>">
+                <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col">Nom del professional (curs anterior)</th>
+                    <th scope="col">Professional del curs actual amb el que associar el professional del curs anterior</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for usuari_olddb in usuaris_orfes_oldb %}
+            <tr>
+                    <th scope="row">{{ usuari_olddb.1 }}</th>
+                    <td>{{ usuari_olddb.2 }} {{ usuari_olddb.3 }}</td>
+                    <td>
+                        <select name="{{ usuari_olddb.1 }}" id="{{ usuari_olddb.1 }}">
+                            {% for usuari_curs_actual in usuaris_curs_actual %}
+                                {% if assignacio_anterior|get_value:usuari_olddb.1  == usuari_curs_actual.1 %}
+                                    <option value="{{ usuari_curs_actual.1 }}" selected>
+                                {% else %}
+                                    <option value="{{ usuari_curs_actual.1 }}">
+                                {% endif %}
+                                    <strong>{{ usuari_curs_actual.1 }}</strong> - {{ usuari_curs_actual.2 }} {{ usuari_curs_actual.3 }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="row row-padded" >
+            <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
+                    <button type="submit" class="btn btn-primary">Enviar dades</button>
+            </div>
+        </div>
+    
+    </form>
+
+    <br>
+    <br>
+
+{% endblock %}

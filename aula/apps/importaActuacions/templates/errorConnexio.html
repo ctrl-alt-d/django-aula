@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+ 
+{% block content  %}
+
+    {% block head %}
+    {% if head %}
+        <h2 style="margin-bottom: 25px;">{{ head }}</h2>
+        <p/>
+        <p/>
+    {% endif %}
+    {% endblock %}
+
+    {% block preform %}{% endblock %}
+
+    <div class="alert alert-danger" role="alert">
+        <p><span class="alert-heading" style="font-weight: bold; font-size: large;">Atenci&oacute;!</span>
+            No s'ha pogut connectar-hi. Podria ser que els par&agrave;metres de connexi&oacute; proporcionats no fossin correctes.</p>
+    </div>
+
+    <p>Les dades utilitzades per connectar amb la base de dades del curs anterior han sigut:</p>
+    <ul>
+        <li>Nom de la base de dades: <strong>{{ nom }}</strong></li>
+        <li>Usuari de gesti&oacute; de la base de dades: <strong>{{ usuari }}</strong></li>
+        <li>La contrasenya proporcionada no es mostra. </li>
+    </ul>
+
+    <div class="alert alert-info" role="alert">
+        <span style="font-weight: bold;">Revisi les dades introduïdes i torni a intentar-ho.</span> Si no ho aconsegueix, contacti amb l'administrador del DjAu.
+    </div>
+
+    <a href=/importaActuacions/connexioDB/ class="btn btn-info" role="button" style="color: blue;">Tornar-ho a intentar</a>
+
+{% endblock %}

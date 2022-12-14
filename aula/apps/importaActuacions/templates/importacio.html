@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block extrahead %} {% endblock %}
+ 
+{% block content  %}
+
+    {% block head %}
+    {% if head %}
+        <h2 style="margin-bottom: 25px;">{{ head }}</h2>
+        <p/>
+        <p/>
+    {% endif %}
+    {% endblock %}
+
+    {% block preform %}{% endblock %}
+
+    <!-- INTRODUCCIÓ-->
+
+    <div class="alert alert-success alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <strong>Les actuacions s'importaran des de</strong> la base de dades que t&eacute; per nom: <strong>{{ nom_dbold }}</strong>. Si vol connectar-se a una altra base de dades, <a href="/importaActuacions/connexioDB/" class="alert-link">premi aqu&iacute;</a><br>
+        Abans de fer la importaci&oacute; definitiva de les actuacions, comprovi que la informaci&oacute; que apareix a continuaci&oacute; &eacute;s correcte.
+    </div>
+
+
+    <!-- FI INTRODUCCIÓ-->
+
+
+
+    <!-- ACTUACIONS A IMPORTAR -->
+
+    <p style="padding: 10px; font-size:large; font-weight: bold; color: white; background-color: blue; border-radius: 5px;">Actuacions definitives que seran importades</p>
+
+    <div style="margin: 25px;">
+
+        <p>Les actuacions a importar es poden consultar a continuaci&oacute;, amb el benent&egrave;s que s'han descomptat tant les actuacions associades a l'alumnat que ja no es troba al centre, com aquelles actuacions que, per tal d'evitar actuacions duplicades, ja es troben al curs actual, probablement per haver estat ja importades amb anterioritat.</p>
+
+        {% if actuacions_a_importar %}
+
+        <p>
+            <strong>
+        {% if actuacions_a_importar|length == 1 %}
+            Nom&eacute;s s'ha trobat una actuaci&oacute; a importar des del curs anterior al curs actual.</p>
+        {% else %}
+            La quantitat final d'actuacions a importar des del curs anterior al curs actual ser&agrave; de {{ actuacions_a_importar|length }}.</p>
+        {% endif %}
+            </strong>
+        </p>
+        <br>
+
+        <form method="POST" action="../resultatImportacio/"> {% csrf_token %}
+            <input type="submit" class="btn btn-danger" style="margin: auto; width: 100%; border: 3px solid red; padding: 10px; font-weight: bolder;" value="INICIAR IMPORTACI&Oacute; DE LES ACTUACIONS"/>
+        </form>
+        <br>
+
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#actuacions_per_importar" aria-expanded="false" aria-controls="actuacions_per_importar">
+             Mostrar / Ocultar les actuacions que seran importades
+        </button>
+
+        <div class="collapse" id="actuacions_per_importar">
+            <table class="table table-striped" style="margin-top: 10px;">
+                <!--    <table class="table table-hover" style="margin-left: 25px;">-->
+                <thead class="thead-dark>">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Alumne</th>
+                        <th scope="col">Data</th>
+                        <th scope="col">Professional</th>
+                        <th scope="col">Contingut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for actuacio in actuacions_olddb_list %}
+                    {% if actuacio.alumne_id %}
+                    <tr>
+                        <th scope="row">{{ actuacio.id }}</th>
+                        <td>{{ actuacio.nom_alumne }} {{ actuacio.cognoms_alumne }}</td>
+                        <td>{{ actuacio.moment_actuacio }}</td>
+                        {% if actuacio.professional_id %}
+                        <td>{{ actuacio.nom_professional }} {{ actuacio.cognoms_professional }}</td>
+                        {% else %}
+                        <td> Ja no &eacute;s al centre.</td>
+                        {% endif %}                
+                        <td><span style="font-size: x-small">{{ actuacio.actuacio }}</span></td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% elif not actuacions_ja_importades %}
+        <div class="alert alert-danger" role="alert">
+            <p class="alert-heading" style="font-weight: bold; font-size: large;">Atenci&oacute;! No hi ha cap actuaci&oacute; a importar.</p>
+            <p>Totes les actuacions registrades al curs anterior estan associades a alumnat desmatriculat.<p>
+            <br>
+            <p>Revisi les dades que es presenten a sota.</p>
+        </div>
+        {% else %}
+        <div class="alert alert-danger" role="alert">
+            <p class="alert-heading" style="font-weight: bold; font-size: large;">Atenci&oacute;! No hi ha cap actuaci&oacute; a importar.</p>
+            <p>D'entre totes les actuacions registrades al curs anterior que es podrien importar, unes estan associades a alumnat desmatriculat i d'altres s&oacute;n actuacions que ja s'han importat amb anterioritat.<p>
+            <br>
+            <p>Revisi les dades que es presenten a sota.</p>
+            </div>       
+        {% endif %}   
+        
+
+    </div>  
+    <br><br><br>
+
+    <!-- FI ACTUACIONS A IMPORTAR -->
+
+
+    <!-- ACTUACIONS AMB CARACTERÍSTIQUES ESPECIALS-->
+
+    <p style="padding: 10px; font-size:large; font-weight: bold; color: white; background-color: blue; border-radius: 5px;">Actuacions amb caracter&iacute;stiques especials</p>
+
+    <div style="margin: 25px;">
+
+        <!-- ALUMNAT DESMATRICULAT-->
+        <p style="padding: 5px; font-size:medium; font-weight: bold; color: white; background-color: #4545fa; border-radius: 5px;">Actuacions associades a alumnat desmatriculat</p>
+
+        <p>L'alumnat desmatriculat &eacute;s aquell que no ha continuat al centre educatiu, &eacute;s a dir, va estar matriculat per&ograve; actualment ja no hi &eacute;s.</p>
+        <p><strong>Les actuacions associades a aquest alumnat no s'importaran</strong>. Si n'hi hagu&eacute;s es mostraran a continuaci&oacute; a t&iacute;tol informatiu.</p>
+
+
+        <!-- Llistat d'alumnat desmatriculat-->
+
+        {% if not alumnes_desmatriculats %}
+        <strong>No s'ha trobat cap alumne desmatriculat.</strong>  
+        {% else %}
+
+        <h5 style="margin-bottom: 10px; margin-left: 25px; font-weight: bold;">&#8226; Alumnat desmatriculat</h5>
+
+        <p style="margin-left: 35px;">
+            {% if alumnes_desmatriculats|length == 1 %}
+            Nom&eacute;s s'ha trobat un alumne desmatriculat
+            {% else %}
+                S'han trobat {{ alumnes_desmatriculats|length }} alumnes desmatriculats
+            {% endif %}
+        </p>
+
+        <table class="table table-striped" style="margin-left: 50px; width: 50%;">
+            <thead>
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Ralc</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alumne in alumnes_desmatriculats %}
+                <tr>
+                    <td>{{ alumne.nom }} {{ alumne.cognoms }}</td>
+                    <td>{{ alumne.ralc }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Llistat d'actuacions associades a alumnat desmatriculat-->
+
+        {% if not actuacions_sense_alumne_curs_actual %}
+            <strong>No hi ha actuacions associades a alumnat desmatriculat.</strong>
+        {% else %}
+        
+        <h5 style="margin-bottom: 10px; margin-left: 25px; font-weight: bold">&#8226; Llistat d'actuacions associades a alumnat desmatriculat</h5>
+        <p style="margin-left: 35px;">
+            {% if actuacions_sense_alumne_curs_actual|length == 1 %}
+                Nom&eacute;s s'ha trobat una actuaci&oacute; associades a alumnat desmatriculat.
+            {% else %}
+                S'han trobat {{ actuacions_sense_alumne_curs_actual|length }} actuacions associades a alumnat desmatriculat.
+            {% endif %}    
+        </p>
+
+        <button class="btn btn-primary" style="margin-left: 35px;" type="button" data-toggle="collapse" data-target="#actuacions_alumnat_desmatriculat" aria-expanded="false" aria-controls="actuacions_alumnat_desmatriculat">
+            Mostrar / Ocultar
+        </button>
+        
+        <div class="collapse" id="actuacions_alumnat_desmatriculat" >
+            <table class="table table-striped" style="margin-left: 50px;">
+                <thead class="thead-dark>">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Professional</th>
+                        <th scope="col">Data</th>
+                        <th scope="col">Alumne</th>
+                        <th scope="col">Contingut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for actuacio in actuacions_olddb_list %}
+                    {% if not actuacio.alumne_id %}
+                    <tr>
+                        <th scope="row">{{ actuacio.id }}</th>
+                        <td>{{ actuacio.nom_professional }} {{ actuacio.cognoms_professional }}</td>
+                        <td>{{ actuacio.moment_actuacio }}</td>
+                        <td>{{ actuacio.nom_alumne }} {{ actuacio.cognoms_alumne }}</td>
+                        <td><span style="font-size: x-small">{{ actuacio.actuacio }}</span></td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <br>
+        <br>
+        <br>
+
+        <!-- FI ALUMNAT DESMATRICULAT-->
+
+
+
+
+        <!-- PROFESSIONALS FORA DE CENTRE-->
+
+        <p style="padding: 5px; font-size:medium; font-weight: bold; color: white; background-color: #4545fa; border-radius: 5px;">Actuacions creades per professionals que ja no es troben al centre educatiu</p>
+
+        <p>S'ofereixen dos llistats. El primer fa refer&egrave;ncia als professionals que ja no es troben al centre i que van fer actuacions amb alumnat que encara hi &eacute;s, mentre que el segon presenta les actuacions que van crear.<p>
+        <p>Donat que <strong>aquestes actuacions s&iacute; que seran importades</strong> a l'historial de l'alumnat corresponent, es mostren a continuaci&oacute; per tal de facilitar-ne la revisi&oacute;. No obstant, degut a aquesta circumst&agrave;ncia espec&iacute;fica, a l'inici del text de l'actuaci&oacute; afectada s'insertar&agrave; una frase que dir&agrave;:</p>
+        
+        <div class="alert alert-info" style="margin-left: 50px; margin-right: 50px;" role="alert">
+            <em>
+                "El o la professional (nom de la persona i codi intern va redactar aquesta actuaci&oacute; per&ograve; ja no es troba al centre educatiu. No obstant, a continuaci&oacute; se'n mostra el text original:"
+            </em>
+        </div>
+
+        <!-- Llistat de professionals fora del centre-->
+
+        {% if not professionals_foracentre %}
+        <strong>Tots els professionals afectats per la importaci&oacute; es troben al centre educatiu.</strong>
+        {% else %}
+
+        <h5 style="margin-bottom: 10px; margin-left: 25px; font-weight: bold">&#8226; Professionals que ja no s&oacute;n al centre educatiu</h5>
+        <p style="margin-left: 43px;">
+            {% if professionals_foracentre|length == 1 %}
+                Nom&eacute;s s'ha trobat un professional que ja no es al centre educatiu.</p>
+            {% else %}
+                S'han trobat {{ professionals_foracentre|length }} professionals que ja no s&oacute;n al centre educatiu.</p>
+            {% endif %}
+        </p>
+
+        <table class="table table-striped" style="margin-left: 25px; width: 50%;">
+            <thead>
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Codi intern</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in professionals_foracentre %}
+                <tr>
+                    <td>{{ professional.nom }} {{ professional.cognoms }}</td>
+                    <td>{{ professional.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+
+    <!-- Llistat d'actuacions dels professionals que són fora del centre-->
+
+
+    {% if actuacions_sense_professional %}
+
+    <h5 style="margin-bottom: 10px; margin-left: 25px; font-weight: bold">&#8226; Actuacions dels professionals que ja no es troben al centre educatiu</h5>
+    <p style="margin-left: 43px;">
+            {% if actuacions_sense_professional|length == 1 %}
+                Nom&eacute;s s'ha trobat una actuaci&oacute; afectada per un professional que no &eacute;s al centre educatiu.</p>
+            {% else %}
+                S'han trobat {{ actuacions_sense_professional|length }} actuacions creades per professionals que ja no s&oacute;n al centre educatiu.</p>
+            {% endif %}
+        </p>
+
+        <button class="btn btn-primary" style="margin-left: 43px;" type="button" data-toggle="collapse" data-target="#actuacions_sense_professional" aria-expanded="false" aria-controls="actuacions_sense_professional">
+            Mostrar / Ocultar
+        </button>
+
+        <div class="collapse" id="actuacions_sense_professional">
+            <table class="table table-striped" style="margin-left: 50px;">
+            <!--    <table class="table table-hover" style="margin-left: 25px;">-->
+                <thead id="actuacions_sense_professional" class="thead-dark">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Alumne</th>
+                        <th scope="col">Data</th>
+                        <th scope="col">Contingut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for actuacio in actuacions_olddb_list %}
+                    {% if not actuacio.professional_id %}
+                    <tr>
+                        <th scope="row">{{ actuacio.id }}</th>
+                        <td>{{ actuacio.nom_alumne }} {{ actuacio.cognoms_alumne }}</td>
+                        <td>{{ actuacio.moment_actuacio }}</td>
+                        <td><span style="font-size: x-small">{{ actuacio.actuacio }}</span></td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% endif %}
+
+        <br>
+        <br>
+        <br>       
+
+        <!-- FI PROFESSIONALS FORA DE CENTRE-->
+
+
+        <!-- ACTUACIONS JA IMPORTADES (DUPLICADES)-->
+
+        <p style="padding: 5px; font-size:medium; font-weight: bold; color: white; background-color: #4545fa; border-radius: 5px;">Actuacions que ja es troben al curs actual</p>
+
+        {% if not actuacions_ja_importades %}
+        No s'ha trobat cap actuaci&oacute; duplicada, &eacute;s a dir, no hi ha cap actuaci&oacute; a importar que ja estigui en el curs actual.
+        {% else %}
+
+        <div class="alert alert-danger" role="alert">
+            <p><span class="alert-heading" style="font-weight: bold; font-size: large;">Atenci&oacute;!</span>
+            S'han trobat actuacions en el curs anterior que podria ser que ja hi siguin en el curs actual donat que tenen la mateixa data i hora de creaci&oacute;.</p>
+        </div>
+
+        <p>
+            {% if actuacions_ja_importades|length == 1 %}
+                Concretament se n'ha trobat una, d'actuaci&oacute;, que ja existeix al curs actual. Podria ser que ja hagi estat importada amb anterioritat. Aquesta actuaci&oacute; no s'importar&agrave;.</p>
+            {% else %}
+                Concretament se n'han trobat {{ actuacions_ja_importades|length }}, d'actuacions, que ja existeixen al curs actual. És possible que ja hagin estat importades amb anterioritat. <strong>Aquestes actuacions no s'importaran.</strong></p>
+            {% endif %}
+        </p>
+
+        <button class="btn btn-primary" style="margin-left: 43px;" type="button" data-toggle="collapse" data-target="#actuacions_ja_importades" aria-expanded="false" aria-controls="actuacions_ja_importades">
+            Mostrar / Ocultar
+        </button>
+
+        <div class="collapse" id="actuacions_ja_importades">
+            <table class="table table-striped">
+                <!--    <table class="table table-hover" style="margin-left: 25px;">-->
+                <thead class="thead-dark>">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Alumne</th>
+                        <th scope="col">Data</th>
+                        <th scope="col">Professional</th>
+                        <th scope="col">Contingut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for actuacio in actuacions_ja_importades %}
+                    <tr>
+                        <th scope="row">{{ actuacio.id }}</th>
+                        <td>{{ actuacio.nom_alumne }} {{ actuacio.cognoms_alumne }}</td>
+                        <td>{{ actuacio.moment_actuacio }}</td>
+                        {% if actuacio.professional_id %}
+                        <td>{{ actuacio.nom_professional }} {{ actuacio.cognoms_professional }}</td>
+                        {% else %}
+                        <td> Ja no &eacute;s al centre.</td>
+                        {% endif %}                
+                        <td><span style="font-size: x-small">{{ actuacio.actuacio }}</span></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <br>
+        <br>
+        
+    {% endif %}
+
+    <!-- FI ACTUACIONS JA IMPORTADES (DUPLICADES)-->
+
+
+    <!-- FI ACTUACIONS AMB CARACTERÍSTIQUES ESPECIALS-->
+</div>
+
+<br>
+<br>
+<br>
+
+{% endblock %}
