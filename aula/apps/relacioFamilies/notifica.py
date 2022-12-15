@@ -47,12 +47,20 @@ def notifica():
     from aula.apps.presencia.models import ControlAssistencia
     from django.core.mail import send_mail, EmailMessage
     from aula.apps.usuaris.models import Accio
+    num_correus_no_enviats=0
+
     
     urlDjangoAula = settings.URL_DJANGO_AULA
     textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL
     
     #with transaction.autocommit():  #deprecated on 1.8. Now is the default behaviuor.
-        
+
+
+    # TODO x App
+    #
+    # treure fa_2_setmanes
+    # llista alumnes q_no_informat_adreca deprecated: tenen adreça informada o tenen token
+
     #actualitzo notificacions sortides:
     notifica_sortides()
     
@@ -62,7 +70,7 @@ def notifica():
     #Notificacions        
     ara = datetime.now()
     
-    fa_2_setmanes = ara - timedelta(  days = 14 )
+    #fa_2_setmanes = ara - timedelta(  days = 14 )
     presencies_notificar = EstatControlAssistencia.objects.filter( codi_estat__in = ['F','R','J']  )
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
     q_no_informat_adreca = Q( correu_relacio_familia_pare = '' ) & Q( correu_relacio_familia_mare = '' )
@@ -100,7 +108,7 @@ def notifica():
             noves_expulsions = alumne.expulsio_set.exclude( estat = 'ES').filter(    relacio_familia_notificada__isnull = True  )
             noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
             noves_faltes_assistencia = ControlAssistencia.objects.filter( alumne = alumne, 
-                                                                          impartir__dia_impartir__gte = fa_2_setmanes,
+                                                                          #impartir__dia_impartir__gte = fa_2_setmanes,
                                                                           relacio_familia_notificada__isnull = True,
                                                                           estat__pk__in = presencies_notificar )
             noves_respostes_qualitativa = ( alumne
@@ -166,11 +174,18 @@ def notifica():
                     email.send(fail_silently=False)
                     enviatOK = True
                 except:
-                    #cal enviar msg a tutor que no s'ha pogut enviar correu a un seu alumne.
                     if settings.DEBUG:
                         print (u'Error enviant missatge a {0}'.format( alumne ))
                     enviatOK = False
+                    #Enviar msg a admins, ull! podem inundar de missatges si fallen tots els alumnes.
+                    num_correus_no_enviats += 1
 
+
+            #actualitzo QR's
+            if hiHaNovetats:
+                n_tokens = alumne.qr_portal_set.update( novetats_detectades_moment = ara  )
+
+            enviatOK = enviatOK or bool(n_tokens)  # s'ha enviat per algun dels mitjants
             if enviatOK:                    
                 noves_sortides.update( relacio_familia_notificada = ara )
                 #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
@@ -195,6 +210,12 @@ def notifica():
                                 
         except ObjectDoesNotExist:
             pass
+
+    # si hi ha correus que han fallat informar a l'admin
+
+    if num_correus_no_enviats > 0:
+        raise Exception(u"No s'han pogut enviar {} missatges a famílies.".format(num_correus_no_enviats))
+
 
 def pendentEmail(subject, body, from_email, bcc, attachments=None):
     '''
