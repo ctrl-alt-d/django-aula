@@ -7,6 +7,8 @@ from aula.apps.alumnes.views import mostraGrupPromocionar,nouAlumnePromocionar,l
 from django.contrib.auth.views import PasswordChangeView
 from django.views.static import serve
 from rest_framework_jwt.views import obtain_jwt_token,refresh_jwt_token, verify_jwt_token
+from django.views.generic.base import RedirectView
+from django.conf import settings
 
 admin.autodiscover()
 admin.site.enable_nav_sidebar = False
@@ -53,6 +55,7 @@ urlpatterns = [
     re_path(r'^extPreinscripcio/', include('aula.apps.extPreinscripcio.urls')),
     re_path(r'^mblapp/', include('aula.mblapp.urls')),
     # Uncomment the next line to enable the admin:
+    re_path(r'^admin/login/', RedirectView.as_view(url=settings.LOGIN_URL, permanent=True, query_string=True)),
     path('admin/', admin.site.urls),
     # Login i logout automàtics
     #(r'^login/$', 'django.contrib.auth.views.login'),
