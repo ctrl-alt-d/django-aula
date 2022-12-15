@@ -33,13 +33,9 @@ from aula import settings_local
         # amb els del curs actual, encara que siguin els mateixos professionals.
 # 3r PAS. EXTRACCIÓ DE DADES. Lectura de les dades significatives, tant de la BD antiga com de l'actual.
 # 4t PAS. 1r CANVI. Amb les dades de la BD antiga:
-    # 4.1 Substitució dels usernames antics dels professionals pels actuals usernames.
+    # 4.1 Substitució de l'identificador del professional pel seu username antic i substitució dels usernames antics dels professionals pels actuals usernames.
     # 4.2 Substitució de l'identificador de l'alumne pel RALC, que és universal.
     #   POSSIBLE MILLORA: Es podria contemplar el cas que un alumne no tinguin RALC? Només en aquest cas, caldria estirar les dades del nom i cognoms, però sempre és molt més insegur i amb confirmació expressa.
-    # 4.3 Substitució de l'identificador del professional pel seu username.
-    #   Cal assegurar-se que hi haurà el mateix username a la BD antiga i a l'actual
-    #   perquè sigui universal, o bé modificant els usernames manualment en l'administració,
-    #   o bé mitjançant un formulari de comparació (TO DO)
 # 5é PAS. 2n CANVI. Amb les dades de la BD actual:
     # 5.1 Substitució del RALC de l'alumne pel valor de l'identificador.
     # 5.2 Substitució de l'username del professional pel seu identificador.
