@@ -71,6 +71,11 @@ curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE
 "Sancions":[],
 "id":108}
 
+#Fase 5: Demanar si hi ha novetats
+export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjA4LCJ1c2VybmFtZSI6IkFQSTZtbmIiLCJleHAiOjE2NjkxNTg4ODIsImVtYWlsIjoiIn0.DRNDPdvZ_KxyvNIUH3GJ1UeKsmFFwGihcLzHmY4gZFI
+export LASTSYNCDATE="2022-11-18 12:00:13"
+curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/mblapp/notificacions/news/
+
 $# ------------------- Altres proves ------------------------------
 #Prova accedir sense el token
 $

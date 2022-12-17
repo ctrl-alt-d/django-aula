@@ -224,8 +224,8 @@ def qrTokens( request , pk=None ):
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=5,
-            border=4,
+            box_size=3,
+            border=2,
         )
         qr.add_data(qr_text)
         qr.make(fit=True)
@@ -273,7 +273,7 @@ def qrTokens( request , pk=None ):
 
     if True:  # not excepcio:
         response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format("autoritzacio_sortida", pk)
+        response['Content-Disposition'] = u'attachment; filename="{0}-{1}-{2}.odt"'.format("QR", alumne.cognoms, alumne.nom)
 
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
