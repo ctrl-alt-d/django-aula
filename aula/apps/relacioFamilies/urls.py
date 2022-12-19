@@ -17,6 +17,9 @@ urlpatterns = [
     re_path(r'^qrTokens/$', relacioFamilies_views.qrTokens,
         name="tutoria__relacio_families___qr_tokens_all"),
 
+    re_path(r'^qrs/$', relacioFamilies_views.qrs,
+            name="tutoria__relacio_families__qrs"),
+
     re_path(r'^bloquejaDesbloqueja/(?P<pk>\d+)/$', relacioFamilies_views.bloquejaDesbloqueja,
         name="tutoria__relacio_families__bloqueja_desbloqueja"), 
       
@@ -36,5 +39,5 @@ urlpatterns = [
     path('anteriors/', relacioFamilies_views.comunicatsAnteriors, name="relacio_families__comunicats__anteriors"),
     
     path('horesAlumneAjax/<idalumne>/<dia>/', relacioFamilies_views.horesAlumneAjax,
-        name="relacio_families__horesAlumneAjax"),         
+        name="relacio_families__horesAlumneAjax"),
 ]
