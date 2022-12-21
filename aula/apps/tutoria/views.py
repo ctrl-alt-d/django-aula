@@ -234,7 +234,7 @@ def tutorPosaExpulsioPerAcumulacio(request, pk):
 
 @login_required
 @group_required(['professors','professional'])
-def lesMevesActuacions(request, old_actuacions=''):
+def lesMevesActuacions(request, incloureActuacionsAntigues=False):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -251,8 +251,7 @@ def lesMevesActuacions(request, old_actuacions=''):
     habilita_link_actuacions_antigues = False
     veure_dades_actuacions_antigues = False
 
-    if not old_actuacions or old_actuacions != 'actuacionsAntigues':            #Cas normal
-        table = Table2_Actuacions( actuacions )
+    if not incloureActuacionsAntigues or incloureActuacionsAntigues != 'actuacionsAntigues':            #Cas normal        table = Table2_Actuacions( actuacions )
         if actuacions_antigues: habilita_link_actuacions_antigues = True
     else:
         table = Table2_Actuacions( actuacions_antigues )
@@ -442,17 +441,13 @@ def editaActuacio(request, pk):
     
     #seg-------------------
 
+    te_permis = (
+                l4 or 
+                professor in actuacio.alumne.tutorsDeLAlumne() or
+                user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
+    )
     if actuacio.professional:   # Si l'actuació va ser importada, el professional ja no és al centre.
-        te_permis = (l4 or 
-                    actuacio.professional.pk == user.pk or  
-                    professor in actuacio.alumne.tutorsDeLAlumne() or
-                    user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
-                    )
-    else:
-        te_permis = (l4 or 
-                    professor in actuacio.alumne.tutorsDeLAlumne() or
-                    user.groups.filter(name__in= [u'direcció', u'psicopedagog'] ).exists() 
-                    )
+        te_permis = (te_permis or actuacio.professional.pk == user.pk)
     
     if  not te_permis:
         raise Http404() 

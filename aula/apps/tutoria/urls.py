@@ -5,7 +5,7 @@ urlpatterns = [
     re_path(r'^lesMevesActuacions/$', tutoria_views.lesMevesActuacions,
         name="tutoria__actuacions__list"),
 
-    re_path(r'^lesMevesActuacions/(?P<old_actuacions>\w+)/$', tutoria_views.lesMevesActuacions,
+    re_path(r'^lesMevesActuacions/(?P<incloureActuacionsAntigues>\w+)/$', tutoria_views.lesMevesActuacions,
         name="tutoria__actuacionsantigues__list"),
 
     re_path(r'^lesMevesActuacionsPsico/$', tutoria_views.lesMevesActuacions,
