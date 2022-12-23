@@ -1,0 +1,13 @@
+{% extends "table2.html" %}
+{% load i18n %}
+{% load django_tables2 %}
+{% load static %}
+{% load humanize %}
+
+{% block pretaula %}
+
+	<div class="row row-padded" style="background-color:white">
+     <span class="glyphicon  glyphicon-phone"> </span> <strong>QR's generats de l'alumne: {{ alumne }} ( {{alumne.grup}} ) </strong>
+    </div>
+
+{% endblock %}

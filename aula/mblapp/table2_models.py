@@ -10,13 +10,13 @@ class Table2_QRPortalAlumne(tables.Table):
         template_code=u"""{{ record.moment_expedicio }}""",
     )
     data_captura = tables.TemplateColumn(
-        template_code=u"""{{ record.moment_captura }}""",
+        template_code=u"""{%if record.moment_captura%} {{ record.moment_captura }} {%else%} ----- {%endif%}""",
     )
     actiu=tables.TemplateColumn(
-        template_code=u"""{{record.es_el_token_actiu}}""",
+        template_code=u"""{%if record.es_el_token_actiu%} Sí {%else%} No {%endif%}""",
     )
     data_confirmacio_pel_tutor = tables.TemplateColumn(
-        template_code=u"""{{record.moment_confirmat_pel_tutor}}""",
+        template_code=u"""{%if record.moment_confirmat_pel_tutor%} {{record.moment_confirmat_pel_tutor}} {%else%} ----- {%endif%}""",
     )
 
     accions = tables.TemplateColumn(template_code=u"""
