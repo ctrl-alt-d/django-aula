@@ -53,7 +53,7 @@ Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las depend
 
 Antes de seguir con la aplicación, instalaremos Apache  y el módulo [wsgi](https://en.wikipedia.org/wiki/Web_Server_Gateway_Interface) para que pueda servir nuestra aplicación Python a través de él.
 
-Además instalaremos la base de datos que usará django-aula y su conector python correspondiente, se recomienda instalar la aplicación sobre postgresql pero también es posible hacerlo sobre Mysql.
+Además instalaremos la base de datos que usará django-aula y su conector python correspondiente, se recomienda instalar la aplicación sobre postgresql.
 
 **Postgresql  (recomenat):**
 
@@ -62,12 +62,6 @@ apt-get install apache2 libapache2-mod-wsgi-py3 python3-psycopg2 postgresql post
 pip3 install wheel psycopg2
 ```
 
-**Mysql (no recomenat):**
-
-```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev
-pip3 install wheel mysqlclient
-```
 
 Una vez elegido el motor de base de datos, hay que crear la base de datos de la aplicación, y crear un usuario que la pueda administrar.
 
@@ -81,20 +75,6 @@ CREATE DATABASE djau2022;
 CREATE USER djau2022 WITH PASSWORD 'XXXXXXXXXX';
 GRANT ALL PRIVILEGES ON DATABASE djau2022 TO djau2022;
 \q
-exit
-```
-
-**Para Mysql**
-
-```
-sudo su
-mysql
-CREATE DATABASE djau2022 CHARACTER SET utf8;
-CREATE USER 'djau2022'@'localhost' IDENTIFIED BY 'XXXXXXXX';
-GRANT ALL PRIVILEGES ON djau2022.* TO 'djau2022'@'localhost';
-USE djau2022;
-SET default_storage_engine=INNODB;
-QUIT
 exit
 ```
 
@@ -124,6 +104,8 @@ Django Aula tiene 3 archivos principales de configuración
 
 A continuación dejo una configuración válida para los 2 archivos citados anteriormente, simplemente copia, pega y adáptalo a tus necesidades.
 
+Es imprescindible que cambies los campos que estan comentados con #CAMBIAR URGENTE
+
 Los archivos están comentados para entenderlos mejor.
 
 **`/opt/djau2022/aula/settings_local.py"`**
@@ -139,7 +121,7 @@ from .settings import CUSTOM_PORTAL_FAMILIES_TUTORIAL
 DEBUG = True
 
 #Información del Centro
-NOM_CENTRE = 'Centre de Demo'
+NOM_CENTRE = 'Centre de Demo'  #CAMBIAR URGENTE al nombre de tu centro
 LOCALITAT = u"Badia del Vallés"
 
 #Per a fer importació de la preinscripció
@@ -156,15 +138,15 @@ ACCES_RESTRINGIT_A_GRUPS = None # ó be = ['direcció','administradors']  durant
 
 #Datos del usuario administrador
 ADMINS = (
-    ('admin', 'ui@mega.cracs.cat'),
+    ('admin', 'ui@mega.cracs.cat'),  #CAMBIAR URGENTE a los datos del administrador
 )
 
 #Configuracion del Correo Relay SMTP y IMAP de la Aplicación
 EMAIL_HOST='smtp.gmail.com'
 EMAIL_HOST_IMAP="imap.gmail.com"
-EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
-EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
-DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
+EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'   #CAMBIAR URGENTE correo desde donde se enviaran los correos
+EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'    #CAMBIAR URGENTE  contraseña del correo
+DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'   #CAMBIAR URGENTE
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
 SERVER_EMAIL='el-meu-centre@el-meu-centre.net'
@@ -173,7 +155,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # Per proves, envia a la consola
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
 
-EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
+EMAIL_SUBJECT_PREFIX = '[DJANGO-AULA] '
 
 #True si se activa el HTTPS
 SESSION_COOKIE_SECURE=False
@@ -198,9 +180,9 @@ COMPRESS_ENABLED = False
 
 #Passphrase que usara la app para cifrar las credenciales
 # changeit --> python manage.py generate_secret_key
-SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'
+SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'  #CAMBIAR URGENTE
 
-CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
+CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'  
 
 #Componente que utilizará Django para serializar los objetos
 SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
@@ -213,13 +195,12 @@ CUSTOM_KEY_COMERÇ = 'xxxxxx'
 #Configuración de la Base de datos
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': location( 'db.sqlite'),
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.postgresql', 
+        'NAME': 'djau2022',
+        'USER': 'djau2022',
+        'PASSWORD': "XXXXXXXXXX",  #CAMBIAR URGENTE a la contraseña puesta en la instalacion de postgres
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
