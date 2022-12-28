@@ -5,6 +5,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
+from aula.apps.alumnes.models import Alumne
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
 import uuid
 
@@ -22,8 +23,9 @@ from aula.apps.presencia.models import EstatControlAssistencia
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.apps.sortides.models import NotificaSortida
-
+from aula.utils.tools import unicode
 # ----------- vistes per a testos --------------------------------
+
 
 @api_view(['GET'])
 @permission_classes((AllowAny, ))
@@ -178,11 +180,6 @@ def notificacions_mes(request, mes, format=None):
                    .order_by( '-dia_incidencia', '-franja_incidencia')
                          )
 
-    # content["Incidències"] = [ {'dia': i.dia_incidencia,
-    #                             'tipus': str(i.tipus),
-    #                             'franja': str(i.franja_incidencia),
-    #                             'motiu': i.descripcio_incidencia}
-    #                             for i in incidencies  ]
 
     content = content + [{'dia': "/".join(
         [str(i.dia_incidencia.day), str(i.dia_incidencia.month), str(i.dia_incidencia.year)]),
@@ -259,4 +256,27 @@ def notificacions_news(request, format=None):
     content = {"resultat":"No"} if qrtoken.novetats_detectades_moment and qrtoken.novetats_detectades_moment < darrera_sincronitzacio else {"resultat":"Sí"}
 
     return Response(content)
+
+
+
+
+@api_view(['GET'])
+@permission_classes(( EsUsuariDeLaAPI, ))
+def alumnes_dades(request, format=None):
+
+    alumne= Alumne.objects.get(user_associat__username=request.user)
+
+    content = {"grup": unicode(alumne.grup),
+               "datanaixement": "/".join([unicode(alumne.data_neixement.day), unicode(alumne.data_neixement.month),unicode(alumne.data_neixement.year)]),
+               "telefon": alumne.telefons,
+               "responsables":[{"nom":alumne.rp1_nom,
+                                "mail":alumne.rp1_correu,
+                                "tfn": " , ".join(filter(None,[alumne.rp1_telefon,alumne.rp1_mobil]))},
+                               {"nom":alumne.rp2_nom,
+                                "mail":alumne.rp2_correu,
+                                "tfn": " , ".join(filter(None,[alumne.rp2_telefon,alumne.rp2_mobil]))}],
+               "adreça": " , ".join(filter(None,[alumne.adreca, alumne.localitat, alumne.municipi]))}
+
+    return Response(content)
+
 

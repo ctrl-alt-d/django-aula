@@ -16,5 +16,7 @@ urlpatterns = [
         name='appmobil__api__notificacions_mes'),
     re_path(r'^notificacions/news/$', mblapp_views.notificacions_news,
         name='appmobil__api__notificacions_news'),
+    re_path(r'^alumnes/dades/$', mblapp_views.alumnes_dades,
+        name='appmobil__api__alumnes_dades'),
 
     ]
