@@ -54,6 +54,7 @@ Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las depend
 Antes de seguir con la aplicación, instalaremos Apache  y el módulo [wsgi](https://en.wikipedia.org/wiki/Web_Server_Gateway_Interface) para que pueda servir nuestra aplicación Python a través de él.
 
 Además instalaremos la base de datos que usará django-aula y su conector python correspondiente, se recomienda instalar la aplicación sobre postgresql.
+En Django se pueden utilizar los siguientes gestores de bases de datos: PostgreSQL, MariaDB, MySQL, Oracle, SQLite.
 
 **Postgresql  (recomenat):**
 
