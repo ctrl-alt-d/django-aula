@@ -9,6 +9,8 @@ from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuar
     recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form, CanviDadesAddicionalsUsuari
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
 
 from aula.apps.usuaris.tables2_models import HorariProfessorTable
 from aula.utils.decorators import group_required
@@ -17,7 +19,7 @@ from aula.apps.extKronowin.models import ParametreKronowin
 
 #workflow
 from django.http import HttpResponseRedirect
-from django.shortcuts import  get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django import forms
 
 #helpers
@@ -26,8 +28,8 @@ from django.http import HttpResponseNotFound, HttpResponse
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.utils.forms import ckbxForm
-from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd,\
-    Accio
+from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd, \
+    Accio, QRPortal
 from django.utils.datetime_safe import datetime
 from django.utils.safestring import SafeText
 from datetime import timedelta
@@ -323,6 +325,12 @@ def loginUser( request ):
             username = form.cleaned_data['usuari']
             paraulaDePas=form.cleaned_data['paraulaDePas']
             user = authenticate(username=username, password=paraulaDePas)
+
+            #si és del grup API el faig fora.
+            if user and user.groups.filter( name ="API").exists():
+                logout(request)
+                user = None
+
             if user is not None:
                 #Usuari i passwd estan bé
                 if acces_restringit_a_grups and not user.groups.filter( name__in = acces_restringit_a_grups ).exists():
@@ -777,3 +785,56 @@ def blanc( request ):
                     {},
                     )
 
+
+@login_required
+@group_required(['professors'])
+def activaUsuariQR(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    qr = QRPortal.objects.get(pk=pk)
+    from django.contrib.auth.models import User
+    u = User.objects.get(username =qr.usuari_referenciat)
+    u.is_active = True
+    u.save()
+    ara = datetime.now()
+    qr.moment_confirmat_pel_tutor=ara
+    qr.es_el_token_actiu=True
+    qr.save()
+    alumne=qr.alumne_referenciat
+    return HttpResponseRedirect(reverse('tutoria__relacio_families__gestionaQRs', args=(alumne.pk,)))
+
+@login_required
+@group_required(['professors'])
+def desactivaUsuariQR(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    qr = QRPortal.objects.get(pk=pk)
+    from django.contrib.auth.models import User
+    u = User.objects.get(username =qr.usuari_referenciat)
+    u.is_active = False
+    u.save()
+    qr.es_el_token_actiu=False
+    qr.save()
+    alumne=qr.alumne_referenciat
+    return HttpResponseRedirect(reverse('tutoria__relacio_families__gestionaQRs', args=(alumne.pk,)))
+
+
+@login_required
+@group_required(['professors'])
+def eliminaUsuariQR(request, pk):
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    qr = QRPortal.objects.get(pk=pk)
+    from django.contrib.auth.models import User
+    if qr.usuari_referenciat:
+        u = User.objects.get(username =qr.usuari_referenciat)
+        u.is_active = False
+        u.save()
+    qr.es_el_token_actiu=False
+    qr.save()
+    alumne=qr.alumne_referenciat
+    qr.delete()
+    return HttpResponseRedirect(reverse('tutoria__relacio_families__gestionaQRs', args=(alumne.pk,)))
