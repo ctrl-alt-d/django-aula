@@ -34,7 +34,6 @@ class Sortida(models.Model):
     TIPUS_ACTIVITAT_CHOICES = (
                     (  'E',u'Excursió - sortida'),
                     (  'X',u'Xerrada'),
-                    (  'G',u'Pagament'),
                     (  'P',u'Parlament Verd'),
                     (  'A',u'Altres (especificar-ho al títol)'),
                    )
