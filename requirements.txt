@@ -27,3 +27,7 @@ django-formtools
 invoke
 psycopg2-binary
 django_select2
+djangorestframework
+markdown
+django-filter
+djangorestframework-jwt

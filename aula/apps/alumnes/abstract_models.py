@@ -17,7 +17,7 @@ import calendar
 from dateutil.relativedelta import relativedelta
 
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
-
+from django.contrib.auth.models import User
 
 class AbstractNivell(models.Model):
     nom_nivell = models.CharField("Nom nivell",max_length=45, unique=True)
@@ -183,7 +183,10 @@ class AbstractAlumne(models.Model):
     data_baixa = models.DateField( null=True, blank = True )
     
     user_associat = models.OneToOneField(  AlumneUser , null=True, on_delete=models.SET_NULL,  )
-    
+
+    usuaris_app_associats = models.ManyToManyField(User, through="usuaris.QRPortal",
+                                                   related_name="alumne_app_set",
+                                                   related_query_name="alumne_app")
     relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
     
     periodicitat_faltes = models.IntegerField( choices = PERIODICITAT_FALTES_CHOICES, blank=False,
