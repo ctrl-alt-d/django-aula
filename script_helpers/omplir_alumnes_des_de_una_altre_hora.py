@@ -12,9 +12,9 @@ dates = [
    
 ]
 
-cursos = ['BTX-2', ]  #'DAW-2', 'AF-2', 
+cursos = ['DAW-2', 'AF-2', 'BTX-2', ]
 
-una_setmana = timedelta( days = 28 )
+una_setmana = timedelta( days = 7 )
 
 from aula.apps.presencia.models import Impartir
 
