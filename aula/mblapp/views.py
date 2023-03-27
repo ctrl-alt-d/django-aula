@@ -85,7 +85,7 @@ def capture_token_api(request, format=None):
     # creo un nou usuari per aquest token
     allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' +  '0Oo^?#!'
     password_xunga = User.objects.make_random_password(length=12, allowed_chars=allowed_chars)
-    nou_usuari = User.objects.create_user( username = token.localitzador ,
+    nou_usuari = User.objects.create_user( username = "API"+token.localitzador ,
                                            email = "",
                                            password = password_xunga )
     grup_api, _ = Group.objects.get_or_create(name='API')
@@ -120,7 +120,7 @@ def syncro_data_api(request, format=None):
 
     darrera_sincronitzacio = serializer.validated_data["darrera_sincronitzacio"]
 
-    qrtoken = request.user.qrportal_set.get(es_el_token_actiu=True)
+    qrtoken = request.user.qrportal
 
     # No hi ha novetats:
     if qrtoken.novetats_detectades_moment and qrtoken.novetats_detectades_moment < darrera_sincronitzacio:

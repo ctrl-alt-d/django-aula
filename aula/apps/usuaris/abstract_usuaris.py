@@ -80,7 +80,7 @@ class AbstractQRPortal(models.Model):
     alumne_referenciat = models.ForeignKey( "alumnes.Alumne", db_index = True,
                                             related_name="qr_portal_set",
                                             related_query_name="qr_portal" , on_delete=models.CASCADE)
-    usuari_referenciat = models.ForeignKey( User, db_index = True, blank = True, null = True, on_delete=models.CASCADE)
+    usuari_referenciat = models.OneToOneField( User, db_index = True, blank = True, null = True, on_delete=models.CASCADE)
     moment_expedicio = models.DateTimeField( auto_now_add = True )
     moment_captura = models.DateTimeField( blank = True, null = True, unique = True )
     moment_confirmat_pel_tutor = models.DateTimeField(blank=True, null=True)
