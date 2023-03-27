@@ -26,7 +26,8 @@ from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 from aula.apps.alumnes.tools import get_hores, properdiaclasse, ultimdiaclasse
-
+import pyqrcode
+from aula.utils.tools import classebuida
 #qualitativa
 
 
@@ -168,7 +169,63 @@ def bloquejaDesbloqueja( request , pk ):
 @login_required
 @group_required(['professors'])
 def qrTokens( request , pk ):
-    pass
+    import time
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    professor = User2Professor(user)
+
+    qr = pyqrcode.create('Unladden swallow')
+    nom_fitxer = r"/tmp/barcode-{0}-{1}.png".format(time.time(), request.session.session_key)
+    qr.png(nom_fitxer, scale=5)
+
+    report = []
+
+    for alumne in Alumne.objects.filter(grup__tutor__professor=professor):
+        o = classebuida()
+        o.alumne = unicode(alumne)
+        o.grup = unicode(alumne.grup)
+        report.append(o)
+        o.barres = nom_fitxer
+
+    # from django.template import Context
+    from appy.pod.renderer import Renderer
+    import cgi
+    import os
+    from django import http
+
+    excepcio = None
+
+    # try:
+
+    # resultat = StringIO.StringIO( )
+    resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format(time.time(), request.session.session_key)
+    # context = Context( {'reports' : reports, } )
+    path = os.path.join(settings.PROJECT_DIR, '../customising/docs/qr.odt')
+    if not os.path.isfile(path):
+        path = os.path.join(os.path.dirname(__file__), 'templates/qr.odt')
+
+    renderer = Renderer(path, {'report': report, }, resultat)
+    renderer.run()
+    docFile = open(resultat, 'rb')
+    contingut = docFile.read()
+    docFile.close()
+    os.remove(resultat)
+
+    # barcode
+    os.remove(nom_fitxer)
+
+    #     except Exception, e:
+    #         excepcio = unicode( e )
+
+    if True:  # not excepcio:
+        response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
+        response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format("autoritzacio_sortida", pk)
+
+    else:
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
+
+    return response
 
 
 
