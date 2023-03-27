@@ -89,6 +89,8 @@ CUSTOM_PORTAL_FAMILIES_TUTORIAL = u""
 #      aula/apps/tutoria/business_rules/cartaaabsentisme.py
 CUSTOM_FALTES_ABSENCIA_PER_CARTA = 1
 CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA = { 'tipus1': 1 }
+CUSTOM_DIES_API_TOKEN_VALID = 7
+
 
 CUSTOM_MOSTRAR_MAJORS_EDAT = False
 CUSTOM_MARCA_MAJORS_EDAT = u' (^18)' #Missatge que apareix al costat dels majors d'edat
