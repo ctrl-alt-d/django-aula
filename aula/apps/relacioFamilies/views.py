@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+import itertools
 from itertools import groupby
 
 from django.conf import settings
@@ -14,6 +15,7 @@ from django.urls import reverse_lazy
 
 #auth
 from django.contrib.auth.decorators import login_required
+from aula.apps.usuaris.models import QRPortal
 
 #helpers
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
@@ -26,7 +28,7 @@ from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 from aula.apps.alumnes.tools import get_hores, properdiaclasse, ultimdiaclasse
-import pyqrcode
+import qrcode
 from aula.utils.tools import classebuida
 #qualitativa
 
@@ -104,7 +106,7 @@ def enviaBenvinguda( request , pk ):
 
     professor = User2Professor( user )     
             
-    alumne =  Alumne.objects.get( pk = int(pk) )
+    alumne =  get_object_or_404(Alumne, pk = int(pk) )
     
     url_next = '/open/dadesRelacioFamilies/#{0}'.format(alumne.pk)
             
@@ -168,23 +170,64 @@ def bloquejaDesbloqueja( request , pk ):
 
 @login_required
 @group_required(['professors'])
-def qrTokens( request , pk ):
+def qrTokens( request , pk=None ):
     import time
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    (user, l4) = credentials
 
     professor = User2Professor(user)
 
-    qr = pyqrcode.create('Unladden swallow')
-    nom_fitxer = r"/tmp/barcode-{0}-{1}.png".format(time.time(), request.session.session_key)
-    qr.png(nom_fitxer, scale=5)
+    if pk:
+        alumne = get_object_or_404(Alumne, pk=pk) if pk else None
+        alumnes = [alumne, ]
+    else:
+        els_meus_alumnes_de_grups_tutorats = [a for t in professor.tutor_set.all()
+                                              for a in t.grup.alumne_set.all()]
+        els_meus_tutorats_individualitzats = [t.alumne for t in professor.tutorindividualitzat_set.all()]
+        alumnes = els_meus_alumnes_de_grups_tutorats + els_meus_tutorats_individualitzats
+
+        # seg-------------------
+        seg_tutor_de_lalumne = pk and professor in alumne.tutorsDeLAlumne()
+        seg_es_tutor = professor.tutor_set.exists() or professor.i.tutorindividualitzat_set.exists()
+        te_permis = l4 or seg_tutor_de_lalumne or seg_es_tutor
+        if not te_permis:
+            raise Http404()
 
     report = []
 
-    for alumne in Alumne.objects.filter(grup__tutor__professor=professor):
+
+    fitxers_a_esborrar = []
+
+    for copia, alumne in itertools.product( [1,2,], alumnes ):
+        # munto el token
+        qr_token = QRPortal()
+        qr_token.calcula_clau()
+        qr_token.alumne_referenciat = alumne
+        qr_token.save()
+
+        qr_text = r"{token}".format( token=qr_token.clau )
+
+
+        # munto imatge:
+        nom_fitxer = r"/tmp/barcode-{0}-{1}-{2}-{3}.png".format( time.time(),
+                                                             request.session.session_key,
+                                                             alumne.pk,
+                                                             copia )
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(qr_text)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        img.save(nom_fitxer)
+        fitxers_a_esborrar.append( nom_fitxer )
         o = classebuida()
         o.alumne = unicode(alumne)
         o.grup = unicode(alumne.grup)
+        o.copia = copia
         report.append(o)
         o.barres = nom_fitxer
 
@@ -213,7 +256,8 @@ def qrTokens( request , pk ):
     os.remove(resultat)
 
     # barcode
-    os.remove(nom_fitxer)
+    for nom_fitxer in fitxers_a_esborrar:
+        os.remove(nom_fitxer)
 
     #     except Exception, e:
     #         excepcio = unicode( e )
