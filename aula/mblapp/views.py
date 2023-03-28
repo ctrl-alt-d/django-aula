@@ -45,6 +45,9 @@ def hello_api_login_app(request, format=None):
 
 
 # ---------------------  user x token ----------------------------
+# La vista que genera el QR és a l'App portal famílies.
+
+# ----------------------------------------------------------------
 
 #@csrf_exempt
 @transaction.atomic
@@ -61,6 +64,8 @@ def capture_token_api(request, format=None):
         raise serializers.ValidationError("ups! Aquest token no serveix")
     # busquem el token
     clau = serializer.validated_data["clau"]
+    key = serializer.validated_data["key"]
+    born_date = serializer.validated_data["born_date"]
     token = ( QRPortal
              .objects
              .filter( moment_captura__isnull = True, clau = clau )
@@ -81,6 +86,11 @@ def capture_token_api(request, format=None):
         caduca_dia = token.moment_expedicio + datetime.timedelta(days = settings.CUSTOM_DIES_API_TOKEN_VALID )
         if datetime.datetime.now() > caduca_dia:
             raise serializers.ValidationError("ups! Aquest token no serveix")
+        # born date is ok?
+        fuky_random_jesucryst_date = datetime.date(1000,1,1)
+        db_born_date = ( token.alumne_referenciat.data_neixement or fuky_random_jesucryst_date )
+        if db_born_date != born_date:
+            raise serializers.ValidationError("ups! Aquest token no serveix")
 
     # creo un nou usuari per aquest token
     allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' +  '0Oo^?#!'
@@ -100,7 +110,7 @@ def capture_token_api(request, format=None):
 
     # preparem resposta
     content = {
-        'usuari': nou_usuari.username,
+        'username': nou_usuari.username,
         'password': password_xunga,
     }
 

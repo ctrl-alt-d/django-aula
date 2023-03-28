@@ -1,0 +1,72 @@
+# classificar per nivells quan triguen a connectar-se després de rebre una notificació
+
+from aula.apps.usuaris.models import LoginUsuari, Accio
+
+acs = list( Accio.objects
+           .filter(tipus = "NF" )
+           #.select_related('usuari__alumne__grup__curs__nivell')
+           )
+ls = list( LoginUsuari
+          .objects
+          .filter(usuari__groups__name="alumne", exitos = True) )
+
+us={ }
+for a in acs:
+  _ = us.setdefault( a.usuari_id, {'a':[],'l':[] } )
+  us[a.usuari_id]['a'].append( a )
+
+
+for l in ls:
+  _ = us.setdefault( l.usuari_id, {'a':[],'l':[] } )
+  us[l.usuari_id]['l'].append( l )
+
+# -----------
+
+for u in us:
+    for a in us[u]['a']:
+        a.segons = None
+        for l in us[u]['l']:
+             diferencia = (l.moment - a.moment).total_seconds()
+             if l.moment > a.moment and ( a.segons is None or a.segons > diferencia ):
+                    a.segons = diferencia
+
+
+
+
+for u in us:
+    for a in us[u]['a']:
+        if a.segons is None:
+            a.classificacio = "Mai"
+        elif a.segons < 60*60*1:
+            a.classificacio = "1h"
+        elif a.segons < 60*60*4:
+            a.classificacio = "4h"
+        elif a.segons < 60*60*24:
+            a.classificacio = "24h"
+        elif a.segons < 60*60*24*3:
+            a.classificacio = "3 dies"
+        elif a.segons < 60*60*24*7:
+            a.classificacio = "1 setmana"
+        else:
+            a.classificacio = "> d'1 setmana"
+
+
+notificacions = []
+for u in us:
+    for a in us[u]['a']:
+        notificacions.append(a)
+
+f=open("/tmp/estadistiques.csv","w")
+for n in notificacions:
+   f.write( "{},{},{},{}\n".format( n.usuari.alumne.grup.curs.nivell, n.segons, n.classificacio,n.moment ) )
+
+f.close()
+
+
+
+for u in us:
+   if us[u]['a'][0].usuari.alumne.grup.curs.nivell.nom_nivell == "ESO":
+    if len( us[u]['l']) == 0:
+     si=si+1
+    else:
+     no=no+1

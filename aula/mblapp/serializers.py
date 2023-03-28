@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 from rest_framework import serializers
 
 class QRTokenSerializer(serializers.Serializer):
-    clau = serializers.CharField(max_length=40)
+    key = serializers.CharField(max_length=40)
+    born_date = serializers.DateField()
 
     def validate_clau(self, value):
         """

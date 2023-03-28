@@ -205,7 +205,13 @@ def qrTokens( request , pk=None ):
         qr_token.alumne_referenciat = alumne
         qr_token.save()
 
-        qr_text = r"{token}".format( token=qr_token.clau )
+        qr_dict = {"key": qr_token.clau,
+                   "id": alumne.id,
+                   "name": alumne.nom,
+                   "api_end_point": settings.URL_DJANGO_AULA,
+                   "organization": settings.NOM_CENTRE,
+                   }
+        qr_text = json.dumps(qr_dict)
 
 
         # munto imatge:
