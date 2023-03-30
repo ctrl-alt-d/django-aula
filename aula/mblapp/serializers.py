@@ -16,6 +16,6 @@ class QRTokenSerializer(serializers.Serializer):
         return value
 
 class DarreraSincronitzacioSerializer(serializers.Serializer):
-    darrera_sincronitzacio = serializers.DateTimeField()
+    last_sync_date = serializers.DateTimeField()
 
 

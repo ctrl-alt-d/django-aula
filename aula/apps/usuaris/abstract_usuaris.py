@@ -75,6 +75,8 @@ class AbstractOneTimePasswd(models.Model):
     moment_expedicio = models.DateTimeField( auto_now_add = True )
     clau = models.CharField(max_length=40 )
     reintents = models.IntegerField( default = 0 )
+    #    class Meta:                            <--- TODO: hauria de tenir abstract i no ho té.
+    #        abstract = True                    <--- Caldrà arreglar-ho amb migracions.
 
 class AbstractQRPortal(models.Model):
     alumne_referenciat = models.ForeignKey( "alumnes.Alumne", db_index = True,
@@ -100,3 +102,6 @@ class AbstractQRPortal(models.Model):
             if clau_unica and loca_unica:
                 return
         raise Exception("Impossible, ens hem quedat sense codis app")
+
+    class Meta:
+        abstract = True
