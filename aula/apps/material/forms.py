@@ -62,9 +62,8 @@ class disponibilitatRecursPerFranjaForm(forms.Form):
                            .filter(horari__impartir__dia_impartir=data)
                            .order_by('hora_inici')
                            )
-        primera_franja = franges_del_dia.first()
-        darrera_franja = franges_del_dia.last()
-        if not franja or not primera_franja or not darrera_franja or (franja.hora_inici < primera_franja.hora_inici or franja.hora_fi > darrera_franja.hora_fi):
+        #Es comprova que la franja correspongui al dia
+        if not franges_del_dia or not franja in franges_del_dia:
             raise forms.ValidationError(u"En aquesta franja i dia no hi ha docència")
 
         return cleaned_data
@@ -94,6 +93,14 @@ class reservaRecursForm(ModelForm):
                    required=True,
                    help_text="Material a reservar")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #No es permet fer canvis a recurs, dia ni hora
+        #Les dades ja s'han verificat anteriorment
+        self.fields['recurs'].disabled = True
+        self.fields['dia_reserva'].disabled = True
+        self.fields['hora'].disabled = True
+        
     def clean_hora(self):
 
         franja = self.cleaned_data['hora']

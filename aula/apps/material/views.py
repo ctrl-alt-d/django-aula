@@ -145,9 +145,8 @@ def detallRecursReserves(request, year, month, day, pk):
                        .objects
                        .filter(horari__impartir__dia_impartir=data)
                        .order_by('hora_inici')
+                       .distinct()
                        )
-    primera_franja = franges_del_dia.first()
-    darrera_franja = franges_del_dia.last()
 
     # -- si el recurs presenta un horari restringit
     q_horari_restringit = Q()
@@ -156,15 +155,18 @@ def detallRecursReserves(request, year, month, day, pk):
         franges_reservades = [reserva.hora.pk for reserva in reserves_dun_dia_un_recurs]
         q_horari_restringit = Q(pk__in=disponibilitatHoraria + franges_reservades)
 
-    franges_reservables = (FranjaHoraria
-                           .objects
-                           .filter(hora_inici__gte=primera_franja.hora_inici)
-                           .filter(hora_fi__lte=darrera_franja.hora_fi)
-                           .filter(q_horari_restringit)
-                           ) if primera_franja and darrera_franja else []
+    # Només les franges que corresponen al dia
+    franges_reservables = ( franges_del_dia.filter( q_horari_restringit )) if franges_del_dia else []
 
     horariRecurs = []
     for franja in franges_reservables:
+        # Si la franja es solapa amb una altra ja ocupada, no es mostrarà
+        if not reserves_dun_dia_un_recurs.filter(hora__hora_inici=franja.hora_inici, 
+                                               hora__hora_fi=franja.hora_fi) \
+            and reserves_dun_dia_un_recurs.filter(hora__hora_inici__lt=franja.hora_fi,
+                                                hora__hora_fi__gt=franja.hora_inici):
+            continue
+                
         reserva = reserves_dun_dia_un_recurs.filter(hora=franja).order_by().first()
         nova_franja = {}
         nova_franja['franja'] = franja
@@ -278,7 +280,9 @@ def detallFranjaReserves(request, year, month, day, pk):
                                        .distinct()
                                        )
         # reservats
-        reservat = Q(reservarecurs__dia_reserva=data) & Q(reservarecurs__hora=franja)
+        # Recursos ocupats en el dia i franja, també casos de franges solapades
+        reservat = Q(reservarecurs__dia_reserva=data) & Q(reservarecurs__hora__hora_inici__lt=franja.hora_fi)\
+                    & Q(reservarecurs__hora__hora_fi__gt=franja.hora_inici)
         reservat_ids = (Recurs
                          .objects
                          .filter(reservat)
