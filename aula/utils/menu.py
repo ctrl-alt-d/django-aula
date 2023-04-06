@@ -187,7 +187,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                       ),  
                       ("Quotes", 'gestio__quotes__blanc', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None,
                           ( 
-                            ("Assigna Quotes", 'gestio__quotes__assigna', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None),
+                            ("Assigna/Modifica Quotes", 'gestio__quotes__assigna', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None),
                             ("Descàrrega acumulats", 'gestio__quotes__descarrega', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None)
                           )
                       ),         

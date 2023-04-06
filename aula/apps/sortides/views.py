@@ -1733,6 +1733,10 @@ def quotesCurs( request, curs, tipus, nany, auto ):
         formset = formsetQuotes(request.POST, form_kwargs={'tipus': tipus, 'any': nany}) 
         if formset.is_valid():
             fraccions_esborrades=()
+            modifPag=False
+            modifFracc=False
+            esbPag=False
+            esbFracc=False
             for form in formset:
                 pg = form.cleaned_data
                 quota = pg.get('quota')
@@ -1746,46 +1750,67 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                     pagament=None
                 a=Alumne.objects.get(pk=pka)
                 if quota:
-                    fracciona = pg.get('fracciona') and quota.importQuota>0
                     if pagament:
-                        fet_act=pagament.pagamentFet
-                        canviFracc=not pagament.fracciona and fracciona and not fet_act
-                        canviQuota=pagament.quota!=quota and not fet_act and not pagament.fracciona
-                        crea=canviQuota or canviFracc
-                    else:
-                        canviQuota=False
-                        canviFracc=False
-                        crea=True
-
-                    if canviQuota or canviFracc:
-                        QuotaPagament.objects.filter(alumne=a, quota__any=nany, quota__tipus=tipus).\
-                            exclude(pagament_realitzat=True).delete()
-                    if crea:
-                        if fracciona:
-                            import1=round(float(quota.importQuota)/2.00,2)
-                            import2=float(quota.importQuota)-import1
-                            p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
-                            p.save()
-                            p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import2, 
-                                            dataLimit=quota.dataLimit + relativedelta(months=+3))
-                            p.save()
-                        else:
-                            p=QuotaPagament(alumne=a, quota=quota)
-                            p.save()
-                else:
-                    # Quota esborrada
-                    if pagament and not pagament.pagament_realitzat:
-                        #esborrar pagament o pagaments
-                        #si fracciona depén dels pagaments previs ja fets
-                        if not pagament.fracciona:
-                            pagament.delete()
-                        else:
+                        if pagament.quota!=quota or pagament.fracciona!=pg.get('fracciona'):
                             p=get_QuotaPagament(a, tipus, nany).filter(fracciona=True)
                             # Esborra només si no s'ha pagat cap fracció
-                            if p and not p.filter(pagament_realitzat=True):
-                                fraccions_esborrades=fraccions_esborrades+tuple(p.values_list('pk', flat = True))
-                                p.delete()
+                            if p:
+                                if not p.filter(pagament_realitzat=True):
+                                    fraccions_esborrades=fraccions_esborrades+tuple(p.values_list('pk', flat = True))
+                                    p.delete()
+                                else:
+                                    #No es pot modificar un fraccionament pagat
+                                    modifFracc=True
+                                    continue
+                            else:
+                                if not pagament.pagament_realitzat:
+                                    pagament.delete()
+                                else:
+                                    #No es pot modificar un pagament ja completat
+                                    modifPag=True
+                                    continue
+                        else:
+                            #Sense canvis, no fa falta fer res més
+                            continue
+                    if pg.get('fracciona'):
+                        import1=round(float(quota.importQuota)/2.00,2)
+                        import2=float(quota.importQuota)-import1
+                        p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
+                        p.save()
+                        p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import2, 
+                                        dataLimit=quota.dataLimit + relativedelta(months=+3))
+                        p.save()
+                    else:
+                        p=QuotaPagament(alumne=a, quota=quota)
+                        p.save()
+                else:
+                    # Quota esborrada
+                    if pagament:
+                        if not pagament.pagament_realitzat:
+                            #esborrar pagament o pagaments
+                            #si fracciona depén dels pagaments previs ja fets
+                            p=get_QuotaPagament(a, tipus, nany).filter(fracciona=True)
+                            # Esborra només si no s'ha pagat cap fracció
+                            if p:
+                                if not p.filter(pagament_realitzat=True):
+                                    fraccions_esborrades=fraccions_esborrades+tuple(p.values_list('pk', flat = True))
+                                    p.delete()
+                                else:
+                                    #No es pot esborrar un fraccionament pagat
+                                    esbFracc=True
+                                    continue
+                            else:
+                                pagament.delete()
+                        else:
+                            #No es pot esborrar un pagament fet
+                            esbPag=True
+                            continue
 
+            if modifFracc: messages.warning(request, u"No es pot modificar un fraccionament pagat." )
+            if modifPag:   messages.warning(request, u"No es pot modificar un pagament ja completat." )
+            if esbFracc:   messages.warning(request, u"No es pot esborrar un fraccionament pagat." )
+            if esbPag:     messages.warning(request, u"No es pot esborrar un pagament fet." )
+            
             llista=Alumne.objects.filter(grup__curs__id=curs,
                                  data_baixa__isnull=True,
                                 ).order_by('grup__nom_grup', 'cognoms', 'nom')
@@ -1807,7 +1832,19 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                             'estat': 'Ja pagat' if pg.pagamentFet else 'Pendent',
                             'fracciona': pg.fracciona
                             })
-
+                else:
+                    llistapag.append({
+                        'pkp': 'None',
+                        'pka': a.pk,
+                        'cognoms': a.cognoms,
+                        'nom':  a.nom ,
+                        'grup': a.grup.descripcio_grup[:10],
+                        'correu': email,
+                        'quota': None,
+                        'estat': 'No assignat',
+                        'fracciona': False
+                        })
+                
             if len(llistapag)==0:
                 return render(
                             request,
