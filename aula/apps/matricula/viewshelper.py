@@ -526,8 +526,7 @@ def gestionaPag(matricula, importTaxes):
                     enviaMissatge("Quota pagada no correspon. Matrícula:{0}-{1}".format(matricula.idAlumne, matricula.any))
                 else:
                     # compatible, fer canvi
-                    pag[0].quota=quotamat
-                    pag[0].save()
+                    pag.update(quota=quotamat)
     else:
         creaPagament(matricula)
     
