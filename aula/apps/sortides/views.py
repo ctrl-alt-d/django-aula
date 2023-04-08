@@ -1781,11 +1781,11 @@ def quotesCurs( request, curs, tipus, nany, auto ):
                             if fracciona:
                                 import1=round(float(quota.importQuota)/2.00,2)
                                 import2=float(quota.importQuota)-import1
-                                pf1=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
-                                pf1.save()
-                                pf2=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import2, 
+                                p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import1, dataLimit=quota.dataLimit)
+                                p.save()
+                                p=QuotaPagament(alumne=a, quota=quota, fracciona=True, importParcial=import2, 
                                                 dataLimit=quota.dataLimit + relativedelta(months=+3))
-                                pf2.save()
+                                p.save()
                             else:
                                 p=QuotaPagament(alumne=a, quota=quota)
                                 p.save()

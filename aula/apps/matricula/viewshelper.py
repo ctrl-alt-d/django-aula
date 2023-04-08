@@ -1,6 +1,7 @@
 from django.core.mail import EmailMessage
 from django.urls import reverse_lazy
 from django.utils.html import format_html
+from django.db import transaction
 import django.utils.timezone
 from dateutil.relativedelta import relativedelta
 from aula.apps.matricula.models import Matricula
@@ -435,17 +436,18 @@ def creaPagament(matricula, quota=None, fracciona=False):
         else:
             if dataLimit<quota.dataLimit:
                 dataLimit=quota.dataLimit
-        if fracciona and quota.importQuota!=0:
-            import1=round(float(quota.importQuota)/2.00,2)
-            import2=float(quota.importQuota)-import1
-            p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import1, dataLimit=dataLimit)
-            p.save()
-            p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import2, 
-                            dataLimit=dataLimit + relativedelta(months=+1))
-            p.save()
-        else:
-            p=QuotaPagament(alumne=alumne, quota=quota, dataLimit=dataLimit)
-            p.save()
+        with transaction.atomic():
+            if fracciona and quota.importQuota!=0:
+                import1=round(float(quota.importQuota)/2.00,2)
+                import2=float(quota.importQuota)-import1
+                p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import1, dataLimit=dataLimit)
+                p.save()
+                p=QuotaPagament(alumne=alumne, quota=quota, fracciona=True, importParcial=import2, 
+                                dataLimit=dataLimit + relativedelta(months=+1))
+                p.save()
+            else:
+                p=QuotaPagament(alumne=alumne, quota=quota, dataLimit=dataLimit)
+                p.save()
 
 def enviaMissatge(missatge):
     from aula.apps.missatgeria.models import Missatge
