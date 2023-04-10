@@ -14,7 +14,8 @@ Es poden fraccionar en 2 pagaments.
 
 Aquesta gestió la poden fer els usuaris de direcció, administradors i un nou grup 'tpvs'.
 
-##Funcionament
+## Funcionament
+
 Es selecciona el curs, tipus de quota i any i es mostrarà la llista d'alumnes.
 
 S’ha d’escollir una quota per a cada alumne. L'opció automàtica assigna la quota més adient. En automàtic intenta trobar una quota adequada segons l'any, curs i tipus. Habitualment s'assignarà la quota al final del curs escolar (maig o juny) per al curs següent, als alumnes del curs X els assigna la quota per al curs següent X+1.
@@ -27,15 +28,18 @@ Opció fracciona: Crea dos pagaments, un amb data límit segons la quota i el se
 
 Es poden esborrar si encara no s'han pagat, deixant en blanc la quota. Si s'esborra un fraccionament, aleshores s'esborra la parella.
 
-##Informes
+## Informes
+
 Des de Gestió / Quotes / Descàrrega acumulats
 
 Permet descàrrega d'un full excel amb el resum de pagaments, per mesos, segons tpv i any.
 
-##Definició com a administrador
+## Definició com a administrador
+
 Des d'admin es poden gestionar els TPVs, tipus de quota i quotes.
 
-###TPV
+### TPV
+
 TPVs: Es poden definir varis. D'aquesta manera es poden diferenciar els pagaments segons centre, ampa ...
 
 ![admin TPV](../.gitbook/assets/admin-django-mat.jpg)
@@ -45,11 +49,13 @@ TPVs: Es poden definir varis. D'aquesta manera es poden diferenciar els pagament
 Es poden definir diversos TPV.
 El tpv per defecte és el que fa servir el nom "centre".
 
-###Tipus de quota
+### Tipus de quota
+
 Permet diferenciar les quotes, cada alumne pagarà com a màxim una quota a l'any de cada tipus.
 Per exemple: material, llibres, ampa ...
 
-###Quotes
+### Quotes
+
 Tenen el seu import, any, descripció, tipus, curs, data límit i el tpv a on es paga.
 
 Exemple:
@@ -66,7 +72,8 @@ La data límit és informativa, es poden fer pagaments passada la data.
 
 ![admin quotes](../.gitbook/assets/quota-mat.jpg)
 
-###Settings
+### Settings
+
 CUSTOM_QUOTES_ACTIVES = True
 
 Dades del TPV per al pagament (si no s'ha definit a la base de dades):

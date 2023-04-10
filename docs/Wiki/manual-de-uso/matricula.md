@@ -1,6 +1,6 @@
-#Matrícula online
+# Matrícula online
 
-##Introducció
+## Introducció
 
 El Djau permet realitzar la recollida de dades per a fer la matrícula dels alumnes. Les famílies indiquen la informació necessària i poden fer el pagament de la quota o taxes amb targeta.
 
@@ -24,7 +24,7 @@ L'objectiu principal és realitzar els tràmits de matrícula de manera online i
 
 Aquest mòdul farà servir [Quotes](quotes.md) i, en finalitzar la matrícula, s'haurà [d'inicialitzar](inicialitza.md) la base de dades. No serveix si s'esborra la base de dades i es comença des de zero al setembre.
 
-##Importació de dades
+## Importació de dades
 
 Les dades de preinscripció s’obtenen del gedac, han d’importar-se al Djau.
 
@@ -51,9 +51,9 @@ L’estat ha de ser Validada.
 
 Els fitxers obtinguts s’han d’importar al Djau des de l’opció Admin / Sincronitza / Preinscripció.
 
-##Configuració
+## Configuració
 
-###Variables CUSTOM:
+### Variables CUSTOM:
 
 CUSTOM_MODUL_MATRICULA_ACTIU = True
 
@@ -159,8 +159,10 @@ Exemple: tipus 'taxes'
 
 El Djau calcularà automàticament l'import segons la quantitat d'UFs i les quotes '**uf**' i '**taxcurs**' definides. Si amb UFs soltes, l'import supera el màxim, aleshores assigna la taxa de curs complet. Es creen automàticament les quotes necessàries del tipus.
 
-##Activació i seguiment
-###Inici de la matrícula
+## Activació i seguiment
+
+### Inici de la matrícula
+
 Una vegada tot preparat es pot iniciar la matrícula:
 
 L'administrador del Djau executa procés inicial, que envia emails als alumnes preinscrits, des de Gestió / Matrícules / Activa.
@@ -184,7 +186,8 @@ Altres: per alumnes actuals d’altres nivells educatius.
 
 ![mat](../.gitbook/assets/mat1.jpg)![mat](../.gitbook/assets/mat2.jpg)
 
-###Entrada o revisió de dades per part de la família
+### Entrada o revisió de dades per part de la família
+
 Opcions al portal de famílies:
 
 Matrícula - per omplir les dades mentre no estigui la matrícula finalitzada.
@@ -193,23 +196,26 @@ Activitats/Pagaments - permet fer els pagaments de les quotes o taxes.
 
 L'entrada de dades varia en funció del tipus de matrícula.
 
-####Matrícula amb preinscripció. 
+#### Matrícula amb preinscripció. 
 
 Demana les dades en diverses pantalles.
 
 ![mat](../.gitbook/assets/entrada-dades-familia.jpg)
 
-####Confirmació
+#### Confirmació
+
 Bàsicament es tracta de fer la confirmació i revisió de les dades de contacte.
 
 ![mat](../.gitbook/assets/confirma.jpg)
 
-####Altres
+#### Altres
+
 Similar a la matrícula amb preinscripció. En aquest exemple es pot veure l’aspecte des d’un smartphone.
 
 ![mat](../.gitbook/assets/entrada-mobil1.png)![mat](../.gitbook/assets/entrada-mobil2.png)![mat](../.gitbook/assets/entrada-mobil3.png)
 
-###Revisió de les matrícules des del centre
+### Revisió de les matrícules des del centre
+
 Es revisa tot per part de secretaria, des de Gestió / Matrícules / Verifica.
 
 Les confirmacions mostren en verd les dades confirmades i en blau les modificades.

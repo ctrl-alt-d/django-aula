@@ -1,4 +1,4 @@
-#Actualitza
+# Actualitza
 
 Cada inici de curs s'ha de preparar el Djau amb les noves dades necessàries. Es pot fer una [instal·lació nova](../instalacion-2/instalacion.md) o mantenir l'actual i actualitzar-la.
 

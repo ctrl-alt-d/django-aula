@@ -1,4 +1,4 @@
-#Inicialització de la base de dades per començar el curs
+# Inicialització de la base de dades per començar el curs
 
 Cada inici de curs s'ha de preparar el Djau amb les noves dades necessàries.
 
@@ -23,13 +23,13 @@ pg_dump -U djauser -f djau-20230410.pgsql djau
 
 També es pot aprofitar per [actualitzar](actualitza.md) el Djau a l'última versió.
 
-##Dades eliminades:
+## Dades eliminades:
 
 Incidències, expulsions, sancions, assistència, horaris, festius, cartes, tutors, pagaments pendents de l'any anterior, alumnes de baixa i dades relacionades excepte pagaments efectuats. 
 
 La base de dades queda preparada per a fer la càrrega d'horaris i grups d'alumnes, festius, tutors i altres dades específiques del curs entrant.
 
-##Avantatges:
+## Avantatges:
 
 Es mantenen les qualitatives, actuacions i seguiment tutorial.
 
@@ -43,7 +43,8 @@ Es mantenen les definicions: tipus d'incidència, tipus de sanció, frases d'inc
 
 Es manté l'històric de pagaments i sortides.
 
-##Procés posterior
+## Procés posterior
+
 Després s’haurà de carregar el nou horari i l’assignació de grups dels alumnes segons el que indica el Saga i Esfera.
 
 Més informació de la càrrega de dades a [Carga inicial de datos](carga-inicial-de-datos/README.md)
