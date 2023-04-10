@@ -5,7 +5,7 @@
 * Pensado por la comunidad y para a la comunidad.  
 * Simplicidad, clics mínimos, interfaz adaptada a móvil, intuitivo. 
 * Sistema integral, todos los módulos se comunican entre ellos: salidas y actividades, presencia, sanciones, expulsiones, reservas, etc. 
-* Sincronización de Alumnos desde Saga. 
+* Sincronización de Alumnos desde Saga i Esfer@. 
 
 
 

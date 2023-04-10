@@ -32,9 +32,16 @@ El Proyecto es Open-source, y aquí se encuentra su repositorio Git: [https://gi
     * [Carga de Horarios, Aulas y Asignaturas](manual-de-uso/carga-inicial-de-datos/carga-de-horarios-aulas-y-asignaturas.md)
     * [Tareas Recomendables](manual-de-uso/carga-inicial-de-datos/tareas-recomendables.md)
     * [Creación del Horario](manual-de-uso/carga-inicial-de-datos/creacion-del-horario.md)
+  * [Actualización a última versión](manual-de-uso/actualitza.md)
+  * [Inicialización a final de curso](manual-de-uso/inicialitza.md)
+  * [Cuotas](manual-de-uso/quotes.md)
+  * [Matrícula online](manual-de-uso/matricula.md)
 * [Anexos](anexos/README.md)
   * [Exportación Saga](anexos/exportacion-saga.md)
+  * [Importar alumnes Saga i Esfer@](../installacio/TutorialALUMNES_SAGA-ESFER@_a_DJAU.pdf)
+  * [Importar alumnes sense grup assignat](../installacio/IMPORTAR_A_DJAUsense_curs_actualitzat.pdf)
+  * [Pagaments de sortides](../installacio/Tutorial%20pagament%20activitats%20on-line.pdf)
+  * [Importar horaris Kronowin](../installacio/exportacio-kronowin.pdf)
+  * [Importar horaris Untis](../Wiki/manual-de-uso/carga-inicial-de-datos/README.md#para-untis)
 * [Fork Django-Aula DAW Credito Sintesis](fork-django-aula-daw-credito-sintesis.md)
-
-
 

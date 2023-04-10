@@ -93,7 +93,26 @@ Preparación y ejecución dinámica de evaluaciones cualitativas por niveles.
 
 ![](.gitbook/assets/11.png)
 
+### Matrícula online
 
+El Djau permite obtener los datos para realizar la [matrícula](manual-de-uso/matricula.md) de los alumnos. Las familias indican la información necesaria y pueden realizar los pagos con tarjeta.
 
-> Gracias a  [@ctrl\_alt\_d](https://twitter.com/ctrl_alt_d) por la cesión de las imágenes.
+Básicamente, hay tres tipos de gestión:
+
+Confirmación de matrícula
+
+&nbsp;&nbsp;&nbsp;&nbsp;Se utiliza para ESO y Bachillerato, las familias confirman que quieren continuar.
+
+Matrícula nueva según preinscripción
+
+&nbsp;&nbsp;&nbsp;&nbsp;Para los casos de alumnos nuevos que han tenido que hacer preinscripción.
+
+Matrícula de continuidad sin preinscripción
+
+&nbsp;&nbsp;&nbsp;&nbsp;Para alumnos actuales de ciclos que continúan sus estudios.
+
+Este mecanismo no sustituye a la matrícula oficial.
+
+&nbsp;
+> Gracias a [@ctrl\_alt\_d](https://twitter.com/ctrl_alt_d) por la cesión de las imágenes.
 

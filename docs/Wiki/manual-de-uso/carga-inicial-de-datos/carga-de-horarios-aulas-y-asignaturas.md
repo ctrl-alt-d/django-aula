@@ -10,9 +10,7 @@ Volvemos otra vez a \[URL\_DJAU\]/extKronowin/sincronitzaKronowin/ y cargamos el
 
 ![](../../.gitbook/assets/image%20%2816%29.png)
 
-{% hint style="info" %}
-Dice que ha creado 0 Aulas pero es falso, si que las ha creado, se debe a un pequeño bug de la vista.
-{% endhint %}
+>Dice que ha creado 0 Aulas pero es falso, si que las ha creado, se debe a un pequeño bug de la vista.
 
 Ya tenemos todos los activos del centro, el siguiente paso es entrelazar todos los Items para generar el "SuperHorario", pero antes vamos a realizar un par de tareas recomendables.
 

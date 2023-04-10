@@ -12,9 +12,7 @@ Cuantos mas horarios hayas importado mas tardara.
 
 Cuando acabe la app mandara una notificación diciendo que ha acabado.
 
-{% hint style="warning" %}
-A veces no envía la notificación, simplemente espera un tiempo prudencial  y cierra sesión y vuelve a entrar, esta vez con un usuario Profesor, si todo a ido bien deberías ver su horario
-{% endhint %}
+> A veces no envía la notificación, simplemente espera un tiempo prudencial  y cierra sesión y vuelve a entrar, esta vez con un usuario Profesor, si todo a ido bien deberías ver su horario
 
 ![](../../.gitbook/assets/image%20%2831%29.png)
 
