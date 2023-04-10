@@ -27,7 +27,7 @@ systemctl stop apache2
 cd /opt/djau
 git pull
 source venv/bin/activate
-pip install -r requirements.txt
+pip install --upgrade -r requirements.txt
 python manage.py migrate
 python manage.py collectstatic
 deactivate
