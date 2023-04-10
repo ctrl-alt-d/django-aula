@@ -10,3 +10,4 @@
 
 [Importar horaris Kronowin](../../installacio/exportacio-kronowin.pdf)
 
+[Importar horaris Untis](../manual-de-uso/carga-inicial-de-datos/README.md#para-untis)
