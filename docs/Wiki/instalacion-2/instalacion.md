@@ -25,6 +25,8 @@ cd djau2022
 
 >Es recomendable que la carpeta contenga el año del curso, ya que la aplicación esta diseñada para ser instalada de nuevo en cada curso \(Decisión de diseño\).
 
+>Una alternativa a instalar de nuevo en cada curso es la [inicialización](../manual-de-uso/inicialitza.md).
+
 
 El siguiente paso es montar nuestro **entorno virtual Python** sobre la carpeta del proyecto, este comando creará un entorno virtual en un directorio llamado **venv**.
 

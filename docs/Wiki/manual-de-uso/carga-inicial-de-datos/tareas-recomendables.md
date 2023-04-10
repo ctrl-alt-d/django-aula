@@ -23,7 +23,8 @@ como ya habrás observado la carga masiva de datos nos ahorra mucho trabajo pero
 
 ![](../../.gitbook/assets/image%20%282%29.png)
 
-{% hint style="danger" %}
-Usar el Panel de administración con cuidado
-{% endhint %}
+&nbsp;
 
+> **Usar el Panel de administración con cuidado**
+
+&nbsp;
