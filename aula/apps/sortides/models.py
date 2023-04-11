@@ -337,7 +337,7 @@ class NotificaSortida( models.Model):
         return u"{} {}".format( self.alumne, self.sortida )
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
-from django.db.models.signals import m2m_changed #post_save  #, pre_save, pre_delete
+from django.db.models.signals import m2m_changed, pre_save #post_save, pre_delete
 
 from aula.apps.sortides.business_rules.sortida import sortida_m2m_changed
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_convocats.through )    
@@ -346,4 +346,7 @@ m2m_changed.connect(sortida_m2m_changed, sender = Sortida.alumnes_justificacio.t
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.professors_responsables.through )    
 m2m_changed.connect(sortida_m2m_changed, sender = Sortida.altres_professors_acompanyants.through )    
 
+#QuotaPagament
+from aula.apps.sortides.business_rules.quotapagament import quotapagament_pre_save
+pre_save.connect(quotapagament_pre_save, sender = QuotaPagament )
 
