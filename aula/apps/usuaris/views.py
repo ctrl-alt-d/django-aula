@@ -326,7 +326,7 @@ def loginUser( request ):
             user = authenticate(username=username, password=paraulaDePas)
 
             #si és del grup API el faig fora.
-            if user and user.groups.filter( name ="API").exists:
+            if user and user.groups.filter( name ="API").exists():
                 logout(request)
                 user = None
 

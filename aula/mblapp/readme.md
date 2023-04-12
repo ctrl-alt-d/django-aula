@@ -25,14 +25,14 @@ Nota: Sempre s'envien totes les dades, no és incremental.
 
 Només falten dues coses per programar:
 
-* notifica (a relació famílies): cal ampliar la llista als que tenen tokens.
-* vista de mblapp: cal enviar les dades bones i no dades de fake.
+* només envia a la app assistència i incidències. Cal ampliar-ho a la resta ( està preparat per ampliar )
+* Cal la pantalla per a que el tutor activi l'accés quan la família torna el paper signat.
 
 ### Provatures part servidora des de la línia de comandes
 ```bash
 #Fase 0: Li passem el token inicial. TODO: usuari -> username, demanar data naixement
-export INITIALTOKEN="08d9c337-7b15-47d5-a4c7-56f0ec2b28bd"   #copiar-lo del .odt on hi ha el QR
-export BORNDATE="1992-04-04"
+export INITIALTOKEN="19415140-12e5-41bf-8ce1-8dcd3c63d5ec"   #copiar-lo del .odt on hi ha el QR
+export BORNDATE="1996-07-22"
 curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"${INITIALTOKEN}\", \"born_date\":\"${BORNDATE}\"  }" http://localhost:8000/mblapp/capture_token_api/
 #Ex resposta: {"username":"APIittW","password":"fRyOrWNKHegg"}
 
