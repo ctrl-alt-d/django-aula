@@ -9,6 +9,7 @@ from aula.apps.usuaris.forms import CanviDadesUsuari, triaUsuariForm, loginUsuar
     recuperacioDePasswdForm, sendPasswdByEmailForm, canviDePasswdForm, triaProfessorSelect2Form, CanviDadesAddicionalsUsuari
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 
 from aula.apps.usuaris.tables2_models import HorariProfessorTable
 from aula.utils.decorators import group_required
@@ -323,6 +324,12 @@ def loginUser( request ):
             username = form.cleaned_data['usuari']
             paraulaDePas=form.cleaned_data['paraulaDePas']
             user = authenticate(username=username, password=paraulaDePas)
+
+            #si és del grup API el faig fora.
+            if user and user.groups.filter( name ="API").exists:
+                logout(request)
+                user = None
+
             if user is not None:
                 #Usuari i passwd estan bé
                 if acces_restringit_a_grups and not user.groups.filter( name__in = acces_restringit_a_grups ).exists():
