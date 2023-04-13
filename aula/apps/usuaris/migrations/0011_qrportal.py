@@ -15,22 +15,22 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AbstractQRPortal',
+            name='QRPortal',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('moment_expedicio', models.DateTimeField(auto_now_add=True)),
-                ('moment_captura', models.DateTimeField(blank=True, null=True)),
-                ('clau', models.CharField(max_length=40)),
-                ('numero_de_mobil', models.CharField(blank=True, max_length=40)),
+                ('moment_captura', models.DateTimeField(blank=True, null=True, unique=True)),
+                ('moment_confirmat_pel_tutor', models.DateTimeField(blank=True, null=True)),
+                ('darrera_sincronitzacio', models.DateTimeField(blank=True, null=True)),
+                ('novetats_detectades_moment', models.DateTimeField(blank=True, null=True)),
+                ('clau', models.CharField(db_index=True, max_length=40)),
+                ('localitzador', models.CharField(db_index=True, default='-', max_length=4, unique=True)),
+                ('es_el_token_actiu', models.BooleanField(default=False)),
                 ('alumne_referenciat', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='qr_portal_set', related_query_name='qr_portal', to='alumnes.alumne')),
-                ('usuari_referenciat', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('usuari_referenciat',models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
-        ),
-        migrations.CreateModel(
-            name='QRPortal',
-            fields=[
-                ('abstractqrportal_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='usuaris.abstractqrportal')),
-            ],
-            bases=('usuaris.abstractqrportal',),
+            options={
+                'abstract': False,
+            },
         ),
     ]

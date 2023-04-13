@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0018_alumne_usuaris_app_associats'),
+        ('alumnes', '0017_nivell_preexclusiva'),
         ('presencia', '0010_alter_impartir_professor_guardia_and_more'),
     ]
 
