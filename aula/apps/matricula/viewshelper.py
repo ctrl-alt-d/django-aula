@@ -753,7 +753,7 @@ def enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail=False, senseEmails=False
             correus=a.get_correus_relacio_familia()
             if not correus: correus=a.get_correus_tots()
             if següentCurs(a) or not ultimCursNoEmail:
-                if not senseEmails: mailMatricula(tipus, a.curs, correus, a, connection)
+                if not senseEmails: mailMatricula(tipus, a.grup.curs, correus, a, connection)
     # tanca la connexió
     if connection: connection.close()
 

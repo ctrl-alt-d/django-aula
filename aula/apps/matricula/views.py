@@ -18,7 +18,7 @@ from aula.apps.alumnes.models import Curs
 from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.extUntis.sincronitzaUntis import creaGrup
 from django.conf import settings
-from aula.apps.matricula.viewshelper import situacioMat, mailMatricula, següentCurs, creaPagament, \
+from aula.apps.matricula.viewshelper import situacioMat, mailMatricula, següentCurs, quotaSegüentCurs, creaPagament, \
         enviaMissatge, gestionaPag, alumne2Mat, updateAlumne, getCanvis, mat_selecciona, next_mat, inforgpd, \
         enviaIniciMat, ResumLlistat
 
@@ -149,6 +149,7 @@ def Confirma(request, nany):
                         item=form.save()
                         item.confirma_matricula=form.cleaned_data['opcions']
                         item.acceptacio_en=django.utils.timezone.now()
+                        item.quota=quotaSegüentCurs(settings.CUSTOM_TIPUS_QUOTA_MATRICULA, nany, user.alumne)
                         item.save()
                         if item.confirma_matricula=='C' and item.quota:
                             creaPagament(item)
