@@ -9,7 +9,7 @@ L'App part backend funciona amb rest i jwt. Hi ha un nous requeriments:
 
 ### Workflow Alta Família
 
-* Tutor genera i imprimeix codi QR ( des del menú portal en aquest moment )
+* Tutor genera i imprimeix codi QR ( des del menú "Tutoria/Mòbil App")
 * Família escaneja codi QR. En aquest moment se li crea un usuari vinculat a l'alumne. L'usuari encara no està actiu. Família signa paper i el retorna al tutor.
 * Amb el paper signat tutor activa l'usuari.
 
@@ -23,20 +23,20 @@ Nota: El tutor pot imprimir tants i tants QR's com vulgui.
 Nota: Sempre s'envien totes les dades, no és incremental.
 ### Estat actual:
 
-Només falten dues coses per programar:
+Falta per programar:
 
-* només envia a la app assistència i incidències. Cal ampliar-ho a la resta ( està preparat per ampliar )
-* Cal la pantalla per a que el tutor activi l'accés quan la família torna el paper signat.
+* Envia a l'app assistència, incidències i expulsions. Cal ampliar-ho a la resta ( sancions, qualitativa, sortides,.... )
+
 
 ### Provatures part servidora des de la línia de comandes
 ```bash
 #Fase 0: Li passem el token inicial. TODO: usuari -> username, demanar data naixement
-export INITIALTOKEN="19415140-12e5-41bf-8ce1-8dcd3c63d5ec"   #copiar-lo del .odt on hi ha el QR
-export BORNDATE="1996-07-22"
-curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"${INITIALTOKEN}\", \"born_date\":\"${BORNDATE}\"  }" http://localhost:8000/mblapp/capture_token_api/
-#Ex resposta: {"username":"APIittW","password":"fRyOrWNKHegg"}
+export INITIALTOKEN="b55f31b8-57e2-4f4f-ac66-e133ec20ff3e"   #copiar-lo del .odt on hi ha el QR
+export BORNDATE="2004-05-13"
+curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"${INITIALTOKEN}\", \"born_date\":\"${BORNDATE}\"  }" http://localhost:8000/api/token/capture_token_api/
+#Ex resposta: {"username":"APIm3wi","password":"0BGhwmUWtU9P"}
 
-#Fase 1: Posar l'usuari a estat actiu ( a mà ho farà el professor per UI ):
+#Fase 1: Posar l'usuari a estat actiu ( a mà ho fa el professor per UI ):
 $ python manage.py shell
 from django.contrib.auth.models import User
 u=User.objects.get(username ="APIqAxX")
@@ -46,39 +46,33 @@ exit()
 
 #Fase 2: Prova de demanar un token per accedir-hi
 $
-curl -X POST -H "Content-Type: application/json" -d '{"username":"APIpOH1","password":"sxvQx?drpOHY"}' http://localhost:8000/api-token-auth/
-{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik0xIiwidXNlcl9pZCI6NCwiZW1haWwiOiIiLCJleHAiOjE1MjU5NjA5MjR9.EKEhsW-uqdblRLEpAH0uxKMb-FUnCJB6a3_3xRd4Pno"}
+curl -X POST -H "Content-Type: application/json" -d '{"username":"APIm3wi","password":"0BGhwmUWtU9P"}' http://localhost:8000/api-token-auth/
+#Ex. resposta: {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjY4ODIsImVtYWlsIjoiIn0.VIAod8nnznP0WOjAWIS6dh2sO-XqXGeYwCfsLCNmXyw"}
+
 #Fase 3: Prova accedir a recurs amb el token
-export JWTOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkFQSXBPSDEiLCJ1c2VyX2lkIjoyMjYsImVtYWlsIjoiIiwiZXhwIjoxNTMzMDQ2MzgxfQ._OCRlFiMP7ajk5_OxI_zOqZRbCdH8r2dtADmg-FOP28
-curl -H "Authorization: JWT ${JWTOKEN}" http://127.0.0.1:8000/mblapp/hello_api_login/
+export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjY4ODIsImVtYWlsIjoiIn0.VIAod8nnznP0WOjAWIS6dh2sO-XqXGeYwCfsLCNmXyw
+curl -H "Authorization: JWT ${JWTOKEN}" http://127.0.0.1:8000/api/token/hello_api_login/
+#Resposta: {"status":"here we are just login"}
 
-{"status":"here we are"}
-
-#Fase 4: Demanar les dades de l'alumne
-export JWTOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkFQSWl0dFciLCJ1c2VyX2lkIjoyMzUsImVtYWlsIjoiIiwiZXhwIjoxNTMyOTQ4MDg5fQ.uPixe14hJFLYdALHx2lbkRj6Gl9N4GWe-SUDom1Nh0g
+##Fase 4: Demanar les dades de l'alumne d'un mes concret
+export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjcyNjksImVtYWlsIjoiIn0.FwF9NHS6De9FYllUTnDWHDXfApit3po1fnVB1pjUq2Q
 export LASTSYNCDATE="2018-06-01 12:00:13"
-curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/mblapp/syncro_data_api/
-{"darrera_sincronitzacio":"2018-07-30T15:49:36.819432",
-"Assistència":[{"franja":"12:00-13:05","materia":"MA","dia":"2018-06-01","tipus":"Retard"},{"franja":"10:00-11:05","materia":"FI","dia":"2018-06-02","tipus":"Justificada"}],
-"Expulsions":[],
-"Incidències":[{"franja":"12:00-13:05","dia":"2018-06-01","tipus":"Incidència","motiu":"Molesta els companys"},{"franja":"12:00-13:05","dia":"2018-06-02","tipus":"Observació","motiu":"Bona feina"}],
-"Activitats":[],
-"Sancions":[],
-"id":108}
+curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/mes/10/
+#Resposta: [{"id":155,"darrera_sincronitzacio":null},
+#{"dia":"13/10/2022","materia":"SMX12(2)","hora":"14:50 a 15:50","professor":"Àngel Bosch Hernàndez","text":"Falta d'assistència","tipus":"Falta"},
+#{"dia":"10/10/2022","materia":"SMX12(2)","hora":"19:00 a 19:55","professor":"Daniel Prados","text":"Falta d'assistència","tipus":"Falta"},
+#{"dia":"10/10/2022","materia":"SMX12(2)","hora":"18:00 a 19:00","professor":"Daniel Prados","text":"Falta d'assistència","tipus":"Falta"},
+#{"dia":"11/10/2022","hora":"19:00 a 19:55","professor":"Juaky Rubio","text":"Parla, molesta i no deixa treballar als companys.","tipus":"Falta"}
+#]
 
 #Fase 5: Demanar si hi ha novetats
-export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjA4LCJ1c2VybmFtZSI6IkFQSTZtbmIiLCJleHAiOjE2NjkxNTg4ODIsImVtYWlsIjoiIn0.DRNDPdvZ_KxyvNIUH3GJ1UeKsmFFwGihcLzHmY4gZFI
+export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjc2NTksImVtYWlsIjoiIn0.T3sPlZMhXSzhiGeId4nlqAQMmfxO1tqSLFctqcWDkGo
 export LASTSYNCDATE="2022-11-18 12:00:13"
-curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/mblapp/notificacions/news/
+curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/news/
+#Resposta: {"resultat":"Sí"}
 
 $# ------------------- Altres proves ------------------------------
 #Prova accedir sense el token
 $
-$ curl http://127.0.0.1:8000/mblapp/hello_api_login/
+$ curl http://127.0.0.1:8000/api/token/notificacions/news/
 {"detail":"Authentication credentials were not provided."}
-Tens, si vols, una url que no demana autenticació:
-$ #sense auth
-$
-$ curl http://127.0.0.1:8000/mblapp/hello_api/
-{"status":"here we are"}
-```

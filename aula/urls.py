@@ -53,7 +53,7 @@ urlpatterns = [
     re_path(r'^extUntis/', include('aula.apps.extUntis.urls')),
     re_path(r'^matricula/', include('aula.apps.matricula.urls', namespace='matricula')),
     re_path(r'^extPreinscripcio/', include('aula.apps.extPreinscripcio.urls')),
-    re_path(r'^mblapp/', include('aula.mblapp.urls')),
+    re_path(r'^api/token/', include('aula.mblapp.urls')),
     # Uncomment the next line to enable the admin:
     re_path(r'^admin/login/', RedirectView.as_view(url=settings.LOGIN_URL, permanent=True, query_string=True)),
     path('admin/', admin.site.urls),
