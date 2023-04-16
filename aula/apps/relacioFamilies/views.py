@@ -379,8 +379,9 @@ def gestionaQRs(request, pk=None):
 
     return render(
         request,
-        'table2.html',
-        {'table': table
+        'gestionaQRs.html',
+        {'table': table,
+         'alumne': alumne,
          }
     )
 
