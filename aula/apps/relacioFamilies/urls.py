@@ -18,6 +18,8 @@ urlpatterns = [
             name="tutoria__relacio_families___qr_tokens_all"),
     re_path(r'^qrs/$', relacioFamilies_views.qrs,
             name="tutoria__relacio_families__qrs"),
+    re_path(r'^gestionaQRs/(?P<pk>\d+)/$', relacioFamilies_views.gestionaQRs,
+            name="tutoria__relacio_families__gestionaQRs"),
 
     re_path(r'^bloquejaDesbloqueja/(?P<pk>\d+)/$', relacioFamilies_views.bloquejaDesbloqueja,
         name="tutoria__relacio_families__bloqueja_desbloqueja"), 

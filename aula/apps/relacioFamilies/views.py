@@ -15,6 +15,8 @@ from django.urls import reverse_lazy
 
 #auth
 from django.contrib.auth.decorators import login_required
+from django_tables2 import RequestConfig
+
 from aula.apps.usuaris.models import QRPortal
 
 #helpers
@@ -23,8 +25,10 @@ from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm
+from aula.mblapp.table2_models import Table2_QRPortalAlumne
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
+from aula.utils.my_paginator import DiggPaginator
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 from aula.apps.alumnes.tools import get_hores, properdiaclasse, ultimdiaclasse
@@ -337,7 +341,7 @@ def qrs( request):
                 camp = tools.classebuida()
                 camp.enllac = None
                 accio_list = [(u'Genera nous codis QR', '/open/qrTokens/{0}'.format(alumne.pk)),
-                              (u"Gestiona QR's existents", '/open/qrTokens/{0}'.format(alumne.pk)),
+                              (u"Gestiona QR's existents", '/open/gestionaQRs/{0}'.format(alumne.pk)),
                               ]
                 camp.multipleContingut = accio_list
                 filera.append(camp)
@@ -354,8 +358,31 @@ def qrs( request):
              },
         )
 
+@login_required
+@group_required(['professors'])
+def gestionaQRs(request, pk=None):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
 
+    alumne=Alumne.objects.get(pk=pk)
 
+    qrs = (QRPortal
+                .objects
+                .filter(alumne_referenciat=alumne)
+                .order_by('moment_expedicio')
+                .distinct()
+                )
+
+    table = Table2_QRPortalAlumne(data=list(qrs))
+    table.order_by = '-moment_expedicio'
+    RequestConfig(request, paginate={"paginator_class": DiggPaginator, "per_page": 10}).configure(table)
+
+    return render(
+        request,
+        'table2.html',
+        {'table': table
+         }
+    )
 
 
 @login_required
