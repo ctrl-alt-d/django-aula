@@ -86,3 +86,10 @@ $# ------------------- Altres proves ------------------------------
 $
 $ curl http://127.0.0.1:8000/api/token/notificacions/news/
 {"detail":"Authentication credentials were not provided."}
+
+
+
+# token refresh
+curl -X POST -H "Content-Type: application/json" -d '{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTYyNjcsImVtYWlsIjoiIiwib3JpZ19pYXQiOjE2NzIzNTU5Njd9.hzuviwDkduIYF2mzt1xDPh1o455YgQa8PRj1qTIJpho"}' http://localhost:8000/api-token-refresh/
+#Resposta:
+{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTYyOTcsImVtYWlsIjoiIiwib3JpZ19pYXQiOjE2NzIzNTU5Njd9.DdyS8X4XMJ7O8cpCYMRjhtGbbL6QJu72vesWr36
