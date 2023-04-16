@@ -259,8 +259,8 @@ def notificacions_news(request, format=None):
 @permission_classes(( EsUsuariDeLaAPI, ))
 def alumnes_dades(request, format=None):
 
-    alumne= Alumne.objects.get(user_associat__username=request.user)
-
+    qrtoken = request.user.qrportal
+    alumne = qrtoken.alumne_referenciat
     content = {"grup": unicode(alumne.grup),
                "datanaixement": "/".join([unicode(alumne.data_neixement.day), unicode(alumne.data_neixement.month),unicode(alumne.data_neixement.year)]),
                "telefon": alumne.telefons,

@@ -71,6 +71,16 @@ export LASTSYNCDATE="2022-11-18 12:00:13"
 curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/news/
 #Resposta: {"resultat":"Sí"}
 
+
+#Fase 6: Demanar dades de l'alumne
+export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
+curl -H "Authorization: JWT ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/
+#Resposta: 
+{"grup":"SMX2A","datanaixement":"13/5/2004","telefon":"","responsables":
+[{"nom":"Ganchozo Risco, Miriam Graciela","mail":"keylu5810@hotmail.com","tfn":""},
+{"nom":"","mail":"","tfn":""}],"adreça":"CR Pere III 62  ESC. C 1er 1era , Figueres"}
+
+
 $# ------------------- Altres proves ------------------------------
 #Prova accedir sense el token
 $
