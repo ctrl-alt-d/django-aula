@@ -278,6 +278,84 @@ def qrTokens( request , pk=None ):
 
     return response
 
+@login_required
+@group_required(['professors'])
+def qrs( request):
+
+        credentials = tools.getImpersonateUser(request)
+        (user, _) = credentials
+
+        professor = User2Professor(user)
+
+        report = []
+        grups = [t.grup for t in Tutor.objects.filter(professor=professor)]
+        grups.append('Altres')
+        for grup in grups:
+            taula = tools.classebuida()
+
+            taula.titol = tools.classebuida()
+            taula.titol.contingut = ''
+            taula.titol.enllac = None
+
+            taula.capceleres = []
+
+            capcelera = tools.classebuida()
+            capcelera.amplade = 75
+            capcelera.contingut = grup if grup == 'Altres' else u'{0} ({1})'.format(unicode(grup), unicode(grup.curs))
+            capcelera.enllac = ""
+            taula.capceleres.append(capcelera)
+
+
+            capcelera = tools.classebuida()
+            capcelera.amplade = 25
+            capcelera.contingut = u'Acció'
+            taula.capceleres.append(capcelera)
+
+            taula.fileres = []
+
+            if grup == 'Altres':
+                consulta_alumnes = Q(pk__in=[ti.alumne.pk for ti in professor.tutorindividualitzat_set.all()])
+            else:
+                consulta_alumnes = Q(grup=grup)
+
+            alumnes = Alumne.objects.filter(consulta_alumnes)
+
+
+            for alumne in alumnes:
+
+                filera = []
+
+                # -Alumne--------------------------------------------
+                camp = tools.classebuida()
+                camp.codi = alumne.pk
+                camp.enllac = None
+                camp.contingut = unicode(alumne)
+                filera.append(camp)
+
+
+                # -Acció--------------------------------------------
+                camp = tools.classebuida()
+                camp.enllac = None
+                accio_list = [(u'Genera nous codis QR', '/open/qrTokens/{0}'.format(alumne.pk)),
+                              (u"Gestiona QR's existents", '/open/qrTokens/{0}'.format(alumne.pk)),
+                              ]
+                camp.multipleContingut = accio_list
+                filera.append(camp)
+
+                # --
+                taula.fileres.append(filera)
+            report.append(taula)
+
+        return render(
+            request,
+            'report.html',
+            {'report': report,
+             'head': "QR's dels meus tutorats",
+             },
+        )
+
+
+
 
 
 @login_required
@@ -477,7 +555,6 @@ def dadesRelacioFamilies( request ):
                                #(u'Bloquejar' if alumne.esta_relacio_familia_actiu() else u'Desbloquejar', '/open/bloquejaDesbloqueja/{0}'.format(alumne.pk)),
                                (u'Envia benvinguda' , '/open/enviaBenvinguda/{0}'.format(alumne.pk)),
                                (u'Veure Portal', '/open/elMeuInforme/{0}'.format(alumne.pk)),
-                               (u'Gestió tokens QR App', '/open/qrTokens/{0}'.format(alumne.pk)),
                                ]
                 camp.multipleContingut = accio_list
                 filera.append(camp)
