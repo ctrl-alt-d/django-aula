@@ -144,9 +144,8 @@ def detallAulaReserves (request, year, month, day, pk):
                        .objects
                        .filter( horari__impartir__dia_impartir = data )
                        .order_by('hora_inici')
+                       .distinct()
                       )
-    primera_franja = franges_del_dia.first()
-    darrera_franja = franges_del_dia.last()
 
     # -- si l'aula presenta un horari restringit
     q_horari_restringit = Q()
@@ -155,17 +154,20 @@ def detallAulaReserves (request, year, month, day, pk):
         franges_reservades = [ reserva.hora.pk for reserva in reserves_dun_dia_un_aula ]
         q_horari_restringit = Q( pk__in = disponibilitatHoraria + franges_reservades )
 
-    #
-    franges_reservables = ( FranjaHoraria
-                            .objects
-                            .filter(hora_inici__gte = primera_franja.hora_inici)
-                            .filter(hora_fi__lte = darrera_franja.hora_fi)
-                            .filter( q_horari_restringit )
-                            ) if primera_franja and darrera_franja else []
+    # Només les franges que corresponen al dia
+    franges_reservables = ( franges_del_dia.filter( q_horari_restringit )) if franges_del_dia else []
 
 
     horariAula = []
     for franja in franges_reservables:
+
+        # Si la franja es solapa amb una altra ja ocupada, no es mostrarà
+        if not reserves_dun_dia_un_aula.filter(hora__hora_inici=franja.hora_inici, 
+                                               hora__hora_fi=franja.hora_fi) \
+            and reserves_dun_dia_un_aula.filter(hora__hora_inici__lt=franja.hora_fi,
+                                                hora__hora_fi__gt=franja.hora_inici):
+            continue
+        
         reserva = reserves_dun_dia_un_aula.filter(hora=franja).order_by().first()
         nova_franja = {}
         nova_franja['franja'] = franja
@@ -186,7 +188,7 @@ def detallAulaReserves (request, year, month, day, pk):
         nova_franja['grup'] = u", ".join(  grup_list )  if reserva else u""
         nova_franja['professor'] = u", ".join([reserva.usuari.first_name + ' ' + reserva.usuari.last_name]) if reserva else u""
         nova_franja['reservable'] = not bool(reserva) and aula.reservable
-        nova_franja['eliminable'] = bool(reserva) and reserva.usuari.pk == user.pk
+        nova_franja['eliminable'] = bool(reserva) and reserva.usuari.pk == user.pk and not reserva.impartir_set.exists()
         nova_franja['aula'] = aula
         nova_franja['dia'] = data
         horariAula.append(nova_franja)
@@ -294,7 +296,9 @@ def detallFranjaReserves (request, year, month, day, pk):
                                        .distinct()
                                        )
         # reservades
-        reservada = Q(reservaaula__dia_reserva=data) & Q(reservaaula__hora=franja)
+        # Aules ocupades en el dia i franja, també casos de franges solapades
+        reservada = Q(reservaaula__dia_reserva=data) & Q(reservaaula__hora__hora_inici__lt=franja.hora_fi)\
+                    & Q(reservaaula__hora__hora_fi__gt=franja.hora_inici)
         reservada_ids = (Aula
                          .objects
                          .filter(reservada)
