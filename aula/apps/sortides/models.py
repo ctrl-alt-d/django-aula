@@ -96,7 +96,7 @@ class Sortida(models.Model):
     departament_que_organitza = models.ForeignKey(Departament, help_text=u"Indica quin departament organitza l'activitat", blank=True, null=True, on_delete=models.CASCADE)
     comentari_organitza = models.CharField(max_length=50,help_text=u"En cas de no ser organitzat per un departament cal informar qui organitza l'activitat.", blank = True )
 
-    alumnes_a_l_aula_amb_professor_titular =  models.BooleanField(u"Passar llista com normalment?", default=False, help_text = u"Els alumnes seran a l'aula i el professor de l'hora corresponent passarà llista com fa habitualment.")
+    alumnes_a_l_aula_amb_professor_titular =  models.BooleanField(u"Passar llista durant l'activitat", default=False, help_text = u"Els alumnes seran a l'aula i el professor de l'hora corresponent passarà llista com fa habitualment.")
     data_inici = models.DateField( u"Afecta classes: Des de", help_text=u"Primer dia lectiu afectat per l'activitat", blank=True, null=True)
     franja_inici = models.ForeignKey(FranjaHoraria,verbose_name=u"Afecta classes: Des de franja", related_name='hora_inici_sortida',  help_text=u"Primera franja lectiva afectada per l'activitat", blank=True, null=True, on_delete=models.CASCADE)
     data_fi = models.DateField(  u"Afecta classes: Fins a",help_text=u"Darrer dia  lectiu de l'activitat", blank=True, null=True)
