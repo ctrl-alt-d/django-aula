@@ -1,13 +1,8 @@
 # This Python file uses the following encoding: utf-8
 
 #----write pdf-------------------------------------
-from django import http
-from django.template.loader import get_template
-from django.template import Context
 from django.conf import settings
 
-from io import StringIO
-import html
 from django.core.validators import validate_ipv4_address
 from django.core.exceptions import ValidationError
 from django.contrib.auth import logout
@@ -18,10 +13,6 @@ from threading import Thread
 from django.contrib.auth.models import User
 from django.utils.datetime_safe import datetime
 
-try:
-    import ho.pisa as pisa
-except:
-    pass
 
 #--------------------------------------------------
 
@@ -144,27 +135,6 @@ def add_secs_to_time(timeval, secs_to_add):
     added_datetime = full_datetime + datetime.timedelta(seconds=secs_to_add)
     return added_datetime.time()
 
-
-
-
-
-def write_pdf(template_src, context_dict):
-    
-        
-    template = get_template(template_src)
-    #template = Template(filename = template_src, input_encoding = "utf-8")
-    context = Context(context_dict)
-    html  = template.render(context)
-    result = StringIO.StringIO()
-    pdf = pisa.pisaDocument(StringIO.StringIO( html.encode("utf-8")), dest=result, encoding='UTF-8', link_callback=fetch_resources)
-    if not pdf.err:
-        response = http.HttpResponse( result.getvalue(), mimetype='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename=qualitativa.pdf'
-    else:
-        response = http.HttpResponse('''Gremlin's ate your pdf! %s''' % html.escape(html))
-
-    
-    return response
 
 def fetch_resources(uri, rel):
     import os.path

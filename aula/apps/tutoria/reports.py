@@ -3,11 +3,10 @@
 from aula.apps.alumnes.models import  Nivell
 from django.db.models import Q
 from aula.utils import tools
-from django.template.context import RequestContext
 from aula.apps.alumnes.models import  Grup
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.assignatures.models import Assignatura
-from aula.utils.tools import write_pdf, unicode
+from aula.utils.tools import unicode
 from django.conf import settings
 
 def reportCalendariCursEscolarTutor( professor ):
