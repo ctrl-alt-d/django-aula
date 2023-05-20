@@ -1,9 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
-from django.db.models import Q
 from aula.utils import tools
-from django.template.context import RequestContext
-from aula.utils.tools import write_pdf, unicode
+from aula.utils.tools import unicode
 from aula.apps.baixes.models import Feina
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.presencia.models import Impartir

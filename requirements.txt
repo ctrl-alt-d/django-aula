@@ -18,7 +18,6 @@ viivakoodi
 XlsxWriter
 typing ; python_version < '3.5'
 selenium
-pisa
 pycryptodome
 xmltodict
 django-private-storage
