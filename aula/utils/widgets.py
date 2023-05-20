@@ -2,12 +2,12 @@
 #http://copiesofcopies.org/webl/2010/04/26/a-better-datetime-widget-for-django/
 
 #from django.template.loader import render_to_string
+from django import forms
 from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, RadioSelect,\
     DateTimeInput
 from time import strftime
 from django.utils.safestring import mark_safe
-from django.utils.html import conditional_escape, escape, format_html
-from django.forms.utils import flatatt
+from django.utils.html import conditional_escape, escape
 from django.utils.encoding import force_str
 from itertools import chain
 
@@ -337,4 +337,35 @@ class modalButton(TextInput):
 
       
         return mark_safe(html)
-    
+
+class CustomClearableFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+    template_name = 'widgets/uploadfiles.html'
+    eliminaFitxers = []
+    input_text = mark_safe('<b>Selecciona TOTS els arxius necessaris</b>')
+
+    def value_from_datadict(self, data, files, name):
+        upload = super().value_from_datadict(data, files, name)
+        checkbox=self.clear_checkbox_name(name)
+        pos=len(checkbox)
+        self.eliminaFitxers=[]
+        for key in data.keys():
+            if key.startswith(checkbox):
+                num=int(key[pos:])
+                self.eliminaFitxers.append(num)
+        return upload
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
