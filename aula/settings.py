@@ -121,7 +121,7 @@ CUSTOM_KEY_COMERÇ = 'xxxxxx'
 # Per canvis a Django 3.2
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# Per personalitzar el template del widget aula.apps.matricula.forms.CustomClearableFileInput
+# Per personalitzar el templates del widgets
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # Límit de mida per upload

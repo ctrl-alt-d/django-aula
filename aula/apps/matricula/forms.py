@@ -3,7 +3,8 @@ from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.matricula.models import Matricula
 from aula.apps.sortides.models import QuotaPagament
 from aula.apps.alumnes.models import Curs, Nivell
-from aula.utils.widgets import DateTextImput
+from aula.utils.widgets import DateTextImput, MultipleFileField, CustomClearableFileInput
+from django.utils import version
 import django.utils.timezone
 from django.conf import settings
 
@@ -11,11 +12,11 @@ class DadesForm1(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(DadesForm1, self).__init__(*args, **kwargs)
-        #self.fields['data_naixement'].widget=DateTextImput()
-        self.fields['nom'].disabled=True
-        self.fields['cognoms'].disabled=True
-        self.fields['centre_de_procedencia'].disabled=True
-        self.fields['data_naixement'].disabled=True
+        # Es fa servir readonly per aconseguir compatibilitat amb Django 2
+        self.fields['nom'].widget.attrs['readonly'] = True
+        self.fields['cognoms'].widget.attrs['readonly'] = True
+        self.fields['centre_de_procedencia'].widget.attrs['readonly'] = True
+        self.fields['data_naixement'].widget.attrs['readonly'] = True
         mat=kwargs['initial'].get('matricula')
         if mat.preinscripcio:        
             self.fields['curs'].disabled=True
@@ -106,36 +107,17 @@ class DadesForm2b(forms.ModelForm):
             raise forms.ValidationError("Indica les UFs a on vols matricular-te")
         return cleaned_data
 
-
-class CustomClearableFileInput(forms.ClearableFileInput):
-    from django.utils.safestring import mark_safe
-    
-    template_name = 'widgets/uploadfiles.html'
-    eliminaFitxers = []
-    input_text = mark_safe('<b>Selecciona TOTS els arxius necessaris</b>')
-
-    def value_from_datadict(self, data, files, name):
-        upload = super().value_from_datadict(data, files, name)
-        checkbox=self.clear_checkbox_name(name)
-        pos=len(checkbox)
-        self.eliminaFitxers=[]
-        for key in data.keys():
-            if key.startswith(checkbox):
-                num=int(key[pos:])
-                self.eliminaFitxers.append(num)
-        return upload
-
 class DadesForm3(forms.ModelForm):
-    
     quotaMat=forms.CharField(label="Quota Matrícula:", widget = forms.TextInput( attrs={'readonly': True} ), required=False, )
     importTaxes=forms.CharField(label="Import de les taxes:", widget = forms.TextInput( attrs={'readonly': True} ), required=False, )
-    #documents=forms.CharField(label="Documents actuals:", widget = forms.Textarea( attrs={'readonly': True, 'files': None} ), required=False, )
-    fitxers = forms.FileField(widget=CustomClearableFileInput(attrs={'multiple': True}))
-
+    fitxers = MultipleFileField(widget=CustomClearableFileInput())
+    
     def __init__(self, *args, **kwargs):
         from django.utils.safestring import mark_safe
-
-        super(DadesForm3, self).__init__(*args, **kwargs)
+        
+        super().__init__(*args, **kwargs)
+        if version.get_main_version() <= '4.2':
+            self.fields['fitxers'].widget=CustomClearableFileInput(attrs={'multiple': True})
         self.fields['acceptar_condicions'].required=True
         mat=kwargs['initial'].get('matricula')
         if mat.curs.nivell.nom_nivell=='ESO':
