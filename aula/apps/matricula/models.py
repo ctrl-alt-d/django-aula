@@ -66,10 +66,7 @@ class Matricula(models.Model):
     
     @property
     def getPagament(self):
-        if not self.quota:
-            p=QuotaPagament.objects.filter(alumne=self.alumne, quota__any=self.any, quota__tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
-        else:
-            p=QuotaPagament.objects.filter(alumne=self.alumne, quota=self.quota)
+        p=QuotaPagament.objects.filter(alumne=self.alumne, quota__any=self.any, quota__tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
         return p
 
 class Document(models.Model):
