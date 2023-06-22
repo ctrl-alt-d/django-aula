@@ -125,17 +125,17 @@ def capture_token_api(request, format=None):
     return Response(content)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes((EsUsuariDeLaAPI,))
 def notificacions_mes(request, mes, format=None):
     """
-    Rep la darrera data de sincronització (i un jwt), el mes i retorna tots valors actuals.
+    Rep el mes i retorna tots valors actuals.
     """
-    ara = datetime.now()
-    data = JSONParser().parse(request)
-    serializer = DarreraSincronitzacioSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError("ups! petició amb errors")
+    #ara = datetime.now()
+    #data = JSONParser().parse(request)
+    #serializer = DarreraSincronitzacioSerializer(data=data)
+    #if not serializer.is_valid():
+    #    raise serializers.ValidationError("ups! petició amb errors")
 
     qrtoken = request.user.qrportal
 
@@ -222,9 +222,9 @@ def notificacions_mes(request, mes, format=None):
     #content["Qualitatives"] = [ ] #TODO
 
     # Anoto canvis
-    qrtoken.darrera_sincronitzacio = ara
+    #qrtoken.darrera_sincronitzacio = ara
 
-    qrtoken.save()
+    #qrtoken.save()
 
     return Response(content)
 

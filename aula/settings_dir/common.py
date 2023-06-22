@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
+import datetime
 import os
 
 NOM_CENTRE = 'Centre C'
@@ -239,6 +240,7 @@ REST_FRAMEWORK = {
 
 
 JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=18000),
     "JWT_ALLOW_REFRESH": True,
 }
 

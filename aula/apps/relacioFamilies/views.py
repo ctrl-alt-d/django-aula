@@ -212,6 +212,7 @@ def qrTokens( request , pk=None ):
         qr_dict = {"key": qr_token.clau,
                    "id": alumne.id,
                    "name": alumne.nom,
+                   "surname": alumne.cognoms,
                    "api_end_point": settings.URL_DJANGO_AULA,
                    "organization": settings.NOM_CENTRE,
                    }
