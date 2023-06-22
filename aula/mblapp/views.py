@@ -264,14 +264,13 @@ def alumnes_dades(request, format=None):
     content = {"grup": unicode(alumne.grup),
                "datanaixement": "/".join([unicode(alumne.data_neixement.day), unicode(alumne.data_neixement.month),unicode(alumne.data_neixement.year)]),
                "telefon": alumne.telefons,
-               "responsables":[{"nom":alumne.rp1_nom,
-                                "mail":alumne.rp1_correu,
-                                "tfn": " , ".join(filter(None,[alumne.rp1_telefon,alumne.rp1_mobil]))},
-                               {"nom":alumne.rp2_nom,
-                                "mail":alumne.rp2_correu,
-                                "tfn": " , ".join(filter(None,[alumne.rp2_telefon,alumne.rp2_mobil]))}],
-               "adreça": " , ".join(filter(None,[alumne.adreca, alumne.localitat, alumne.municipi]))}
-
+               "responsables":[{"nom":unicode(alumne.rp1_nom),
+                                "mail":unicode(alumne.rp1_correu),
+                                "tfn": " , ".join(filter(None,[unicode(alumne.rp1_telefon),unicode(alumne.rp1_mobil)]))},
+                               {"nom":unicode(alumne.rp2_nom),
+                                "mail":unicode(alumne.rp2_correu),
+                                "tfn": " , ".join(filter(None,[unicode(alumne.rp2_telefon),unicode(alumne.rp2_mobil)]))}],
+               "adreça": " , ".join(filter(None,[unicode(alumne.adreca), unicode(alumne.localitat), unicode(alumne.municipi)]))}
     return Response(content)
 
 
