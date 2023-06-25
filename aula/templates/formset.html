@@ -113,11 +113,13 @@
         {% endif %}       
     {% endfor %}
     {% if formset %}
+		{% if not actuacioNoEditable %}</p>
     <div class="row row-padded" >
     	<div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
       		<button type="submit" class="btn btn-primary">Enviar dades</button>
       </div>
     </div>
+		{% endif %}
   	{% endif %}
   </form>
   {% block postform  %} {% endblock %}

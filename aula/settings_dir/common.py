@@ -219,6 +219,7 @@ INSTALLED_APPS_AULA = [
     'aula.apps.extUntis',
     'aula.apps.matricula',
     'aula.apps.extPreinscripcio',
+    'aula.apps.importaActuacions',
 ]
 
 #select2
