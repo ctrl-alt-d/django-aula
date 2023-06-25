@@ -32,7 +32,7 @@ from django.contrib import messages
 from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES, CONSERGERIA_A_TUTOR, tipusMissatge, \
     CONSERGERIA_A_CONSERGERIA, ERROR_AL_PROGRAMA, ACUS_REBUT_ERROR_AL_PROGRAMA, ACUS_REBUT_ENVIAT_A_PROFE_O_PAS, \
     EMAIL_A_FAMILIES, AVIS_ABSENCIA
-from aula.apps.relacioFamilies.notifica import enviaEmailFamilies
+from aula.apps.relacioFamilies.notifica import enviaEmailFamilies, FitxerSuperaMida
 import collections
 
 @login_required
@@ -339,22 +339,27 @@ def EmailFamilies(request):
             subject = msgForm.cleaned_data['assumpte']
             message = msgForm.cleaned_data['missatge']
             attach = request.FILES.getlist('adjunts') if request.FILES else []
+            tipus_de_missatge = tipusMissatge(EMAIL_A_FAMILIES)
             try:
                 contOk, contErr = enviaEmailFamilies(subject, message, attach)
-                # envio al que ho envia:
                 missatge = EMAIL_A_FAMILIES + ("\nNo enviat a {0} adreces. Els missatges pendents seran enviats més endavant.".format(contErr) if contErr>0 else "")
-                tipus_de_missatge = tipusMissatge(EMAIL_A_FAMILIES)
-                msg = Missatge(remitent=user,
-                                text_missatge=missatge.format(contOk, "\n"+subject+":\n"+message+"\n\nadjunts:"+
-                                                              (str( [ f.name for f in attach if f.name ]) if attach else "")),
-                                tipus_de_missatge= tipus_de_missatge)
-                msg.envia_a_usuari(user, 'PI')
-                msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
-    
-                messages.info(request, u"Email a famílies enviat a {0} adreces".format(contOk)+
+                missatge = missatge.format(contOk, "\n"+subject+":\n"+message+"\n"+
+                                                ("\nadjunts:"+str( [ f.name for f in attach if f.name ]) if attach else ""))
+                messages.info(request, "Email a famílies enviat a {0} adreces".format(contOk)+
                               (", no enviat a {0} adreces. Els missatges pendents seran enviats més endavant.".format(contErr) if contErr>0 else "."))
-            except:
-                messages.error(request, u"No s'ha pogut fer l'enviament, torneu a intentar en uns minuts")
+            except FitxerSuperaMida as e:
+                missatge = "Email a famílies no enviat. "+str(e)
+                messages.error(request, missatge)
+            except Exception as e:
+                missatge = "Email a famílies no enviat, torneu a intentar-ho en uns minuts."
+                messages.error(request, missatge)
+                
+            # envio al que ho envia:
+            msg = Missatge(remitent=user,
+                            text_missatge=missatge,
+                            tipus_de_missatge= tipus_de_missatge)
+            msg.envia_a_usuari(user, 'PI')
+            msg.destinatari_set.filter(destinatari = user).update(moment_lectura=datetime.now())
             url = '/missatgeria/elMeuMur/'
             return HttpResponseRedirect(url)
     else:

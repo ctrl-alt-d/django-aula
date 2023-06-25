@@ -9,6 +9,7 @@ from aula.apps.sortides.models import NotificaSortida, QuotaPagament
 from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core import mail
 from django.core.mail import EmailMessage
+from django.db import transaction
 from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
 from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
@@ -202,19 +203,36 @@ def pendentEmail(subject, body, from_email, bcc, attachments=None):
     bcc és una llista
     '''
     
-    ep=EmailPendent(subject=subject, message=body, fromemail=from_email, toemail=str(bcc))
-    ep.save()                
-    if attachments:
-        for f in attachments:
-            file_instance = DocAttach(fitxer=f)
-            file_instance.email=ep
-            file_instance.save()
+    with transaction.atomic():
+        ep=EmailPendent(subject=subject, message=body, fromemail=from_email, toemail=str(bcc))
+        ep.save()
+        if attachments:
+            for f in attachments:
+                file_instance = DocAttach(fitxer=f)
+                file_instance.email=ep
+                file_instance.save()
+
+class FitxerSuperaMida(Exception):
+    def __init__(self, message, code=None, params=None):
+        super().__init__(message, code, params)
+        self.message = message
+        self.code = code
+        self.params = params
     
+    def __str__(self):
+        if hasattr(self, 'message') and bool(self.message):
+            if isinstance(self.message, dict):
+                return str(list(self.message))
+            return str(self.message)
+        else:
+            return '(FitxerSuperaMida)La mida del fitxer supera el límit.'
+
 def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None):
     '''
     Envia email a llista de destinataris bcc. Fracciona la llista de destinataris si fa falta.
     bcc és una llista.
     retorna quantitat ok, quantitat errors, llista destinataris pendents
+    Provoca error FitxerSuperaMida si els fitxers adjunts són massa grans
     '''
     
     email = EmailMessage(subject, body, from_email, reply_to=[from_email], connection=connection)
@@ -226,6 +244,7 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
     if maxdest<=0: maxdest=10
         
     if attachments:
+        midatotal=0
         for f in attachments:
             if isinstance(f, DocAttach):
                 name=f.fitxer.name
@@ -234,8 +253,17 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             else:
                 name=f.name
                 content_type=f.content_type
-            f.seek(0)
-            email.attach(name, f.read(), content_type)
+            f.seek(0, os.SEEK_END)
+            mida=f.tell()
+            midatotal=midatotal+mida
+            if mida<=settings.FILE_UPLOAD_MAX_MEMORY_SIZE and midatotal<=settings.FILE_UPLOAD_MAX_MEMORY_SIZE*3:
+                f.seek(0)
+                email.attach(name, f.read(), content_type)
+            else:
+                fitxerMB=settings.FILE_UPLOAD_MAX_MEMORY_SIZE/1024/1024
+                totalMB=fitxerMB*3
+                raise FitxerSuperaMida('Mida dels fitxers inadequada.'+ \
+                            ' Un fitxer no pot superar {0} MB i tots els fitxers {1} MB.'.format(fitxerMB, totalMB))
 
     while cont<total:
         if cont+maxdest<=total:
@@ -316,18 +344,13 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     
     if settings.DEBUG:
         print (u'Enviant mail famílies a {0} adreces'.format(len(correus_alumnes)))
+        # Enviament a ADMINS per a verificació si DEBUG
+        correus_alumnes=correus_alumnes+[x[1] for x in settings.ADMINS]
 
     correctes, errors, pendents=enviaEmail(subject, body, from_email=fromuser, bcc=correus_alumnes, connection=connection, attachments=fitxers)
     if errors>0:
         pendentEmail(subject, body, from_email=fromuser, bcc=pendents, attachments=fitxers)
         
-    if settings.DEBUG:
-        # Enviament per a verificació si DEBUG
-        print (u'Enviant còpia mail famílies als administradors')
-        _, erradm, _ = enviaEmail(subject, body, from_email=fromuser, bcc=[x[1] for x in settings.ADMINS], connection=connection, attachments=fitxers)
-        if erradm>0:
-            pendentEmail(subject, body, from_email=fromuser, bcc=[x[1] for x in settings.ADMINS], attachments=fitxers)
-            
     # tanca la connexió
     connection.close()
     
