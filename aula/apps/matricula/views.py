@@ -510,7 +510,14 @@ def ActivaMatricula(request):
     Selecciona els paràmetres per a l'activació de matrícules
     '''
     from aula.apps.matricula.forms import ActivaMatsForm
-
+    from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, ACTIVACIO_MATRICULA_FINALITZADA
+    from aula.apps.missatgeria.models import Missatge
+    from django.contrib.auth.models import Group
+    from aula.utils import tools
+    
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+    
     infos=[]
     if request.method == 'POST':
         form = ActivaMatsForm(request.user, request.POST)
@@ -552,10 +559,22 @@ def ActivaMatricula(request):
                 nivell.save()
                 
             enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail, senseEmails)
+            infomat='Matrícula activada de tipus {0} per {1} amb data límit {2}'.format(tipus, nivell.nom_nivell, 
+                                                            datalimit.strftime('%d/%m/%Y'))
             if senseEmails:
-                infos.append('Matrícula activada.')
+                infos.append(infomat+'.')
             else:
-                infos.append('Matrícula activada, emails enviats.')
+                infos.append(infomat+', emails enviats.')
+            missatge = ACTIVACIO_MATRICULA_FINALITZADA
+            tipus_de_missatge = tipusMissatge(missatge)
+            msg = Missatge(
+                        remitent= user,
+                        text_missatge = missatge,
+                        tipus_de_missatge = tipus_de_missatge)
+            msg.afegeix_infos(infos)
+            importancia = 'IN'
+            grupDireccio =  Group.objects.get( name = 'direcció' )
+            msg.envia_a_grup( grupDireccio , importancia=importancia)
             return render(
                         request,
                         'resultat.html', 
