@@ -84,21 +84,21 @@ def capture_token_api(request, format=None):
 
         # si no hi ha token -> error
         if not token:
-            raise serializers.ValidationError("ups! Aquest token no serveix")
+            raise serializers.ValidationError({'error': "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"})
 
         # si el token ja ha estat previament capturat
         if token.moment_captura:
-            raise serializers.ValidationError("ups! Aquest token no serveix")
+            raise serializers.ValidationError({'error': "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"})
 
         # caducat?
         caduca_dia = token.moment_expedicio + timedelta(days=settings.CUSTOM_DIES_API_TOKEN_VALID)
         if datetime.now() > caduca_dia:
-            raise serializers.ValidationError("ups! Aquest token no serveix")
+            raise serializers.ValidationError({'error': "ups! Aquest token ja ha caducat"})
         # born date is ok?
         fuky_random_jesucryst_date = datetime(1000,1,1).date
         db_born_date = ( token.alumne_referenciat.data_neixement or fuky_random_jesucryst_date )
         if db_born_date != born_date:
-            raise serializers.ValidationError("ups! Aquest token no serveix")
+            raise serializers.ValidationError({'error': "Data de naixement no vàlida"})
 
     # creo un nou usuari per aquest token
     allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' +  '0Oo^?#!'
@@ -266,11 +266,11 @@ def alumnes_dades(request, format=None):
                "telefon": alumne.telefons,
                "responsables":[{"nom":unicode(alumne.rp1_nom),
                                 "mail":unicode(alumne.rp1_correu),
-                                "tfn": " , ".join(filter(None,[unicode(alumne.rp1_telefon),unicode(alumne.rp1_mobil)]))},
+                                "telefon": " , ".join(filter(None,[unicode(alumne.rp1_telefon),unicode(alumne.rp1_mobil)]))},
                                {"nom":unicode(alumne.rp2_nom),
                                 "mail":unicode(alumne.rp2_correu),
-                                "tfn": " , ".join(filter(None,[unicode(alumne.rp2_telefon),unicode(alumne.rp2_mobil)]))}],
-               "adreça": " , ".join(filter(None,[unicode(alumne.adreca), unicode(alumne.localitat), unicode(alumne.municipi)]))}
+                                "telefon": " , ".join(filter(None,[unicode(alumne.rp2_telefon),unicode(alumne.rp2_mobil)]))}],
+               "adreca": " , ".join(filter(None,[unicode(alumne.adreca), unicode(alumne.localitat), unicode(alumne.municipi)]))}
     return Response(content)
 
 
