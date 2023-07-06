@@ -70,7 +70,7 @@ def capture_token_api(request, format=None):
     data = JSONParser().parse(request)
     serializer = QRTokenSerializer(data=data)
     if not serializer.is_valid():
-        raise serializers.ValidationError("ups! Aquest token no serveix")
+        raise serializers.ValidationError({"error": ["ups! Aquest token no serveix"]})
     # busquem el token
     key = serializer.validated_data["key"]
     born_date = serializer.validated_data["born_date"]
@@ -84,21 +84,21 @@ def capture_token_api(request, format=None):
 
         # si no hi ha token -> error
         if not token:
-            raise serializers.ValidationError({'error': "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"})
+            raise serializers.ValidationError({'error': ["ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"]})
 
         # si el token ja ha estat previament capturat
         if token.moment_captura:
-            raise serializers.ValidationError({'error': "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"})
+            raise serializers.ValidationError({'error': ["ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"]})
 
         # caducat?
         caduca_dia = token.moment_expedicio + timedelta(days=settings.CUSTOM_DIES_API_TOKEN_VALID)
         if datetime.now() > caduca_dia:
-            raise serializers.ValidationError({'error': "ups! Aquest token ja ha caducat"})
+            raise serializers.ValidationError({'error': ["ups! Aquest token ja ha caducat"]})
         # born date is ok?
         fuky_random_jesucryst_date = datetime(1000,1,1).date
         db_born_date = ( token.alumne_referenciat.data_neixement or fuky_random_jesucryst_date )
         if db_born_date != born_date:
-            raise serializers.ValidationError({'error': "Data de naixement no vàlida"})
+            raise serializers.ValidationError({'error': ["Data de naixement no vàlida"]})
 
     # creo un nou usuari per aquest token
     allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' +  '0Oo^?#!'
@@ -240,7 +240,7 @@ def notificacions_news(request, format=None):
     data = JSONParser().parse(request)
     serializer = DarreraSincronitzacioSerializer(data=data)
     if not serializer.is_valid():
-        raise serializers.ValidationError("ups! petició amb errors")
+        raise serializers.ValidationError({'error': ["ups! petició amb errors"]})
 
     darrera_sincronitzacio = serializer.validated_data["last_sync_date"]
 
