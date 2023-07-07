@@ -538,8 +538,8 @@ def ActivaMatricula(request):
                                 'resultat.html', 
                                 {'msgs': {'errors': [], 'warnings': [], 'infos': infos} },
                                  )
-                # Marca Preinscripcions 'Enviada' del mateix nivell com a 'Caducada'
-                # Així s'evita que preinscripcions anteriors puguin continuar la matrícula
+                # Marca Preinscripcions d'estat 'Enviada', del mateix nivell, com a 'Caducada'
+                # Així s'evita que preinscripcions, de matrícules activades anteriorment, puguin continuar la matrícula
                 Preinscripcio.objects.filter(estat='Enviada', codiestudis=nivell.nom_nivell, any=nany).update(estat='Caducada')
                 nivell.limit_matricula=datalimit
                 nivell.matricula_oberta=True
@@ -559,7 +559,8 @@ def ActivaMatricula(request):
                 nivell.save()
                 
             enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail, senseEmails)
-            infomat='Matrícula activada de tipus {0} per {1} amb data límit {2}'.format(tipus, nivell.nom_nivell, 
+            definicions={'P': 'preinscripció', 'A': 'altres', 'C': 'confirmació'}
+            infomat='Matrícula activada de tipus {0} per {1} amb data límit {2}'.format(definicions.get(tipus,''), nivell.nom_nivell, 
                                                             datalimit.strftime('%d/%m/%Y'))
             if senseEmails:
                 infos.append(infomat+'.')
