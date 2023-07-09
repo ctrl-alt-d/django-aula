@@ -77,14 +77,15 @@ def acceptat(row, capçaleres, preinscripcio, codi):
                     return True
     return False
 
-def convertirCodiEstudis(codiestudis):
+def convertirCodiEstudis(codiestudis, test=False):
     from aula.apps.alumnes.models import Nivell
     n=Nivell.objects.filter(nom_nivell=codiestudis)
     if codiestudis and not n:
         np=Nivell2Aula.objects.filter(nivellgedac=codiestudis)
         if not np:
-            np=Nivell2Aula(nivellgedac=codiestudis)
-            np.save()
+            if not test:
+                np=Nivell2Aula(nivellgedac=codiestudis)
+                np.save()
         else:
             if np[0].nivellDjau:
                 return np[0].nivellDjau.nom_nivell
@@ -103,11 +104,11 @@ def obrefull(f):
     from io import StringIO
     
     #el GEDAC proporciona els fitxers csv en format iso-8859-15 i final d'estil MacOS
+    f.seek(0)
     text = f.read().decode("iso-8859-1")
     textok = text.replace('\r', '\n')
     fcsv=StringIO(textok)
     rows=list(csv.reader(fcsv, delimiter=';', dialect=csv.excel))
-    f.close()
     return rows
                 
 def creaPreins(row, col_indexs):
@@ -122,7 +123,7 @@ def creaPreins(row, col_indexs):
         preinscripcio=assignaDades(preinscripcio, index, cell, col_indexs)
     return preinscripcio
 
-def sincronitza(f, user = None):
+def sincronitza(f, resetPrevious, user = None):
     from django.utils.datetime_safe import datetime
     
     errors = []
@@ -207,6 +208,7 @@ def sincronitza(f, user = None):
         peticions=True
     
     totsCodiEstudis=set()
+    totesPre=[]
     for row in rows[1:]:
        
         preinscripcio=creaPreins(row, col_indexs)
@@ -257,28 +259,54 @@ def sincronitza(f, user = None):
                             preinscripcio.update({'estat': p.estat[5:]})
                     for field, value in iter(preinscripcio.items()):
                         setattr(p, field, value)
+                '''
+                si estat és Assignada   --> MarcaAssignada
+                si estat és Validada    --> MarcaValidada o si ja existeix  Marca<estatactual> (no canvia)
+                '''
                 p.estat='Marca'+p.estat
                 p.codiestudis=convertirCodiEstudis(p.codiestudis)
                 #guarda el conjunt de tots els codiestudis
                 totsCodiEstudis.add(p.codiestudis)
                 p.save()
                 info_nAlumnesLlegits += 1
+                totesPre.append(p.id)
             except Exception as e:
                 errors.append(str(e)+": "+str(preinscripcio))
                 
-    # Delete preinscripcions sense matrícula dels mateixos estudis, què no apareixen ara al fitxer
     llp=Preinscripcio.objects.filter(estat__startswith='Marca')
     if llp:
         nany=llp[0].any
     else:
         nany=datetime.today().year
-    Preinscripcio.objects.filter(any=nany, matricula__isnull=True, estat__in=['Validada','Assignada',], codiestudis__in=totsCodiEstudis).delete()
+        
+    # Delete de les preinscripcions sense matrícula dels mateixos estudis, què no apareixen ara al fitxer
+    # Només si s'ha indicat a "Elimina dades anteriors"
+    if resetPrevious and peticions:
+        Preinscripcio.objects.filter(any=nany, matricula__isnull=True, estat__in=['Validada','Assignada',], codiestudis__in=totsCodiEstudis).delete()
+    
     # Elimina 'Marca especial' de la resta
     Preinscripcio.objects.filter(estat='MarcaValidada').update(estat='Validada')
     Preinscripcio.objects.filter(estat='MarcaAssignada').update(estat='Assignada')
+    Preinscripcio.objects.filter(estat='MarcaCaducada').update(estat='Caducada')
+    Preinscripcio.objects.filter(estat='MarcaEnviada').update(estat='Enviada')
     
-    infos.append(u'{0} alumnes llegits'.format(info_nAlumnesLlegits) )
-
+    infos.append(u'{0} alumnes llegits de {1}'.format(info_nAlumnesLlegits, 'peticions' if peticions else 'dades personals') )
+    if peticions: 
+        infos.append(u'Estudis {0}'.format(sorted(totsCodiEstudis)) )
+        totes=Preinscripcio.objects.filter(any=nany, estat__in=['Validada','Assignada',], codiestudis__in=totsCodiEstudis).count()
+        infos.append(u'{0} preinscripcions totals'.format(totes) )
+        falten=Preinscripcio.objects.filter(any=nany, naixement__isnull=True, id__in=totesPre).count()
+        if falten==0:
+            infos.append(u"Ja es pot fer l'activació de la matrícula")
+        else:
+            infos.append(u"Falta fitxer de dades personals" )
+    else:
+        #infos.append(u'Estudis no disponibles al fitxer de dades personals' )
+        falten=Preinscripcio.objects.filter(any=nany, estat='Validada', id__in=totesPre).count()
+        if falten==0:
+            infos.append(u"Ja es pot fer l'activació de la matrícula")
+        else:
+            infos.append(u"Falta fitxer de peticions" )
     missatge = IMPORTACIO_PREINSCRIPCIO_FINALITZADA
     tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(
@@ -293,3 +321,91 @@ def sincronitza(f, user = None):
     msg.envia_a_grup( grupDireccio , importancia=importancia)
 
     return { 'errors': errors, 'warnings': warnings, 'infos': infos }
+
+def testMatActiva(f):
+    '''
+    Comprova si el fitxer f conté preinscripcions ja existents i amb matrícula activa.
+    retorna boolean, missatge informatiu
+            True si hi ha alguna ja existent
+            False si no hi ha cap amb matrícula activa
+    '''
+    
+    from django.utils.datetime_safe import datetime
+    from aula.apps.alumnes.models import Nivell
+    
+    errors = []
+    
+    try:
+        # Carregar full de càlcul
+        rows = obrefull(f)
+        if not rows:
+            errors.append('Fitxer incorrecte.')
+            return False, str(errors)
+    except:
+        errors.append('Fitxer incorrecte.')
+        return False, str(errors)
+    
+    if not settings.CODI_CENTRE:
+        errors.append("No s\'ha definit el codi de centre a settings.")
+        return False, str(errors)
+    
+    info_nAlumnesLlegits=0
+
+    # columnes que s'importaran,  camp excel : camp base de dades 
+    colnames = {
+        'convocatòria':'any',
+        'identificació ralc': 'ralc',
+        'ident. ralc': 'ralc',
+        'codi ensenyament p1': 'codiestudis',
+        'centre assignat':'centreassignat',
+        'estat sol·licitud': 'estat',
+        }
+    
+    #Crea diccionari núm.col.:nom col. segons la fila 0 i colnames
+    col_indexs = creadict(rows[0], colnames)
+    
+    if 'centreassignat' in col_indexs.values():
+        peticions=False
+    else:
+        peticions=True
+    
+    totsCodiEstudis=set()
+    totsRalc=[]
+    nany=datetime.today().year
+    for row in rows[1:]:
+       
+        preinscripcio=creaPreins(row, col_indexs)
+        
+        if 'any' in preinscripcio and not isinstance(preinscripcio['any'],int):
+            try:
+                nany=int(preinscripcio['any'][-9:-5])  # 'XXXXXXXXXXXX 20xx/20yy'
+            except Exception as e:
+                nany=datetime.today().year
+            preinscripcio['any']=nany
+        
+        if (peticions and acceptat(row, rows[0], preinscripcio, settings.CODI_CENTRE)) or \
+            (not peticions and preinscripcio.get('estat','')=='Validada' and \
+            preinscripcio.get('centreassignat','')==settings.CODI_CENTRE):
+            try:
+                #guarda el conjunt de tots els codiestudis i ralcs
+                if peticions:
+                    totsCodiEstudis.add(convertirCodiEstudis(preinscripcio['codiestudis'], True))
+                totsRalc.append(preinscripcio['ralc'])
+                info_nAlumnesLlegits += 1
+            except Exception as e:
+                errors.append(str(e)+": "+str(preinscripcio))
+                
+    if info_nAlumnesLlegits>0 and peticions:
+        now=datetime.today()
+        matActives=Nivell.objects.filter(nom_nivell__in=totsCodiEstudis, limit_matricula__gte=now, matricula_oberta=True)\
+                                    .values_list('nom_nivell', flat=True).distinct()
+        preActives = Preinscripcio.objects.filter(any=nany, codiestudis__in=matActives, estat='Enviada', ralc__in=totsRalc).values_list('codiestudis', flat=True)
+        # crea llista
+        preActives=[item for item in list(preActives)]
+        # elimina repeticions
+        preActives=list(dict.fromkeys(preActives))
+        if preActives:
+            return True, "Hi ha preinscripcions vàlides amb matrícula activa. \
+                          S'ha de finalitzar la matrícula activa d'aquests estudis: "+str(sorted(preActives))
+    
+    return False, str(errors) if errors else ''

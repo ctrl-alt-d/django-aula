@@ -22,9 +22,9 @@ def importaFitxer(request):
     if request.method == 'POST':
         form = PreinscripcioForm(request.POST, request.FILES)
         if form.is_valid():
-
-            f = request.FILES['fitxer_Preinscripcio']
-            resultat = s.sincronitza(f, user)
+            f = form.cleaned_data.get('fitxer_Preinscripcio')
+            resetPrevious = form.cleaned_data.get('resetPrevious')
+            resultat = s.sincronitza(f, resetPrevious, user)
             if Nivell2Aula.objects.filter(nivellDjau__isnull=True):
                 return HttpResponseRedirect(reverse_lazy('administracio__configuracio__preinscripcio'))
             return render(
@@ -37,7 +37,7 @@ def importaFitxer(request):
         form = PreinscripcioForm()
     return render(
                         request,
-                        'importa.html', 
+                        'form.html', 
                         {'form': form},
                  )
 
