@@ -114,6 +114,8 @@ def capture_token_api(request, format=None):
     # assigno usuari al token
     token.moment_captura = datetime.now()
     token.usuari_referenciat = nou_usuari
+    ara = datetime.now()
+    token.novetats_detectades_moment= ara
     token.save()
 
     # preparem resposta
@@ -139,6 +141,8 @@ def notificacions_mes(request, mes, format=None):
 
     qrtoken = request.user.qrportal
 
+    if int(mes)<1 or int(mes)>12:
+        raise serializers.ValidationError({'error': ["Mes inexistent"]})
     # Tant si hi ha novetats com si no s'envia tota la info del mes:
 
     alumne = qrtoken.alumne_referenciat
@@ -247,7 +251,6 @@ def notificacions_news(request, format=None):
     qrtoken = request.user.qrportal
 
     # No hi ha novetats:
-
     content = {"resultat":"No"} if qrtoken.novetats_detectades_moment and qrtoken.novetats_detectades_moment < darrera_sincronitzacio else {"resultat":"Sí"}
 
     return Response(content)
