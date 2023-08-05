@@ -9,8 +9,18 @@ urlpatterns = [
         name="tutoria__relacio_families__dades_relacio_families"),
     
     re_path(r'^configuraConnexio/(?P<pk>\d+)/$', relacioFamilies_views.configuraConnexio,
-        name="tutoria__relacio_families___configura_connexio"), 
-      
+            name="tutoria__relacio_families___configura_connexio"),
+
+    re_path(r'^qrTokens/(?P<pk>\d+)/$', relacioFamilies_views.qrTokens,
+            name="tutoria__relacio_families___qr_tokens"),
+
+    re_path(r'^qrTokens/$', relacioFamilies_views.qrTokens,
+            name="tutoria__relacio_families___qr_tokens_all"),
+    re_path(r'^qrs/$', relacioFamilies_views.qrs,
+            name="tutoria__relacio_families__qrs"),
+    re_path(r'^gestionaQRs/(?P<pk>\d+)/$', relacioFamilies_views.gestionaQRs,
+            name="tutoria__relacio_families__gestionaQRs"),
+
     re_path(r'^bloquejaDesbloqueja/(?P<pk>\d+)/$', relacioFamilies_views.bloquejaDesbloqueja,
         name="tutoria__relacio_families__bloqueja_desbloqueja"), 
       
@@ -30,5 +40,5 @@ urlpatterns = [
     path('anteriors/', relacioFamilies_views.comunicatsAnteriors, name="relacio_families__comunicats__anteriors"),
     
     path('horesAlumneAjax/<idalumne>/<dia>/', relacioFamilies_views.horesAlumneAjax,
-        name="relacio_families__horesAlumneAjax"),         
+        name="relacio_families__horesAlumneAjax"),
 ]

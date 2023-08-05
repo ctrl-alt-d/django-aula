@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
+import datetime
 import os
 
 NOM_CENTRE = 'Centre C'
@@ -190,6 +191,7 @@ INSTALLED_APPS_DJANGO = [
     'django.contrib.humanize',
     'formtools',
     'django.forms',
+    'rest_framework',
 ]
     
 INSTALLED_APPS_AULA = [
@@ -219,12 +221,31 @@ INSTALLED_APPS_AULA = [
     'aula.apps.extUntis',
     'aula.apps.matricula',
     'aula.apps.extPreinscripcio',
+    'aula.mblapp',
 ]
 
 #select2
 AUTO_RENDER_SELECT2_STATICS=False
 #---
 
+#rest framework & JWT
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+
+
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=18000),
+    "JWT_ALLOW_REFRESH": True,
+}
+
+
+#---
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 

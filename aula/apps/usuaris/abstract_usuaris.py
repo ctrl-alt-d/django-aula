@@ -4,6 +4,8 @@ from django.db import models
 #from django.db.models import get_model
 from django.contrib.auth.models import User
 from aula.utils.tools import unicode
+import uuid
+from django.utils.crypto import get_random_string
 
 #-------------------------------------------------------------
 
@@ -73,5 +75,33 @@ class AbstractOneTimePasswd(models.Model):
     moment_expedicio = models.DateTimeField( auto_now_add = True )
     clau = models.CharField(max_length=40 )
     reintents = models.IntegerField( default = 0 )
+    #    class Meta:                            <--- TODO: hauria de tenir abstract i no ho té.
+    #        abstract = True                    <--- Caldrà arreglar-ho amb migracions.
 
+class AbstractQRPortal(models.Model):
+    alumne_referenciat = models.ForeignKey( "alumnes.Alumne", db_index = True,
+                                            related_name="qr_portal_set",
+                                            related_query_name="qr_portal" , on_delete=models.CASCADE)
+    usuari_referenciat = models.OneToOneField( User, db_index = True, blank = True, null = True, on_delete=models.CASCADE)
+    moment_expedicio = models.DateTimeField( auto_now_add = True )
+    moment_captura = models.DateTimeField( blank = True, null = True, unique = True )
+    moment_confirmat_pel_tutor = models.DateTimeField(blank=True, null=True)
+    darrera_sincronitzacio = models.DateTimeField( blank = True, null = True )
+    novetats_detectades_moment = models.DateTimeField( blank = True, null = True  )
+    clau = models.CharField(max_length=40, db_index=True)
+    numero_de_mobil = models.CharField(max_length=40, blank = True )
+    localitzador = models.CharField(max_length=4, unique=True, default="-", db_index=True)
+    es_el_token_actiu = models.BooleanField(default=False)
 
+    def calcula_clau_i_localitzador(self):
+        for _ in range(100):
+            self.clau = str(uuid.uuid4())
+            self.localitzador = get_random_string(length=4)
+            clau_unica = not self.__class__.objects.filter(clau=self.clau).exists()
+            loca_unica = not self.__class__.objects.filter(localitzador=self.localitzador).exists()
+            if clau_unica and loca_unica:
+                return
+        raise Exception("Impossible, ens hem quedat sense codis app")
+
+    class Meta:
+        abstract = True

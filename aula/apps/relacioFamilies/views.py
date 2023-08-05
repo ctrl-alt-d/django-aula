@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+import itertools
 from itertools import groupby
 
 from django.conf import settings
@@ -14,6 +15,9 @@ from django.urls import reverse_lazy
 
 #auth
 from django.contrib.auth.decorators import login_required
+from django_tables2 import RequestConfig
+
+from aula.apps.usuaris.models import QRPortal
 
 #helpers
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
@@ -21,12 +25,15 @@ from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
 from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm
+from aula.mblapp.table2_models import Table2_QRPortalAlumne
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
+from aula.utils.my_paginator import DiggPaginator
 from aula.utils.tools import unicode
 from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
 from aula.apps.alumnes.tools import get_hores, properdiaclasse, ultimdiaclasse
-
+import qrcode
+from aula.utils.tools import classebuida
 #qualitativa
 
 
@@ -103,7 +110,7 @@ def enviaBenvinguda( request , pk ):
 
     professor = User2Professor( user )     
             
-    alumne =  Alumne.objects.get( pk = int(pk) )
+    alumne =  get_object_or_404(Alumne, pk = int(pk) )
     
     url_next = '/open/dadesRelacioFamilies/#{0}'.format(alumne.pk)
             
@@ -164,6 +171,221 @@ def bloquejaDesbloqueja( request , pk ):
                      'head': 'Canvi configuració accés família de {0}'.format( alumne ) ,
                     },
                 )
+
+@login_required
+@group_required(['professors'])
+def qrTokens( request , pk=None ):
+    import time
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    professor = User2Professor(user)
+
+    if pk:
+        alumne = get_object_or_404(Alumne, pk=pk) if pk else None
+        alumnes = [alumne, ]
+    else:
+        els_meus_alumnes_de_grups_tutorats = [a for t in professor.tutor_set.all()
+                                              for a in t.grup.alumne_set.all()]
+        els_meus_tutorats_individualitzats = [t.alumne for t in professor.tutorindividualitzat_set.all()]
+        alumnes = els_meus_alumnes_de_grups_tutorats + els_meus_tutorats_individualitzats
+
+        # seg-------------------
+        seg_tutor_de_lalumne = pk and professor in alumne.tutorsDeLAlumne()
+        seg_es_tutor = professor.tutor_set.exists() or professor.i.tutorindividualitzat_set.exists()
+        te_permis = l4 or seg_tutor_de_lalumne or seg_es_tutor
+        if not te_permis:
+            raise Http404()
+
+    report = []
+
+
+    fitxers_a_esborrar = []
+
+    for copia, alumne in itertools.product( [1,2,], alumnes ):
+        # munto el token
+        qr_token = QRPortal()
+        qr_token.calcula_clau_i_localitzador()
+        qr_token.alumne_referenciat = alumne
+        qr_token.save()
+
+        qr_dict = {"key": qr_token.clau,
+                   "id": alumne.id,
+                   "name": alumne.nom,
+                   "surname": alumne.cognoms,
+                   "api_end_point": settings.URL_DJANGO_AULA,
+                   "organization": settings.NOM_CENTRE,
+                   }
+        qr_text = json.dumps(qr_dict)
+
+
+        # munto imatge:
+        nom_fitxer = r"/tmp/barcode-{0}-{1}-{2}-{3}.png".format( time.time(),
+                                                             request.session.session_key,
+                                                             alumne.pk,
+                                                             copia )
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=3,
+            border=2,
+        )
+        qr.add_data(qr_text)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        img.save(nom_fitxer)
+        fitxers_a_esborrar.append( nom_fitxer )
+        o = classebuida()
+        o.alumne = unicode(alumne)
+        o.grup = unicode(alumne.grup)
+        o.copia = copia
+        o.clau = qr_text if settings.DEBUG else ""
+        report.append(o)
+        o.barres = nom_fitxer
+
+    # from django.template import Context
+    from appy.pod.renderer import Renderer
+    import cgi
+    import os
+    from django import http
+
+    excepcio = None
+
+    # try:
+
+    # resultat = StringIO.StringIO( )
+    resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format(time.time(), request.session.session_key)
+    # context = Context( {'reports' : reports, } )
+    path = os.path.join(settings.PROJECT_DIR, '../customising/docs/qr.odt')
+    if not os.path.isfile(path):
+        path = os.path.join(os.path.dirname(__file__), 'templates/qr.odt')
+
+    renderer = Renderer(path, {'report': report, }, resultat)
+    renderer.run()
+    docFile = open(resultat, 'rb')
+    contingut = docFile.read()
+    docFile.close()
+    os.remove(resultat)
+
+    # barcode
+    for nom_fitxer in fitxers_a_esborrar:
+        os.remove(nom_fitxer)
+
+    #     except Exception, e:
+    #         excepcio = unicode( e )
+
+    if True:  # not excepcio:
+        response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
+        response['Content-Disposition'] = u'attachment; filename="{0}-{1}-{2}.odt"'.format("QR", alumne.cognoms, alumne.nom)
+
+    else:
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
+
+    return response
+
+@login_required
+@group_required(['professors'])
+def qrs( request):
+
+        credentials = tools.getImpersonateUser(request)
+        (user, _) = credentials
+
+        professor = User2Professor(user)
+
+        report = []
+        grups = [t.grup for t in Tutor.objects.filter(professor=professor)]
+        grups.append('Altres')
+        for grup in grups:
+            taula = tools.classebuida()
+
+            taula.titol = tools.classebuida()
+            taula.titol.contingut = ''
+            taula.titol.enllac = None
+
+            taula.capceleres = []
+
+            capcelera = tools.classebuida()
+            capcelera.amplade = 75
+            capcelera.contingut = grup if grup == 'Altres' else u'{0} ({1})'.format(unicode(grup), unicode(grup.curs))
+            capcelera.enllac = ""
+            taula.capceleres.append(capcelera)
+
+
+            capcelera = tools.classebuida()
+            capcelera.amplade = 25
+            capcelera.contingut = u'Acció'
+            taula.capceleres.append(capcelera)
+
+            taula.fileres = []
+
+            if grup == 'Altres':
+                consulta_alumnes = Q(pk__in=[ti.alumne.pk for ti in professor.tutorindividualitzat_set.all()])
+            else:
+                consulta_alumnes = Q(grup=grup)
+
+            alumnes = Alumne.objects.filter(consulta_alumnes)
+
+
+            for alumne in alumnes:
+
+                filera = []
+
+                # -Alumne--------------------------------------------
+                camp = tools.classebuida()
+                camp.codi = alumne.pk
+                camp.enllac = None
+                camp.contingut = unicode(alumne)
+                filera.append(camp)
+
+
+                # -Acció--------------------------------------------
+                camp = tools.classebuida()
+                camp.enllac = None
+                accio_list = [(u'Genera nous codis QR', '/open/qrTokens/{0}'.format(alumne.pk)),
+                              (u"Gestiona QR's existents", '/open/gestionaQRs/{0}'.format(alumne.pk)),
+                              ]
+                camp.multipleContingut = accio_list
+                filera.append(camp)
+
+                # --
+                taula.fileres.append(filera)
+            report.append(taula)
+
+        return render(
+            request,
+            'report.html',
+            {'report': report,
+             'head': "QR's dels meus tutorats",
+             },
+        )
+
+@login_required
+@group_required(['professors'])
+def gestionaQRs(request, pk=None):
+    credentials = tools.getImpersonateUser(request)
+    (user, _) = credentials
+
+    alumne=Alumne.objects.get(pk=pk)
+
+    qrs = (QRPortal
+                .objects
+                .filter(alumne_referenciat=alumne)
+                .order_by('moment_expedicio')
+                .distinct()
+                )
+
+    table = Table2_QRPortalAlumne(data=list(qrs))
+    table.order_by = '-moment_expedicio'
+    RequestConfig(request, paginate={"paginator_class": DiggPaginator, "per_page": 10}).configure(table)
+
+    return render(
+        request,
+        'gestionaQRs.html',
+        {'table': table,
+         'alumne': alumne,
+         }
+    )
+
 
 @login_required
 @group_required(['professors'])
@@ -360,8 +582,9 @@ def dadesRelacioFamilies( request ):
                 camp.enllac = None
                 accio_list = [ (u'Configura', '/open/configuraConnexio/{0}'.format(alumne.pk) ), 
                                #(u'Bloquejar' if alumne.esta_relacio_familia_actiu() else u'Desbloquejar', '/open/bloquejaDesbloqueja/{0}'.format(alumne.pk)),
-                               (u'Envia benvinguda' , '/open/enviaBenvinguda/{0}'.format(alumne.pk)),  
-                               (u'Veure Portal' , '/open/elMeuInforme/{0}'.format(alumne.pk)),] 
+                               (u'Envia benvinguda' , '/open/enviaBenvinguda/{0}'.format(alumne.pk)),
+                               (u'Veure Portal', '/open/elMeuInforme/{0}'.format(alumne.pk)),
+                               ]
                 camp.multipleContingut = accio_list
                 filera.append(camp)
                 

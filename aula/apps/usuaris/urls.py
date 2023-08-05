@@ -44,4 +44,14 @@ urlpatterns = [
 
     re_path(r'^detallProfessorHorari/$', usuaris_views.blanc,
      name="gestio__blanc__blanc"),
+
+    re_path(r'^activaUsuariQR/(?P<pk>\d+)/$', usuaris_views.activaUsuariQR,
+            name="usuari__activa_usuari_qr"),
+
+    re_path(r'^desactivaUsuariQR/(?P<pk>\d+)/$', usuaris_views.desactivaUsuariQR,
+            name="usuari__desactiva_usuari_qr"),
+
+    re_path(r'^eliminaUsuariQR/(?P<pk>\d+)/$', usuaris_views.eliminaUsuariQR,
+            name="usuari__elimina_usuari_qr"),
+
 ]
