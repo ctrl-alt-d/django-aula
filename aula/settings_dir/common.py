@@ -192,6 +192,7 @@ INSTALLED_APPS_DJANGO = [
     'formtools',
     'django.forms',
     'rest_framework',
+    'rest_framework_simplejwt',
 ]
     
 INSTALLED_APPS_AULA = [
@@ -234,7 +235,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 

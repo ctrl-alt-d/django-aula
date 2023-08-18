@@ -4,7 +4,7 @@
 L'App part backend funciona amb rest i jwt. Hi ha un nous requeriments:
 
 * djangorestframework
-* djangorestframework-jwt
+* djangorestframework-simplejwt
 * qrcode
 
 ### Workflow Alta Família
@@ -47,17 +47,20 @@ exit()
 #Fase 2: Prova de demanar un token per accedir-hi
 $
 curl -X POST -H "Content-Type: application/json" -d '{"username":"APIm3wi","password":"0BGhwmUWtU9P"}' http://localhost:8000/api-token-auth/
-#Ex. resposta: {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjY4ODIsImVtYWlsIjoiIn0.VIAod8nnznP0WOjAWIS6dh2sO-XqXGeYwCfsLCNmXyw"}
+#Ex. resposta: {
+  "access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNDU2LCJqdGkiOiJmZDJmOWQ1ZTFhN2M0MmU4OTQ5MzVlMzYyYmNhOGJjYSJ9.NHlztMGER7UADHZJlxNG0WSi22a2KaYSfd1S-AuT7lU",
+  "refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImNvbGRfc3R1ZmYiOiLimIMiLCJleHAiOjIzNDU2NywianRpIjoiZGUxMmY0ZTY3MDY4NDI3ODg5ZjE1YWMyNzcwZGEwNTEifQ.aEoAYkSJjoWH1boshQAaTkf8G3yn0kapko6HFRt7Rh4"
+}
 
 #Fase 3: Prova accedir a recurs amb el token
-export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjY4ODIsImVtYWlsIjoiIn0.VIAod8nnznP0WOjAWIS6dh2sO-XqXGeYwCfsLCNmXyw
-curl -H "Authorization: JWT ${JWTOKEN}" http://127.0.0.1:8000/api/token/hello_api_login/
+export JWTOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNDU2LCJqdGkiOiJmZDJmOWQ1ZTFhN2M0MmU4OTQ5MzVlMzYyYmNhOGJjYSJ9.NHlztMGER7UADHZJlxNG0WSi22a2KaYSfd1S-AuT7lU
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/hello_api_login/
 #Resposta: {"status":"here we are just login"}
 
 ##Fase 4: Demanar les dades de l'alumne d'un mes concret
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjcyNjksImVtYWlsIjoiIn0.FwF9NHS6De9FYllUTnDWHDXfApit3po1fnVB1pjUq2Q
 export LASTSYNCDATE="2018-06-01 12:00:13"
-curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/mes/10/
+curl -H "Authorization: Bearer ${JWTOKEN}"  http://127.0.0.1:8000/api/token/notificacions/mes/10/
 #Resposta: [{"id":155,"darrera_sincronitzacio":null},
 #{"dia":"13/10/2022","materia":"SMX12(2)","hora":"14:50 a 15:50","professor":"Àngel Bosch Hernàndez","text":"Falta d'assistència","tipus":"Falta"},
 #{"dia":"10/10/2022","materia":"SMX12(2)","hora":"19:00 a 19:55","professor":"Daniel Prados","text":"Falta d'assistència","tipus":"Falta"},
@@ -68,13 +71,13 @@ curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE
 #Fase 5: Demanar si hi ha novetats
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjc2NTksImVtYWlsIjoiIn0.T3sPlZMhXSzhiGeId4nlqAQMmfxO1tqSLFctqcWDkGo
 export LASTSYNCDATE="2022-11-18 12:00:13"
-curl -H "Authorization: JWT ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/news/
+curl -H "Authorization: Bearer ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/news/
 #Resposta: {"resultat":"Sí"}
 
 
 #Fase 6: Demanar dades de l'alumne
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
-curl -H "Authorization: JWT ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/
 #Resposta: 
 {"grup":"SMX2A","datanaixement":"13/5/2004","telefon":"","responsables":
 [{"nom":"Ganchozo Risco, Miriam Graciela","mail":"keylu5810@hotmail.com","tfn":""},
@@ -90,6 +93,6 @@ $ curl http://127.0.0.1:8000/api/token/notificacions/news/
 
 
 # token refresh
-curl -X POST -H "Content-Type: application/json" -d '{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTYyNjcsImVtYWlsIjoiIiwib3JpZ19pYXQiOjE2NzIzNTU5Njd9.hzuviwDkduIYF2mzt1xDPh1o455YgQa8PRj1qTIJpho"}' http://localhost:8000/api-token-refresh/
+curl -X POST -H "Content-Type: application/json" -d '{"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImNvbGRfc3R1ZmYiOiLimIMiLCJleHAiOjIzNDU2NywianRpIjoiZGUxMmY0ZTY3MDY4NDI3ODg5ZjE1YWMyNzcwZGEwNTEifQ.aEoAYkSJjoWH1boshQAaTkf8G3yn0kapko6HFRt7Rh4"}' http://localhost:8000/api-token-refresh/
 #Resposta:
-{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTYyOTcsImVtYWlsIjoiIiwib3JpZ19pYXQiOjE2NzIzNTU5Njd9.DdyS8X4XMJ7O8cpCYMRjhtGbbL6QJu72vesWr36
+{"access":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTYyOTcsImVtYWlsIjoiIiwib3JpZ19pYXQiOjE2NzIzNTU5Njd9.DdyS8X4XMJ7O8cpCYMRjhtGbbL6QJu72vesWr36

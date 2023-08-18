@@ -30,5 +30,5 @@ django_select2
 djangorestframework
 markdown
 django-filter
-djangorestframework-jwt
 qrcode==6.0
+djangorestframework-simplejwt
