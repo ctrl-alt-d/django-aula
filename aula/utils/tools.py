@@ -183,6 +183,8 @@ def initComplet():
         Incidencia.objects.update(dia_incidencia=avui.date())
         Incidencia.objects.all().delete()
         Expulsio.objects.all().delete()
+        #Modifica per evitar restricció per impressió
+        Sancio.objects.update(impres=False)
         Sancio.objects.all().delete()
         ControlAssistencia.objects.all().delete()
         Feina.objects.all().delete()
