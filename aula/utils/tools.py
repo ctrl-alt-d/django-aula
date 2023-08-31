@@ -191,6 +191,8 @@ def initComplet():
         Impartir.objects.all().delete()
         Horari.objects.all().delete()
         Festiu.objects.all().delete()
+        #Modifica per evitar missatges informatius per cancel·lació de reserva
+        ReservaAula.objects.update(es_reserva_manual=False)
         ReservaAula.objects.all().delete()
 
         NoHaDeSerALAula.objects.all().delete()
