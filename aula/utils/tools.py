@@ -207,6 +207,9 @@ def initComplet():
         # Selecciona alumnes què són baixa
         esborrar=Alumne.objects.filter(data_baixa__isnull=False)
         
+        # Elimina estat de sincronització manual
+        Alumne.objects.filter(estat_sincronitzacio='MAN').update(estat_sincronitzacio='')
+
         # Manté els pagaments fets, però desvinculats dels alumnes que són baixa
         Pagament.objects.filter(alumne__in=esborrar, pagament_realitzat=True).update(alumne=None)
         
