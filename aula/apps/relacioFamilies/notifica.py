@@ -190,6 +190,8 @@ def notifica():
             #actualitzo QR's
             if hiHaNovetats:
                 n_tokens = alumne.qr_portal_set.update( novetats_detectades_moment = ara  )
+            else:
+                n_tokens = None
 
             enviatOK = enviatOK or bool(n_tokens)  # s'ha enviat per algun dels mitjants
             if enviatOK:                    

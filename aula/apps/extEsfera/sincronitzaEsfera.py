@@ -206,6 +206,8 @@ def sincronitza(f, user = None):
                     AlumnesCanviatsDeGrup.append(a)
 
             a.user_associat = alumneDadesAnteriors.user_associat
+            a.usuaris_app_associats.set(alumneDadesAnteriors.usuaris_app_associats.all())
+            
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
