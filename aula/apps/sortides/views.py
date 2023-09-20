@@ -1430,10 +1430,11 @@ def retornTransaccio(request,pk):
                     '195.76.9.222',
                     '194.224.159.47',
                     '194.224.159.57']  # ip's Banc Sabadell
-    ip = request.META.get('REMOTE_ADDR')
-    if ip not in ips_permeses:
+    ip1 = request.META.get('REMOTE_ADDR')
+    ip2 = request.META.get('HTTP_X_FORWARDED_FOR')
+    if ip1 not in ips_permeses and ip2 not in ips_permeses :
         missatge = ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE
-        txt = missatge.format(ip)
+        txt = missatge.format(ip1,ip2)
         tipus_de_missatge = tipusMissatge(missatge)
         logPagaments(txt, tipus_de_missatge)
         return HttpResponseServerError()
