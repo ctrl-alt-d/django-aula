@@ -67,15 +67,16 @@ class AbstractActuacio(models.Model):
                    )
     ASSUMPTE_CHOICES = (
         ('T', u'''Tutoria individualitzada''',),
-        ('C', u'''A/I Conflicte comportament''',),
-        ('V', u'''A/I Valoració''',),
-        ('S', u'''A/I Seguiment''',),
-        ('O', u'''A/I Orientació acadèmica''',),
-        ('E', u'''A/I Suport educatiu''',),
-        ('G', u'''A/I Gestió de les emocions''',),
-        ('I', u'''A/I Gestió social''',),
-        ('P', u'''A/I Pla individualitzat''',),
+        ('C', u'''(PSI) Conflicte comportament''',),
+        ('V', u'''(PSI) Valoració''',),
+        ('S', u'''(PSI) Seguiment''',),
+        ('O', u'''(PSI) Orientació acadèmica''',),
+        ('E', u'''(PSI) Suport educatiu''',),
+        ('G', u'''(PSI) Gestió de les emocions''',),
+        ('I', u'''(PSI) Gestió social''',),
+        ('P', u'''(PSI) Pla individualitzat''',),
         ('A', u'''Actuació puntual''',),
+        ('F', u'''Entrevista Família''',),
     )
     alumne = models.ForeignKey('alumnes.Alumne', help_text=u"Alumne sobre el qual es fa l'actuació", db_index = True, on_delete=models.CASCADE )
     professional = models.ForeignKey('usuaris.Professional', null=True, blank=True, help_text=u"Professional que fa l'actuacio", db_index=True, on_delete=models.CASCADE )
