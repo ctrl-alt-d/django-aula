@@ -278,7 +278,10 @@ def passaLlista(request, pk):
     # prefixes:
     # https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms
     formset = []
-    impartir = Impartir.objects.get(pk=pk)
+    try:
+        impartir = Impartir.objects.get(pk=pk)
+    except Exception:
+        raise Http404()
 
     # seg-------------------------------
     pertany_al_professor = user.pk in [impartir.horari.professor.pk, \
