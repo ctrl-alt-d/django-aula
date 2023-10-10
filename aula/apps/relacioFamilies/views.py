@@ -245,7 +245,7 @@ def qrTokens( request , pk=None ):
 
     # from django.template import Context
     from appy.pod.renderer import Renderer
-    import cgi
+    import html
     import os
     from django import http
 
@@ -279,7 +279,7 @@ def qrTokens( request , pk=None ):
         response['Content-Disposition'] = u'attachment; filename="{0}-{1}-{2}.odt"'.format("QR", alumne.cognoms, alumne.nom)
 
     else:
-        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % cgi.escape(excepcio))
+        response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
 
     return response
 

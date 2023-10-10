@@ -11,7 +11,7 @@ En aquest apartat s'explica la inicialització des d'Admin/Inicialitza. Aquest p
 
 >Al menú Admin, clicar l'opció Inicialitza. 
 
-La inicialització s'ha de fer una vegada ha finalitzat el curs, només pot fer-ho l’usuari administrador.
+La inicialització s'ha de fer una vegada ha finalitzat el curs, només pot fer-ho un usuari del grup administradors (no és el mateix que superuser, staff o personal).
 
 Abans de fer qualsevol procés de preparació per al curs vinent, es recomanable fer còpia de la base de dades actual.
 

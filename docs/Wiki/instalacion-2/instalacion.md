@@ -48,7 +48,7 @@ Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las depend
 
 ```text
 (venv) djau@djau:/opt/djau2022# pip3 install wheel
-(venv) djau@djau:/opt/djau2022# pip3 install -r requirements.txt
+(venv) djau@djau:/opt/djau2022# pip3 install --upgrade --no-cache-dir -r requirements.txt
 ```
 
 ### Instalación de Apache y Base de datos
@@ -327,7 +327,7 @@ Como paso final de configuración, vamos a juntar todo el contenido estático \(
 
 ```text
 djau@djau:/opt/djau2022# source venv/bin/activate
-(venv) djau@djau:/opt/djau2022# python manage.py collectstatic
+(venv) djau@djau:/opt/djau2022# python manage.py collectstatic -c --no-input
 ```
 
 Esto generará un directorio llamado **static** donde se alojarán todos los assets de la aplicación.
