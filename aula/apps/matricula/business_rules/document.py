@@ -6,6 +6,8 @@ def document_post_delete( sender, instance, **lwargs ):
 
     try:
         if instance.fitxer:
-            os.remove(os.path.join(settings.PRIVATE_STORAGE_ROOT, instance.fitxer.name))
-    except PermissionError as e:
-        print("document_post_delete-Error accés",str(e))
+            doc=os.path.join(settings.PRIVATE_STORAGE_ROOT, instance.fitxer.name)
+            if os.path.exists(doc):
+                os.remove(doc)
+    except Exception as e:
+        print("document_post_delete-Error",str(e))
