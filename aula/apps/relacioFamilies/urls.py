@@ -17,7 +17,7 @@ urlpatterns = [
     re_path(r'^qrTokens/$', relacioFamilies_views.qrTokens,
             name="tutoria__relacio_families___qr_tokens_all"),
     re_path(r'^qrs/$', relacioFamilies_views.qrs,
-            name="tutoria__relacio_families__qrs"),
+            name="tutoria__relacio_families_app__qrs"),
     re_path(r'^gestionaQRs/(?P<pk>\d+)/$', relacioFamilies_views.gestionaQRs,
             name="tutoria__relacio_families__gestionaQRs"),
 
