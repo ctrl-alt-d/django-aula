@@ -278,7 +278,7 @@ def passaLlista(request, pk):
     # prefixes:
     # https://docs.djangoproject.com/en/dev/ref/forms/api/#prefixes-for-forms
     formset = []
-    impartir = Impartir.objects.get(pk=pk)
+    impartir = get_object_or_404(Impartir, pk=pk)
 
     # seg-------------------------------
     pertany_al_professor = user.pk in [impartir.horari.professor.pk, \
@@ -616,7 +616,7 @@ def marcarComHoraSenseAlumnes(request, pk):
     head=u'Afegir alumnes a la llista' 
 
     pk = int(pk)
-    impartir = Impartir.objects.get ( pk = pk )
+    impartir = get_object_or_404(Impartir, pk=pk)
     
     #seg-------------------------------
     pertany_al_professor = user.pk in [ impartir.horari.professor.pk,   \
@@ -674,7 +674,7 @@ def afegeixAlumnesLlista(request, pk):
     head=u'Afegir alumnes a la llista' 
 
     pk = int(pk)
-    impartir = Impartir.objects.get ( pk = pk )
+    impartir = get_object_or_404(Impartir, pk=pk)
     
     #seg-------------------------------
     pertany_al_professor = user.pk in [ impartir.horari.professor.pk,   \
@@ -789,7 +789,7 @@ def treuAlumnesLlista(request, pk):
     head=u'Treure alumnes de la llista' 
 
     pk = int(pk)
-    impartir = Impartir.objects.get ( pk = pk )
+    impartir = get_object_or_404(Impartir, pk=pk)
     
     #seg-------------------------------
     pertany_al_professor = user.pk in [ impartir.horari.professor.pk,   \
@@ -1141,7 +1141,7 @@ def copiarAlumnesLlista(request, pk):
     head=u'Copiar alumnes a la llista a partir d\'una altra hora' 
 
     pk = int(pk)
-    impartir = Impartir.objects.get ( pk = pk )
+    impartir = get_object_or_404(Impartir, pk=pk)
     
     #seg-------------------------------
     pertany_al_professor = user.pk in [ impartir.horari.professor.pk,   \
