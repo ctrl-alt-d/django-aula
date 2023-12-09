@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from aula.utils.tools import unicode
 
 class AbstractAula(models.Model):

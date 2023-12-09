@@ -30,7 +30,7 @@ from aula.utils.tools import unicode
 from aula.utils.forms import ckbxForm
 from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd, \
     Accio, QRPortal
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from django.utils.safestring import SafeText
 from datetime import timedelta
 from django.db.models import Q
@@ -180,12 +180,12 @@ def impersonacio(request):
             except:
                 pass
             if form.cleaned_data['professor']:
-                request.session['impersonacio'] = form.cleaned_data['professor'].getUser()
+                request.session['impersonacio'] = form.cleaned_data['professor'].getUser().pk
             l4 = formckbx.cleaned_data['ckbx']
             request.session['l4'] = l4
             # No deixa fer impersonació com a un usuari del grup administradors
             if request.session.has_key('impersonacio'):
-                user=request.session['impersonacio']
+                (user, _ ) = tools.getImpersonateUser(request)
                 if user and (user.is_staff or user.is_superuser \
                         or Group.objects.get_or_create(name= 'administradors' )[0] in user.groups.all()):
                     messages.info(request, SafeText('No es pot fer impersonació com usuari administrador.'))

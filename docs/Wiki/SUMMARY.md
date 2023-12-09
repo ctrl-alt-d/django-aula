@@ -4,7 +4,7 @@
 * [Caracteristicas](caracteristicas.md)
 * [Funcionalidades](funcionalidades.md)
 * [Instalación](instalacion-2/README.md)
-  * [Instalación en Ubuntu Server 20.04 LTS](instalacion-2/instalacion.md)
+  * [Instalación en Ubuntu Server 20.04/22.04 LTS](instalacion-2/instalacion.md)
 * [Manual del Administrador](manual-de-uso/README.md)
   * [Primer Inicio](manual-de-uso/primer-inicio.md)
   * [Carga Inicial de datos](manual-de-uso/carga-inicial-de-datos/README.md)

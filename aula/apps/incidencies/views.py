@@ -15,7 +15,7 @@ from aula.utils.my_paginator import DiggPaginator
 from django.shortcuts import render
 from aula.apps.incidencies.helpers import preescriu
 from django.db.models import Count
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 
 #templates
 from django.template import RequestContext, loader
@@ -45,7 +45,6 @@ from django.contrib.auth.decorators import login_required
 #workflow
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils.datetime_safe import datetime
 
 #excepcions
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS

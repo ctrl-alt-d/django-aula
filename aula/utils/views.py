@@ -21,7 +21,7 @@ from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.apps.usuaris.models import User2Professor
 from aula.apps.presencia.models import Impartir
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from datetime import timedelta
 from django.db.models import Q
 

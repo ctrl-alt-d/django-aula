@@ -2,9 +2,8 @@
 
 #from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.utils.datetime_safe import datetime
 from django.apps import apps
-from datetime import datetime, timedelta, tzinfo
+from datetime import timedelta, tzinfo
 
 from aula.apps.missatgeria.missatges_a_usuaris import ALUME_HA_ESTAT_SANCIONAT, tipusMissatge
 

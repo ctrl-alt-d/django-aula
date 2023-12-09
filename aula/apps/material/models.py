@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from aula.apps.material.business_rules.reservarecurs import ( reservarecurs_clean, reservarecurs_post_save,
                                                          reservarecurs_pre_save, reservarecurs_pre_delete,
                                                          reservarecurs_post_delete,)

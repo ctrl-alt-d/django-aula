@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 #from django.contrib.auth.models import User
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.forms.forms import NON_FIELD_ERRORS
 from django.apps import apps

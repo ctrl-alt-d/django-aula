@@ -43,7 +43,7 @@ def notifica():
     from django.core.exceptions import ObjectDoesNotExist
     from django.db.models import Q
     from datetime import timedelta
-    from django.utils.datetime_safe import datetime
+    from datetime import datetime
     from aula.apps.presencia.models import EstatControlAssistencia
     from aula.apps.presencia.models import ControlAssistencia
     from django.core.mail import send_mail, EmailMessage
@@ -327,7 +327,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     
     from aula.apps.alumnes.models import Alumne
     from django.db.models import Q
-    from django.utils.datetime_safe import datetime
+    from datetime import datetime
       
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )

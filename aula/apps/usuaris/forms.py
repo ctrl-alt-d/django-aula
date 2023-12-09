@@ -47,7 +47,7 @@ class CanviDadesAddicionalsUsuari(ModelForm):
         # redimensionar i utilitzar username com a nom de foto
         try:
             img = Image.open(self.files['foto'])
-            img.thumbnail((150, 150), Image.ANTIALIAS)
+            img.thumbnail((500, 500), Image.Resampling.LANCZOS)
             thumb_io = io.BytesIO()
             img.save(thumb_io, self.files['foto'].content_type.split('/')[-1].upper())
             new_file_name = 'profe_' + str(self.instance.professor.username) + os.path.splitext(self.instance.foto.name)[1]

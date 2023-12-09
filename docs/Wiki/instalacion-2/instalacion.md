@@ -1,4 +1,4 @@
-# Instalación en Ubuntu Server 20.04 LTS
+# Instalación en Ubuntu Server 20.04 LTS / 22.04 LTS
 
 > **Atención:**  Todas las instrucciones de este documento se deben ejecutar con permisos elevados
 
@@ -60,14 +60,29 @@ Además instalaremos la base de datos que usará django-aula y su conector pytho
 **Postgresql  (recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-psycopg2 postgresql postgresql-server-dev-12
+apt-get install apache2 libapache2-mod-wsgi-py3 python3-psycopg2 postgresql
+```
+Para Ubuntu 20.04:
+
+```bash
+apt-get install postgresql-server-dev-12
+```
+Para Ubuntu 22.04:
+
+```bash
+apt-get install postgresql-server-dev-14
+```
+
+Package:
+
+```bash
 pip3 install wheel psycopg2
 ```
 
 **Mysql (no recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev
+apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev pkg-config
 pip3 install wheel mysqlclient
 ```
 
@@ -205,14 +220,34 @@ SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'
 CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 
 #Componente que utilizará Django para serializar los objetos
-SESSION_SERIALIZER='django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER='django.contrib.sessions.serializers.JSONSerializer'
 
 # Path de datos privados
 PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2022/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
-#Configuración de la Base de datos
+#Configuración de la Base de datos, escoger una de las tres siguientes
+#postgresql
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'djau2022',
+        'USER': 'djau2022',
+        'PASSWORD': "XXXXXXXXXX",
+        'HOST': 'localhost',
+        'PORT': '',  # Set to empty string for default.
+    }
+}
+
+'''
+#SQLite
+#El fichero db.sqlite se crea en "carpeta del proyecto/aula"
+#Tal vez sea necesario modificar los permisos después del migrate
+#sudo chgrp www-data db.sqlite
+#sudo chmod 664 db.sqlite
+#sudo chmod 775 .
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -224,6 +259,19 @@ DATABASES = {
         'ATOMIC_REQUESTS': True,
     }
 }
+
+#mysql
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'djau2022',
+        'USER': 'djau2022',
+        'PASSWORD': "XXXXXXXXXX",
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+'''
 
 # TermesICondicions (copiar els samples amb un altre nom i apuntar als nous fitxers)
 DADES_FISCALS_FILE = location( r'../customising/TermesIcondicions/DADESFISCALS.sample' )

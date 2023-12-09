@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from aula.utils import tools
-from django.utils.datetime_safe import date
+from datetime import date
 from aula.utils.menu import calcula_menu
 from aula.utils.tools import calculate_my_time_off
 

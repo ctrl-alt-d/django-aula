@@ -2,7 +2,7 @@
 
 #from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from django.apps import apps
 
 from aula.apps.missatgeria.missatges_a_usuaris import HAS_RECOLLIT_EXPULSIO, tipusMissatge, CAL_TRAMITAR_EXPULSIO

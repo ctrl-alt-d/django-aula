@@ -7,9 +7,7 @@ from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.assignatures.models import Assignatura
-from django.utils.datetime_safe import datetime
-import datetime as t
-from datetime import date
+from datetime import date, timedelta
 import hashlib
 from django.template.defaultfilters import slugify
 
@@ -310,7 +308,7 @@ def fact_controls_dissociats( n=-1 ):
              .objects
              .exclude( alumne__data_baixa__isnull = False )
              .filter(
-                   impartir__dia_impartir__lt =  datetime.today(),
+                   impartir__dia_impartir__lt =  date.today(),
                    impartir__dia_impartir__gt =  date( year = 2012, month = 10, day = 1 )  
                        )
              .values_list('id', flat=True)
@@ -341,9 +339,9 @@ def dades_dissociades( element ):
     element_dict['hora_inici'] =  element.impartir.horari.hora.hora_inici 
     
     #setmanes anteriors
-    fa1Setmana = element.impartir.dia_impartir - t.timedelta( days = 7 )
-    fa2Setmana = element.impartir.dia_impartir - t.timedelta( days = 14 )
-    fa3Setmana = element.impartir.dia_impartir - t.timedelta( days = 21 )
+    fa1Setmana = element.impartir.dia_impartir - timedelta( days = 7 )
+    fa2Setmana = element.impartir.dia_impartir - timedelta( days = 14 )
+    fa3Setmana = element.impartir.dia_impartir - timedelta( days = 21 )
     
     try:
         elementfa1Setmana =  ControlAssistencia.objects.filter( 

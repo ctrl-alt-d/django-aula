@@ -10,7 +10,7 @@ from aula.utils.decorators import group_required
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.presencia.models import  ControlAssistencia
-from django.utils.datetime_safe import  date
+from datetime import  date
 from datetime import timedelta
 
 from aula.apps.alumnes.models import Alumne, Grup

@@ -2,7 +2,6 @@
 from aula.apps.tutoria.models import Tutor, SeguimentTutorialRespostes, ResumAnualAlumne
 from aula.utils import tools
 from django.db.models import Min, Max, Q
-from django.utils.datetime_safe import  date, datetime
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
 from aula.apps.sortides.models import Sortida

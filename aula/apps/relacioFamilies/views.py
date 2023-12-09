@@ -37,9 +37,6 @@ from aula.utils.tools import classebuida
 #qualitativa
 
 
-#dates
-from datetime import date
-
 #exceptions
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from aula.apps.usuaris.models import User2Professor, AlumneUser
@@ -48,7 +45,7 @@ from aula.utils.decorators import group_required
 
 from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
-from django.utils.datetime_safe import datetime
+from datetime import datetime, timedelta
 
 from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail
 
@@ -708,7 +705,6 @@ def horesAlumneAjax( request, idalumne, dia ):
 def comunicatAbsencia( request ):
     from aula.apps.missatgeria.views import enviaMsg
     from aula.apps.horaris.models import FranjaHoraria
-    import datetime
     
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
@@ -723,19 +719,19 @@ def comunicatAbsencia( request ):
         messages.info( request, u"No és possible fer comunicats." )
         return HttpResponseRedirect('/')
     
-    ara=datetime.datetime.now()
+    ara=datetime.now()
     primerdia=properdiaclasse(alumne, ara)
     if not primerdia:
         messages.info( request, u"No és possible fer comunicats." )
         return HttpResponseRedirect('/')
 
-    if primerdia > (ara+datetime.timedelta(days=diesantelacio)).date():
+    if primerdia > (ara+timedelta(days=diesantelacio)).date():
         messages.info( request, 
                 u"Només es poden fer comunicats amb antelació màxima d'una setmana. La propera classe serà el dia {0}."\
                 .format(primerdia.strftime( '%d/%m' )))
         return HttpResponseRedirect('/')
     
-    ultimdia=ultimdiaclasse(alumne,primerdia+datetime.timedelta(days=diesantelacio))
+    ultimdia=ultimdiaclasse(alumne,primerdia+timedelta(days=diesantelacio))
     if not ultimdia:
         ultimdia=primerdia
     if request.method == 'POST':

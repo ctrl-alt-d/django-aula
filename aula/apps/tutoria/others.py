@@ -2,7 +2,6 @@
 from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 from aula.apps.alumnes.models import Alumne
 from aula.apps.tutoria.models import ResumAnualAlumne, SeguimentTutorial
-from django.utils.datetime_safe import datetime
 
 def calculaResumAnualProcess():
     linia = '\n-----------------------------------------------------\n'

@@ -18,7 +18,7 @@ def tipusFotoOK(foto):
         
 def convertirFoto(fitxer, ralc, foto):
     img = Image.open(fitxer)
-    img.thumbnail((150, 150), Image.ANTIALIAS)
+    img.thumbnail((500, 500), Image.Resampling.LANCZOS)
     thumb_io = io.BytesIO()
     img.save(thumb_io, fitxer.content_type.split('/')[-1].upper())
     new_file_name ='alumne_' + str(ralc) + os.path.splitext(foto.name)[1]

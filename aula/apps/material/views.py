@@ -44,7 +44,7 @@ from aula.utils import tools
 from aula.utils.tools import unicode
 from django.contrib import messages
 import csv
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from datetime import timedelta
 
 

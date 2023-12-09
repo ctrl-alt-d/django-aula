@@ -39,7 +39,7 @@ from django.shortcuts import render
 from icalendar import Calendar, Event
 from icalendar import vCalAddress, vText
 from django.http.response import HttpResponse, Http404, HttpResponseServerError
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs

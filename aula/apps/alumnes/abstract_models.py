@@ -4,7 +4,7 @@ from django.db import models
 from datetime import date
 
 from django.templatetags.static import static
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from private_storage.fields import PrivateFileField
 
 from aula.apps.usuaris.models import Professor, AlumneUser

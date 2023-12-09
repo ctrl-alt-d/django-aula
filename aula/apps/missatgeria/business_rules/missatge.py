@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 
 def missatge_clean(instance):
     #

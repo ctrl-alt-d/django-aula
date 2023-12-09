@@ -32,8 +32,7 @@ from django.db.models import Q
 from aula.apps.avaluacioQualitativa.forms import qualitativaItemsForm, alumnesGrupForm,\
     triaQualitativaForm
 from django.core.exceptions import ValidationError
-from django.utils.datetime_safe import date
-from datetime import  timedelta
+from datetime import date, timedelta
 from aula.apps.presencia.models import ControlAssistencia, Impartir
 
 
