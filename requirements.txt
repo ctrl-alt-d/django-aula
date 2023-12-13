@@ -13,7 +13,7 @@ python-dateutil
 django-tables2
 icalendar
 django-appconf
-Pillow
+Pillow <= 9.5.0
 viivakoodi
 XlsxWriter
 typing ; python_version < '3.5'
