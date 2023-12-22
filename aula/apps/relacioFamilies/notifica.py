@@ -28,7 +28,8 @@ def notifica_pendents():
         if errors>0:
             ep.toemail=pendents
             ep.save()
-            print (u'Error enviant missatge pendent a {0}'.format(ep.toemail))
+            connection.close()
+            print (u'Error enviant missatge pendent a {0}'.format(pendents if len(pendents)<=2 else str(pendents[:3])+" i altres ... total:"+str(len(pendents))))
             return
         if errors==0:
             #TODO  missatge informatiu, falta usuari
@@ -276,7 +277,7 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             if isinstance(f, DocAttach):
                 name=f.fitxer.name
                 content_type=None
-                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name))
+                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name), 'rb')
             else:
                 name=f.name
                 content_type=f.content_type
