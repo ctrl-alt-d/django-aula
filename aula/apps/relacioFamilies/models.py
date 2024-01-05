@@ -10,7 +10,9 @@ class EmailPendent(models.Model):
     toemail=models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return str(self.subject) + ': ' + str(self.fromemail) + '->' + str(self.toemail)
+        pendents=list(eval(self.toemail)) if bool(self.toemail) else []
+        pendents=pendents if len(pendents)<=2 else (str(pendents[0])+" i altres ... total:"+str(len(pendents)))
+        return str(self.subject) + ': ' + str(self.fromemail) + '->' + str(pendents)
 
 class DocAttach(models.Model):
     fitxer = PrivateFileField("Fitxer adjunt", upload_to='email/',

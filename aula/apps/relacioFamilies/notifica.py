@@ -13,6 +13,12 @@ from django.db import transaction
 from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
 from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
+def llista_pendents():
+    if EmailPendent.objects.count()>0:
+        print("Emails pendents:")
+        for ep in EmailPendent.objects.all():
+            print(ep)
+
 def notifica_pendents():
     connection = mail.get_connection()
     # Obre la connexió
@@ -22,13 +28,20 @@ def notifica_pendents():
         if not bool(ep.toemail):
             ep.delete()
             continue
+        llistaemails=list(eval(ep.toemail))
+        if len(llistaemails)==0:
+            ep.delete()
+            continue
         fitxers=DocAttach.objects.filter(email=ep.id)
         _, errors, pendents=enviaEmail(subject=ep.subject, body=ep.message, from_email=ep.fromemail, 
-                                               bcc=list(eval(ep.toemail)), connection=connection, attachments=fitxers)
+                                               bcc=llistaemails, connection=connection, attachments=fitxers)
+        
         if errors>0:
-            ep.toemail=pendents
+            ep.toemail=str(pendents)
             ep.save()
-            print (u'Error enviant missatge pendent a {0}'.format(ep.toemail))
+            connection.close()
+            print (u'Error enviant missatge pendent')
+            print(ep)
             return
         if errors==0:
             #TODO  missatge informatiu, falta usuari
@@ -276,7 +289,7 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             if isinstance(f, DocAttach):
                 name=f.fitxer.name
                 content_type=None
-                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name))
+                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name), 'rb')
             else:
                 name=f.name
                 content_type=f.content_type
