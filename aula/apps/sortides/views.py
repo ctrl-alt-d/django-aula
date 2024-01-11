@@ -1044,12 +1044,13 @@ def sortidaExcel( request, pk ):
     detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència"], ]
+    alumnes = [ [ u'Alumne', u'Ralc', u'Grup', u'Nivell', u"Assistència"], ]
     if sortida.tipus_de_pagament == 'ON':
-        alumnes[0].extend([u"Pagat", u"Data Pagament", u"Codi Pagament"])
+        alumnes[0].extend([u"Pagat", u"Preu",  u"Data Pagament", u"Codi Pagament"])
 
     for alumne in sortida.alumnes_convocats.all():
         row = [alumne,
+               alumne.ralc,
                alumne.grup.descripcio_grup,
                alumne.grup.curs.nivell,
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
@@ -1060,6 +1061,7 @@ def sortidaExcel( request, pk ):
             ordre = pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
             observacions = pagament.observacions if pagament.observacions and pagament.pagament_realitzat else ''
             row.extend([u"Si" if pagament_realitzat else u"No",
+                        pagament.sortida.preu_per_alumne if pagament_realitzat else u"",
                         pagament.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagament_realitzat else u"",
                         "{0} - {1}".format(ordre, observacions) if observacions else ordre])
         alumnes += [ row ]
