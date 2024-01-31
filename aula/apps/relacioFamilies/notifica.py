@@ -243,11 +243,17 @@ def pendentEmail(subject, body, from_email, bcc, attachments=None):
     bcc és una llista
     '''
     
+    import unicodedata
+    
     with transaction.atomic():
         ep=EmailPendent(subject=subject, message=body, fromemail=from_email, toemail=str(bcc))
         ep.save()
         if attachments:
             for f in attachments:
+                # Elimina accents del nom de fitxer
+                newname=unicodedata.normalize('NFKD',f.name).encode('ascii','ignore').decode('UTF-8')
+                if f.name!=newname:
+                    f.name=newname
                 file_instance = DocAttach(fitxer=f)
                 file_instance.email=ep
                 file_instance.save()
