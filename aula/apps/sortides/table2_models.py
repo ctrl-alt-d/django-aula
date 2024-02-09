@@ -32,35 +32,34 @@ class Table2_Sortides(tables.Table):
                         <ul class="dropdown-menu pull-right dropdown-menu-right">
                         
                           <li>
-                            <a href="/sortides/sortidaEditGestio/{{record.id}}">
+                            <a href="/sortides/sortidaEditGestio/{{record.id}}/{{record.tipus}}">
                             Modificar dades<br>
                             </a>
                           </li>
                         
                           <li>
                             <a href="/sortides/alumnesConvocatsGestio/{{record.id}}">
-                            Alumnes convocats<br>
+                            Alumnat seleccionat<br>
                             </a>
                           </li>
-                        
-                          <li>
-                            <a href="/sortides/alumnesFallenGestio/{{record.id}}">
-                            Alumnes no assistents a l'activitat<br>
-                            </a>
-                          </li>
-
-                          <li>
-                            <a href="/sortides/alumnesJustificatsGestio/{{record.id}}">
-                            Alumnes no assistents a l'activitat ni al centre<br>
-                            </a>
-                          </li>
-
-                          <li>
-                            <a href="/sortides/professorsAcompanyantsGestio/{{record.id}}">
-                            Professors acompanyants<br>
-                            </a>
-                          </li>
-                                 
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/alumnesFallenGestio/{{record.id}}">
+                                Alumnes no assistents a l'activitat<br>
+                                </a>
+                              </li>
+                              <li>
+                                <a href="/sortides/alumnesJustificatsGestio/{{record.id}}">
+                                Alumnes no assistents a l'activitat ni al centre<br>
+                                </a>
+                              </li>
+                              <li>
+                                <a href="/sortides/professorsAcompanyantsGestio/{{record.id}}">
+                                Professors acompanyants<br>
+                                </a>
+                              </li>
+                          {% endif %}   
+    
                           {% if record.tipus_de_pagament == "ON" %}
                             <li>
                                 <a href="/sortides/detallPagament/{{record.id}}">
@@ -74,13 +73,13 @@ class Table2_Sortides(tables.Table):
                             Descarregar dades en Excel<br>
                             </a>
                           </li>
-
-                          <li>
-                            <a href="/sortides/imprimir/{{record.id}}/4">
-                            Imprimir fulls autorització i pagament<br>
-                            </a>
-                          </li>
-                          
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/imprimir/{{record.id}}/4">
+                                Imprimir fulls autorització i pagament<br>
+                                </a>
+                              </li>
+                          {% endif %}   
                           <li>
                             <a href="/sortides/imprimir/{{record.id}}/5">
                             Imprimir fulls de pagament<br>
@@ -88,7 +87,7 @@ class Table2_Sortides(tables.Table):
                           </li>
                                                                                                             
                           <li>
-                            <a href='javascript:confirmAction("/sortides/esborrarGestio/{{record.id}}"  , " {{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol_de_la_sortida}} ?")'>
+                            <a href='javascript:confirmAction("/sortides/esborrarGestio/{{record.id}}"  , " {{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol}} ?")'>
                             Esborrar<br>
                             </a>
                           </li>
@@ -106,7 +105,7 @@ class Table2_Sortides(tables.Table):
                     <ul class="dropdown-menu pull-right dropdown-menu-right">
                     
                       <li>
-                        <a href="/sortides/sortidaEdit/{{record.id}}">
+                        <a href="/sortides/sortidaEdit/{{record.id}}/{{record.tipus}}">
                         Modificar dades<br>
                         </a>
                       </li>
@@ -116,25 +115,26 @@ class Table2_Sortides(tables.Table):
                         Alumnes convocats<br>
                         </a>
                       </li>
-                    
-                      <li>
-                        <a href="/sortides/alumnesFallen/{{record.id}}">
-                        Alumnes no assistents a l'activitat<br>
-                        </a>
-                      </li>
-
-                      <li>
-                        <a href="/sortides/alumnesJustificats/{{record.id}}">
-                        Alumnes no assistents a l'activitat ni al centre<br>
-                        </a>
-                      </li>
-                                              
-                      <li>
-                        <a href="/sortides/professorsAcompanyants/{{record.id}}">
-                        Professors acompanyants<br>
-                        </a>
-                      </li>  
-                             
+                      {% if record.tipus != "P" %}
+                          <li>
+                            <a href="/sortides/alumnesFallen/{{record.id}}">
+                            Alumnes no assistents a l'activitat<br>
+                            </a>
+                          </li>
+    
+                          <li>
+                            <a href="/sortides/alumnesJustificats/{{record.id}}">
+                            Alumnes no assistents a l'activitat ni al centre<br>
+                            </a>
+                          </li>
+                                                  
+                          <li>
+                            <a href="/sortides/professorsAcompanyants/{{record.id}}">
+                            Professors acompanyants<br>
+                            </a>
+                          </li>  
+                      {% endif %}   
+   
                       {% if record.tipus_de_pagament == "ON" %}
                         <li>
                             <a href="/sortides/detallPagament/{{record.id}}">
@@ -149,11 +149,13 @@ class Table2_Sortides(tables.Table):
                         </a>
                       </li>            
                       
-                          <li>
-                            <a href="/sortides/imprimir/{{record.id}}/4">
-                            Imprimir fulls autorització i pagament<br>
-                            </a>
-                          </li>
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/imprimir/{{record.id}}/4">
+                                Imprimir fulls autorització i pagament<br>
+                                </a>
+                              </li>
+                          {% endif %}  
                           
                           <li>
                             <a href="/sortides/imprimir/{{record.id}}/5">
@@ -162,14 +164,14 @@ class Table2_Sortides(tables.Table):
                           </li>
                                                               
                       <li>
-                        <a href='javascript:confirmAction("/sortides/esborrar/{{record.id}}"  , "{{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol_de_la_sortida|escapejs }} ?")'>
+                        <a href='javascript:confirmAction("/sortides/esborrar/{{record.id}}"  , "{{ "Segur que vols esborrar l'activitat/pagament"|escapejs}} {{record.titol|escapejs }} ?")'>
                         Esborrar<br>
                         </a>
                       </li>
 
                       <li>
-                        <a href="/sortides/sortidaClonar/{{record.id}}">
-                        Clonar sortida<br>
+                        <a href="/sortides/sortidaClonar/{{record.id}}/{{record.tipus}}">
+                        Clonar<br>
                         </a>
                       </li>
                     
@@ -187,7 +189,7 @@ class Table2_Sortides(tables.Table):
                         <ul class="dropdown-menu pull-right dropdown-menu-right">
                         
                           <li>
-                            <a href="/sortides/sortidaEditAll/{{record.id}}">
+                            <a href="/sortides/sortidaEditAll/{{record.id}}/{{record.tipus}}">
                             Modificar dades<br>
                             </a>
                           </li>
@@ -197,25 +199,25 @@ class Table2_Sortides(tables.Table):
                             Alumnes convocats<br>
                             </a>
                           </li>
-                        
-                          <li>
-                            <a href="/sortides/alumnesFallenAll/{{record.id}}">
-                            Alumnes no assistents a l'activitat<br>
-                            </a>
-                          </li>
-
-                          <li>
-                            <a href="/sortides/alumnesJustificatsAll/{{record.id}}">
-                            Alumnes no assistents a l'activitat ni al centre<br>
-                            </a>
-                          </li>
-
-                          <li>
-                            <a href="/sortides/professorsAcompanyantsAll/{{record.id}}">
-                            Professors acompanyants<br>
-                            </a>
-                          </li>
-                          
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/alumnesFallenAll/{{record.id}}">
+                                Alumnes no assistents a l'activitat<br>
+                                </a>
+                              </li>
+    
+                              <li>
+                                <a href="/sortides/alumnesJustificatsAll/{{record.id}}">
+                                Alumnes no assistents a l'activitat ni al centre<br>
+                                </a>
+                              </li>
+    
+                              <li>
+                                <a href="/sortides/professorsAcompanyantsAll/{{record.id}}">
+                                Professors acompanyants<br>
+                                </a>
+                              </li>
+                          {% endif %}    
                           {% if record.tipus_de_pagament == "ON" %}
                             <li>
                                 <a href="/sortides/detallPagament/{{record.id}}">
@@ -231,11 +233,13 @@ class Table2_Sortides(tables.Table):
                           </li>
                           
             
-                          <li>
-                            <a href="/sortides/imprimir/{{record.id}}/4">
-                            Imprimir fulls autorització i pagament<br>
-                            </a>
-                          </li>
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/imprimir/{{record.id}}/4">
+                                Imprimir fulls autorització i pagament<br>
+                                </a>
+                              </li>
+                          {% endif %}  
                           
                           <li>
                             <a href="/sortides/imprimir/{{record.id}}/5">
@@ -244,7 +248,7 @@ class Table2_Sortides(tables.Table):
                           </li>
                                               
                           <li>
-                            <a href='javascript:confirmAction("/sortides/esborrarAll/{{record.id}}"  , " {{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol_de_la_sortida}} ?")'>
+                            <a href='javascript:confirmAction("/sortides/esborrarAll/{{record.id}}"  , " {{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol}} ?")'>
                             Esborrar<br>
                             </a>
                           </li>
@@ -260,13 +264,13 @@ class Table2_Sortides(tables.Table):
                       <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu pull-right dropdown-menu-right">
-                                              
-                      <li>
-                        <a href="/tutoria/justificarSortidaAlumne/{{record.id}}">
-                        Alumnes no assistents a l'activitat ni al centre<br>
-                        </a>
-                      </li>                    
-                    
+                      {% if record.tipus != "P" %}                
+                          <li>
+                            <a href="/tutoria/justificarSortidaAlumne/{{record.id}}">
+                            Alumnes no assistents a l'activitat ni al centre<br>
+                            </a>
+                          </li>                    
+                      {% endif %}  
                     </ul>
                   </div>
             """
@@ -277,12 +281,12 @@ class Table2_Sortides(tables.Table):
         self.columns['n_acompanyants'].column.template_code = "{{record.nom_acompanyants}}"
         if origen=="Consergeria":
             self.exclude=("accions", "estat", "professor_que_proposa")
-
+        self.base_columns['subtipus'].verbose_name = "Tipus"
     class Meta:
         model = Sortida
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("estat", "tipus", "titol_de_la_sortida", "ciutat", "ambit", "calendari_desde", "calendari_finsa", "professor_que_proposa", "participacio", "n_acompanyants" )
+        sequence = ("estat", "subtipus", "titol", "ciutat", "ambit", "calendari_desde", "calendari_finsa", "professor_que_proposa", "participacio", "n_acompanyants" )
         fields = sequence
         template = 'bootable2.html'      
         

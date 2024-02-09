@@ -45,7 +45,7 @@ def sortidesListRpt( user ):
         #-Sortida--------------------------------------------
         camp = tools.classebuida()
         camp.enllac = reverse( 'sortides__sortides__edit_by_pk' , kwargs={'pk': sortida.pk ,})
-        camp.contingut = u"{0} ({1})".format(sortida.titol_de_la_sortida, sortida.get_estat_display() )
+        camp.contingut = u"{0} ({1})".format(sortida.titol, sortida.get_estat_display() )
         filera.append(camp)
 
         #-Dades Gernerals--------------------------------------------

@@ -64,7 +64,6 @@ from django.urls import reverse_lazy
 from django_select2.forms import ModelSelect2MultipleWidget
 
 
-
 @login_required
 @group_required(['professors'])  
 def imprimir( request, pk, din = '4'):
@@ -114,7 +113,7 @@ def imprimir( request, pk, din = '4'):
         o.ciutat = instance.ciutat
         o.preu = instance.preu_per_alumne
         o.departament = unicode( instance.departament_que_organitza ) if instance.departament_que_organitza else instance.comentari_organitza
-        o.titol = instance.titol_de_la_sortida 
+        o.titol = instance.titol
         o.desde = instance.calendari_desde.strftime( "%H:%Mh del %d/%m/%Y" )
         o.desde_dia = instance.calendari_desde.strftime( "%d/%m/%Y" )
         o.finsa = instance.calendari_finsa.strftime( "%H:%Mh del %d/%m/%Y" )
@@ -140,9 +139,11 @@ def imprimir( request, pk, din = '4'):
     #resultat = StringIO.StringIO( )
     resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format( time.time(), request.session.session_key )
     #context = Context( {'reports' : reports, } )
-    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2.odt') if din=='4' else os.path.join( settings.PROJECT_DIR,  '../customising/docs/autoritzacio2-A5.odt')
+    docu = "autoritzacio2" if din=='4' else "autoritzacio2-A5"
+    docu = docu + ".odt" if instance.tipus!="P" else docu + "-pagament.odt"
+    path = os.path.join( settings.PROJECT_DIR,  '../customising/docs/{0}'.format(docu))
     if not os.path.isfile(path):
-        path = os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2.odt') if din=='4' else os.path.join(os.path.dirname(__file__), 'templates/autoritzacio2-A5.odt')
+        path = os.path.join(os.path.dirname(__file__), 'templates/{0}'.format(docu))
 
     renderer = Renderer(path, {'report' :report, }, resultat)  
     renderer.run()
@@ -159,18 +160,17 @@ def imprimir( request, pk, din = '4'):
         
     if True: #not excepcio:
         response = http.HttpResponse( contingut, content_type='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format( "autoritzacio_sortida", pk )
+        response['Content-Disposition'] = u'attachment; filename="autoritzacio-{0}-{1}.odt"'.format(dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[instance.tipus], pk )
                                                      
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
     
     return response
-    
+
 
 @login_required
 @group_required(['professors'])
-def sortidesMevesList( request ):
-
+def sortidesMevesList( request, tipus="A" ):
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     
@@ -183,39 +183,43 @@ def sortidesMevesList( request ):
     
     sortides = ( Sortida
                    .objects
-                   .filter( q_professor_proposa | q_professors_responsables | q_professors_acompanyants )
+                   .filter( q_professor_proposa | q_professors_responsables | q_professors_acompanyants)
                    .distinct()
                   )
+    if tipus:
+        sortides = sortides.filter(tipus=tipus)
+    table = Table2_Sortides( list( sortides ), origen="Meves" )
+    if tipus=="P":
+        table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
+    table.order_by = '-calendari_desde'
 
-    table = Table2_Sortides( list( sortides ), origen="Meves" ) 
-    table.order_by = '-calendari_desde' 
-    
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
-        
     return render(
                   request, 
                   'lesMevesSortides.html', 
                   {'table': table,
+                   'value': dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[tipus],
+                   'tipus': tipus
                    }
-                 )       
+                 )
 
 
 @login_required
 @group_required(['professors'])
-def sortidesAllList( request ):
+def sortidesAllList( request, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     
-    professor = User2Professor( user )     
-    
-    sortides = list( Sortida
+    sortides = ( Sortida
                      .objects
-                     .all()
                      .distinct()                     
                 )
- 
-    table = Table2_Sortides( data=sortides, origen="All" ) 
+    if tipus:
+        sortides=sortides.filter(tipus=tipus)
+    table = Table2_Sortides( data=sortides, origen="All" )
+    if tipus=="P":
+        table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
     table.order_by = '-calendari_desde' 
     
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
@@ -228,18 +232,16 @@ def sortidesAllList( request ):
                   {'table': table,
                    'url': url,
                    }
-                 )       
+                 )
 
 
 
 @login_required
 @group_required(['professors'])
-def sortidesGestioList( request ):
+def sortidesGestioList( request, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
-    
-    professor = User2Professor( user )     
     
     filtre = []
     socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
@@ -256,15 +258,19 @@ def sortidesGestioList( request ):
     sortides = ( Sortida
                    .objects
                    .exclude( estat = 'E' )
-                   .filter( estat__in = filtre )
+                   .filter( estat__in = filtre)
                    .distinct()
                   )
+    if tipus:
+        sortides = sortides.filter(tipus=tipus)
 
     # si sóc secretari i es pot pagar online, només les que tinguin tipus de pagament 'ON' (ONline)
     if socSecretari and settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
         sortides = sortides.filter(tipus_de_pagament = 'ON')
 
-    table = Table2_Sortides( data=list( sortides ), origen="Gestio" ) 
+    table = Table2_Sortides( data=list( sortides ), origen="Gestio" )
+    if tipus=="P":
+        table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
     table.order_by = '-calendari_desde' 
     
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
@@ -309,7 +315,7 @@ def sortidesConsergeriaList(request):
 
 @login_required
 @group_required(['professors'])  # TODO: i grup sortides
-def sortidaEdit(request, pk=None, clonar=False, origen=False):
+def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     from aula.apps.sortides.forms import SortidaForm
 
     credentials = tools.getImpersonateUser(request)
@@ -339,7 +345,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         instance = get_object_or_404(Sortida, pk=pk)
         instance.pk = None
         instance.estat = 'E'
-        instance.titol_de_la_sortida = u"**CLONADA** " + instance.titol_de_la_sortida
+        instance.titol = u"**CLONADA** " + instance.titol
         instance.esta_aprovada_pel_consell_escolar = 'P'
         instance.professor_que_proposa = professor
     # instance.professors_responsables = None
@@ -354,16 +360,17 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         instance = Sortida()
         instance.professor_que_proposa = professor
         instance.tipus_de_pagament = "ON" if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE else "NO"
+        instance.tipus=tipus
 
     instance.credentials = credentials
 
     # És un formulari reduit?
     if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
-        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'data_inici', 'franja_inici', 'data_fi',
+        exclude = ['alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'data_inici', 'franja_inici', 'data_fi',
                    'franja_fi', 'codi_de_barres', 'empresa_de_transport', 'pagament_a_empresa_de_transport',
-                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula', 'pagaments', 'tpv')
+                   'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula', 'pagaments', 'tpv']
     else:
-        exclude = ('alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments', 'tpv')
+        exclude = ['alumnes_convocats', 'alumnes_que_no_vindran', 'alumnes_justificacio', 'pagaments', 'tpv']
 
     formIncidenciaF = modelform_factory(Sortida, form=SortidaForm, exclude=exclude,
                                         widgets = {
@@ -376,8 +383,34 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                                                 queryset=Professor.objects.all(),
                                                 search_fields=('last_name__icontains', 'first_name__icontains',),
                                                 attrs={'style': "'width': '100%'"}
-                                                )
-                                            }
+                                                ),
+                                            'tipus': forms.HiddenInput(
+                                            ),
+                                            },
+                                        labels={
+                                            "subtipus": "Tipus",
+                                            "programa_de_la_sortida": "Descripció del pagament:",
+                                            "professors_responsables": "Professorat que organitza:"
+
+
+                                            },
+                                        )
+    if tipus == "P":
+        exclude_pagament = ['ciutat', 'esta_aprovada_pel_consell_escolar','comentari_organitza','alumnes_a_l_aula_amb_professor_titular',
+                            'calendari_desde','calendari_finsa','calendari_public','condicions_generals','mitja_de_transport','comentaris_interns','altres_professors_acompanyants']
+        exclude.extend(exclude_pagament)
+        formIncidenciaF=modelform_factory(Sortida, form=formIncidenciaF,
+                                            help_texts={
+                                                "estat":"Estat del pagament. No es considera proposat fins que no passa a estat 'Proposat'",
+                                                "subtipus":"Tipus de pagament",
+                                                "titol": "Escriu un títol breu que serveixi per identificar aquest pagament.Ex: Dossier per a comptabilitat",
+                                                "ambit": "Alumnat afectat? Ex: 1r i 2n ESO. Ex: 1r ESO A.",
+                                                "departament_que_organitza": "Indica quin departament organitza el pagament",
+                                                "materia": "Matèria relacionada amb el pagament. Escriu el nom complet.",
+                                                "programa_de_la_sortida": "Aquesta informació arriba a les famílies. Descriu el pagament incloent altra informació d'interès (Ex. Material necessàri per crear un cable de xarxa)",
+                                                "professors_responsables": "Professorat responsable del pagament"
+
+        },
                                         )
 
     if request.method == "POST":
@@ -391,7 +424,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
             if form.cleaned_data['tipus_de_pagament']=='NO': instance.preu_per_alumne=0
             # Omplir camps de classes afectades
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
-
+              if tipus!="P":
                 #Buscar primera impartició afectada
                 primeraimparticio = ( 
                     Impartir
@@ -447,19 +480,28 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                     instance.data_fi = None
                     instance.franja_inici = None
                     instance.franja_fi = None
+              else:
+                  instance.calendari_desde=datetime.today()
+                  instance.calendari_finsa=datetime.today()
+                  instance.esta_aprovada_pel_consell_escolar = 'N'
 
             form.save()
 
             if origen == "Meves":
+                safetext = u"""RECORDA: Una vegada enviades les dades, 
+                                                  has de seleccionar els <a href="{0}">alumnes implicats</a>
+                                                  des del menú desplegable ACCIONS""".format(
+                    "/sortides/alumnesConvocats/{id}".format(id=instance.id),
+                    ) if tipus=="P" else u"""RECORDA: Una vegada enviades les dades,
+                                                  has de seleccionar els <a href="{0}">alumnes convocats</a> i els
+                                                  <a href="{1}">alumnes que no hi van</a>
+                                                  des del menú desplegable ACCIONS""".format(
+                    "/sortides/alumnesConvocats/{id}".format(id=instance.id),
+                    "/sortides/alumnesFallen/{id}".format(id=instance.id),
+                )
                 messages.warning(request,
-                                 SafeText(u"""RECORDA: Una vegada enviades les dades, 
-                                  has de seleccionar els <a href="{0}">alumnes convocats</a> i els 
-                                  <a href="{1}">alumnes que no hi van</a> 
-                                  des del menú desplegable ACCIONS""".format(
-                                     "/sortides/alumnesConvocats/{id}".format(id=instance.id),
-                                     "/sortides/alumnesFallen/{id}".format(id=instance.id),
+                                 SafeText(safetext)
                                  )
-                                 ))
 
             professors_acompanyen_despres = set(instance.altres_professors_acompanyants.all())
             professors_organitzen_despres = set(instance.professors_responsables.all())
@@ -473,25 +515,26 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
                 data_inici = """del dia {dia}""".format(dia=instance.data_inici.strftime('%d/%m/%Y'))
 
                 # missatge a acompanyants:
-            missatge = ACOMPANYANT_A_ACTIVITAT
-            txt = missatge.format(sortida=instance.titol_de_la_sortida, dia=data_inici)
-            enllac = reverse('sortides__sortides__edit_by_pk', kwargs={'pk': instance.id})
-            tipus_de_missatge = tipusMissatge(missatge)
-            msg = Missatge(remitent=user, text_missatge=txt, enllac=enllac, tipus_de_missatge=tipus_de_missatge)
-            for nou in acompanyen_nous:
-                importancia = 'VI'
-                msg.envia_a_usuari(nou, importancia)
+            if instance.tipus!="P":
+                missatge = ACOMPANYANT_A_ACTIVITAT
+                txt = missatge.format(sortida=instance.titol, dia=data_inici)
+                enllac = reverse('sortides__sortides__edit_by_pk', kwargs={'pk': instance.id, 'tipus' : instance.tipus})
+                tipus_de_missatge = tipusMissatge(missatge)
+                msg = Missatge(remitent=user, text_missatge=txt, enllac=enllac, tipus_de_missatge=tipus_de_missatge)
+                for nou in acompanyen_nous:
+                    importancia = 'VI'
+                    msg.envia_a_usuari(nou, importancia)
 
                 # missatge a responsables:
             missatge = RESPONSABLE_A_ACTIVITAT
-            txt = missatge.format(sortida=instance.titol_de_la_sortida, dia=data_inici)
+            txt = missatge.format(sortida=instance.titol, dia=data_inici)
             tipus_de_missatge = tipusMissatge(missatge)
             msg = Missatge(remitent=user, text_missatge=txt, tipus_de_missatge=tipus_de_missatge)
             for nou in organitzen_nous:
                 importancia = 'VI'
                 msg.envia_a_usuari(nou, importancia)
 
-            nexturl = r"/sortides/sortides{origen}".format(origen=origen)
+            nexturl = r"/sortides/sortides{origen}/{tipus}".format(origen=origen, tipus=tipus)
             return HttpResponseRedirect(nexturl)
 
     else:
@@ -503,14 +546,22 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
     widgetBootStrapButtonSelect.choices = form.fields['estat'].widget.choices
     form.fields['estat'].widget = widgetBootStrapButtonSelect
 
-    form.fields["alumnes_a_l_aula_amb_professor_titular"].widget.attrs['style'] = u"width: 3%"
-    form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
+    if tipus!="P":
+        form.fields["alumnes_a_l_aula_amb_professor_titular"].widget.attrs['style'] = u"width: 3%"
+        form.fields['calendari_desde'].widget = DateTimeTextImput()
+        form.fields['calendari_finsa'].widget = DateTimeTextImput()
+        form.fields["calendari_public"].widget.attrs['style'] = u"width: 3%"
+
     for f in form.fields:
         form.fields[f].widget.attrs['class'] = ' form-control ' + form.fields[f].widget.attrs.get('class', "")
 
-    form.fields['calendari_desde'].widget = DateTimeTextImput()
-    form.fields['calendari_finsa'].widget = DateTimeTextImput()
     form.fields['termini_pagament'].widget = DateTimeTextImput()
+
+    subtipus_activitat_choices = []
+    for subtipus_activitat in instance.SUBTIPUS_ACTIVITAT_CHOICES:
+        if subtipus_activitat[0][0] == tipus:
+            subtipus_activitat_choices.append(subtipus_activitat)
+    form.fields['subtipus'].widget.choices=subtipus_activitat_choices
 
     if not fEsDireccioOrGrupSortides:
         form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
@@ -534,7 +585,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False):
         request,
         'formSortida.html',
         {'form': form,
-         'head': 'Sortides',
+         'head': dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[tipus],
          'missatge': 'Sortides',
          'deshabilitat': '1==1' if deshabilitat else '1==2',
          },
@@ -600,7 +651,7 @@ def alumnesConvocats( request, pk , origen ):
                     except IntegrityError:
                         pass
 
-                nexturl =  r'/sortides/sortides{origen}'.format(origen=origen)
+                nexturl =  r'/sortides/sortides{origen}/{tipus}'.format(origen=origen, tipus=instance.tipus)
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -647,7 +698,7 @@ def alumnesConvocats( request, pk , origen ):
                 request,
                 'formSortidesAlumnes.html',
                     {'form': form,
-                     'head': 'Sortides' ,
+                     'head': dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[instance.tipus],
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
@@ -696,12 +747,12 @@ def alumnesFallen( request, pk , origen ):
                 for alumne in ante - nous:
                     instance.alumnes_que_no_vindran.remove( alumne )
                 
-                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
+                nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
 
-                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
+                nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -733,7 +784,7 @@ def alumnesFallen( request, pk , origen ):
                 request,
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
-                     'head': 'Sortides' ,
+                     'head': dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[instance.tipus],
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
@@ -780,7 +831,7 @@ def alumnesJustificats( request, pk , origen ):
                 for alumne in ante - nous:
                     instance.alumnes_justificacio.remove( alumne )
                 
-                nexturl =  r'/sortides/sortides{origen}'.format( origen = origen )
+                nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -812,7 +863,7 @@ def alumnesJustificats( request, pk , origen ):
                 request,
                 'formSortidesAlumnesFallen.html',
                     {'form': form,
-                     'head': 'Sortides' ,
+                     'head': dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[instance.tipus],
                      'missatge': 'Sortides',
                      'deshabilitat': '1==1' if deshabilitat else '1==2',
                     },
@@ -877,7 +928,7 @@ def professorsAcompanyants( request, pk , origen ):
                     
                     #missatge a acompanyants:
                     missatge = ACOMPANYANT_A_ACTIVITAT
-                    txt = missatge.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+                    txt = missatge.format( sortida = instance.titol, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
                     tipus_de_missatge = tipusMissatge(missatge)
                     msg = Missatge( remitent = user, text_missatge = txt, tipus_de_missatge = tipus_de_missatge )
                     for nou in acompanyen_nous:                
@@ -886,7 +937,7 @@ def professorsAcompanyants( request, pk , origen ):
         
                     #missatge a responsables:
                     missatge = RESPONSABLE_A_ACTIVITAT
-                    txt = RESPONSABLE_A_ACTIVITAT.format( sortida = instance.titol_de_la_sortida, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
+                    txt = RESPONSABLE_A_ACTIVITAT.format( sortida = instance.titol, dia = instance.data_inici.strftime( '%d/%m/%Y' ) )
                     tipus_de_missatge = tipusMissatge(missatge)
                     msg = Missatge( remitent = user, text_missatge = txt, tipus_de_missatge = tipus_de_missatge )
                     for nou in organitzen_nous:                
@@ -945,7 +996,7 @@ def esborrar( request, pk , origen):
     
     potEntrar = mortalPotEntrar or direccio
     if not potEntrar:
-        messages.warning(request, u"No pots esborrar aquesta activitat." )
+        messages.warning(request, u"No pots esborrar aquest/a pagament/activitat." )
         return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
     
     instance.credentials = credentials
@@ -953,9 +1004,9 @@ def esborrar( request, pk , origen):
     try:
         instance.delete()
     except:
-        messages.warning(request, u"Error esborrant la activitat." )
+        messages.warning(request, u"Error esborrant l'activitat/pagament." )
     
-    nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )
+    nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen=origen,tipus=instance.tipus )
     return HttpResponseRedirect( nexturl )
 
 #-------------------------------------------------------------------
@@ -978,7 +1029,7 @@ def sortidaiCal( request):
         
         
         summary = u"{ambit}: {titol}".format(ambit=instance.ambit ,
-                                                   titol= instance.titol_de_la_sortida)
+                                                   titol= instance.titol)
         
         event.add('dtstart',localtime(instance.calendari_desde) )
         event.add('dtend' ,localtime(instance.calendari_finsa) )
@@ -1032,19 +1083,26 @@ def sortidaExcel( request, pk ):
     
     #Dades de la sortida
     detall = [
-                [ sortida.get_tipus_display() , sortida.get_estat_display(),  ],
+                [ sortida.get_subtipus_display() , sortida.get_estat_display(),  ],
                 [],
-                [ sortida.titol_de_la_sortida  ,   ],
+                [ sortida.titol  ,   ],
+                [],]
+
+    if sortida.tipus != "P":
+        detall += [
+                    [ u"Comença ", u"Finalitza", ],
+                    [ sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ) , sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' )  ],
                 [],
-                [ u"Comença ", u"Finalitza", ],
-                [ sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ) , sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' )  ],              
-                [],
-    ]
+                ]
     detall += [[ u"Organitzen", ]] + [[unicode( p )] for p in sortida.professors_responsables.all()] + [[]]
-    detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
+    if sortida.tipus != "P":
+        detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', u"Assistència"], ]
+
+    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', ]]
+    if sortida.tipus != "P":
+        alumnes[0].extend([u"Assistència"])
     if sortida.tipus_de_pagament == 'ON':
         alumnes[0].extend([u"Pagat", u"Data Pagament", u"Codi Pagament"])
 
@@ -1110,7 +1168,8 @@ def sortidaExcel( request, pk ):
 
     if True:  # not excepcio:
         response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="sortida-{0}.xlsx"'.format( slugify( sortida.titol_de_la_sortida ))
+        response['Content-Disposition'] = u'attachment; filename="{0}-{1}.xlsx"'.format(dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[sortida.tipus],slugify( sortida.titol ))
+
 
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
@@ -1345,7 +1404,7 @@ def passarella(request, pk):
     if pagament.sortida:
         sortida = pagament.sortida
         preu = sortida.preu_per_alumne
-        titol = sortida.titol_de_la_sortida
+        titol = sortida.titol
         c,k,e = TPVsettings(request.user)
         codiComerç = sortida.tpv.codi if sortida.tpv else c
         keyComerç = sortida.tpv.key if sortida.tpv else k
@@ -1607,7 +1666,7 @@ def detallPagament(request, pk):
     if not potEntrar:
         raise Http404
 
-    head = 'Sortida: {0}  ({1} €)'.format(sortida.titol_de_la_sortida, str(sortida.preu_per_alumne))
+    head = 'Sortida: {0}  ({1} €)'.format(sortida.titol, str(sortida.preu_per_alumne))
 
 
     report = []
@@ -2074,12 +2133,12 @@ def acumulatsActivitats(tpv, nany=None):
     totfet=SortidaPagament.objects.filter(pagament_realitzat=True, sortida__in=llistaSortides,
                                         #alumne__isnull=False,
                                         data_hora_pagament__year=nany)\
-                    .values_list('sortida__id','sortida__titol_de_la_sortida','data_hora_pagament__month')\
+                    .values_list('sortida__id','sortida__titol','data_hora_pagament__month')\
                     .annotate(total=Sum('sortida__preu_per_alumne'))
     
     totpendent=SortidaPagament.objects.filter(pagament_realitzat=False, sortida__in=llistaSortides,
                     alumne__isnull=False)\
-                    .values_list('sortida__id','sortida__titol_de_la_sortida')\
+                    .values_list('sortida__id','sortida__titol')\
                     .annotate(total=Sum('sortida__preu_per_alumne'))
     
     calcul={}
@@ -2188,7 +2247,7 @@ def fullcalculQuotes(tpv, nany=None):
         pags=SortidaPagament.objects.filter(pagament_realitzat=False, sortida__preu_per_alumne__isnull=False,
                                         alumne__isnull=False, sortida__notificasortida__alumne__isnull=False)\
                                         .distinct()\
-                                        .order_by('sortida__termini_pagament','sortida__titol_de_la_sortida',
+                                        .order_by('sortida__termini_pagament','sortida__titol',
                                                  'alumne__cognoms','alumne__nom')
     else:
         pags=SortidaPagament.objects.none()
@@ -2204,7 +2263,7 @@ def fullcalculQuotes(tpv, nany=None):
         fila=fila+1
     for p in pags:
         if bool(p.sortida.preu_per_alumne) and p.sortida.preu_per_alumne>0:
-            worksheet.write_string(fila, 0, 'activitat: '+p.sortida.titol_de_la_sortida )
+            worksheet.write_string(fila, 0, 'activitat: '+p.sortida.titol )
             worksheet.write_string(fila, 1, str(p.alumne) )
             worksheet.write_number(fila, 2, p.sortida.preu_per_alumne )
             if p.sortida.termini_pagament: worksheet.write_datetime(fila, 3, p.sortida.termini_pagament, date_format )

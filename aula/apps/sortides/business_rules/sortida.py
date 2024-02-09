@@ -55,7 +55,7 @@ def clean_sortida(instance):
                 u"Només el Coordinador de Sortides i Direcció pot modificar una sortida que s'està gestionant.")
 
             # si passem a proposat
-    if instance.estat in ('P', 'R'):
+    if instance.estat in ('P', 'R') and instance.tipus!= 'P':
         if (not bool(instance.calendari_desde) or
                 not bool(instance.calendari_finsa) or
                     instance.calendari_desde < datetime.now() or
@@ -75,8 +75,8 @@ def clean_sortida(instance):
         if bool(instance.instanceDB) and instance.instanceDB.estat in ['G']:
             errors.append(u"Aquesta sortida ja ha està sent gestionada.")
 
-        if not instance.esta_aprovada_pel_consell_escolar in ['A', 'N']:
-            errors.append(u"Cal que la Sortida estigui aprovada pel consell escolar per poder-la donar per revisada.")
+        if not instance.esta_aprovada_pel_consell_escolar in ['A', 'N'] and instance.tipus!= 'P':
+            errors.append(u"Cal que l'activitat estigui aprovada pel consell escolar per poder-la donar per revisada.")
 
     # si passem a gestionada pel cap d'estudis
     if instance.estat in ('G',):
