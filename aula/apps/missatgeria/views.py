@@ -351,7 +351,7 @@ def EmailFamilies(request):
                 missatge = "Email a famílies no enviat. "+str(e)
                 messages.error(request, missatge)
             except Exception as e:
-                missatge = "Email a famílies no enviat, torneu a intentar-ho en uns minuts."
+                missatge = "Email a famílies no enviat, torneu a intentar-ho en uns minuts. "+str(e)
                 messages.error(request, missatge)
                 
             # envio al que ho envia:
