@@ -1507,7 +1507,7 @@ def elMeuInforme( request, pk = None ):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format( act.titol_de_la_sortida )        
+            camp.contingut = u'{0}'.format( act.titol )
             camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
@@ -1530,7 +1530,7 @@ def elMeuInforme( request, pk = None ):
             camp.modal['id'] = act.id
             camp.modal['txtboto'] = u'Detalls' 
             camp.modal['tittle'] =  u"{0} ({1})".format( 
-                                        act.titol_de_la_sortida,
+                                        act.titol,
                                         naturalday(act.calendari_desde),
                                         )
             camp.modal['body'] =  u'Del {0} al {1} \n\n{2}\n{3}\n{4}\n{5}\n{6}'.format(

@@ -2,21 +2,24 @@ from django.urls import re_path
 from aula.apps.sortides import views as sortides_views
 
 urlpatterns = [
-                       
-    re_path(r'^sortidesMeves/$', sortides_views.sortidesMevesList,name = "sortides__meves__list"),
-    re_path(r'^sortidesGestio/$', sortides_views.sortidesGestioList,name = "sortides__gestio__list"),
+
+    re_path(r'^sortidesMeves/$', sortides_views.sortidesMevesList, name="sortides__meves__list"),
+    re_path(r'^sortidesMeves/(?P<tipus>\w+)/$', sortides_views.sortidesMevesList, name='sortides__meves__list_by_tipus'),
+    re_path(r'^sortidesGestio/$', sortides_views.sortidesGestioList, name="sortides__gestio__list"),
+    re_path(r'^sortidesGestio/(?P<tipus>\w+)/$', sortides_views.sortidesGestioList,name = "sortides__gestio__list_by_tipus"),
     re_path(r'^sortidesConsergeria/$', sortides_views.sortidesConsergeriaList, name="sortides__consergeria__list"),
-    re_path(r'^sortidesAll/$', sortides_views.sortidesAllList,name = "sortides__all__list"),
-    
-    re_path(r'^sortidaEdit/$', sortides_views.sortidaEdit,name = "sortides__sortides__edit", kwargs={'origen':'Meves'}),
+    re_path(r'^sortidesAll/$', sortides_views.sortidesAllList, name="sortides__all__list"),
+    re_path(r'^sortidesAll/(?P<tipus>\w+)/$', sortides_views.sortidesAllList,name = "sortides__all__list"),
+
+    re_path(r'^sortidaEdit/(?P<tipus>\w+)/$', sortides_views.sortidaEdit,name = "sortides__sortides__edit", kwargs={'origen':'Meves'}),
     re_path(r'^sortidaEditGestio/$', sortides_views.sortidaEdit,name = "sortides__sortides__editGestio", kwargs={'origen':'Gestio'}),
     re_path(r'^sortidaEditAll/$', sortides_views.sortidaEdit,name = "sortides__sortides__editAll", kwargs={'origen':'All'}),
 
-    re_path(r'^sortidaEdit/(?P<pk>\d+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__edit_by_pk', kwargs={'origen':'Meves'}),
-    re_path(r'^sortidaEditGestio/(?P<pk>\d+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__editGestio_by_pk', kwargs={'origen':'Gestio'}),
-    re_path(r'^sortidaEditAll/(?P<pk>\d+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__editAll_by_pk', kwargs={'origen':'All'}),
+    re_path(r'^sortidaEdit/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__edit_by_pk', kwargs={'origen':'Meves'}),
+    re_path(r'^sortidaEditGestio/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__editGestio_by_pk', kwargs={'origen':'Gestio'}),
+    re_path(r'^sortidaEditAll/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__editAll_by_pk', kwargs={'origen':'All'}),
 
-    re_path(r'^sortidaClonar/(?P<pk>\d+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__clonar_by_pk', kwargs={ 'clonar':True, 'origen':'Meves',  }),
+    re_path(r'^sortidaClonar/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.sortidaEdit, name = 'sortides__sortides__clonar_by_pk', kwargs={ 'clonar':True, 'origen':'Meves' }),
 
     re_path(r'^alumnesConvocats/(?P<pk>\d+)/$', sortides_views.alumnesConvocats, name = 'sortides__sortides__alumnesConvocats', kwargs={'origen':'Meves'}),
     re_path(r'^alumnesConvocatsGestio/(?P<pk>\d+)/$', sortides_views.alumnesConvocats, name = 'sortides__sortides__alumnesConvocatsGestio', kwargs={'origen':'Gestio'}),

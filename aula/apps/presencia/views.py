@@ -474,7 +474,7 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
         form.fields['estat'].label_suffix = u""
         form.fields['estat'].label = (unicode(alumne)
                                       + u" - Activitat: "
-                                      + u", ".join([x.sortida.titol_de_la_sortida
+                                      + u", ".join([x.sortida.titol
                                                     for x in q_no_al_centre_sortida.all()]
                                                    )
                                       )

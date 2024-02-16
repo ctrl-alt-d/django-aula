@@ -327,34 +327,58 @@ def calcula_menu( user , path, sessioImpersonada ):
         #si sóc coordinador de sortides només les que tinguin estat 'P' (Proposada)
         if socCoordinador:
             filtre.append('P')
-        
-        n_avis_sortides = ( Sortida
+
+        n_avis_tot = (Sortida
                            .objects
-                           .exclude( estat = 'E' )
-                           .filter( estat__in = filtre )
+                           .exclude(estat='E')
+                           .filter(estat__in=filtre)
                            .distinct()
                            .count()
-                          )    
-        
-        n_avis_sortides_meves = ( Sortida
+                           )
+        n_avis_activitats = ( Sortida
+                           .objects
+                           .exclude( estat = 'E' )
+                           .filter( estat__in = filtre, tipus="A" )
+                           .distinct()
+                           .count()
+                          )
+
+
+        n_avis_activitats_meves = ( Sortida
                            .objects
                            .filter( estat = 'E' )
-                           .filter( professor_que_proposa__pk = user.pk )
+                           .filter( professor_que_proposa__pk = user.pk, tipus="A" )
                            .distinct( )
                            .count()
-                          )  
-        
+                          )
+
         arbreSortides = (
-               #--Varis--------------------------------------------------------------------------
-               ('sortides', 'Activitats', 'sortides__meves__list', di or pr, n_avis_sortides + n_avis_sortides_meves> 0,
+            # --Activitats/pagaments--------------------------------------------------------------------------
+            ('sortides', 'Activitats/Pagaments', 'sortides__meves__list', di or pr, n_avis_tot + n_avis_activitats_meves> 0,
+             (
+                 ('Activitats', "sortides__meves__list_by_tipus,A", di or pr, None,
+                   (
+                       (u"Històric", "sortides__all__list,A", di or so, None),
+                       (u"Gestió", "sortides__gestio__list_by_tipus,A", di or so,
+                                    (n_avis_activitats, 'info',) if n_avis_activitats > 0 else None),
+                       (u"Les meves propostes", "sortides__meves__list_by_tipus,A", pr,
+                                    (n_avis_activitats_meves, 'info',) if n_avis_activitats_meves > 0 else None),
+                   ),
+                   ),
+                 ('Pagaments', "sortides__meves__list_by_tipus,P", di or pr, None,
                   (
-                      (u"Històric", 'sortides__all__list', di or so, None, None ),
-                      (u"Gestió d'activitats", 'sortides__gestio__list', di or so, ( n_avis_sortides ,'info', ) if n_avis_sortides > 0 else None, None ),
-                      (u"Les meves propostes d'activitats", 'sortides__meves__list', pr, ( n_avis_sortides_meves ,'info', ) if n_avis_sortides_meves > 0 else None, None ),
-                   )
-               ),                            
+                      (u"Històric", "sortides__all__list,P", di or so, None),
+                      (u"Gestió", "sortides__gestio__list_by_tipus,P", di or so,
+                       (n_avis_activitats, 'info',) if n_avis_activitats > 0 else None),
+                      (u"Les meves propostes", "sortides__meves__list_by_tipus,P", pr,
+                       (n_avis_activitats_meves, 'info',) if n_avis_activitats_meves > 0 else None),
+                  ),
+                  ),
+
+             )
+             ),
                          )
-    
+
     arbre = arbre1 + arbreSortides + arbre2
     
     for item_id, item_label, item_url, item_condicio, alerta , subitems in arbre:
@@ -376,7 +400,13 @@ def calcula_menu( user , path, sessioImpersonada ):
                 actiu = ( submenu_id == subitem_url.split('__')[1] )
                 subitem = classebuida()
                 subitem.label = safe( subitem_label )
-                subitem.url = reverse( subitem_url ) 
+                subitem_url_splited = subitem_url.split(",")
+                url = subitem_url_splited[0]
+                if len(subitem_url_splited)>1:
+                    tipus = subitem_url_splited[1]
+                    subitem.url = (reverse(url, kwargs={'tipus':tipus}))
+                else:
+                    subitem.url = (reverse(url))
                 subitem.active = 'active' if actiu else ''
                 if medalla:
                     omedalla = classebuida()
@@ -391,7 +421,13 @@ def calcula_menu( user , path, sessioImpersonada ):
                             continue
                         subsubitem = classebuida()
                         subsubitem.label = safe( subitem_label )
-                        subsubitem.url = reverse( subitem_url ) 
+                        subitem_url_splited = subitem_url.split(",")
+                        url = subitem_url_splited[0]
+                        if len(subitem_url_splited) > 1:
+                            tipus = subitem_url_splited[1]
+                            subsubitem.url = (reverse(url, kwargs={'tipus': tipus}))
+                        else:
+                            subsubitem.url = (reverse(url))
                         if subitem_medalla:
                             omedalla = classebuida()
                             omedalla.valor = subitem_medalla[0]

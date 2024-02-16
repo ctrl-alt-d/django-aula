@@ -704,7 +704,7 @@ def comparteixCalendari(request, clau):
             event = Event()
             
             summary = u"{ambit}: {titol}".format(ambit=instance.ambit ,
-                                                    titol= instance.titol_de_la_sortida)
+                                                    titol= instance.titol)
             
             event.add('dtstart',localtime(instance.calendari_desde) )
             event.add('dtend' ,localtime(instance.calendari_finsa) )
