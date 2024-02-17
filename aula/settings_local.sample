@@ -71,9 +71,6 @@ SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'
 
 CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 
-#Componente que utilizará Django para serializar los objetos
-SESSION_SERIALIZER='django.contrib.sessions.serializers.JSONSerializer'
-
 # Path de datos privados
 PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2022/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
