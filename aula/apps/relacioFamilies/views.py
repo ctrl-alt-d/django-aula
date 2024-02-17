@@ -1399,12 +1399,9 @@ def elMeuInforme( request, pk = None ):
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
     pagquotesNoves = pagquotes.filter(pagament_realitzat=False)
-    infQuota=detall in ['all', 'sortides'] and pagquotes and settings.CUSTOM_QUOTES_ACTIVES
+    infQuota=detall in ['all', 'sortides'] and (pagquotes or settings.CUSTOM_QUOTES_ACTIVES)
 
-    if settings.CUSTOM_MODUL_MATRICULA_ACTIU or settings.CUSTOM_QUOTES_ACTIVES:
-        titol_sortides = 'Activitats/Pagaments'
-    else:
-        titol_sortides = 'Activitats/Sortides'
+    titol_sortides = 'Activitats/Pagaments'
     
     
     #----Sortides -----------------------------------------------------------------------------   
@@ -1425,8 +1422,7 @@ def elMeuInforme( request, pk = None ):
         
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
-        taula.tabTitle = '{0} {1}'.format( titol_sortides, pintaNoves( sortidesNoves.count() + 
-                                                pagquotesNoves.count() if settings.CUSTOM_QUOTES_ACTIVES else 0) )
+        taula.tabTitle = '{0} {1}'.format( titol_sortides, pintaNoves( sortidesNoves.count() + pagquotesNoves.count()) )
     
         taula.titol = tools.classebuida()
         taula.titol.contingut = ''
@@ -1482,7 +1478,10 @@ def elMeuInforme( request, pk = None ):
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = naturalday(act.calendari_desde)       
+            if act.tipus=='P':
+                camp.contingut = naturalday(act.termini_pagament)
+            else:              
+                camp.contingut = naturalday(act.calendari_desde)       
             camp.negreta = negreta
             filera.append(camp)
             
@@ -1529,15 +1528,24 @@ def elMeuInforme( request, pk = None ):
                                         act.titol,
                                         naturalday(act.calendari_desde),
                                         )
-            camp.modal['body'] =  u'Del {0} al {1} \n\n{2}\n{3}\n{4}\n{5}\n{6}'.format(
-                                        act.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
-                                        act.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),                                        
-                                        act.programa_de_la_sortida,
-                                        act.condicions_generals,
-                                        act.informacio_pagament,
-                                        u'Preu: {0} €'.format(str(act.preu_per_alumne)) if act.preu_per_alumne else u'Preu: 0 €',
-                                        u'Data límit pagament: {0}'.format(str(act.termini_pagament)) if act.termini_pagament else ''
-                                        )
+            if act.tipus=='P':
+                camp.modal['body'] =  u'{0}\n{1}\n{2}\n{3}\n{4}'.format(
+                                            act.programa_de_la_sortida,
+                                            act.condicions_generals,
+                                            act.informacio_pagament,
+                                            u'Preu: {0} €'.format(str(act.preu_per_alumne)) if act.preu_per_alumne else u'Preu: 0 €',
+                                            u'Data límit pagament: {0}'.format(str(act.termini_pagament)) if act.termini_pagament else ''
+                                            )
+            else:
+                camp.modal['body'] =  u'Del {0} al {1} \n\n{2}\n{3}\n{4}\n{5}\n{6}'.format(
+                                            act.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),  
+                                            act.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),                                        
+                                            act.programa_de_la_sortida,
+                                            act.condicions_generals,
+                                            act.informacio_pagament,
+                                            u'Preu: {0} €'.format(str(act.preu_per_alumne)) if act.preu_per_alumne else u'Preu: 0 €',
+                                            u'Data límit pagament: {0}'.format(str(act.termini_pagament)) if act.termini_pagament else ''
+                                            )
             filera.append(camp)
 
             # ----------------------------------------------
