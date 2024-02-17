@@ -154,13 +154,13 @@ class Sortida(models.Model):
 
     mitja_de_transport = models.CharField(max_length=2, choices=TIPUS_TRANSPORT_CHOICES,help_text=u"Tria el mitjà de transport")
 
-    empresa_de_transport = models.CharField(max_length=250, null=True, help_text=u"Indica el nom de l'empresa de transports i número de contracte/pressupost.")
+    empresa_de_transport = models.CharField(max_length=250, blank=True, default="", help_text=u"Indica el nom de l'empresa de transports i número de contracte/pressupost.")
 
-    pagament_a_empresa_de_transport = models.CharField(max_length=100, null=True, help_text=u"Indica la quantitat que ha de pagar l'institut pel lloguer del bus, o compra de bitllets. Si no ha de pagar res indica-ho, escriu 'res'.")
+    pagament_a_empresa_de_transport = models.CharField(max_length=100, blank=True, default="", help_text=u"Indica la quantitat que ha de pagar l'institut pel lloguer del bus, o compra de bitllets. Si no ha de pagar res indica-ho, escriu 'res'.")
 
-    pagament_a_altres_empreses = models.TextField( null=True, help_text=u"Indica la quantitat, l'empresa que ha de rebre els diners, el sistema de pagament, el número de contracte i el termini. Si no s'ha de pagar res indica-ho, escriu 'res'.")
+    pagament_a_altres_empreses = models.TextField( blank=True, default="", help_text=u"Indica la quantitat, l'empresa que ha de rebre els diners, el sistema de pagament, el número de contracte i el termini. Si no s'ha de pagar res indica-ho, escriu 'res'.")
 
-    feina_per_als_alumnes_aula = models.TextField( null=True, help_text=u"Descriu o comenta on els professors trobaran la feina que han de fer els alumnes que es quedin a l'aula. Si no queden alumnes a l'aula indica-ho.")
+    feina_per_als_alumnes_aula = models.TextField( blank=True, default="", help_text=u"Descriu o comenta on els professors trobaran la feina que han de fer els alumnes que es quedin a l'aula. Si no queden alumnes a l'aula indica-ho.")
 
     comentaris_interns = models.TextField(blank=True, help_text=u"Espai per anotar allò que sigui rellevant de cares a l'activitat. Si no hi ha comentaris rellevants indica-ho.")
 
