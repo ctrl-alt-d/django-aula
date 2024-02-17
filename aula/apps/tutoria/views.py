@@ -29,7 +29,7 @@ from aula.apps.tutoria.forms import  justificaFaltesW1Form, informeSetmanalForm,
 from aula.utils import tools
 from aula.apps.presencia.models import  ControlAssistencia, EstatControlAssistencia,\
     Impartir
-from django.utils.datetime_safe import  date, datetime
+from datetime import  date, datetime
 from datetime import timedelta
 from aula.apps.tutoria.models import Actuacio, Tutor, SeguimentTutorialPreguntes,\
     SeguimentTutorial, SeguimentTutorialRespostes, ResumAnualAlumne,\

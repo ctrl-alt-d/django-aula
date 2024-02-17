@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import random
 from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from datetime import timedelta
 from django.db.models import Q
 from django.conf import settings

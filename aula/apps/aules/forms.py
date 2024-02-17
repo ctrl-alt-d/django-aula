@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django import forms as forms
 from django.contrib.auth.models import User
 
@@ -8,7 +8,6 @@ from aula.apps.aules.models import Aula, ReservaAula
 from aula.apps.horaris.models import FranjaHoraria
 from django.forms.models import ModelChoiceField, ModelForm
 from django_select2.forms import ModelSelect2Widget
-from django.utils.datetime_safe import datetime
 from aula.utils.widgets import DateTextImput
 
 class disponibilitatAulaPerAulaForm(forms.Form):

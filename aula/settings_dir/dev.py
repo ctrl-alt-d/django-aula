@@ -29,8 +29,8 @@ DATABASES = {
 
 
 # per mysql:
-#     sudo apt-get install mysql-server python-mysqldb libmysqlclient-dev
-#     pip install MySQL-python
+#    sudo apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev pkg-config
+#    pip3 install wheel mysqlclient
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',

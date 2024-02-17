@@ -14,7 +14,7 @@ from django.template.context import RequestContext
 from django.http import HttpResponseRedirect
 from aula.apps.baixes.forms import complementFormulariTriaForm,\
     complementFormulariImpresioTriaForm
-from django.utils.datetime_safe import date
+from datetime import date
 from aula.utils.forms import dataForm
 from aula.apps.baixes.rpt_carpeta import reportBaixaCarpeta
 

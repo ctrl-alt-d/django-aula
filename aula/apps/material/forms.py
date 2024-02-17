@@ -11,7 +11,7 @@ from django.forms.models import ModelChoiceField, ModelForm
 from aula.apps.usuaris.forms import triaProfessorSelect2Form
 from aula.apps.usuaris.models import Professor
 from django_select2.forms import ModelSelect2Widget
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from aula.utils.widgets import DateTextImput
 
 class disponibilitatRecursPerRecursForm(forms.Form):

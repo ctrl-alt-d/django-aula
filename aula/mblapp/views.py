@@ -16,7 +16,7 @@ from django.utils.crypto import get_random_string
 from django.db import transaction
 from rest_framework import serializers
 from django.conf import settings
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from datetime import timedelta
 from aula.apps.presencia.models import EstatControlAssistencia
 from aula.apps.presencia.models import ControlAssistencia

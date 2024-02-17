@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.utils.datetime_safe import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.apps import apps
 from django.db.models import Q
 from django.contrib.auth.models import User

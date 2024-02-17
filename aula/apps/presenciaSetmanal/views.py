@@ -3,7 +3,7 @@ import datetime
 from django.shortcuts import  render
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
-from django.utils.datetime_safe import date
+from datetime import date
 from aula.apps.usuaris.models import User2Professor, Accio
 from collections import OrderedDict
 from django.conf import settings

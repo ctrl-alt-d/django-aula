@@ -35,8 +35,7 @@ from aula.apps.alumnes.forms import triaAlumneForm
 from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.apps.presencia.models import Impartir
-from django.utils.datetime_safe import  date, datetime
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from django.db.models import Q
 from django.forms.models import modelformset_factory, modelform_factory
 from aula.apps.alumnes.reports import reportLlistaTutorsIndividualitzats
@@ -742,7 +741,6 @@ def nouAlumnePromocionar(request):
 @group_required(['direcció'])
 def mostraGrupPromocionar(request, grup=""):
 
-    from datetime import date
     PromoFormset = modelformset_factory(Alumne, form=promoForm, extra = 0)
     if request.method == 'POST':
         curs_vinent = request.POST.get('curs_desti')

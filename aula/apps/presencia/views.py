@@ -42,7 +42,7 @@ from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 from django.http import Http404
 
 #other
-from django.utils.datetime_safe import datetime, date
+from datetime import datetime, date
 from django import forms
 from aula.apps.assignatures.models import Assignatura
 from aula.apps.presencia.reports import alertaAssitenciaReport, indicadorsReport
