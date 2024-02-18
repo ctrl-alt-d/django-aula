@@ -463,7 +463,7 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
         form.fields['estat'].label_suffix = u""
         form.fields['estat'].label = (unicode(alumne)
                                       + u", ".join(
-            [u"sanció del {0} al {1}".format(x.sancio.data_inici.strftime('%d/%m/%Y'),
+            [u": sanció del {0} al {1}".format(x.sancio.data_inici.strftime('%d/%m/%Y'),
                                              x.sancio.data_fi.strftime('%d/%m/%Y')
                                              )
              for x in q_no_al_centre_expulsat.all()]
