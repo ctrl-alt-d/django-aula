@@ -56,13 +56,13 @@ class timeOutMiddleware:
     def process_request(self, request):
         if request.user.is_authenticated:
             if 'lastRequest' in request.session:            
-                elapsedTime = datetime.datetime.now() - request.session['lastRequest']
+                elapsedTime = datetime.datetime.now() - datetime.datetime.strptime(request.session['lastRequest'], '%c')
                 maxim_timeout = calculate_my_time_off(request.user)
                 if elapsedTime.seconds > maxim_timeout:
                     del request.session['lastRequest'] 
                     logout(request)
 
-            request.session['lastRequest'] = datetime.datetime.now()
+            request.session['lastRequest'] = datetime.datetime.now().strftime( '%c' )
         else:
             if 'lastRequest' in request.session:
                 del request.session['lastRequest'] 

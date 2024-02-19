@@ -125,7 +125,7 @@ def enviaMissatgeTutors( request ):
             if len( tutors ) == 0:
                 formAlumne._errors.setdefault(NON_FIELD_ERRORS, []).append(  u'''No trobat el tutor d'aquest alumne. Cal trucar al cap d'estudis.'''  )
             else:
-                request.session['consergeria_darrera_data'] = data
+                request.session['consergeria_darrera_data'] = data.strftime( '%d/%m/%Y' )
                 txt2 = msg.text_missatge
                 txt = CONSERGERIA_A_TUTOR
                 msg.text_missatge = txt
@@ -154,11 +154,11 @@ def enviaMissatgeTutors( request ):
                 return HttpResponseRedirect( url )  
     else:
         
-        consergeria_darrera_data = request.session.get( 'consergeria_darrera_data' , datetime.today() )
+        consergeria_darrera_data = request.session.get( 'consergeria_darrera_data' , datetime.today().strftime( '%d/%m/%Y' ) )
         formAlumne = triaAlumneSelect2Form( )
         formData = dataForm(  label='Data', 
                               help_text=u'El text del missatge començarà per: Amb data ______, ' ,
-                              initial = {'data': consergeria_darrera_data })        
+                              initial = {'data': datetime.strptime(consergeria_darrera_data, '%d/%m/%Y') })        
         formData.fields['data'].required = True
         msgForm = msgFormF(  )
     
