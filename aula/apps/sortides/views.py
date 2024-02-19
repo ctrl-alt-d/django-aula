@@ -1677,7 +1677,7 @@ def detallPagament(request, pk):
     if not potEntrar:
         raise Http404
 
-    head = 'Sortida: {0}  ({1} €)'.format(sortida.titol, str(sortida.preu_per_alumne))
+    head = '{0}: {1}  ({2} €)'.format(dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[sortida.tipus], sortida.titol, str(sortida.preu_per_alumne))
 
 
     report = []
