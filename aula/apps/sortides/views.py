@@ -395,10 +395,8 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                                             },
                                         labels={
                                             "subtipus": "Tipus",
-                                            "programa_de_la_sortida": "Descripció del pagament:",
+                                            "programa_de_la_sortida": "Descripció de l'activitat:" if tipus!="P" else "Descripció del pagament:",
                                             "professors_responsables": "Professorat que organitza:"
-
-
                                             },
                                         )
     if tipus == "P":
