@@ -492,7 +492,8 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
             if tipus=='P':
                 instance.calendari_desde=instance.termini_pagament
                 instance.calendari_finsa=instance.termini_pagament
-            
+                instance.alumnes_a_l_aula_amb_professor_titular = True
+
             form.save()
 
             if origen == "Meves":
