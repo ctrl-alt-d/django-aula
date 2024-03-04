@@ -482,6 +482,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                   instance.calendari_desde=datetime.today()
                   instance.calendari_finsa=datetime.today()
                   instance.esta_aprovada_pel_consell_escolar = 'N'
+                  instance.alumnes_a_l_aula_amb_professor_titular = True
 
             form.save()
 
