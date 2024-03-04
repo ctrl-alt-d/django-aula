@@ -16,8 +16,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import User2Professor
 from aula.utils.decorators import group_required
 from aula.utils import tools
-from django.utils.datetime_safe import datetime
-import datetime as diahora
+from datetime import datetime, date
 
 #@login_required
 #@group_required(['professors', 'professional','consergeria'])
@@ -47,7 +46,7 @@ def getStatus( request ):
                                                    ) 
 
     content =''
-    dateTimeAra = diahora.datetime.combine(diahora.date.today(), ara)
+    dateTimeAra = datetime.combine(date.today(), ara)
 
     if outputformat == "2liniesNow":
         franjaActual = ( FranjaHoraria
@@ -107,12 +106,12 @@ def getStatus( request ):
 
     for reserva in reservasDAulaAvui:
             if reserva.hora_inici < ara:
-                dateTimeFi = diahora.datetime.combine(diahora.date.today(), reserva.hora_fi)
+                dateTimeFi = datetime.combine(date.today(), reserva.hora_fi)
                 dif = dateTimeAra - dateTimeFi
                 difInMinuts = int(round(dif.total_seconds() / 60))
                 content = 'now: \n{0} minuts'.format(difInMinuts)
             else:
-                dateTimeInici =  diahora.datetime.combine(diahora.date.today(), reserva.hora_inici)
+                dateTimeInici =  datetime.combine(date.today(), reserva.hora_inici)
                 dif = dateTimeInici - dateTimeAra
                 difInMinuts = int(round(dif.total_seconds()/60))
                 content = content + "\nnext: \n+{0} minuts".format(difInMinuts)

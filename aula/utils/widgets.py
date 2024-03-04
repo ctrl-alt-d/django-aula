@@ -297,7 +297,7 @@ class image(TextInput):
         pre_html = ""
         post_html = """
                        <span style="float:left;">
-                           <img src="""+"\""+value.url+"\""+""" style="width:60px;">
+                           <img src="""+"\""+value.url+"\""+""" style="height:60px;">
                        </span>
                     """ if bool(value) else ""
         

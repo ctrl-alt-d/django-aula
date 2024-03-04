@@ -124,7 +124,7 @@ def creaPreins(row, col_indexs):
     return preinscripcio
 
 def sincronitza(f, resetPrevious, user = None):
-    from django.utils.datetime_safe import datetime
+    from datetime import datetime
     
     errors = []
     warnings= []
@@ -330,7 +330,7 @@ def testMatActiva(f):
             False si no hi ha cap amb matrícula activa
     '''
     
-    from django.utils.datetime_safe import datetime
+    from datetime import datetime
     from aula.apps.alumnes.models import Nivell
     
     errors = []

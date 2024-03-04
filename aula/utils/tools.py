@@ -11,7 +11,7 @@ from django.http import HttpRequest
 from importlib import import_module
 from threading import Thread
 from django.contrib.auth.models import User
-from django.utils.datetime_safe import datetime
+from datetime import datetime, timedelta
 
 
 #--------------------------------------------------
@@ -98,7 +98,7 @@ def getSoftColor( obj ):
 
 
 def getImpersonateUser( request ):
-    user = request.session['impersonacio'] if  request.session.has_key('impersonacio') else request.user
+    user = User.objects.get(pk=request.session['impersonacio']) if  request.session.has_key('impersonacio') else request.user
     l4 = request.session['l4'] if  request.session.has_key('l4') else False
     return ( user, l4, )
 
@@ -125,16 +125,6 @@ class diccionari(dict):
         return iter(sorted(self.items()))
     def __init__(self, *args, **kwargs):
         super(dict,self).__init__(*args,**kwargs)    
-
-
-
-def add_secs_to_time(timeval, secs_to_add):
-    import datetime
-    dummy_date = datetime.date(1, 1, 1)
-    full_datetime = datetime.datetime.combine(dummy_date, timeval)
-    added_datetime = full_datetime + datetime.timedelta(seconds=secs_to_add)
-    return added_datetime.time()
-
 
 def fetch_resources(uri, rel):
     import os.path

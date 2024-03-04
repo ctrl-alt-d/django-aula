@@ -3,7 +3,7 @@ from aula.apps.tutoria.models import Tutor, SeguimentTutorialRespostes, ResumAnu
 from aula.utils import tools
 from aula.utils.tools import unicode
 from django.db.models import Min, Max, Q
-from django.utils.datetime_safe import  date, datetime
+from datetime import  date
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
 from django.conf import settings

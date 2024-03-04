@@ -13,6 +13,12 @@ from django.db import transaction
 from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
 from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
+def llista_pendents():
+    if EmailPendent.objects.count()>0:
+        print("Emails pendents:")
+        for ep in EmailPendent.objects.all():
+            print(ep)
+
 def notifica_pendents():
     connection = mail.get_connection()
     # Obre la connexió
@@ -22,13 +28,20 @@ def notifica_pendents():
         if not bool(ep.toemail):
             ep.delete()
             continue
+        llistaemails=list(eval(ep.toemail))
+        if len(llistaemails)==0:
+            ep.delete()
+            continue
         fitxers=DocAttach.objects.filter(email=ep.id)
         _, errors, pendents=enviaEmail(subject=ep.subject, body=ep.message, from_email=ep.fromemail, 
-                                               bcc=list(eval(ep.toemail)), connection=connection, attachments=fitxers)
+                                               bcc=llistaemails, connection=connection, attachments=fitxers)
+        
         if errors>0:
-            ep.toemail=pendents
+            ep.toemail=str(pendents)
             ep.save()
-            print (u'Error enviant missatge pendent a {0}'.format(ep.toemail))
+            connection.close()
+            print (u'Error enviant missatge pendent')
+            print(ep)
             return
         if errors==0:
             #TODO  missatge informatiu, falta usuari
@@ -43,7 +56,7 @@ def notifica():
     from django.core.exceptions import ObjectDoesNotExist
     from django.db.models import Q
     from datetime import timedelta
-    from django.utils.datetime_safe import datetime
+    from datetime import datetime
     from aula.apps.presencia.models import EstatControlAssistencia
     from aula.apps.presencia.models import ControlAssistencia
     from django.core.mail import send_mail, EmailMessage
@@ -230,11 +243,17 @@ def pendentEmail(subject, body, from_email, bcc, attachments=None):
     bcc és una llista
     '''
     
+    import unicodedata
+    
     with transaction.atomic():
         ep=EmailPendent(subject=subject, message=body, fromemail=from_email, toemail=str(bcc))
         ep.save()
         if attachments:
             for f in attachments:
+                # Elimina accents del nom de fitxer
+                newname=unicodedata.normalize('NFKD',f.name).encode('ascii','ignore').decode('UTF-8')
+                if f.name!=newname:
+                    f.name=newname
                 file_instance = DocAttach(fitxer=f)
                 file_instance.email=ep
                 file_instance.save()
@@ -276,7 +295,7 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             if isinstance(f, DocAttach):
                 name=f.fitxer.name
                 content_type=None
-                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name))
+                f=open(os.path.join(settings.PRIVATE_STORAGE_ROOT, name), 'rb')
             else:
                 name=f.name
                 content_type=f.content_type
@@ -327,7 +346,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     
     from aula.apps.alumnes.models import Alumne
     from django.db.models import Q
-    from django.utils.datetime_safe import datetime
+    from datetime import datetime
       
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )

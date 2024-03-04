@@ -14,7 +14,7 @@ django-tables2
 icalendar
 django-appconf
 Pillow
-viivakoodi
+python-barcode
 XlsxWriter
 typing ; python_version < '3.5'
 selenium
@@ -29,5 +29,5 @@ django_select2
 djangorestframework
 markdown
 django-filter
-qrcode==6.0
+qrcode
 djangorestframework-simplejwt

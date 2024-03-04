@@ -39,7 +39,7 @@ from django.shortcuts import render
 from icalendar import Calendar, Event
 from icalendar import vCalAddress, vText
 from django.http.response import HttpResponse, Http404, HttpResponseServerError
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from django.conf import settings
 from django.urls import reverse
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs
@@ -191,7 +191,9 @@ def sortidesMevesList( request, tipus="A" ):
     table = Table2_Sortides( list( sortides ), origen="Meves" )
     if tipus=="P":
         table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
-    table.order_by = '-calendari_desde'
+        table.order_by = '-termini_pagament'
+    else:
+        table.order_by = '-calendari_desde'
 
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
     return render(
@@ -220,7 +222,9 @@ def sortidesAllList( request, tipus=None ):
     table = Table2_Sortides( data=sortides, origen="All" )
     if tipus=="P":
         table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
-    table.order_by = '-calendari_desde' 
+        table.order_by = '-termini_pagament'
+    else:
+        table.order_by = '-calendari_desde'
     
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
@@ -271,7 +275,9 @@ def sortidesGestioList( request, tipus=None ):
     table = Table2_Sortides( data=list( sortides ), origen="Gestio" )
     if tipus=="P":
         table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
-    table.order_by = '-calendari_desde' 
+        table.order_by = '-termini_pagament'
+    else:
+        table.order_by = '-calendari_desde'
     
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
         
@@ -299,7 +305,7 @@ def sortidesConsergeriaList(request):
                     )
 
     table = Table2_Sortides(data=sortides, origen="Consergeria")
-    table.order_by = 'calendari_desde'
+    table.order_by = '-calendari_desde'
 
     RequestConfig(request, paginate={"paginator_class": DiggPaginator, "per_page": 10}).configure(table)
 
@@ -395,7 +401,9 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                                         )
     if tipus == "P":
         exclude_pagament = ['ciutat', 'esta_aprovada_pel_consell_escolar','comentari_organitza','alumnes_a_l_aula_amb_professor_titular',
-                            'calendari_desde','calendari_finsa','calendari_public','condicions_generals','mitja_de_transport','comentaris_interns','altres_professors_acompanyants']
+                            'calendari_desde','calendari_finsa','calendari_public','condicions_generals','mitja_de_transport','comentaris_interns','altres_professors_acompanyants',
+                            'data_inici', 'franja_inici', 'data_fi', 'franja_fi', 'empresa_de_transport', 'pagament_a_empresa_de_transport',
+                            'pagament_a_altres_empreses', 'feina_per_als_alumnes_aula']
         exclude.extend(exclude_pagament)
         formIncidenciaF=modelform_factory(Sortida, form=formIncidenciaF,
                                             help_texts={
@@ -422,67 +430,69 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
             if form.cleaned_data['tipus_de_pagament']=='NO': instance.preu_per_alumne=0
             # Omplir camps de classes afectades
             if settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
-              if tipus!="P":
-                #Buscar primera impartició afectada
-                primeraimparticio = ( 
-                    Impartir
-                    .objects
-                    .filter(dia_impartir=instance.calendari_desde.date(),
-                            horari__hora__hora_inici__gte=instance.calendari_desde.time()).order_by(
-                            'dia_impartir', 'horari__hora__hora_inici')
-                    .first() )
-                primerafranja = primeraimparticio.horari.hora if primeraimparticio else None
-
-                if primeraimparticio is None:
-                    primeraimparticio = (
+                if tipus!="P":
+                    #Buscar primera impartició afectada
+                    primeraimparticio = ( 
                         Impartir
-                        .objects.filter(
-                            dia_impartir__gt=instance.calendari_desde.date()).order_by(
-                            'dia_impartir', 'horari__hora__hora_inici')
+                        .objects
+                        .filter(dia_impartir=instance.calendari_desde.date(),
+                                horari__hora__hora_inici__gte=instance.calendari_desde.time()).order_by(
+                                'dia_impartir', 'horari__hora__hora_inici')
                         .first() )
                     primerafranja = primeraimparticio.horari.hora if primeraimparticio else None
-
-                if primeraimparticio is not None:
-                    instance.data_inici = primeraimparticio.dia_impartir
-                    instance.franja_inici = primerafranja
-
-
-                # Buscar darrera impartició afectada
-                darreraimparticio = (
-                    Impartir
-                    .objects
-                    .filter(dia_impartir=instance.calendari_finsa.date(),
-                            horari__hora__hora_fi__lte=instance.calendari_finsa.time()).order_by(
-                            'dia_impartir', 'horari__hora__hora_fi')
-                    .last()
-                )
-                darrerafranja = darreraimparticio.horari.hora if darreraimparticio else None
-
-                if darreraimparticio is None:
+    
+                    if primeraimparticio is None:
+                        primeraimparticio = (
+                            Impartir
+                            .objects.filter(
+                                dia_impartir__gt=instance.calendari_desde.date()).order_by(
+                                'dia_impartir', 'horari__hora__hora_inici')
+                            .first() )
+                        primerafranja = primeraimparticio.horari.hora if primeraimparticio else None
+    
+                    if primeraimparticio is not None:
+                        instance.data_inici = primeraimparticio.dia_impartir
+                        instance.franja_inici = primerafranja
+    
+    
+                    # Buscar darrera impartició afectada
                     darreraimparticio = (
                         Impartir
                         .objects
-                        .filter(dia_impartir__lt=instance.calendari_finsa.date())
-                        .order_by('dia_impartir', 'horari__hora__hora_fi')
+                        .filter(dia_impartir=instance.calendari_finsa.date(),
+                                horari__hora__hora_fi__lte=instance.calendari_finsa.time()).order_by(
+                                'dia_impartir', 'horari__hora__hora_fi')
                         .last()
                     )
                     darrerafranja = darreraimparticio.horari.hora if darreraimparticio else None
+    
+                    if darreraimparticio is None:
+                        darreraimparticio = (
+                            Impartir
+                            .objects
+                            .filter(dia_impartir__lt=instance.calendari_finsa.date())
+                            .order_by('dia_impartir', 'horari__hora__hora_fi')
+                            .last()
+                        )
+                        darrerafranja = darreraimparticio.horari.hora if darreraimparticio else None
+    
+                    if darreraimparticio is not None:
+                        instance.data_fi = darreraimparticio.dia_impartir
+                        instance.franja_fi = darrerafranja
+    
+                    # Comprovem si la sortida en realitat no afecta cap hora d'impartició, això passa quan la data inicial > data final
+                    if ( instance.data_fi and instance.data_inici and instance.data_fi < instance.data_inici):
+                        instance.data_inici = None
+                        instance.data_fi = None
+                        instance.franja_inici = None
+                        instance.franja_fi = None
+                else:
+                    instance.esta_aprovada_pel_consell_escolar = 'N'
 
-                if darreraimparticio is not None:
-                    instance.data_fi = darreraimparticio.dia_impartir
-                    instance.franja_fi = darrerafranja
-
-                # Comprovem si la sortida en realitat no afecta cap hora d'impartició, això passa quan la data inicial > data final
-                if ( instance.data_fi and instance.data_inici and instance.data_fi < instance.data_inici):
-                    instance.data_inici = None
-                    instance.data_fi = None
-                    instance.franja_inici = None
-                    instance.franja_fi = None
-              else:
-                  instance.calendari_desde=datetime.today()
-                  instance.calendari_finsa=datetime.today()
-                  instance.esta_aprovada_pel_consell_escolar = 'N'
-                  instance.alumnes_a_l_aula_amb_professor_titular = True
+            if tipus=='P':
+                instance.calendari_desde=instance.termini_pagament
+                instance.calendari_finsa=instance.termini_pagament
+                instance.alumnes_a_l_aula_amb_professor_titular = True
 
             form.save()
 
@@ -563,7 +573,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     form.fields['subtipus'].widget.choices=subtipus_activitat_choices
 
     if not fEsDireccioOrGrupSortides:
-        form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
+        if tipus=='A': form.fields["esta_aprovada_pel_consell_escolar"].widget.attrs['disabled'] = u"disabled"
         if not settings.CUSTOM_FORMULARI_SORTIDES_REDUIT:
             form.fields["codi_de_barres"].widget.attrs['disabled'] = u"disabled"
         form.fields["informacio_pagament"].widget.attrs['disabled'] = u"disabled"
@@ -1098,15 +1108,15 @@ def sortidaExcel( request, pk ):
         detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-
-    alumnes = [ [ u'Alumne', u'Grup', u'Nivell', ]]
+    alumnes = [ [ u'Alumne', u'Ralc', u'Grup', u'Nivell', ]]
     if sortida.tipus != "P":
         alumnes[0].extend([u"Assistència"])
     if sortida.tipus_de_pagament == 'ON':
-        alumnes[0].extend([u"Pagat", u"Data Pagament", u"Codi Pagament"])
+        alumnes[0].extend([u"Pagat", u"Preu",  u"Data Pagament", u"Codi Pagament"])
 
     for alumne in sortida.alumnes_convocats.all():
         row = [alumne,
+               alumne.ralc,
                alumne.grup.descripcio_grup,
                alumne.grup.curs.nivell,
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
@@ -1117,6 +1127,7 @@ def sortidaExcel( request, pk ):
             ordre = pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
             observacions = pagament.observacions if pagament.observacions and pagament.pagament_realitzat else ''
             row.extend([u"Si" if pagament_realitzat else u"No",
+                        pagament.sortida.preu_per_alumne if pagament_realitzat else u"",
                         pagament.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagament_realitzat else u"",
                         "{0} - {1}".format(ordre, observacions) if observacions else ordre])
         alumnes += [ row ]

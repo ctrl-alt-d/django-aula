@@ -4,10 +4,9 @@ from django.urls import resolve, reverse
 from django.contrib.auth.models import Group, User
 from aula.apps.usuaris.models import User2Professor, AlumneUser
 from django.db.models.aggregates import Count
-from django.utils.datetime_safe import date
 from aula.apps.usuaris.models import User2Professional
 from aula.apps.alumnes.models import Alumne
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from django.template.defaultfilters import safe
 from django.conf import settings
 from aula.apps.sortides.models import Sortida

@@ -7,7 +7,7 @@ from django.forms.widgets import DateInput, TextInput
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.models import ControlAssistencia  , EstatControlAssistencia
 from aula.apps.usuaris.models import Professor
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from aula.apps.alumnes.models import Nivell, Grup
 from aula.utils.widgets import bootStrapButtonSelect
 from django.conf import settings

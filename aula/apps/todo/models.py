@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
 from django.db import models
-from django.utils.datetime_safe import datetime
 from django.contrib.auth.models import User
 from django.utils import timezone
 

@@ -1,6 +1,5 @@
 # This Python file uses the following encoding: utf-8
-from django.utils.datetime_safe import datetime
-import datetime as dt
+from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from aula.apps.tutoria.models import Tutor

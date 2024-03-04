@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from django import forms
 from aula.apps.usuaris.models import Professor
-from django.utils.datetime_safe import datetime
+from datetime import datetime
 from aula.utils.widgets import DateTextImput
 from django.forms import  ModelChoiceField
 from django_select2.forms import ModelSelect2Widget, ModelSelect2MultipleWidget
