@@ -200,12 +200,18 @@ def notificacions_mes(request, mes, format=None):
          'hora': str(i.franja_expulsio),
          'professor': str(i.professor),
          'text': i.motiu,
-         'tipus': "expulsió"}
+         'tipus': "Expulsió"}
         for i in expulsions]
 
     # "Sancions": [],
-    sancions = alumne.sancio_set.filter(impres=True)
-    #content["Sancions"] = [ ] #TODO
+    sancions = alumne.sancio_set.filter(impres=True, data_carta__month=mes)
+    content = content + [
+        {'dia': "/".join([str(i.data_carta.day), str(i.data_carta.month), str(i.data_carta.year)]),
+         'hora': str(i.franja_inici),
+         'professor': str(i.professor),
+         'text': "Del {0} al {1}. Motiu: {2}".format(str(datetime.strftime(i.data_inici,'%d/%m/%Y')), str(datetime.strftime(i.data_fi,'%d/%m/%Y')), str(i.motiu)),
+         'tipus': "Sanció"}
+        for i in sancions]
 
     # "Activitats": [],
     sortides = NotificaSortida.objects.filter(alumne=alumne)
