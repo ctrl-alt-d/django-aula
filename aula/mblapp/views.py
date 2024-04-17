@@ -1,16 +1,21 @@
 # This Python file uses the following encoding: utf-8
 from __future__ import unicode_literals
-from django.shortcuts import render
+
+from django.contrib.humanize.templatetags.humanize import naturalday
+from django.http import HttpResponseServerError
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from aula.apps.alumnes.models import Alumne
+from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL
+from aula.apps.sortides.views import logPagaments
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
 import uuid
 from rest_framework.parsers import JSONParser
 from aula.apps.usuaris.models import QRPortal
-from aula.mblapp.serializers import QRTokenSerializer, DarreraSincronitzacioSerializer
+from aula.mblapp.serializers import QRTokenSerializer, DarreraSincronitzacioSerializer, PagamentRealitzatSerializer
 from django.contrib.auth.models import User, Group
 from django.utils.crypto import get_random_string
 from django.db import transaction
@@ -21,7 +26,7 @@ from datetime import timedelta
 from aula.apps.presencia.models import EstatControlAssistencia
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
-from aula.apps.sortides.models import NotificaSortida
+from aula.apps.sortides.models import NotificaSortida, Sortida, SortidaPagament, Pagament
 from aula.utils.tools import unicode
 
 # ----------- vistes per a testos --------------------------------
@@ -283,3 +288,115 @@ def alumnes_dades(request, format=None):
     return Response(content)
 
 
+
+
+@api_view(['GET'])
+@permission_classes((EsUsuariDeLaAPI,))
+def alumnes_activitats (request, format=None):
+    """
+    Retorna totes les activitats i pagaments d'un alumne/a.
+    """
+    qrtoken = request.user.qrportal
+    alumne = qrtoken.alumne_referenciat
+    content = [{
+        "id": alumne.id,
+        "darrera_sincronitzacio": qrtoken.darrera_sincronitzacio,
+    }]
+
+    sortides = alumne.notificasortida_set.all()
+    # sortides a on s'ha convocat a l'alumne
+    sortidesnotificat = Sortida.objects.filter(notificasortida__alumne=alumne)
+    # sortides pagades a les que ja no s'ha convocat a l'alumne
+    sortidespagadesperalumne = SortidaPagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list(
+        'sortida', flat=True).distinct()
+    sortidespagadesnonotificades = Sortida.objects.filter(id__in=sortidespagadesperalumne,
+                                                          pagaments__pagament__alumne=alumne,
+                                                          pagaments__pagament__pagament_realitzat=True).exclude(notificasortida__alumne=alumne)
+    # totes les sortides relacionades amb l'alumne
+    activitats = sortidesnotificat.union(sortidespagadesnonotificades)
+
+
+    sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list('id', flat=True).distinct()
+    sortides_justificades = alumne.sortides_falta_justificat.values_list('id', flat=True).distinct()
+
+
+    for act in activitats.order_by('-calendari_desde'):
+        if act.tipus == 'P':
+            data = act.termini_pagament
+        else:
+            data = act.calendari_desde
+
+        #  NO INSCRIT A L’ACTIVITAT. L'alumne ha d'assistir al centre excepte si són de viatge de final de curs.
+        comentari_no_ve = u""
+        if act.pk in sortides_on_no_assistira:
+            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT."
+            if act.pk in sortides_justificades:
+                comentari_no_ve += u"NO INSCRIT A L’ACTIVITAT. Té justificada l'absència."
+        comentari = comentari_no_ve
+
+        # Si el pagament no es fa a través de l'app, pagat="", si es fa a través de l'app tindrà valor "SI" o "NO"
+        pagat = ""
+        id_pagament=""
+        if act.tipus_de_pagament == 'ON':
+            # pagament corresponent a una sortida i un alumne
+            pagament_sortida_alumne = get_object_or_404(Pagament, alumne=alumne, sortida=act)
+            id_pagament = pagament_sortida_alumne.id
+            # Pagaments pendents o ja fets. Si sortida caducada no mostra pagament pendent.
+            if (act.termini_pagament and act.termini_pagament >= datetime.now()) or not bool(
+                    act.termini_pagament) or pagament_sortida_alumne.pagamentFet:
+                if pagament_sortida_alumne.pagamentFet:
+                    pagat="SI"
+                else:
+                    if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+                        pagat="NO"
+
+        content = content + [{"tipus": unicode(act.tipus),
+                   "titol": unicode(act.titol),
+                   "data-inici": unicode(data.strftime(("%d.%m.%Y %H:%M:%S"))),
+                   "data-fi": unicode(act.calendari_finsa.strftime(("%d.%m.%Y %H:%M:%S"))),
+                   "descripcio": unicode(act.programa_de_la_sortida),
+                   "condicions-generals": unicode(act.condicions_generals),
+                   "tipus-pagament": unicode(act.tipus_de_pagament),
+                   "preu": unicode(act.preu_per_alumne) if act.preu_per_alumne else '0',
+                   "termini": unicode(act.termini_pagament.strftime("%d.%m.%Y %H:%M:%S")) if act.termini_pagament else '',
+                   "forma-pagament": unicode(act.informacio_pagament),
+                   "comentari": unicode(comentari),
+                   "pagat": unicode(pagat),
+                   "codi-pagament":unicode(id_pagament),
+                   }]
+
+    return Response(content)
+
+
+@transaction.atomic
+@api_view(['POST'])
+@permission_classes(( EsUsuariDeLaAPI, ))
+def pagament_realitzat(request, format=None):
+    """
+    Rep les dades d'un pagament realitzat i les guarda
+    """
+    # deserialitzem
+    data = JSONParser().parse(request)
+    serializer = PagamentRealitzatSerializer(data=data)
+    if not serializer.is_valid():
+        raise serializers.ValidationError({'error': ["Pagament no guardat. Petició amb errors"]})
+
+    try:
+        codi_pagament = serializer.validated_data["codi_pagament"]
+        ordre_pagament = serializer.validated_data["ordre_pagament"]
+        data_hora_pagament = serializer.validated_data["data_hora_pagament"]
+        pagament= Pagament.objects.get(id=codi_pagament)
+        pagament.ordre_pagament = ordre_pagament
+        pagament.data_hora_pagament = data_hora_pagament
+        pagament.estat = "F"
+        pagament.pagament_realitzat = True
+        pagament.save()
+        content = {"pagament_guardat": "True"}
+    except:
+        content = {"pagament_guardat": "False"}
+        missatge = ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL
+        txt = missatge
+        tipus_de_missatge = tipusMissatge(missatge)
+        logPagaments(txt, tipus_de_missatge)
+
+    return Response(content)

@@ -18,4 +18,8 @@ class QRTokenSerializer(serializers.Serializer):
 class DarreraSincronitzacioSerializer(serializers.Serializer):
     last_sync_date = serializers.DateTimeField()
 
+class PagamentRealitzatSerializer(serializers.Serializer):
+    codi_pagament = serializers.CharField()
+    data_hora_pagament = serializers.DateTimeField()
+    ordre_pagament = serializers.CharField(max_length=12)
 
