@@ -31,5 +31,4 @@ markdown
 django-filter
 qrcode
 djangorestframework-simplejwt
---extra-index-url https://test.pypi.org/simple/
 djau-gsuite-email

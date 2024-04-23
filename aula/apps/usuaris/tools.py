@@ -28,7 +28,6 @@ def connectIMAP():
         mail = imaplib.IMAP4_SSL(settings.EMAIL_HOST_IMAP)
         if mail:
             mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-            mail.select()
         return mail
     except:
         return None
@@ -447,6 +446,11 @@ def getUltimControl():
     return ultimFetch
 
 def checkDSN(msg):
+    '''
+    Comprova si el missatge correspon a un Delivery Status Notification
+    Informa si és el cas i mostra les dades a Ajuda i Avisos
+    '''
+    
     if (msg.is_multipart() and len(msg.get_payload()) > 1 and
         msg.get_payload(1).get_content_type() == 'message/delivery-status'):
         # email is DSN
@@ -469,7 +473,7 @@ def checkDSN(msg):
                 if dc: diagnostic=dc.split(';')[1]
         informa(emailRetornat, status, action, data, diagnostic, text)  
         
-def controlDSN(dies=7):
+def controlDSN(dies=1):
     '''
     Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
     de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
@@ -478,12 +482,11 @@ def controlDSN(dies=7):
     Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
     '''
     
-    if settings.EMAIL_BACKEND and settings.EMAIL_BACKEND == 'django_gsuite_email.GSuiteEmailBackend':
-        gmailcontrolDSN(dies)
-    elif settings.EMAIL_BACKEND and settings.EMAIL_BACKEND == 'gmailapi_backend.service.GmailApiBackend':
-        gmailcontrolDSN(dies)
+    if settings.EMAIL_BACKEND and (settings.EMAIL_BACKEND == 'django_gsuite_email.GSuiteEmailBackend' \
+        or settings.EMAIL_BACKEND == 'gmailapi_backend.service.GmailApiBackend'):
+        return gmailcontrolDSN(dies)
     else:
-        imapcontrolDSN(dies) 
+        return imapcontrolDSN(dies) 
     
 def imapcontrolDSN(dies):
     '''
@@ -498,8 +501,6 @@ def imapcontrolDSN(dies):
     if mail is None: return False
     ultimFetch=getUltimControl()
     id_list, id_last=getMailsList(mail, ultimFetch, dies)
-    print('ultimFetch: ',ultimFetch)
-    print('id último: ',id_last)
     if id_list is None:
         setUltimControl(id_last)
         return False
@@ -527,10 +528,18 @@ def imapcontrolDSN(dies):
     disconnectIMAP(mail)
     return True
 
-# for encoding/decoding messages in base64
-from base64 import urlsafe_b64decode
-
 def getMessages(service, ultimFetch, dies):
+    '''
+    Retorna la llista dels identificadors de correus rebuts
+    des del número ultimFetch o dels últims dies indicats.
+    service connexió a l'API de Gmail
+    ultimFetch int, numeració a partir de la qual volem els correus (no inclòs)
+    dies int, si ultimFetch es None fa servir aquests dies per obtenir els correus
+
+    Retorna la llista i l'últim identificador.
+
+    '''
+    
     from datetime import date
     today = date.today()
     last = today - timedelta(days=dies)
@@ -546,6 +555,7 @@ def getMessages(service, ultimFetch, dies):
         if 'messages' in result:
             messages.extend(result['messages'])
     lista=[]
+    #Canvia l'ordre de la llista i selecciona els adequats, quedarà de més antic a més modern
     for m in messages[::-1]:
         historyId = service.users().messages().get(userId='me', id=m.get('id')).execute()['historyId']
         if ultimFetch is None or int(historyId) > ultimFetch: lista.append(m)
@@ -559,7 +569,8 @@ def gmailcontrolDSN(dies):
 
     Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
     '''
-    
+    # for encoding/decoding messages in base64
+    from base64 import urlsafe_b64decode    
     from django.core.mail import get_connection
     
     mail = get_connection(fail_silently=True)
@@ -567,8 +578,6 @@ def gmailcontrolDSN(dies):
     if mail.open() is None: return False
     ultimFetch = getUltimControl()
     id_list, id_last = getMessages(mail.connection, ultimFetch, dies)
-    print('ultimFetch: ',ultimFetch)
-    print('id último: ',id_last)
     if id_list is None:
         setUltimControl(id_last)
         return False
