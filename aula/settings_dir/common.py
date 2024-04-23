@@ -193,6 +193,8 @@ INSTALLED_APPS_DJANGO = [
     'django.forms',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_gsuite_email',
+    'gmailapi_backend',
 ]
     
 INSTALLED_APPS_AULA = [

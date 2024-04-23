@@ -172,16 +172,16 @@ def getEmailText(msg):
     return ''
 
 
-def getMailsList(mail, num=None, dies=15):
+def getMailsList(mail, num, dies):
     '''
     Retorna la llista dels identificadors de correus rebuts al
     servidor mail des del número num (no inclós) o els últims dies indicats.
     Es farà servir per al fetch de cada correu.
     mail connexió al servidor imaplib.IMAP4_SSL
-    num en bytes, numeració a partir de la qual volem els correus (num no inclòs)
-    dies enter, si num es None fa servir aquests dies per obtenir els correus
+    num int, numeració a partir de la qual volem els correus (num no inclòs)
+    dies int, si num es None fa servir aquests dies per obtenir els correus
 
-    Retorna la llista (pot ser buida) o None en cas d'error.
+    Retorna la llista i últim identificador o None, None en cas d'error.
 
     '''
 
@@ -189,7 +189,7 @@ def getMailsList(mail, num=None, dies=15):
         # Prepara el command corresponent
         if num:
             #  rang mails  'num:*'  Ex:  2000:*   1:*
-            cmd=str(int(num)+1)+':*'
+            cmd=str(num+1)+':*'
         else:
             #  desde data Ex: '(SENTSINCE "2-Feb-2020")'
             months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -198,19 +198,21 @@ def getMailsList(mail, num=None, dies=15):
             cmd='(SENTSINCE "'+data+'")'
         #print(cmd)
         try:
+            _, response_text = mail.select()
+            ultim = int(response_text[0].decode("utf-8"))
             _ , dades = mail.search(None, cmd )
             mail_ids = dades[0]
             id_list = mail_ids.split()
-            if num and id_list and len(id_list)>0:
-                ultim=id_list[len(id_list)-1]
-                if ultim>num:
+            if id_list and len(id_list)>0:
+                ultim = int(id_list[len(id_list) - 1].decode("utf-8")) #  search retorna bytes
+                if num and ultim>num:
                     # Comprova que n'hi han nous emails
-                    return id_list
-            else:
-                return id_list
-        except:
-            return None
-    return None
+                    return id_list, ultim
+            return None, ultim
+        except Exception as e:
+            print ("Error getMailsList:", str(e))
+            return None, None
+    return None, None
 
 def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     '''
@@ -411,9 +413,12 @@ def setUltimControl(num):
     '''
     Registra a la base de dades una Accio amb el número de l'últim
     email verificat
-    num número de l'últim email (bytes)
+    num número de l'últim email. string o bytes.
     '''
 
+    if num is None: return 
+    if type(num) is bytes:
+        num=num.decode("utf-8")
     usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
     if new:
         usuari_notificacions.is_active = False
@@ -424,24 +429,63 @@ def setUltimControl(num):
             usuari = usuari_notificacions,
             l4 = False,
             impersonated_from = None,
-            text = u"Comprovació emails rebutjats. ;"+num.decode()
+            text = u"Comprovació emails rebutjats. ;"+str(num)
             )
 
 def getUltimControl():
     '''
     Retorna el número de l'últim email verificat segons els registres d'Accio
     o retorna None si no n'hi ha cap
-    Retorna en bytes, per a poder fer-lo servir al fetch
+    Retorna un int o None
     '''
 
     control=Accio.objects.filter(tipus='DS').order_by( '-moment' )
     if control.exists():
-        ultimFetch=control[0].text.split(";")[1].encode()
+        ultimFetch=int(control[0].text.split(";")[1])
     else:
         ultimFetch=None
     return ultimFetch
 
-def controlDSN(dies=15):
+def checkDSN(msg):
+    if (msg.is_multipart() and len(msg.get_payload()) > 1 and
+        msg.get_payload(1).get_content_type() == 'message/delivery-status'):
+        # email is DSN
+        text=''
+        for m in msg.get_payload():
+            if m.get_content_type() == 'message/rfc822':
+                text=getEmailText(m)
+                break
+        for dsn in msg.get_payload(1).get_payload():
+            if dsn.get_content_type() == 'text/plain':
+                fr=dsn.get('Final-Recipient')
+                if fr: emailRetornat=fr.split(';')[1].strip()
+                st=dsn.get('status')
+                if st: status=st
+                act=dsn.get('action')
+                if act: action=act
+                ad=dsn.get('Arrival-Date')
+                if ad: data=datemailTodatetime(ad)
+                dc=dsn.get('diagnostic-code')
+                if dc: diagnostic=dc.split(';')[1]
+        informa(emailRetornat, status, action, data, diagnostic, text)  
+        
+def controlDSN(dies=7):
+    '''
+    Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
+    de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
+    Per cada correu identifica destinatari erroni i informa al tutor o a l'administrador de Django.
+
+    Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
+    '''
+    
+    if settings.EMAIL_BACKEND and settings.EMAIL_BACKEND == 'django_gsuite_email.GSuiteEmailBackend':
+        gmailcontrolDSN(dies)
+    elif settings.EMAIL_BACKEND and settings.EMAIL_BACKEND == 'gmailapi_backend.service.GmailApiBackend':
+        gmailcontrolDSN(dies)
+    else:
+        imapcontrolDSN(dies) 
+    
+def imapcontrolDSN(dies):
     '''
     Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
     de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
@@ -453,13 +497,17 @@ def controlDSN(dies=15):
     mail=connectIMAP()
     if mail is None: return False
     ultimFetch=getUltimControl()
-    id_list=getMailsList(mail, ultimFetch, dies)
-    if id_list is None: return False
+    id_list, id_last=getMailsList(mail, ultimFetch, dies)
+    print('ultimFetch: ',ultimFetch)
+    print('id último: ',id_last)
+    if id_list is None:
+        setUltimControl(id_last)
+        return False
     i=0
     while i<len(id_list):
         try:
             num=id_list[i]
-            status, data = mail.fetch(num, '(RFC822)' )
+            status, data = mail.fetch(num, '(RFC822)')
         except:
             if i>0: setUltimControl(id_list[i-1])
             return False
@@ -474,32 +522,76 @@ def controlDSN(dies=15):
                 # skipping the header at the first and the closing
                 # at the third
                 msg = email.message_from_bytes(response_part[1])
-                if (msg.is_multipart() and len(msg.get_payload()) > 1 and
-                    msg.get_payload(1).get_content_type() == 'message/delivery-status'):
-                    # email is DSN
-                    text=''
-                    for m in msg.get_payload():
-                        if m.get_content_type() == 'message/rfc822':
-                            text=getEmailText(m)
-                            break
-                    for dsn in msg.get_payload(1).get_payload():
-                        if dsn.get_content_type() == 'text/plain':
-                            fr=dsn.get('Final-Recipient')
-                            if fr: emailRetornat=fr.split(';')[1].strip()
-                            st=dsn.get('status')
-                            if st: status=st
-                            act=dsn.get('action')
-                            if act: action=act
-                            ad=dsn.get('Arrival-Date')
-                            if ad: data=datemailTodatetime(ad)
-                            dc=dsn.get('diagnostic-code')
-                            if dc: diagnostic=dc.split(';')[1]
-                    informa(emailRetornat, status, action, data, diagnostic, text)
-
+                checkDSN(msg)
     if len(id_list)>0: setUltimControl(id_list[len(id_list)-1])
     disconnectIMAP(mail)
     return True
 
+# for encoding/decoding messages in base64
+from base64 import urlsafe_b64decode
+
+def getMessages(service, ultimFetch, dies):
+    from datetime import date
+    today = date.today()
+    last = today - timedelta(days=dies)
+    # Dates have to formatted in YYYY/MM/DD format for gmail
+    query = "after: {0}".format(last.strftime('%Y/%m/%d'))
+    result = service.users().messages().list(userId='me', q=query, labelIds = ['INBOX', ]).execute()
+    messages = [ ]
+    if 'messages' in result:
+        messages.extend(result['messages'])
+    while 'nextPageToken' in result:
+        page_token = result['nextPageToken']
+        result = service.users().messages().list(userId='me',q=query, labelIds = ['INBOX', ], pageToken=page_token).execute()
+        if 'messages' in result:
+            messages.extend(result['messages'])
+    lista=[]
+    for m in messages[::-1]:
+        historyId = service.users().messages().get(userId='me', id=m.get('id')).execute()['historyId']
+        if ultimFetch is None or int(historyId) > ultimFetch: lista.append(m)
+    return lista, service.users().getProfile(userId='me').execute()['historyId']
+    
+def gmailcontrolDSN(dies):
+    '''
+    Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
+    de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
+    Per cada correu identifica destinatari erroni i informa al tutor o a l'administrador de Django.
+
+    Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
+    '''
+    
+    from django.core.mail import get_connection
+    
+    mail = get_connection(fail_silently=True)
+    if mail is None: return False
+    if mail.open() is None: return False
+    ultimFetch = getUltimControl()
+    id_list, id_last = getMessages(mail.connection, ultimFetch, dies)
+    print('ultimFetch: ',ultimFetch)
+    print('id último: ',id_last)
+    if id_list is None:
+        setUltimControl(id_last)
+        return False
+    i=0
+    for msg in id_list:
+        try:
+            data = mail.connection.users().messages().get(userId='me', id=msg['id'], format='raw').execute()
+        except:
+            if i>0:
+                historyId = mail.connection.users().messages().get(userId='me', id=id_list[i-1]['id']).execute()['historyId'] 
+                setUltimControl(historyId)
+            return False
+        i=i+1
+        for response_part,value in data.items():
+            if response_part=='raw':
+                msg_str = str(urlsafe_b64decode(value.encode('ASCII')), 'utf-8')
+                msg = email.message_from_string(msg_str)
+                checkDSN(msg)
+    if len(id_list)>0:
+        historyId = mail.connection.users().messages().get(userId='me', id=id_list[len(id_list)-1]['id']).execute()['historyId'] 
+        setUltimControl(historyId)
+    mail.close()
+    return True
 
 def enviaOneTimePasswd( email ):
     q_correu_pare = Q( correu_relacio_familia_pare__iexact = email )

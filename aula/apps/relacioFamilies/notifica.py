@@ -327,7 +327,8 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             else:
                 errors = total-cont
                 return correctes, errors, bcc[cont:total]
-        except:
+        except Exception as e:
+            print("Error a enviaEmail: "+str(e))
             errors = total-cont
             return correctes, errors, bcc[cont:total]
         
