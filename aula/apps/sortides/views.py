@@ -27,7 +27,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida, SortidaPagament, Pagament, QuotaPagament, Quota
+from aula.apps.sortides.models import Sortida, SortidaPagament, Pagament, QuotaPagament, Quota, TPV
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -1764,6 +1764,13 @@ def assignaQuotes(request):
             return HttpResponseRedirect(reverse_lazy("gestio__quotes__assigna", 
                                                      kwargs={"curs": curs.id, "tipus": tipus.id, "nany":nany, "auto":auto}))
     else:
+        if not hasattr(settings, 'CUSTOM_TIPUS_QUOTA_MATRICULA') or not bool(settings.CUSTOM_TIPUS_QUOTA_MATRICULA) \
+                or not TPV.objects.filter(nom='centre').exists():
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': ["Falta definir CUSTOM_TIPUS_QUOTA_MATRICULA o el TPV 'centre'",], 'warnings': [], 'infos': []} },
+                         )
         form = EscollirCursForm(request.user)
     return render(
                 request,
@@ -1951,8 +1958,9 @@ def quotesCurs( request, curs, tipus, nany, auto ):
             if not quotacurs:
                 # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
                 quotacurs=Quota.objects.filter(any=nany, tipus=tipus)
-                if quotacurs.count()!=1:
-                    # Si troba varies no selecciona cap, si només troba una aleshores la fa servir per defecte
+                # Interesa trobar una única sense curs específic
+                if quotacurs.count()!=1 or quotacurs[0].curs!=None:
+                    # Si troba varies o només una d'un altre curs, no la selecciona
                     quotacurs=None
             
             if quotacurs:

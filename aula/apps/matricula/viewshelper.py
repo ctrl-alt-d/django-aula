@@ -5,7 +5,7 @@ from django.db import transaction
 import django.utils.timezone
 from dateutil.relativedelta import relativedelta
 from aula.apps.matricula.models import Matricula
-from aula.apps.sortides.models import QuotaPagament, Quota, TPV
+from aula.apps.sortides.models import QuotaPagament, Quota, TPV, QuotaCentre
 from aula.apps.alumnes.models import Alumne, Curs
 from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.extUntis.sincronitzaUntis import creaGrup
@@ -120,7 +120,7 @@ def matriculaDoble(alumne, nany):
                                      pagament_realitzat=False).delete()
         mt.estat='A'
         mt.curs=curs
-        q=Quota.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+        q=QuotaCentre.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
         mt.quota=q[0] if q else None
         mt.acceptar_condicions='False'
         mt.acceptacio_en=None
@@ -361,14 +361,15 @@ def quotaSegüentCurs(nomtipus, nany, alumne):
     c=alumne.grup.curs
     try:
         ncurs=str(int(c.nom_curs)+1)
-        quotacurs=Quota.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=nany, tipus__nom=nomtipus)
+        quotacurs=QuotaCentre.objects.filter(curs__nivell=c.nivell, curs__nom_curs=ncurs, any=nany, tipus__nom=nomtipus)
     except:
         quotacurs=None
     if not quotacurs:
         # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
-        quotacurs=Quota.objects.filter(any=nany, tipus__nom=nomtipus)
-        if quotacurs.count()!=1:
-            # Si troba varies no selecciona cap, si només troba una aleshores la fa servir per defecte
+        quotacurs=QuotaCentre.objects.filter(any=nany, tipus__nom=nomtipus)
+        # Interesa trobar una única sense curs específic
+        if not settings.CUSTOM_QUOTA_UNICA_MATRICULA or quotacurs.count()!=1 or quotacurs[0].curs!=None:
+            # Si troba varies o només una d'un altre curs, no la selecciona
             quotacurs=None
     
     if quotacurs:
@@ -478,7 +479,7 @@ def gestionaPag(matricula, importTaxes):
     # Determina la quota de taxes i si es fracciona
     taxes=matricula.curs.nivell.taxes
     if taxes and importTaxes>0:
-        quotatax=Quota.objects.filter(importQuota=importTaxes, any=matricula.any, tipus=taxes)
+        quotatax=QuotaCentre.objects.filter(importQuota=importTaxes, any=matricula.any, tipus=taxes)
         if quotatax:
             quotatax=quotatax[0]
         else:
@@ -502,7 +503,7 @@ def gestionaPag(matricula, importTaxes):
         else:
             quotamat=matricula.quota
     else:
-        quotamat=Quota.objects.filter(curs=matricula.curs, any=matricula.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+        quotamat=QuotaCentre.objects.filter(curs=matricula.curs, any=matricula.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
         if quotamat:
             quotamat=quotamat[0]
         else:

@@ -13,7 +13,7 @@ from aula.utils.decorators import group_required
 from aula.apps.matricula.forms import DadesForm1, DadesForm2, DadesForm2b, DadesForm3, \
                                     ConfirmaMat, escollirMat
 from aula.apps.matricula.models import Document, Matricula
-from aula.apps.sortides.models import QuotaPagament, Quota
+from aula.apps.sortides.models import QuotaPagament, QuotaCentre, TPV
 from aula.apps.alumnes.models import Curs
 from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.extUntis.sincronitzaUntis import creaGrup
@@ -47,11 +47,11 @@ def LlistaMatConf(request):
                          )
             if tipus=='C':
                 pk=queryset[0].pk
-                return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
+                return HttpResponseRedirect(reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={"pk": pk, 'curs':idcurs, 'nany':nany, 'tipus':tipus},
                                 ))
             else:
-                return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
+                return HttpResponseRedirect(reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={'curs':idcurs, 'nany':nany, 'tipus':tipus},
                                 ))
     else:
@@ -87,11 +87,11 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
         tipus=self.kwargs.get('tipus', 'C')
         nextpk=next_mat(pk, idcurs, nany, tipus)
         if nextpk:
-            return reverse_lazy("matricula:gestio__llistat__matricula", 
+            return reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={"pk": nextpk, 'curs':idcurs, 'nany':nany, 'tipus':tipus},
                                 )
         else:
-            return reverse_lazy('matricula:gestio__llistat__matricula')
+            return reverse_lazy('matricula:gestio__matricula__llistat')
     
     def get_initial(self):
         base_initial = super().get_initial()
@@ -214,7 +214,7 @@ def changeEstat(request, pk, tipus):
     updateAlumne(mat.alumne, mat)
     if mat.confirma_matricula!='N':
         mailMatricula(mat.estat, mat.alumne.grup.curs, mat.alumne.get_correus_relacio_familia(), mat.alumne)
-    return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
+    return HttpResponseRedirect(reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={'curs':mat.curs.id, 'nany':mat.any, 'tipus':tipus},
                                 ))
 
@@ -317,8 +317,8 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
                     ufs = step2data.get('quantitat_ufs', 0)
                     bonif = step2data.get('bonificacio', '0')
                     taxes=mat.curs.nivell.taxes
-                    tcomplet=Quota.objects.filter(any=mat.any, tipus__nom='taxcurs')
-                    tuf=Quota.objects.filter(any=mat.any, tipus__nom='uf')
+                    tcomplet=QuotaCentre.objects.filter(any=mat.any, tipus__nom='taxcurs')
+                    tuf=QuotaCentre.objects.filter(any=mat.any, tipus__nom='uf')
                     total=0
                     if complet and taxes and tcomplet:
                         total=tcomplet[0].importQuota
@@ -334,7 +334,7 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
             step0data = self.get_cleaned_data_for_step('0')
             if step0data:
                 curs = step0data.get('curs', None)
-                quotamat=Quota.objects.filter(curs=curs, any=mat.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+                quotamat=QuotaCentre.objects.filter(curs=curs, any=mat.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
                 if quotamat: quotamat=quotamat[0]
             else:
                 quotamat=None
@@ -481,7 +481,7 @@ def matDobleview(request):
                              pagament_realitzat=False).delete()
                         mt.estat='A'
                         mt.curs=curs
-                        q=Quota.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+                        q=QuotaCentre.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
                         mt.quota=q[0] if q else None
                         mt.acceptar_condicions='False'
                         mt.acceptacio_en=None
@@ -582,6 +582,13 @@ def ActivaMatricula(request):
                         {'msgs': {'errors': [], 'warnings': [], 'infos': infos} },
                          )
     else:
+        if not hasattr(settings, 'CUSTOM_TIPUS_QUOTA_MATRICULA') or not bool(settings.CUSTOM_TIPUS_QUOTA_MATRICULA) \
+                or not TPV.objects.filter(nom='centre').exists():
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': ["Falta definir CUSTOM_TIPUS_QUOTA_MATRICULA o el TPV 'centre'",], 'warnings': [], 'infos': infos} },
+                         )
         form = ActivaMatsForm(request.user)
     return render(
                 request,
