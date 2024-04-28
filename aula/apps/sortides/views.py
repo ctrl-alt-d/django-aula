@@ -605,7 +605,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     
 @login_required
 @group_required(['professors'])   
-def alumnesConvocats( request, pk , origen ):
+def alumnesConvocats( request, pk , origen, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -720,7 +720,7 @@ def alumnesConvocats( request, pk , origen ):
     
 @login_required
 @group_required(['professors'])   
-def alumnesFallen( request, pk , origen ):
+def alumnesFallen( request, pk , origen, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -803,7 +803,7 @@ def alumnesFallen( request, pk , origen ):
     
 @login_required
 @group_required(['professors'])   
-def alumnesJustificats( request, pk , origen ):
+def alumnesJustificats( request, pk , origen, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -883,7 +883,7 @@ def alumnesJustificats( request, pk , origen ):
     
 @login_required
 @group_required(['professors'])   
-def professorsAcompanyants( request, pk , origen ):
+def professorsAcompanyants( request, pk , origen, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -953,7 +953,7 @@ def professorsAcompanyants( request, pk , origen ):
                         importancia = 'VI'
                         msg.envia_a_usuari(nou, importancia) 
                                     
-                nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )                
+                nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen=origen, tipus=tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -1663,7 +1663,7 @@ def pagoEfectiu(request, pk):
 
 @login_required()
 @group_required(['professors'])
-def detallPagament(request, pk):
+def detallPagament(request, pk, tipus=None):
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
@@ -1764,13 +1764,6 @@ def assignaQuotes(request):
             return HttpResponseRedirect(reverse_lazy("gestio__quotes__assigna", 
                                                      kwargs={"curs": curs.id, "tipus": tipus.id, "nany":nany, "auto":auto}))
     else:
-        if not hasattr(settings, 'CUSTOM_TIPUS_QUOTA_MATRICULA') or not bool(settings.CUSTOM_TIPUS_QUOTA_MATRICULA) \
-                or not TPV.objects.filter(nom='centre').exists():
-            return render(
-                        request,
-                        'resultat.html', 
-                        {'msgs': {'errors': ["Falta definir CUSTOM_TIPUS_QUOTA_MATRICULA o el TPV 'centre'",], 'warnings': [], 'infos': []} },
-                         )
         form = EscollirCursForm(request.user)
     return render(
                 request,
