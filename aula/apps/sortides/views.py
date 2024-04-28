@@ -500,13 +500,13 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                 safetext = u"""RECORDA: Una vegada enviades les dades, 
                                                   has de seleccionar els <a href="{0}">alumnes implicats</a>
                                                   des del menú desplegable ACCIONS""".format(
-                    "/sortides/alumnesConvocats/{id}".format(id=instance.id),
+                    "/sortides/alumnesConvocats/{id}/{tipus}".format(id=instance.id, tipus=tipus),
                     ) if tipus=="P" else u"""RECORDA: Una vegada enviades les dades,
                                                   has de seleccionar els <a href="{0}">alumnes convocats</a> i els
                                                   <a href="{1}">alumnes que no hi van</a>
                                                   des del menú desplegable ACCIONS""".format(
-                    "/sortides/alumnesConvocats/{id}".format(id=instance.id),
-                    "/sortides/alumnesFallen/{id}".format(id=instance.id),
+                    "/sortides/alumnesConvocats/{id}/{tipus}".format(id=instance.id, tipus=tipus),
+                    "/sortides/alumnesFallen/{id}/{tipus}".format(id=instance.id, tipus=tipus),
                 )
                 messages.warning(request,
                                  SafeText(safetext)
