@@ -501,8 +501,8 @@ def imapcontrolDSN(dies):
     if mail is None: return False
     ultimFetch=getUltimControl()
     id_list, id_last=getMailsList(mail, ultimFetch, dies)
-    if id_list is None:
-        setUltimControl(id_last)
+    if not bool(id_list):
+        if id_last>ultimFetch: setUltimControl(id_last)
         return False
     i=0
     while i<len(id_list):
@@ -564,7 +564,7 @@ def getMessages(service, ultimFetch, dies):
             lista.append(m)
     #Ordena la llista, quedarà de més antic a més modern
     lista = sorted(lista, key=itemgetter('historyId'))
-    return lista, service.users().getProfile(userId='me').execute()['historyId']
+    return lista, int(service.users().getProfile(userId='me').execute()['historyId'])
     
 def gmailcontrolDSN(dies):
     '''
@@ -583,8 +583,8 @@ def gmailcontrolDSN(dies):
     if mail.open() is None: return False
     ultimFetch = getUltimControl()
     id_list, id_last = getMessages(mail.connection, ultimFetch, dies)
-    if id_list is None:
-        setUltimControl(id_last)
+    if not bool(id_list):
+        if id_last>ultimFetch: setUltimControl(id_last)
         return False
     i=0
     for msg in id_list:
