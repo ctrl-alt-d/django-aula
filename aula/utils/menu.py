@@ -66,7 +66,8 @@ def calcula_menu( user , path, sessioImpersonada ):
 
     try:
         nom_path = resolve( path ).url_name
-        tipus_path = path[-2] if path[-3]=='/' and path[-1]=='/' else None
+        tipus_path=None
+        if bool(path) and len(path)>=3: tipus_path = path[-2] if path[-3]=='/' and path[-1]=='/' else None
     except:
         return menu
     
