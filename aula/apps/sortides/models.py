@@ -258,7 +258,7 @@ class Quota(models.Model):
     
     importQuota=models.DecimalField(max_digits=7, decimal_places=2, default=0)
     dataLimit=models.DateField(null=True, blank=True)
-    any=models.IntegerField(default=return_any_actual)
+    any=models.IntegerField(help_text="Correspon a l'any on comença el curs. Ex. curs any1/any2, seria any1.", default=return_any_actual)
     descripcio=models.CharField(max_length=200)
     #  Si no s'indica curs, serveix per a tots els alumnes
     curs=models.ForeignKey(Curs, on_delete=models.PROTECT, null=True, blank=True)
@@ -270,6 +270,32 @@ class Quota(models.Model):
         verbose_name = u'Quota'
         verbose_name_plural = u'Quotes'
         
+    def __str__(self):
+        return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio if self.descripcio else self.tipus
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        super().clean()
+        #Comprova que l'any no sigui del futur
+        if self.any>return_any_actual():
+            raise ValidationError(u"No es poden crear quotes del curs indicat fins al {0}.".format(self.any))
+        #Comprova si existeix una quota del mateix tipus, curs i any.
+        if self.tipus.nom in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA,  'taxcurs', 'uf', ]:
+            q=Quota.objects.filter(tipus=self.tipus, curs=self.curs, any=self.any, tpv=self.tpv)
+            # Si hi ha una altra, error
+            if q: raise ValidationError(u"Ja existeix una Quota de tipus {0} per aquest curs i any.".format(self.tipus.nom))
+
+class QuotaCentreManager(models.Manager):
+    def get_queryset(self):
+        #  Només quotes del TPV 'centre'
+        return super(QuotaCentreManager, self).get_queryset().filter( tpv__nom='centre' )
+
+class QuotaCentre(Quota):
+    objects = QuotaCentreManager()
+    
+    class Meta:
+        proxy = True
+
     def __str__(self):
         return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio if self.descripcio else self.tipus
 

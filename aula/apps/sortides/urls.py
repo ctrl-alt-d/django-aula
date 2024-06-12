@@ -37,6 +37,22 @@ urlpatterns = [
     re_path(r'^professorsAcompanyantsGestio/(?P<pk>\d+)/$', sortides_views.professorsAcompanyants, name = 'sortides__sortides__professorsAcompanyantsGestio', kwargs={'origen':'Gestio'}),
     re_path(r'^professorsAcompanyantsAll/(?P<pk>\d+)/$', sortides_views.professorsAcompanyants, name = 'sortides__sortides__professorsAcompanyantsAll', kwargs={'origen':'All'}),
 
+    re_path(r'^alumnesConvocats/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesConvocats, name = 'sortides__sortides__alumnesConvocats', kwargs={'origen':'Meves'}),
+    re_path(r'^alumnesConvocatsGestio/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesConvocats, name = 'sortides__sortides__alumnesConvocatsGestio', kwargs={'origen':'Gestio'}),
+    re_path(r'^alumnesConvocatsAll/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesConvocats, name = 'sortides__sortides__alumnesConvocatsAll', kwargs={'origen':'All'}),
+
+    re_path(r'^alumnesFallen/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesFallen, name = 'sortides__sortides__alumnesConvocats', kwargs={'origen':'Meves'}),
+    re_path(r'^alumnesFallenGestio/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesFallen, name = 'sortides__sortides__alumnesFallenGestio', kwargs={'origen':'Gestio'}),
+    re_path(r'^alumnesFallenAll/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesFallen, name = 'sortides__sortides__alumnesFallenAll', kwargs={'origen':'All'}),
+
+    re_path(r'^alumnesJustificats/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesJustificats, name = 'sortides__sortides__alumnesJustificats', kwargs={'origen':'Meves'}),
+    re_path(r'^alumnesJustificatsGestio/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesJustificats, name = 'sortides__sortides__alumnesJustificatsGestio', kwargs={'origen':'Gestio'}),
+    re_path(r'^alumnesJustificatsAll/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.alumnesJustificats, name = 'sortides__sortides__alumnesJustificatsAll', kwargs={'origen':'All'}),
+
+    re_path(r'^professorsAcompanyants/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.professorsAcompanyants, name = 'sortides__sortides__professorsAcompanyants', kwargs={'origen':'Meves'}),
+    re_path(r'^professorsAcompanyantsGestio/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.professorsAcompanyants, name = 'sortides__sortides__professorsAcompanyantsGestio', kwargs={'origen':'Gestio'}),
+    re_path(r'^professorsAcompanyantsAll/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.professorsAcompanyants, name = 'sortides__sortides__professorsAcompanyantsAll', kwargs={'origen':'All'}),
+
     re_path(r'^esborrar/(?P<pk>\d+)/$', sortides_views.esborrar, name = 'sortides__sortides__esborrar', kwargs={'origen':'Meves'}),
     re_path(r'^esborrarGestio/(?P<pk>\d+)/$', sortides_views.esborrar, name = 'sortides__sortides__esborrarGestio', kwargs={'origen':'Gestio'}),
     re_path(r'^esborrarAll/(?P<pk>\d+)/$', sortides_views.esborrar, name = 'sortides__sortides__esborrarAll', kwargs={'origen':'All'}),
@@ -56,6 +72,7 @@ urlpatterns = [
     re_path(r'^retornTransaccio/(?P<pk>\d+)/$', sortides_views.retornTransaccio, name='sortides__sortides__retorn_transaccio'),
 
     re_path(r'^detallPagament/(?P<pk>\d+)/$', sortides_views.detallPagament, name='sortides__sortides__detall_pagament'),
+    re_path(r'^detallPagament/(?P<pk>\d+)/(?P<tipus>\w+)/$', sortides_views.detallPagament, name='sortides__sortides__detall_pagament'),
     
     re_path(r'^quotes/$', sortides_views.assignaQuotes, name='gestio__quotes__assigna'),
     re_path(r'^quotes/(?P<curs>\d+)/(?P<tipus>\d+)/(?P<nany>\d+)/(?P<auto>.*)/$', sortides_views.quotesCurs, name='gestio__quotes__assigna'),

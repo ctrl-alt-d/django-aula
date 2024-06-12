@@ -38,23 +38,23 @@ class Table2_Sortides(tables.Table):
                           </li>
                         
                           <li>
-                            <a href="/sortides/alumnesConvocatsGestio/{{record.id}}">
+                            <a href="/sortides/alumnesConvocatsGestio/{{record.id}}/{{record.tipus}}">
                             Alumnat seleccionat<br>
                             </a>
                           </li>
                           {% if record.tipus != "P" %}
                               <li>
-                                <a href="/sortides/alumnesFallenGestio/{{record.id}}">
+                                <a href="/sortides/alumnesFallenGestio/{{record.id}}/{{record.tipus}}">
                                 Alumnes no assistents a l'activitat<br>
                                 </a>
                               </li>
                               <li>
-                                <a href="/sortides/alumnesJustificatsGestio/{{record.id}}">
+                                <a href="/sortides/alumnesJustificatsGestio/{{record.id}}/{{record.tipus}}">
                                 Alumnes no assistents a l'activitat ni al centre<br>
                                 </a>
                               </li>
                               <li>
-                                <a href="/sortides/professorsAcompanyantsGestio/{{record.id}}">
+                                <a href="/sortides/professorsAcompanyantsGestio/{{record.id}}/{{record.tipus}}">
                                 Professors acompanyants<br>
                                 </a>
                               </li>
@@ -62,7 +62,7 @@ class Table2_Sortides(tables.Table):
     
                           {% if record.tipus_de_pagament == "ON" %}
                             <li>
-                                <a href="/sortides/detallPagament/{{record.id}}">
+                                <a href="/sortides/detallPagament/{{record.id}}/{{record.tipus}}">
                                 Dades pagament<br>
                                 </a>
                             </li>
@@ -111,25 +111,25 @@ class Table2_Sortides(tables.Table):
                       </li>
                     
                       <li>
-                        <a href="/sortides/alumnesConvocats/{{record.id}}">
+                        <a href="/sortides/alumnesConvocats/{{record.id}}/{{record.tipus}}">
                         Alumnes convocats<br>
                         </a>
                       </li>
                       {% if record.tipus != "P" %}
                           <li>
-                            <a href="/sortides/alumnesFallen/{{record.id}}">
+                            <a href="/sortides/alumnesFallen/{{record.id}}/{{record.tipus}}">
                             Alumnes no assistents a l'activitat<br>
                             </a>
                           </li>
     
                           <li>
-                            <a href="/sortides/alumnesJustificats/{{record.id}}">
+                            <a href="/sortides/alumnesJustificats/{{record.id}}/{{record.tipus}}">
                             Alumnes no assistents a l'activitat ni al centre<br>
                             </a>
                           </li>
                                                   
                           <li>
-                            <a href="/sortides/professorsAcompanyants/{{record.id}}">
+                            <a href="/sortides/professorsAcompanyants/{{record.id}}/{{record.tipus}}">
                             Professors acompanyants<br>
                             </a>
                           </li>  
@@ -137,7 +137,7 @@ class Table2_Sortides(tables.Table):
    
                       {% if record.tipus_de_pagament == "ON" %}
                         <li>
-                            <a href="/sortides/detallPagament/{{record.id}}">
+                            <a href="/sortides/detallPagament/{{record.id}}/{{record.tipus}}">
                             Dades pagament<br>
                             </a>
                         </li>
@@ -195,32 +195,32 @@ class Table2_Sortides(tables.Table):
                           </li>
                         
                           <li>
-                            <a href="/sortides/alumnesConvocatsAll/{{record.id}}">
+                            <a href="/sortides/alumnesConvocatsAll/{{record.id}}/{{record.tipus}}">
                             Alumnes convocats<br>
                             </a>
                           </li>
                           {% if record.tipus != "P" %}
                               <li>
-                                <a href="/sortides/alumnesFallenAll/{{record.id}}">
+                                <a href="/sortides/alumnesFallenAll/{{record.id}}/{{record.tipus}}">
                                 Alumnes no assistents a l'activitat<br>
                                 </a>
                               </li>
     
                               <li>
-                                <a href="/sortides/alumnesJustificatsAll/{{record.id}}">
+                                <a href="/sortides/alumnesJustificatsAll/{{record.id}}/{{record.tipus}}">
                                 Alumnes no assistents a l'activitat ni al centre<br>
                                 </a>
                               </li>
     
                               <li>
-                                <a href="/sortides/professorsAcompanyantsAll/{{record.id}}">
+                                <a href="/sortides/professorsAcompanyantsAll/{{record.id}}/{{record.tipus}}">
                                 Professors acompanyants<br>
                                 </a>
                               </li>
                           {% endif %}    
                           {% if record.tipus_de_pagament == "ON" %}
                             <li>
-                                <a href="/sortides/detallPagament/{{record.id}}">
+                                <a href="/sortides/detallPagament/{{record.id}}/{{record.tipus}}">
                                     Dades pagament<br>
                                 </a>
                             </li>
