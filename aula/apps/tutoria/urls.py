@@ -65,7 +65,7 @@ urlpatterns = [
     re_path(r'^gestioCartes/$', tutoria_views.gestioCartes,
         name="tutoria__cartes_assistencia__gestio_cartes"),
                          
-    re_path(r'^novaCarta/(?P<pk_alumne>\d+)/$', tutoria_views.novaCarta,
+    re_path(r'^novaCarta/(?P<pk_carta>\d+)/$', tutoria_views.novaCarta,
         name="tutoria__cartes_assistencia__nova_carta"),
                        
     re_path(r'^esborraCarta/(?P<pk_carta>\d+)/$', tutoria_views.esborraCarta,

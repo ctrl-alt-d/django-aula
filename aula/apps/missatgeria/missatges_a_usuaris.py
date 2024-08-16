@@ -55,6 +55,8 @@ ALUMNES_DONATS_DALTA = u'''El següents alumnes han estat donats d'alta.'''
 
 ALUME_HA_ESTAT_SANCIONAT = u"L'alumne {0} ha estat sancionat ( del {1} al {2} )."
 
+ALUMNE_GENERADA_CARTA = u"S'ha generat una carta per acumulació de faltes de l'alumne {0}."
+
 ACOMPANYANT_A_ACTIVITAT = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
                     del dia {dia}
                     """
@@ -153,6 +155,7 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                                      ALUME_HA_ESTAT_SANCIONAT,
                                                      HE_POSAT_INCIDENCIA_EN_NOM_TEU,
                                                      HE_POSAT_INCIDENCIA_EN_NOM_DALGU,
+                                                     ALUMNE_GENERADA_CARTA,
                                                      }},}
 
 

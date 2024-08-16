@@ -18,6 +18,7 @@ from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsForm
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne, AlumneNomSentit, Grup
+from aula.apps.tutoria.views import avisTutorCartaPerFaltes
 from aula.apps.usuaris.models import User2Professor, Accio
 
 #helpers
@@ -245,6 +246,11 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 
 
     ###fi miscelania sortides.####################################################################################
+
+    ###Avís a tutors si alumnat genera carta per faltes d'assistència#############################################
+    avisTutorCartaPerFaltes(professor)
+    ###fi Avís a tutors si alumnat genera carta per faltes d'assistència.####################################################################################
+
 
     return render(
                 request,

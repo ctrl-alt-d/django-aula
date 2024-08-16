@@ -4,7 +4,7 @@ from aula.apps.tutoria.models import Tutor, SeguimentTutorialRespostes, ResumAnu
 from aula.utils import tools
 from aula.utils.tools import unicode
 from django.db.models import Min, Max, Q
-from datetime import  date
+from datetime import date, datetime
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
@@ -40,7 +40,7 @@ def gestioCartesRpt(professor, l4):
     
     taula.fileres = []
 
-    for carta in CartaAbsentisme.objects.filter( professor = professor, impresa = False ):
+    for carta in CartaAbsentisme.objects.filter( professor = professor, impresa = False, data_carta__isnull=False):
         filera = []
         
         #-carta--------------------------------------------
@@ -158,7 +158,7 @@ def gestioCartesRpt(professor, l4):
             camp.multipleContingut =  [ (u'{0}'.format( carta.data_carta ), 
                                          u'/tutoria/imprimirCarta/{0}'.format( carta.pk )
                                          ) 
-                                        for carta in alumne.cartaabsentisme_set.exclude( carta_esborrada_moment__isnull = False ).all()  ]
+                                        for carta in alumne.cartaabsentisme_set.exclude(data_carta__isnull=True).exclude( carta_esborrada_moment__isnull = False ).all()  ]
 
             if not bool( camp.multipleContingut ):
                 camp.contingut = "--" 
@@ -169,18 +169,33 @@ def gestioCartesRpt(professor, l4):
             camp = tools.classebuida()
            
             camp.enllac = None
-            
-            carta = CartaAbsentisme( alumne = alumne )
+
+            try:
+                darrera_carta_n = alumne.cartaabsentisme_set.exclude(carta_esborrada_moment__isnull=False).order_by('-carta_numero')[0].carta_numero
+
+            except IndexError:
+                darrera_carta_n = 0
+
+            carta, created = CartaAbsentisme.objects.get_or_create(alumne=alumne,
+                                                                   data_carta=None,
+                                                                   carta_numero=darrera_carta_n,
+                                                                   professor=professor,
+                                                                   defaults={'faltes_fins_a_data': datetime(1999, 1, 1),
+                                                                             'nfaltes': 0})
+            if created:
+                carta.carta_numero += 1
+                carta.save()
+
             msg = None
             cal_imprimir_carta = False
+
             try:
                 carta.clean()
-                llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta, 
+                llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta,
                                                                              settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA )
                 cal_imprimir_carta = carta.nfaltes >= llindar
             except ValidationError as e:
-                print (e)
-                msg = e.messages
+                msg = '. '.join([str(v) for v in e.messages])
             
             camp.contingut = msg if bool( msg ) else carta.nfaltes 
 
@@ -191,13 +206,13 @@ def gestioCartesRpt(professor, l4):
            
             camp.enllac = None
             camp.multipleContingut =  [ (u'Generar Nova Carta', 
-                                         u'/tutoria/novaCarta/{0}'.format( alumne.pk )
+                                         u'/tutoria/novaCarta/{0}'.format( carta.pk )
                                          ) ,
                                         ] if cal_imprimir_carta else []
                                         
             darrera_carta = None
             try:
-                darrera_carta = alumne.cartaabsentisme_set.exclude( carta_esborrada_moment__isnull = False ).order_by('-data_carta' )[0]
+                darrera_carta = alumne.cartaabsentisme_set.exclude(data_carta__isnull=True).exclude( carta_esborrada_moment__isnull = False ).order_by('-data_carta' )[0]
             except IndexError:
                 pass
             
