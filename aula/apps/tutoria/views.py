@@ -25,7 +25,7 @@ from aula.utils.decorators import group_required
 #forms
 from aula.apps.tutoria.forms import  justificaFaltesW1Form, informeSetmanalForm,\
     seguimentTutorialForm, elsMeusAlumnesTutoratsEntreDatesForm
-xºxº
+
 #helpers
 from aula.utils import tools
 from aula.apps.presencia.models import  ControlAssistencia, EstatControlAssistencia,\

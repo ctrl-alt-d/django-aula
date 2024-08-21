@@ -274,6 +274,72 @@ class Table2_Sortides(tables.Table):
                     </ul>
                   </div>
             """
+        elif origen == "Administratiu":
+            accions_html = u"""
+                    <div class="btn-group btn-group-xs">
+                        <a class="btn dropdown-toggle btn-primary btn-xs" data-toggle="dropdown" href="#">
+                          Accions
+                          <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu pull-right dropdown-menu-right">
+
+                          <li>
+                            <a href="/sortides/alumnesConvocatsGestio/{{record.id}}">
+                            Alumnat seleccionat<br>
+                            </a>
+                          </li>
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/alumnesFallenGestio/{{record.id}}">
+                                Alumnes no assistents a l'activitat<br>
+                                </a>
+                              </li>
+                              <li>
+                                <a href="/sortides/alumnesJustificatsGestio/{{record.id}}">
+                                Alumnes no assistents a l'activitat ni al centre<br>
+                                </a>
+                              </li>
+                          {% endif %}   
+
+                          {% if record.tipus_de_pagament == "ON" %}
+                            <li>
+                                <a href="/sortides/detallPagament/{{record.id}}">
+                                Dades pagament<br>
+                                </a>
+                            </li>
+                          {% endif %}   
+
+                          <li>
+                            <a href="/sortides/sortidaExcel/{{record.id}}">
+                            Descarregar dades en Excel<br>
+                            </a>
+                          </li>
+                          {% if record.tipus != "P" %}
+                              <li>
+                                <a href="/sortides/imprimir/{{record.id}}/4">
+                                Imprimir fulls autorització i pagament<br>
+                                </a>
+                              </li>
+                          {% endif %}   
+                          <li>
+                            <a href="/sortides/imprimir/{{record.id}}/5">
+                            Imprimir fulls de pagament<br>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="/sortides/sortidaClonar/{{record.id}}/{{record.tipus}}">
+                            Clonar<br>
+                            </a>
+                          </li>  
+                          <li>
+                            <a href='javascript:confirmAction("/sortides/esborrarGestio/{{record.id}}"  , " {{ "Segur que vols esborrar l'activitat"|escapejs}} {{record.titol}} ?")'>
+                            Esborrar<br>
+                            </a>
+                          </li>
+
+                        </ul>
+                      </div>
+            """
 
         super(Table2_Sortides, self).__init__(data, *args, **kwargs)
         self.columns['accions'].column.template_code = accions_html
