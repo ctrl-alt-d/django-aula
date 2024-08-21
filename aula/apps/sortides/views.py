@@ -1134,7 +1134,7 @@ def sortidaExcel( request, pk ):
         detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'Ralc', u'Grup', u'Nivell', ]]
+    alumnes = [ [ u'Alumne', u'Ralc', u'Grup', u'Nivell', u'Drets Imatge', u'Dades Mèdiques', u'Telèfon/s' ]]
     if sortida.tipus != "P":
         alumnes[0].extend([u"Assistència"])
     if sortida.tipus_de_pagament == 'ON':
@@ -1145,6 +1145,9 @@ def sortidaExcel( request, pk ):
                alumne.ralc,
                alumne.grup.descripcio_grup,
                alumne.grup.curs.nivell,
+               alumne.dadesaddicionalsalumne_set.get(label="Drets imatge").value if alumne.dadesaddicionalsalumne_set.filter(label="Drets imatge").exists() else '',
+               alumne.dadesaddicionalsalumne_set.get(label="Dades mèdiques").value if alumne.dadesaddicionalsalumne_set.filter(label="Dades mèdiques").exists() else '',
+               ','.join(filter(None, [alumne.rp1_mobil, alumne.rp2_mobil, alumne.telefons])),
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
                ]
         if sortida.tipus_de_pagament=='ON':
