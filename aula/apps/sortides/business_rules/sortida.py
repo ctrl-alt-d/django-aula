@@ -6,6 +6,7 @@ from aula.apps.tutoria.models import Tutor
 from django.apps import apps
 from datetime import timedelta
 from django.conf import settings
+from aula.apps.usuaris.models import User2Professor
 from aula.utils.tools import unicode
 
 
@@ -48,10 +49,19 @@ def clean_sortida(instance):
             errors.append(u"Només Direcció pot modificar una sortida que s'està gestionant.")
 
             # Per estats >= R només direcció pot tocar:
-    if bool(instance.instanceDB) and instance.instanceDB.estat in ['R', 'G']:
-        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists():
+    sortida_fields = instance._meta.get_fields()  # llistat de camps del model Sortida
+    # comprova camps que es volen modificar, comparant instància actual amb la base de dades
+    canvis = filter(lambda field: getattr(instance, str(field.name), None) != getattr(instance.instanceDB, str(field.name), None), sortida_fields)
+    canviPermes=True
+    # comprova que els camps a modificar están dins els permesos
+    for canvi in canvis:
+        canviPermes=False if str(canvi) not in ['sortides.Sortida.estat_sincronitzacio', 'sortides.Sortida.comentaris_interns'] else canviPermes
+    profe = User2Professor(user)
+    esProfeOrganitzadorIPotModificar = profe in instance.professors_responsables.all() and canviPermes
+    if bool(instance.instanceDB) and instance.instanceDB.estat in ['R', 'G'] :
+        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorIPotModificar:
             errors.append(
-                u"Només el Coordinador de Sortides i Direcció pot modificar una sortida que s'està gestionant.")
+                u"Només Coordinació de Sortides, Direcció o Professorat Organitzador pot modificar una sortida que s'està gestionant.")
 
             # si passem a proposat
     if instance.estat in ('P', 'R') and instance.tipus!= 'P':
@@ -65,8 +75,8 @@ def clean_sortida(instance):
     # si passem a revisada
     if instance.estat in ('R',):
 
-        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists():
-            errors.append(u"Només el coordinador de sortides (i direcció) pot Revisar Una Sortida")
+        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorIPotModificar:
+            errors.append(u"Només Coordinació de sortides, Direcció o Professorat Organitzador pot Revisar Una Sortida")
 
         if not bool(instance.instanceDB) or instance.instanceDB.estat not in ['P', 'R']:
             errors.append(u"Només es pot Revisar una sortida ja Proposada")
