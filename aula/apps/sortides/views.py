@@ -8,6 +8,7 @@ import urllib
 
 from Crypto.Cipher import DES3
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from rest_framework.decorators import api_view
 
 from aula.apps.missatgeria.missatges_a_usuaris import ACOMPANYANT_A_ACTIVITAT, tipusMissatge, RESPONSABLE_A_ACTIVITAT, \
     ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE, ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE, \
@@ -1254,11 +1255,23 @@ def logPagaments(txt, tipus="ADMINISTRACIO"):
     importancia = 'VI'
     administradors = get_object_or_404(Group, name='administradors')
     msg.envia_a_grup(administradors, importancia=importancia)
-        
-@login_required
-def pagoOnline(request, pk):
-    from aula.apps.sortides.forms import PagamentForm
 
+@login_required
+def pagoOnlineWeb(request, pk):
+    return pagoOnlineBase(request, pk)
+
+@api_view(['GET'])
+def pagoOnlineApi(request, pk):
+    request.session.save()
+    session_key = request.session.session_key
+    response=pagoOnlineBase(request, pk)
+    response.set_cookie('sessionid', session_key, httponly=True)
+    return response
+
+
+def pagoOnlineBase(request, pk):
+    from aula.apps.sortides.forms import PagamentForm
+    #print (request.user, request.user.is_authenticated)
     '''
     Mostra la informació del pagament i el botó per pagar o 
     el missatge Pagament Realitzat!!!

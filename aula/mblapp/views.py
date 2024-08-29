@@ -366,37 +366,3 @@ def alumnes_activitats (request, format=None):
                    }]
 
     return Response(content)
-
-
-@transaction.atomic
-@api_view(['POST'])
-@permission_classes(( EsUsuariDeLaAPI, ))
-def pagament_realitzat(request, format=None):
-    """
-    Rep les dades d'un pagament realitzat i les guarda
-    """
-    # deserialitzem
-    data = JSONParser().parse(request)
-    serializer = PagamentRealitzatSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError({'error': ["Pagament no guardat. Petició amb errors"]})
-
-    try:
-        codi_pagament = serializer.validated_data["codi_pagament"]
-        ordre_pagament = serializer.validated_data["ordre_pagament"]
-        data_hora_pagament = serializer.validated_data["data_hora_pagament"]
-        pagament= Pagament.objects.get(id=codi_pagament)
-        pagament.ordre_pagament = ordre_pagament
-        pagament.data_hora_pagament = data_hora_pagament
-        pagament.estat = "F"
-        pagament.pagament_realitzat = True
-        pagament.save()
-        content = {"pagament_guardat": "True"}
-    except:
-        content = {"pagament_guardat": "False"}
-        missatge = ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL
-        txt = missatge
-        tipus_de_missatge = tipusMissatge(missatge)
-        logPagaments(txt, tipus_de_missatge)
-
-    return Response(content)
