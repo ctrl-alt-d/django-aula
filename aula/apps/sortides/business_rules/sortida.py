@@ -6,6 +6,7 @@ from aula.apps.tutoria.models import Tutor
 from django.apps import apps
 from datetime import timedelta
 from django.conf import settings
+from aula.apps.usuaris.models import User2Professor
 from aula.utils.tools import unicode
 
 
@@ -47,11 +48,32 @@ def clean_sortida(instance):
         if not User.objects.filter(pk=user.pk, groups__name='direcció').exists():
             errors.append(u"Només Direcció pot modificar una sortida que s'està gestionant.")
 
-            # Per estats >= R només direcció pot tocar:
-    if bool(instance.instanceDB) and instance.instanceDB.estat in ['R', 'G']:
-        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists():
+
+    """ 
+    Per estats >= R, només Direcció, Coordicació de sortides o Professorat organitzador pot tocar.
+    Si és Professorat organitzador, només pot modificar alguns camps (no tots).
+    ----------------------------------------------------------------------------------------------------------------------------------
+    """
+    camps_d_una_sortida = instance._meta.get_fields()  # llistat de tots camps del model Sortida
+    camps_que_pot_modificar_professorat_organitzador = ['sortides.Sortida.estat_sincronitzacio', 'sortides.Sortida.comentaris_interns']
+    # comprova camps que es volen modificar, comparant instància actual amb la base de dades:
+    camps_modificats = filter(lambda field: getattr(instance, str(field.name), None) != getattr(instance.instanceDB, str(field.name), None), camps_d_una_sortida)
+    canvisPermesos=True
+    profe = User2Professor(user)
+
+    # comprova que els camps que es volen modificar están dins els permesos per a un Professor Organitzador:
+    for camp_modificat in camps_modificats:
+        canvisPermesos=False if str(camp_modificat) not in camps_que_pot_modificar_professorat_organitzador else canvisPermesos
+    esProfeOrganitzadorICanvisSonPermesos = profe in instance.professors_responsables.all() and canvisPermesos
+
+    if bool(instance.instanceDB) and instance.instanceDB.estat in ['R', 'G'] :
+        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorICanvisSonPermesos:
             errors.append(
-                u"Només el Coordinador de Sortides i Direcció pot modificar una sortida que s'està gestionant.")
+                u"Només Coordinació de Sortides, Direcció o Professorat Organitzador pot modificar una sortida que s'està gestionant.")
+
+    """
+    --------------------------Fí per estats >= R   -----------------------------------------------------------------------------------
+    """
 
             # si passem a proposat
     if instance.estat in ('P', 'R') and instance.tipus!= 'P':
@@ -65,8 +87,8 @@ def clean_sortida(instance):
     # si passem a revisada
     if instance.estat in ('R',):
 
-        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists():
-            errors.append(u"Només el coordinador de sortides (i direcció) pot Revisar Una Sortida")
+        if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorICanvisSonPermesos:
+            errors.append(u"Només Coordinació de sortides, Direcció o Professorat Organitzador pot Revisar Una Sortida")
 
         if not bool(instance.instanceDB) or instance.instanceDB.estat not in ['P', 'R']:
             errors.append(u"Només es pot Revisar una sortida ja Proposada")
@@ -112,7 +134,7 @@ def clean_sortida(instance):
     # només direcció o grup sortides pot tocar. Tenim tres missatges diferents
 
     if ( instance.informacio_pagament not in [settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_EFECTIU,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ENTITAT_BANCARIA,settings.CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE,'']) :
-        if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció' ] ).exists():
+        if not User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides', 'direcció', 'administratius' ] ).exists():
             errors.append( u"Només Direcció o el coordinador de sortides pot posar informació de pagament." )
 
     if (User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and

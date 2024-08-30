@@ -65,7 +65,7 @@ from django_select2.forms import ModelSelect2MultipleWidget
 
 
 @login_required
-@group_required(['professors'])  
+@group_required(['professors','administratius'])
 def imprimir( request, pk, din = '4'):
 
     credentials = tools.getImpersonateUser(request) 
@@ -77,9 +77,12 @@ def imprimir( request, pk, din = '4'):
     instance.flag_clean_nomes_toco_alumnes = True
     
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    fEsAdministratiu = request.user.groups.filter(name__in=[u"administratius"] ).exists()
+
     potEntrar = ( professor in instance.professors_responsables.all() or 
                   professor in instance.altres_professors_acompanyants.all() or 
-                  fEsDireccioOrGrupSortides
+                  fEsDireccioOrGrupSortides or
+                  fEsAdministratiu
                    )
 
     if not potEntrar:
@@ -169,7 +172,7 @@ def imprimir( request, pk, din = '4'):
 
 
 @login_required
-@group_required(['professors'])
+@group_required(['professors','administratius'])
 def sortidesMevesList( request, tipus="A" ):
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -241,7 +244,7 @@ def sortidesAllList( request, tipus=None ):
 
 
 @login_required
-@group_required(['professors'])
+@group_required(['professors','administratius'])
 def sortidesGestioList( request, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -251,17 +254,21 @@ def sortidesGestioList( request, tipus=None ):
     socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
     socCoordinador = User.objects.filter( pk=user.pk, groups__name__in = [ 'sortides'] ).exists()
     socSecretari = User.objects.filter(pk=user.pk, groups__name__in=['secretaria']).exists()
+    socAdministratiu = User.objects.filter(pk=user.pk, groups__name__in=['administratius']).exists()
 
     #si sóc equip directiu només les que tinguin estat 'R' (Revisada pel coordinador)
     if socEquipDirectiu:
         filtre.append('R')
-    #si sóc coordinador de sortides o secretari només les que tinguin estat 'P' (Proposada)
-    if socCoordinador or socSecretari:
+    #si sóc coordinador de sortides o secretari o administratiu/va només les que tinguin estat 'P' (Proposada)
+    if socCoordinador or socSecretari or socAdministratiu:
         filtre.append('P')
+
+    # si sóc administratiu/va afegeixo les que tinguin estat 'E' (Esborrany)
+    if socAdministratiu:
+        filtre.append('E')
 
     sortides = ( Sortida
                    .objects
-                   .exclude( estat = 'E' )
                    .filter( estat__in = filtre)
                    .distinct()
                   )
@@ -272,7 +279,11 @@ def sortidesGestioList( request, tipus=None ):
     if socSecretari and settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
         sortides = sortides.filter(tipus_de_pagament = 'ON')
 
-    table = Table2_Sortides( data=list( sortides ), origen="Gestio" )
+    if socAdministratiu:
+        table = Table2_Sortides(data=list(sortides), origen="Administratiu")
+    else:
+        table = Table2_Sortides( data=list( sortides ), origen="Gestio" )
+
     if tipus=="P":
         table.exclude=("ciutat", "calendari_desde", "calendari_finsa", "n_acompanyants")
         table.order_by = '-termini_pagament'
@@ -280,9 +291,7 @@ def sortidesGestioList( request, tipus=None ):
         table.order_by = '-calendari_desde'
     
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 10}).configure(table)
-        
-    url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )    
-        
+    url = r"{0}{1}".format( settings.URL_DJANGO_AULA, reverse( 'sortides__sortides__ical' ) )
     return render(
                   request, 
                   'gestioDeSortides.html', 
@@ -320,7 +329,7 @@ def sortidesConsergeriaList(request):
     )
 
 @login_required
-@group_required(['professors'])  # TODO: i grup sortides
+@group_required(['professors', 'administratius'])  # TODO: i grup sortides
 def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     from aula.apps.sortides.forms import SortidaForm
 
@@ -329,7 +338,9 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
 
     es_post = (request.method == "POST")
 
-    professor = User2Professor(user)
+    #am = Group.objects.get_or_create(name='administratius')[0] in user.groups.all()
+    #pr = Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
+    professor = User2Professor(user) #if pr else None
 
     professors_acompanyen_abans = set()
     professors_acompanyen_despres = set()
@@ -338,11 +349,13 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     professors_organitzen_despres = set()
 
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+    fEsAdministratiu = request.user.groups.filter(name__in=[u"administratius"]).exists()
+
     if bool(pk) and not clonar:
         instance = get_object_or_404(Sortida, pk=pk)
         potEntrar = (professor in instance.professors_responsables.all() or
                      professor in instance.altres_professors_acompanyants.all() or
-                     fEsDireccioOrGrupSortides)
+                     fEsDireccioOrGrupSortides or fEsAdministratiu)
         if not potEntrar:
             raise Http404
         professors_acompanyen_abans = set(instance.altres_professors_acompanyants.all())
@@ -351,9 +364,9 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
         instance = get_object_or_404(Sortida, pk=pk)
         instance.pk = None
         instance.estat = 'E'
-        instance.titol = u"**CLONADA** " + instance.titol
+        instance.titol = u"**CLONADA** " + u"SECRETARÍA**" if fEsAdministratiu else "" + instance.titol
         instance.esta_aprovada_pel_consell_escolar = 'P'
-        instance.professor_que_proposa = professor
+        if professor: instance.professor_que_proposa = professor
     # instance.professors_responsables = None
     #         instance.altres_professors_acompanyants = None
     #         instance.tutors_alumnes_convocats = None
@@ -543,6 +556,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                 importancia = 'VI'
                 msg.envia_a_usuari(nou, importancia)
 
+            if fEsAdministratiu: origen = 'Gestio'
             nexturl = r"/sortides/sortides{origen}/{tipus}".format(origen=origen, tipus=tipus)
             return HttpResponseRedirect(nexturl)
 
@@ -582,7 +596,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     # si no és propietari tot a disabled
     deshabilitat = (instance.id and
                     not (professor in instance.professors_responsables.all() or
-                         fEsDireccioOrGrupSortides)
+                         fEsDireccioOrGrupSortides or fEsAdministratiu)
                     )
 
     if deshabilitat:
@@ -604,19 +618,19 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors'])   
+@group_required(['professors','administratius'])
 def alumnesConvocats( request, pk , origen ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
-    
-    professor = User2Professor( user )     
-    
+    professor = User2Professor( user )
     instance = get_object_or_404( Sortida, pk = pk )
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
-    potEntrar = ( professor in instance.professors_responsables.all() or 
+    fEsAdministratiu = request.user.groups.filter(name__in=[u"administratius"] ).exists()
+    potEntrar = ( professor in instance.professors_responsables.all() or
                   professor in instance.altres_professors_acompanyants.all() or 
-                  fEsDireccioOrGrupSortides
+                  fEsDireccioOrGrupSortides or
+                  fEsAdministratiu
                    )
     if not potEntrar:
         raise Http404
@@ -696,7 +710,8 @@ def alumnesConvocats( request, pk , origen ):
     #si no és propietari tot a disabled
     deshabilitat = ( instance.id and 
                      not ( professor in instance.professors_responsables.all() or 
-                         fEsDireccioOrGrupSortides )
+                         fEsDireccioOrGrupSortides or
+                         fEsAdministratiu)
                     )
     
     if deshabilitat:
@@ -719,7 +734,7 @@ def alumnesConvocats( request, pk , origen ):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors'])   
+@group_required(['professors','administratius'])
 def alumnesFallen( request, pk , origen ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -730,9 +745,11 @@ def alumnesFallen( request, pk , origen ):
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    fEsAdministratiu=request.user.groups.filter(name__in=[u"administratius"]).exists()
     potEntrar = ( professor in instance.professors_responsables.all() or 
                   professor in instance.altres_professors_acompanyants.all() or 
-                  fEsDireccioOrGrupSortides
+                  fEsDireccioOrGrupSortides or
+                  fEsAdministratiu
                    )
     
     if not potEntrar:
@@ -745,7 +762,8 @@ def alumnesFallen( request, pk , origen ):
     if request.method == "POST":
         form = formIncidenciaF(request.POST, instance = instance)
         
-        if form.is_valid(): 
+        if form.is_valid():
+            if fEsAdministratiu: origen = "Gestio"
             try:
                 nous=set([ x.pk for x in form.cleaned_data['alumnes_que_no_vindran'] ] )
                 ante=set([ x.pk for x in instance.alumnes_que_no_vindran.all().distinct() ] )
@@ -755,7 +773,7 @@ def alumnesFallen( request, pk , origen ):
                 #treure
                 for alumne in ante - nous:
                     instance.alumnes_que_no_vindran.remove( alumne )
-                
+
                 nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
@@ -781,7 +799,8 @@ def alumnesFallen( request, pk , origen ):
     #si no és propietari tot a disabled
     deshabilitat = ( instance.id and 
                      not ( professor in instance.professors_responsables.all() or 
-                         fEsDireccioOrGrupSortides )
+                         fEsDireccioOrGrupSortides or
+                         fEsAdministratiu)
                     )
     
     if deshabilitat:
@@ -802,7 +821,7 @@ def alumnesFallen( request, pk , origen ):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors'])   
+@group_required(['professors','administratius'])
 def alumnesJustificats( request, pk , origen ):
 
     credentials = tools.getImpersonateUser(request) 
@@ -813,9 +832,11 @@ def alumnesJustificats( request, pk , origen ):
     instance = get_object_or_404( Sortida, pk = pk )
     instance.flag_clean_nomes_toco_alumnes = True
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    fEsAdministratiu = request.user.groups.filter(name__in=[u"administratius"]).exists()
     potEntrar = ( professor in instance.professors_responsables.all() or 
                   professor in instance.altres_professors_acompanyants.all() or 
-                  fEsDireccioOrGrupSortides
+                  fEsDireccioOrGrupSortides or
+                  fEsAdministratiu
                    )
 
     if not potEntrar:
@@ -839,7 +860,8 @@ def alumnesJustificats( request, pk , origen ):
                 #treure
                 for alumne in ante - nous:
                     instance.alumnes_justificacio.remove( alumne )
-                
+
+                if fEsAdministratiu: origen = "Gestio"
                 nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
@@ -861,7 +883,8 @@ def alumnesJustificats( request, pk , origen ):
     #si no és propietari tot a disabled
     deshabilitat = ( instance.id and 
                      not ( professor in instance.professors_responsables.all() or 
-                         fEsDireccioOrGrupSortides )
+                         fEsDireccioOrGrupSortides or
+                         fEsAdministratiu)
                     )
     
     if deshabilitat:
@@ -990,7 +1013,7 @@ def professorsAcompanyants( request, pk , origen ):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors'])   #TODO: i grup sortides
+@group_required(['professors','administratius'])   #TODO: i grup sortides
 def esborrar( request, pk , origen):
 
     credentials = tools.getImpersonateUser(request) 
@@ -1002,8 +1025,9 @@ def esborrar( request, pk , origen):
     
     mortalPotEntrar = (  instance.professor_que_proposa == professor  and  not instance.estat in [ 'R', 'G' ] )
     direccio = ( request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists() )
+    esAdministratiu = (request.user.groups.filter(name__in=[u"administratius"]).exists())
     
-    potEntrar = mortalPotEntrar or direccio
+    potEntrar = mortalPotEntrar or direccio or (esAdministratiu and "SECRETARÍA" in instance.titol)
     if not potEntrar:
         messages.warning(request, u"No pots esborrar aquest/a pagament/activitat." )
         return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
@@ -1065,7 +1089,7 @@ def sortidaiCal( request):
     
 
 @login_required
-@group_required(['professors'])  
+@group_required(['professors','administratius'])
 def sortidaExcel( request, pk ):
     """
     Generates an Excel spreadsheet for review by a staff member.
@@ -1076,9 +1100,11 @@ def sortidaExcel( request, pk ):
     (user, _ ) = credentials
     professor = User2Professor( user )     
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"] ).exists()
+    fEsAdministratiu = request.user.groups.filter(name__in=[u"administratius"]).exists()
     potEntrar = ( professor in sortida.professors_responsables.all() or 
                   professor in sortida.altres_professors_acompanyants.all() or 
-                  fEsDireccioOrGrupSortides
+                  fEsDireccioOrGrupSortides or
+                  fEsAdministratiu
                    )
 
     if not potEntrar:
@@ -1108,7 +1134,7 @@ def sortidaExcel( request, pk ):
         detall += [[ u"Acompanyen", ]] + [[unicode( p )] for p in sortida.altres_professors_acompanyants.all()] + [[]]
     
     #Alumnes
-    alumnes = [ [ u'Alumne', u'Ralc', u'Grup', u'Nivell', ]]
+    alumnes = [ [ u'Alumne', u'Ralc', u'Grup', u'Nivell', u'Drets Imatge', u'Dades Mèdiques', u'Telèfon/s' ]]
     if sortida.tipus != "P":
         alumnes[0].extend([u"Assistència"])
     if sortida.tipus_de_pagament == 'ON':
@@ -1119,6 +1145,9 @@ def sortidaExcel( request, pk ):
                alumne.ralc,
                alumne.grup.descripcio_grup,
                alumne.grup.curs.nivell,
+               alumne.dadesaddicionalsalumne_set.get(label="Drets imatge").value if alumne.dadesaddicionalsalumne_set.filter(label="Drets imatge").exists() else '',
+               alumne.dadesaddicionalsalumne_set.get(label="Dades mèdiques").value if alumne.dadesaddicionalsalumne_set.filter(label="Dades mèdiques").exists() else '',
+               ','.join(filter(None, [alumne.rp1_mobil, alumne.rp2_mobil, alumne.telefons])),
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
                ]
         if sortida.tipus_de_pagament=='ON':
@@ -1662,17 +1691,19 @@ def pagoEfectiu(request, pk):
 
 
 @login_required()
-@group_required(['professors'])
+@group_required(['professors','administratius'])
 def detallPagament(request, pk):
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
     professor = User2Professor(user)
     fEsDireccioOrGrupSortides = request.user.groups.filter(name__in=[u"direcció", u"sortides"]).exists()
+    fEsAdministratiu = request.user.groups.filter(name__in=[u"administratius"]).exists()
     sortida = get_object_or_404(Sortida, pk=pk)
     potEntrar = (sortida.tipus_de_pagament == 'ON' and (professor in sortida.professors_responsables.all()
                                                         or fEsDireccioOrGrupSortides
-                                                        or professor in sortida.altres_professors_acompanyants.all()))
+                                                        or professor in sortida.altres_professors_acompanyants.all())
+                                                        or fEsAdministratiu)
     if not potEntrar:
         raise Http404
 

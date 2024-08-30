@@ -18,6 +18,8 @@ from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsForm
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne, AlumneNomSentit, Grup
+from aula.apps.sortides.models import Sortida
+from aula.apps.tutoria.views import avisTutorCartaPerFaltes
 from aula.apps.usuaris.models import User2Professor, Accio
 
 #helpers
@@ -246,6 +248,11 @@ def mostraImpartir( request, year=None, month=None, day=None ):
 
     ###fi miscelania sortides.####################################################################################
 
+    ###Avís a tutors si alumnat genera carta per faltes d'assistència#############################################
+    avisTutorCartaPerFaltes(professor)
+    ###fi Avís a tutors si alumnat genera carta per faltes d'assistència.####################################################################################
+
+
     return render(
                 request,
                 'mostraImpartir.html', 
@@ -404,7 +411,6 @@ def passaLlista(request, pk):
             form.hora_anterior = (0 if d['assistenciaaHoraAnterior'] == 'Present' else
                                   1 if d['assistenciaaHoraAnterior'] == 'Absent' else
                                   2 if d['assistenciaaHoraAnterior'] == 'Online' else None)
-            print (form.hora_anterior)
             prediccio, pct = predictTreeModel(d)
             form.prediccio = (0 if prediccio == 'Present' else
                               1 if prediccio == 'Absent' else  None)
@@ -503,16 +509,20 @@ def helper_tuneja_item_nohadeseralaula( request, control_a, te_error = False ):
                 prefix=str(control_a.pk),
                 instance=control_a)
 
-        form.fields['estat'].label = unicode(alumne)
+        sortida = Sortida.alumne_te_sortida_en_data(alumne,  # alumne
+                                                    control_a.impartir.dia_impartir,  # dia
+                                                    control_a.impartir.horari.hora  # franja
+                                                    ).exclude(tipus="P")
+        activitat = (u" - Activitat: " + str(sortida[0].titol)) if sortida else ''
+
+        form.fields['estat'].label = unicode(alumne) + activitat
         avui_es_aniversari = alumne.aniversari(control_a.impartir.dia_impartir)
 
         missatge = ''
         if (settings.CUSTOM_MOSTRAR_MAJORS_EDAT and alumne.edat(control_a.impartir.dia_impartir)>=18):
             missatge=settings.CUSTOM_MARCA_MAJORS_EDAT
 
-        form.fields['estat'].label = (unicode(alumne)
-                                      + missatge +('(fa anys en aquesta data)' if avui_es_aniversari else '')
-                                      )
+        form.fields['estat'].label += missatge + ('(fa anys en aquesta data)' if avui_es_aniversari else '')
     return form
 
 
