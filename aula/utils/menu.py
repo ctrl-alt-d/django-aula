@@ -23,11 +23,12 @@ def calcula_menu( user , path, sessioImpersonada ):
     pr = not al and Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
     pl = not al and Group.objects.get_or_create(name= 'professional' )[0] in user.groups.all()
     co = not al and Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
+    am = not al and Group.objects.get_or_create(name='administratius')[0] in user.groups.all()
     pg = not al and Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
     so = not al and Group.objects.get_or_create(name= 'sortides' )[0] in user.groups.all()
     tp = not al and Group.objects.get_or_create(name= 'tpvs' )[0] in user.groups.all()
     tu = not al and pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )    
-    tots = al or ad or di or pr or pl or co or pg or so or tp
+    tots = al or ad or di or pr or pl or co or pg or so or tp or am
     
     #Comprovar si té missatges sense llegir
     nMissatges = user.destinatari_set.filter( moment_lectura__isnull = True ).count()
@@ -136,7 +137,7 @@ def calcula_menu( user , path, sessioImpersonada ):
 
                    )
                ),
-        
+
                #--Aula--------------------------------------------------------------------------
                #  id,    nom     vista                 seg      label
                ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
@@ -316,7 +317,7 @@ def calcula_menu( user , path, sessioImpersonada ):
              )
     
     arbreSortides = ()
-    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU and ( di or pr ):
+    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU and ( di or pr or am):
         
         filtre = []
         socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
@@ -355,21 +356,21 @@ def calcula_menu( user , path, sessioImpersonada ):
 
         arbreSortides = (
             # --Activitats/pagaments--------------------------------------------------------------------------
-            ('sortides', 'Activitats/Pagaments', 'sortides__meves__list', di or pr, n_avis_tot + n_avis_activitats_meves> 0,
+            ('sortides', 'Activitats/Pagaments', "sortides__gestio__list" if am else 'sortides__meves__list', di or pr or am, n_avis_tot + n_avis_activitats_meves> 0,
              (
-                 ('Activitats', "sortides__meves__list_by_tipus,A", di or pr, None,
+                 ('Activitats', "sortides__gestio__list_by_tipus,A" if am else "sortides__meves__list_by_tipus,A", di or pr or am, None,
                    (
                        (u"Històric", "sortides__all__list,A", di or so, None),
-                       (u"Gestió", "sortides__gestio__list_by_tipus,A", di or so,
+                       (u"Gestió", "sortides__gestio__list_by_tipus,A", di or so or am,
                                     (n_avis_activitats, 'info',) if n_avis_activitats > 0 else None),
-                       (u"Les meves propostes", "sortides__meves__list_by_tipus,A", pr,
+                       (u"Les meves propostes", "sortides__meves__list_by_tipus,A", pr ,
                                     (n_avis_activitats_meves, 'info',) if n_avis_activitats_meves > 0 else None),
                    ),
                    ),
-                 ('Pagaments', "sortides__meves__list_by_tipus,P", di or pr, None,
+                 ('Pagaments', "sortides__gestio__list_by_tipus,P" if am else "sortides__meves__list_by_tipus,P", di or pr or am, None,
                   (
                       (u"Històric", "sortides__all__list,P", di or so, None),
-                      (u"Gestió", "sortides__gestio__list_by_tipus,P", di or so,
+                      (u"Gestió", "sortides__gestio__list_by_tipus,P", di or so or am,
                        (n_avis_activitats, 'info',) if n_avis_activitats > 0 else None),
                       (u"Les meves propostes", "sortides__meves__list_by_tipus,P", pr,
                        (n_avis_activitats_meves, 'info',) if n_avis_activitats_meves > 0 else None),

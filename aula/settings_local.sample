@@ -28,20 +28,37 @@ ADMINS = (
     ('admin', 'ui@mega.cracs.cat'),
 )
 
+#Google elimina l’accés d’aplicacions menys segures a partir de 2024.
+#S'ha de fer servir una contrasenya d'aplicació per a fer servir EMAIL_BACKEND SMTP:
+#https://support.google.com/mail/answer/185833?hl=ca
+#
+#Una alternativa és fer servir una compta de servei i un EMAIL_BACKEND d'API de Gmail :
+#https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
+#Scopes a afegir: https://www.googleapis.com/auth/gmail.send, https://www.googleapis.com/auth/gmail.readonly
+#
+#
 #Configuracion del Correo Relay SMTP y IMAP de la Aplicación
 EMAIL_HOST='smtp.gmail.com'
 EMAIL_HOST_IMAP="imap.gmail.com"
-EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
-EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
-DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
+
+#Backend SMTP:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
+EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'  #Password d'aplicació
 SERVER_EMAIL='el-meu-centre@el-meu-centre.net'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # Per proves, envia a la consola
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
 
+#Backend API de Gmail
+#EMAIL_BACKEND = 'django_gsuite_email.GSuiteEmailBackend'   #https://github.com/slicefox/django-gsuite-email
+GSUITE_CREDENTIALS_FILE=os.path.join('path_al_fitxer_de_credencials.json')
+GMAIL_USER = 'el-meu-centre@el-meu-centre.net'
+GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/gmail.readonly', ]
+
+DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
 
 #True si se activa el HTTPS
