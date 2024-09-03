@@ -53,7 +53,9 @@
         <div class="row row-padded" style="background-color:{% cycle '#f5f5f5' 'white' %}">
                 <div class="col-sm-12 tria_tag" style="margin-top:15px;margin-bottom:15px;">
                     <p> <b><h4>Pagament Realitzat!!!</h4></b>  </p>
-                    <button type="button" class="btn btn-primary" onclick="location.href='{{ next }}'">Tornar</button>
+                    {% if origen == "Login"  %}
+                         <button type="button" class="btn btn-primary" onclick="location.href='{{ next }}'">Tornar</button>
+                    {% endif %}
                 </div>
         </div>
     {% else %}

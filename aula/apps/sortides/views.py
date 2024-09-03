@@ -1258,12 +1258,14 @@ def logPagaments(txt, tipus="ADMINISTRACIO"):
 
 @login_required
 def pagoOnlineWeb(request, pk):
+    request.session['origen'] = 'Login'
     return pagoOnlineBase(request, pk)
 
 @api_view(['GET'])
 def pagoOnlineApi(request, pk):
     request.session.save()
     session_key = request.session.session_key
+    request.session['origen']='Api'
     response=pagoOnlineBase(request, pk)
     response.set_cookie('sessionid', session_key, httponly=True)
     return response
@@ -1365,7 +1367,7 @@ def pagoOnlineBase(request, pk):
         })
     return render(request, 'formPagamentOnline.html', {'form': form, 'alumne':alumne, 'pk':pk, 
                                                        'sortida':sortida if pagament.sortida else descripcio_sortida + "("+str(pagament.quota.any)+")", 
-                                                       'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'next': nexturl,})
+                                                       'descripcio':descripcio_sortida, 'preu':preu, 'limit':data_limit_pagament,'pagat':pagament.pagament_realitzat, 'next': nexturl, 'origen': request.session['origen']})
 
 @login_required
 def pagoOnlineKO(request, pk):
