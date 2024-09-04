@@ -281,7 +281,7 @@ class Quota(models.Model):
             raise ValidationError(u"No es poden crear quotes del curs indicat fins al {0}.".format(self.any))
         #Comprova si existeix una quota del mateix tipus, curs i any.
         if self.tipus.nom in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA,  'taxcurs', 'uf', ]:
-            q=Quota.objects.filter(tipus=self.tipus, curs=self.curs, any=self.any, tpv=self.tpv)
+            q=Quota.objects.exclude(id=self.id).filter(tipus=self.tipus, curs=self.curs, any=self.any, tpv=self.tpv)
             # Si hi ha una altra, error
             if q: raise ValidationError(u"Ja existeix una Quota de tipus {0} per aquest curs i any.".format(self.tipus.nom))
 
