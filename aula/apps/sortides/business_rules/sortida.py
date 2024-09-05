@@ -70,7 +70,7 @@ def clean_sortida(instance):
     if bool(instance.instanceDB) and instance.instanceDB.estat in ['R', 'G'] :
         if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorICanvisSonPermesos:
             errors.append(
-                u"Només Coordinació de Sortides, Direcció o Professorat Organitzador pot modificar una sortida que s'està gestionant.")
+                u"Només Coordinació de Sortides, Direcció o Professorat Organitzador (no tots els camps), poden modificar una sortida que s'està gestionant.")
 
     """
     --------------------------Fí per estats >= R   -----------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def clean_sortida(instance):
     if instance.estat in ('R',):
 
         if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorICanvisSonPermesos:
-            errors.append(u"Només Coordinació de sortides, Direcció o Professorat Organitzador pot Revisar Una Sortida")
+            errors.append(u"Només Coordinació de sortides, Direcció o Professorat Organitzador (no tots els camps), poden Revisar Una Sortida")
 
         if not bool(instance.instanceDB) or instance.instanceDB.estat not in ['P', 'R']:
             errors.append(u"Només es pot Revisar una sortida ja Proposada")
