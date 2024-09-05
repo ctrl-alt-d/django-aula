@@ -57,15 +57,16 @@ def clean_sortida(instance):
     camps_d_una_sortida = instance._meta.get_fields()  # llistat de tots camps del model Sortida
     camps_que_pot_modificar_professorat_organitzador = ['sortides.Sortida.estat_sincronitzacio', 'sortides.Sortida.comentaris_interns']
     # comprova camps que es volen modificar, comparant instància actual amb la base de dades:
-    camps_modificats = filter(lambda field: getattr(instance, str(field.name), None) != getattr(instance.instanceDB, str(field.name), None), camps_d_una_sortida)
-    canvisPermesos=True
+    canvisPermesos = True
     profe = User2Professor(user)
-
-    # comprova que els camps que es volen modificar están dins els permesos per a un Professor Organitzador:
-    for camp_modificat in camps_modificats:
-        canvisPermesos=False if str(camp_modificat) not in camps_que_pot_modificar_professorat_organitzador else canvisPermesos
-    esProfeOrganitzadorICanvisSonPermesos = profe in instance.professors_responsables.all() and canvisPermesos
-
+    if bool(instance.instanceDB):
+        camps_modificats = filter(lambda field: getattr(instance, str(field.name), None) != getattr(instance.instanceDB, str(field.name),None), camps_d_una_sortida)
+        # comprova que els camps que es volen modificar están dins els permesos per a un Professor Organitzador:
+        for camp_modificat in camps_modificats:
+            canvisPermesos = False if str(camp_modificat) not in camps_que_pot_modificar_professorat_organitzador else canvisPermesos
+        esProfeOrganitzadorICanvisSonPermesos = profe in instance.professors_responsables.all() and canvisPermesos
+    else:
+        esProfeOrganitzadorICanvisSonPermesos = True
     if bool(instance.instanceDB) and instance.instanceDB.estat in ['R', 'G'] :
         if not User.objects.filter(pk=user.pk, groups__name__in=['sortides', 'direcció']).exists() and not esProfeOrganitzadorICanvisSonPermesos:
             errors.append(
