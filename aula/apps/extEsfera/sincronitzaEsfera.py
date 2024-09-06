@@ -78,7 +78,7 @@ def sincronitza(f, user = None):
     rows = list(wb2.active.rows)
     col_indexs = {n: cell.value for n, cell in enumerate(rows[5])
                    if cell.value in colnames} # Començar a la fila 6, les anteriors són brossa
-    nivells = set()
+    cursos = set()
     for row in rows[6:max_row - 1]:  # la darrera fila també és brossa
         a = Alumne()
         a.ralc = ''
@@ -242,12 +242,12 @@ def sincronitza(f, user = None):
                 a.data_alta = alumneDadesAnteriors.data_alta
                 
         a.save()
-        nivells.add(a.grup.curs.nivell)
+        cursos.add(a.grup.curs)
     #
     # Baixes:
     #
     # Els alumnes de Saga no s'han de tenir en compte per fer les baixes
-    AlumnesDeSaga = Alumne.objects.exclude(grup__curs__nivell__in=nivells)
+    AlumnesDeSaga = Alumne.objects.exclude(grup__curs__in=cursos)
     # Es canvia estat PRC a ''. No modifica DEL ni MAN
     AlumnesDeSaga.filter( estat_sincronitzacio__exact = 'PRC' ).update(estat_sincronitzacio='')
     

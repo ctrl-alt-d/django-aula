@@ -74,7 +74,7 @@ def sincronitza(f, user = None):
     trobatRalc = False
 
     f.seek(0)
-    nivells = set()
+    cursos = set()
     for row in reader:
         info_nAlumnesLlegits+=1
         a=Alumne()
@@ -250,13 +250,13 @@ def sincronitza(f, user = None):
 
 
         a.save()
-        nivells.add(a.grup.curs.nivell)
+        cursos.add(a.grup.curs)
     #
     # Baixes:
     #
 
     # Els alumnes d'Esfer@ no s'han de tenir en compte per fer les baixes
-    AlumnesDeEsfera = Alumne.objects.exclude(grup__curs__nivell__in=nivells)
+    AlumnesDeEsfera = Alumne.objects.exclude(grup__curs__in=cursos)
     # Es canvia estat PRC a ''. No modifica DEL ni MAN
     AlumnesDeEsfera.filter( estat_sincronitzacio__exact = 'PRC' ).update(estat_sincronitzacio='')
     
