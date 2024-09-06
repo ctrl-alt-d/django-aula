@@ -27,7 +27,7 @@ from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
 from django.template.context import RequestContext, Context
 from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import Sortida, SortidaPagament, Pagament, QuotaPagament, Quota
+from aula.apps.sortides.models import Sortida, SortidaPagament, Pagament, QuotaPagament, Quota, TPV
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
 from django import forms
@@ -513,13 +513,13 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                 safetext = u"""RECORDA: Una vegada enviades les dades, 
                                                   has de seleccionar els <a href="{0}">alumnes implicats</a>
                                                   des del menú desplegable ACCIONS""".format(
-                    "/sortides/alumnesConvocats/{id}".format(id=instance.id),
+                    "/sortides/alumnesConvocats/{id}/{tipus}".format(id=instance.id, tipus=tipus),
                     ) if tipus=="P" else u"""RECORDA: Una vegada enviades les dades,
                                                   has de seleccionar els <a href="{0}">alumnes convocats</a> i els
                                                   <a href="{1}">alumnes que no hi van</a>
                                                   des del menú desplegable ACCIONS""".format(
-                    "/sortides/alumnesConvocats/{id}".format(id=instance.id),
-                    "/sortides/alumnesFallen/{id}".format(id=instance.id),
+                    "/sortides/alumnesConvocats/{id}/{tipus}".format(id=instance.id, tipus=tipus),
+                    "/sortides/alumnesFallen/{id}/{tipus}".format(id=instance.id, tipus=tipus),
                 )
                 messages.warning(request,
                                  SafeText(safetext)
@@ -619,8 +619,8 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     
 @login_required
 @group_required(['professors','administratius'])
-def alumnesConvocats( request, pk , origen ):
-
+def alumnesConvocats( request, pk , origen, tipus=None ):
+    
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     professor = User2Professor( user )
@@ -735,8 +735,8 @@ def alumnesConvocats( request, pk , origen ):
     
 @login_required
 @group_required(['professors','administratius'])
-def alumnesFallen( request, pk , origen ):
-
+def alumnesFallen( request, pk , origen, tipus=None ):
+    
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     
@@ -821,9 +821,9 @@ def alumnesFallen( request, pk , origen ):
 #-------------------------------------------------------------------
     
 @login_required
-@group_required(['professors','administratius'])
-def alumnesJustificats( request, pk , origen ):
-
+@group_required(['professors','administratius'])  
+def alumnesJustificats( request, pk , origen, tipus=None ):
+    
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
     
@@ -906,7 +906,7 @@ def alumnesJustificats( request, pk , origen ):
     
 @login_required
 @group_required(['professors'])   
-def professorsAcompanyants( request, pk , origen ):
+def professorsAcompanyants( request, pk , origen, tipus=None ):
 
     credentials = tools.getImpersonateUser(request) 
     (user, _ ) = credentials
@@ -976,7 +976,7 @@ def professorsAcompanyants( request, pk , origen ):
                         importancia = 'VI'
                         msg.envia_a_usuari(nou, importancia) 
                                     
-                nexturl =  r'/sortides/sortides{origen}'.format( origen=origen )                
+                nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen=origen, tipus=tipus )
                 return HttpResponseRedirect( nexturl )
             except ValidationError as e:
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(  e.messages )
@@ -1692,8 +1692,8 @@ def pagoEfectiu(request, pk):
 
 @login_required()
 @group_required(['professors','administratius'])
-def detallPagament(request, pk):
-
+def detallPagament(request, pk, tipus=None):
+    
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
     professor = User2Professor(user)
@@ -1982,8 +1982,9 @@ def quotesCurs( request, curs, tipus, nany, auto ):
             if not quotacurs:
                 # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
                 quotacurs=Quota.objects.filter(any=nany, tipus=tipus)
-                if quotacurs.count()!=1:
-                    # Si troba varies no selecciona cap, si només troba una aleshores la fa servir per defecte
+                # Interesa trobar una única sense curs específic
+                if quotacurs.count()!=1 or quotacurs[0].curs!=None:
+                    # Si troba varies o només una d'un altre curs, no la selecciona
                     quotacurs=None
             
             if quotacurs:
