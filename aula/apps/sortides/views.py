@@ -503,8 +503,8 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
                     instance.esta_aprovada_pel_consell_escolar = 'N'
 
             if tipus=='P':
-                instance.calendari_desde=instance.termini_pagament
-                instance.calendari_finsa=instance.termini_pagament
+                instance.calendari_desde= datetime.today().date()
+                instance.calendari_finsa= datetime.today().date()
                 instance.alumnes_a_l_aula_amb_professor_titular = True
 
             form.save()
