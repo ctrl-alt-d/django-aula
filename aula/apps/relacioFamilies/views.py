@@ -1561,7 +1561,9 @@ def elMeuInforme( request, pk = None ):
                         camp.negreta = True
                         camp.contingut = "Pagat"
                     else:
-                        if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+                        alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
+                            act.alumnes_justificacio.all())
+                        if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE and alumne not in alumnat_tret_de_lactivitat:
                             camp.buto = u'sortides__sortides__pago_on_line'
                             camp.contingut = "Pagar Online"
                     filera.append(camp)
