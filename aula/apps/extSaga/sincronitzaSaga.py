@@ -260,13 +260,27 @@ def sincronitza(f, user = None):
     # Es canvia estat PRC a ''. No modifica DEL ni MAN
     AlumnesDeEsfera.filter( estat_sincronitzacio__exact = 'PRC' ).update(estat_sincronitzacio='')
     
-    #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
-    AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
-    AlumnesDonatsDeBaixa.update(
-                            data_baixa = date.today(),
-                            estat_sincronitzacio = 'DEL' ,
-                            motiu_bloqueig = 'Baixa'
-                            )
+    # amorilla@xtec.cat
+    #Es pot definir, a Extsaga / Paràmetres Saga, un paràmetre 'AlumnesManuals' amb valor 'True' o 'False'.
+    #Si True manté els alumnes afegits en estat 'MAN', d'aquesta manera la importació des d'esfer@ no donarà de baixa els alumnes
+    #Si False (o no existeix el paràmetre) es comporta com sempre, no els marca 'MAN' i dona de baixa els alumnes que no surten al fitxer
+    AlumnesManuals, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'AlumnesManuals' )
+    if AlumnesManuals.valor_parametre=='True':
+        #En cas True indica que els alumnes han de quedar Manuals.
+        AlumnesDonatsDeBaixa = Alumne.objects.none()
+        Alumne.objects.filter( Q(estat_sincronitzacio__exact = 'S-I') | Q(estat_sincronitzacio__exact = 'S-U') ).update(
+                                estat_sincronitzacio = 'MAN' ,
+                                motiu_bloqueig = ''
+                                )
+    else:        
+        #En cas False (o no existeix el paràmetre), s'actua com sempre.
+        #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
+        AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
+        AlumnesDonatsDeBaixa.update(
+                                data_baixa = date.today(),
+                                estat_sincronitzacio = 'DEL' ,
+                                motiu_bloqueig = 'Baixa'
+                                )
 
     #Avisar als professors: Baixes
     #: enviar un missatge a tots els professors que tenen aquell alumne.
