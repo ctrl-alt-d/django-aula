@@ -276,6 +276,16 @@ ParametreSaga.autoRalc
     Genera RALC per als alumnes que no tenen, p.ex: CAM i CIS.
     El RALC es crea amb el prefix+DNI
 
+ParametreSaga.CursosManuals
+    Per solucionar el conflicte de cursos compartits Esfer@-SAGA:
+    Es pot definir, a Extsaga / Paràmetres Saga, un paràmetre 'CursosManuals' amb la llista de cursos en què els alumnes
+    quedaran insertats com a manuals (MAN).
+    Aquesta llista inclou els noms dels cursos, segons el camp 'nom_curs'. p.ex: ['1'], ['1', '2'], ['2', '4'], ...
+    Si existeix la llista, manté els alumnes afegits d'aquests cursos en estat 'MAN', així la importació
+    des d'esfer@ no donarà de baixa els alumnes.
+    Si no hi ha llista (o no existeix el paràmetre) es comporta com sempre, no els marca 'MAN' i dona de baixa els alumnes
+    que no surten al fitxer.
+
 ExtEsfera
 
 ParametreEsfera.grups estatics
