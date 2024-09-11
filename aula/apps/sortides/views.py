@@ -899,16 +899,9 @@ def alumnesJustificats( request, pk , origen, tipus=None ):
                         pass
                     # treure
                 for alumne in ante - nous:
-                    try:
                         instance.alumnes_justificacio.remove(alumne)
-                        # Afegeix pagament si no existeix
-                        if instance.tipus_de_pagament == 'ON':
-                            # Comprova si ja existeix el pagament
-                            pag = SortidaPagament.objects.filter(alumne=alumne, sortida=instance)
-                            if not pag:
-                                instance.pagaments.add(alumne)
-                    except IntegrityError:
-                        pass
+                        # No s'afegeix pagament ja que encara continuarà com a alumnat no assistent a l'activitat
+
 
                 if fEsAdministratiu: origen = "Gestio"
                 nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )

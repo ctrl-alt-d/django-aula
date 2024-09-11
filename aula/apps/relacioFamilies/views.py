@@ -1552,10 +1552,11 @@ def elMeuInforme( request, pk = None ):
             if act.tipus_de_pagament == 'ON':
                 alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
                     act.alumnes_justificacio.all())
+                alumne_tret_de_lactivitat = alumne in alumnat_tret_de_lactivitat
                 camp = tools.classebuida()
                 camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
                 #pagament corresponent a una sortida i un alumne
-                if not alumnat_tret_de_lactivitat:
+                if not alumne_tret_de_lactivitat:
                     pagament_sortida_alumne = get_object_or_404(SortidaPagament, alumne=alumne, sortida=act)
                     camp.id = pagament_sortida_alumne.id
                     # Pagaments pendents o ja fets. Si sortida caducada no mostra pagament pendent.
