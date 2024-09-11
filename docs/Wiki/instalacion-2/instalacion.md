@@ -191,20 +191,23 @@ EMAIL_HOST_IMAP="imap.gmail.com"
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
 
-#Backend SMTP:
+#Backend SMTP
+# S'ha de comentar si no es fa servir
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
 EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'  #Password d'aplicació
 SERVER_EMAIL='el-meu-centre@el-meu-centre.net'
 
-# Per proves, envia a la consola
+#Backend per proves, envia a la consola
+# Treure comentari si es vol fer servir
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
 
 #Backend API de Gmail
+# Treure comentaris si es vol fer servir
 #EMAIL_BACKEND = 'django_gsuite_email.GSuiteEmailBackend'   #https://github.com/slicefox/django-gsuite-email
-GSUITE_CREDENTIALS_FILE=os.path.join('path_al_fitxer_de_credencials.json')
-GMAIL_USER = 'el-meu-centre@el-meu-centre.net'
-GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/gmail.readonly', ]
+#GSUITE_CREDENTIALS_FILE=os.path.join('path_al_fitxer_de_credencials.json')
+#GMAIL_USER = 'el-meu-centre@el-meu-centre.net'
+#GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/gmail.readonly', ]
 
 DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
