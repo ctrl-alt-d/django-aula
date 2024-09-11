@@ -260,13 +260,33 @@ def sincronitza(f, user = None):
     # Es canvia estat PRC a ''. No modifica DEL ni MAN
     AlumnesDeEsfera.filter( estat_sincronitzacio__exact = 'PRC' ).update(estat_sincronitzacio='')
     
-    #Els alumnes que hagin quedat a PRC és que s'han donat de baixa:
-    AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' )
+    # amorilla@xtec.cat
+    #Per solucionar el conflicte de cursos compartits Esfer@-SAGA:
+    #Es pot definir, a Extsaga / Paràmetres Saga, un paràmetre 'CursosManuals' amb la llista de cursos en què els alumnes quedaran insertats com a MAN
+    #Aquesta llista inclou els noms dels cursos, segons el camp 'nom_curs'. p.ex: ['1'], ['1', '2'], ['2', '4'], ...
+    #Si existeix la llista, manté els alumnes afegits d'aquests cursos en estat 'MAN', així la importació des d'esfer@ no donarà de baixa els alumnes
+    #Si no hi ha llista (o no existeix el paràmetre) es comporta com sempre, no els marca 'MAN' i dona de baixa els alumnes que no surten al fitxer
+    CursosManuals, _ = ParametreSaga.objects.get_or_create( nom_parametre = 'CursosManuals' )
+    if bool(CursosManuals.valor_parametre):
+        try:
+            CursosManuals=eval(CursosManuals.valor_parametre)
+            if not isinstance(CursosManuals, list):
+                CursosManuals=list(CursosManuals)
+        except:
+            CursosManuals=[]
+    else:
+        CursosManuals=[]
+    #Els alumnes que hagin quedat a PRC és que s'han donat de baixa, excepte els que corresponen a cursos manuals
+    AlumnesDonatsDeBaixa = Alumne.objects.filter( estat_sincronitzacio__exact = 'PRC' ).exclude(grup__curs__nom_curs__in= CursosManuals)
     AlumnesDonatsDeBaixa.update(
                             data_baixa = date.today(),
                             estat_sincronitzacio = 'DEL' ,
                             motiu_bloqueig = 'Baixa'
                             )
+    if bool(CursosManuals) and len(CursosManuals)>0:
+        #Hi ha una llista de cursos a on els alumnes han de quedar Manuals.
+        Alumne.objects.filter( Q(estat_sincronitzacio__exact = 'S-I') | Q(estat_sincronitzacio__exact = 'S-U'),
+                               grup__curs__nom_curs__in= CursosManuals).update(estat_sincronitzacio = 'MAN', motiu_bloqueig = '')
 
     #Avisar als professors: Baixes
     #: enviar un missatge a tots els professors que tenen aquell alumne.

@@ -260,8 +260,8 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Sincronitza", 'administracio__sincronitza__blanc', di, None, 
                         (
-                          ("Alumnes ESO/BAT", 'administracio__sincronitza__esfera', di , None  ),
-                          ("Alumnes Cicles", 'administracio__sincronitza__saga', di, None),
+                          ("Alumnes Esfer@", 'administracio__sincronitza__esfera', di , None  ),
+                          ("Alumnes SAGA", 'administracio__sincronitza__saga', di, None),
                           ("Dades addicionals alumnat", 'administracio__sincronitza__dades_addicionals', di, None),
                           ("Preinscripció", 'administracio__sincronitza__preinscripcio', di , None  ),
                           ("HorarisKronowin", 'administracio__sincronitza__kronowin', di , None  ),
