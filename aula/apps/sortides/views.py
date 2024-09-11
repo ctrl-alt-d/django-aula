@@ -769,10 +769,33 @@ def alumnesFallen( request, pk , origen, tipus=None ):
                 ante=set([ x.pk for x in instance.alumnes_que_no_vindran.all().distinct() ] )
                 #afegir
                 for alumne in nous - ante:
-                    instance.alumnes_que_no_vindran.add( alumne )
+                    try:
+                        # Elimina pagament si no pagat
+                        if instance.tipus_de_pagament == 'ON':
+                            # Comprova si ja ha pagat
+                            pag = SortidaPagament.objects.filter(alumne=alumne, sortida=instance, pagament_realitzat=True)
+                            if not pag:
+                                instance.pagaments.remove(alumne)
+                                instance.alumnes_que_no_vindran.add(alumne)
+                            else:
+                                alumno= Alumne.objects.get(pk=alumne)
+                                messages.warning(request, u"L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(alumno.nom, alumno.cognoms))
+                        else:
+                            instance.alumnes_que_no_vindran.add(alumne)
+                    except IntegrityError:
+                        pass
                 #treure
                 for alumne in ante - nous:
-                    instance.alumnes_que_no_vindran.remove( alumne )
+                    try:
+                        instance.alumnes_que_no_vindran.remove( alumne )
+                        # Afegeix pagament si no existeix
+                        if instance.tipus_de_pagament == 'ON':
+                            # Comprova si ja existeix el pagament
+                            pag = SortidaPagament.objects.filter(alumne=alumne, sortida=instance)
+                            if not pag:
+                                instance.pagaments.add(alumne)
+                    except IntegrityError:
+                        pass
 
                 nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
                 return HttpResponseRedirect( nexturl )
@@ -856,10 +879,36 @@ def alumnesJustificats( request, pk , origen, tipus=None ):
                 ante=set([ x.pk for x in instance.alumnes_justificacio.all() ] )
                 #afegir
                 for alumne in nous - ante:
-                    instance.alumnes_justificacio.add( alumne )
-                #treure
+                    try:
+                        # Elimina pagament si no pagat
+                        if instance.tipus_de_pagament == 'ON':
+                            # Comprova si ja ha pagat
+                            pag = SortidaPagament.objects.filter(alumne=alumne, sortida=instance,
+                                                                 pagament_realitzat=True)
+                            if not pag:
+                                instance.pagaments.remove(alumne)
+                                instance.alumnes_justificacio.add(alumne)
+                            else:
+                                alumno = Alumne.objects.get(pk=alumne)
+                                messages.warning(request,
+                                                 u"L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
+                                                     alumno.nom, alumno.cognoms))
+                        else:
+                            instance.alumnes_justificacio.add(alumne)
+                    except IntegrityError:
+                        pass
+                    # treure
                 for alumne in ante - nous:
-                    instance.alumnes_justificacio.remove( alumne )
+                    try:
+                        instance.alumnes_justificacio.remove(alumne)
+                        # Afegeix pagament si no existeix
+                        if instance.tipus_de_pagament == 'ON':
+                            # Comprova si ja existeix el pagament
+                            pag = SortidaPagament.objects.filter(alumne=alumne, sortida=instance)
+                            if not pag:
+                                instance.pagaments.add(alumne)
+                    except IntegrityError:
+                        pass
 
                 if fEsAdministratiu: origen = "Gestio"
                 nexturl =  r'/sortides/sortides{origen}/{tipus}'.format( origen = origen, tipus=instance.tipus )
