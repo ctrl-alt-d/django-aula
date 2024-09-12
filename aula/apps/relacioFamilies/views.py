@@ -1550,21 +1550,28 @@ def elMeuInforme( request, pk = None ):
 
             # ----------------------------------------------
             if act.tipus_de_pagament == 'ON':
+                alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
+                    act.alumnes_justificacio.all())
+                alumne_tret_de_lactivitat = alumne in alumnat_tret_de_lactivitat
+                camp = tools.classebuida()
+                camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
                 #pagament corresponent a una sortida i un alumne
-                pagament_sortida_alumne = get_object_or_404(SortidaPagament, alumne=alumne, sortida=act)
-                # Pagaments pendents o ja fets. Si sortida caducada no mostra pagament pendent.
-                if (act.termini_pagament and act.termini_pagament >= datetime.now()) or not bool(act.termini_pagament) or pagament_sortida_alumne.pagamentFet:
-                    camp = tools.classebuida()
+                if not alumne_tret_de_lactivitat:
+                    pagament_sortida_alumne = get_object_or_404(SortidaPagament, alumne=alumne, sortida=act)
                     camp.id = pagament_sortida_alumne.id
-                    camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
-                    if pagament_sortida_alumne.pagamentFet:
+                    # Pagaments pendents o ja fets. Si sortida caducada no mostra pagament pendent.
+                    if (act.termini_pagament and act.termini_pagament >= datetime.now()) or not bool(act.termini_pagament) or pagament_sortida_alumne.pagamentFet:
+                        if pagament_sortida_alumne.pagamentFet:
+                            camp.negreta = True
+                            camp.contingut = "Pagat"
+                        else:
+                            if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
+                                camp.buto = u'sortides__sortides__pago_on_line'
+                                camp.contingut = "Pagar Online"
+                else:
                         camp.negreta = True
-                        camp.contingut = "Pagat"
-                    else:
-                        if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
-                            camp.buto = u'sortides__sortides__pago_on_line'
-                            camp.contingut = "Pagar Online"
-                    filera.append(camp)
+                        camp.contingut = "Baixa de l'activitat/pagament"
+                filera.append(camp)
 
             #--
             taula.fileres.append( filera )
