@@ -79,25 +79,28 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumn
 {"nom":"","mail":"","tfn":""}],"adreça":"CR Pere III 62  ESC. C 1er 1era , Figueres"}
 
 
-#Fase 7: Demanar activitats i pagaments corresponents a l'alumne
-export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
-curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/activitats/
+#Demanar sortides d'un alumne
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/
 #Resposta: 
-[{"id":214,"darrera_sincronitzacio":null},
-{"tipus":"A","titol":"2n ESO A Xerrada Mossos \"Comença el Joc\"","data-inici":"01.02.2024 11:25:00","data-fi":"01.02.2024 12:20:00","descripcio":"Enguany els Mossos d'Esquadra...","condicions-generals":"","tipus-pagament":"NO","preu":"0","termini":"","forma-pagament":"","comentari":"","pagat":""},
-{"tipus":"P","titol":"2n ESO Tecnologia: Kit material elèctric","data-inici":"20.12.2023 23:59:00","data-fi":"17.12.2023 23:59:00","descripcio":"Durant el segon trimestre, des ...","condicions-generals":"Data límit per realitzar ...","tipus-pagament":"ON","preu":"6.40","termini":"20.12.2023 23:59:00","forma-pagament":"El pagament s'ha de realitzar ...,"comentari":"","pagat":"SI"}
-]
+[{"id":188,"titol":"Taller prototipatge","data":"2024-01-11 17:45:00","assistiraALaSortida":true,"assistiraAClasse":false,"pagament":false,"realitzat":false,"idPagament":null},
+{"id":455,"titol":"prova111","data":"2024-09-25 11:25:00","assistiraALaSortida":false,"assistiraAClasse":false,"pagament":true,"realitzat":false,"idPagament":7352}]
 
 
-#Fase 8: Realitzar un pagament a través del mòbil
-export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
-export CODI_PAGAMENT="4294"
-export DATA_HORA_PAGAMENT="2024-03-18 12:00:13"
-export ORDRE_PAGAMENT="11240004294"
-curl -H "Authorization: Bearer ${JWTOKEN}" -d "{\"codi_pagament\":\"${CODI_PAGAMENT}\",\"data_hora_pagament\":\"${DATA_HORA_PAGAMENT}\", \"ordre_pagament\":\"${ORDRE_PAGAMENT}\"  }" http://127.0.0.1:8000/api/token/alumnes/pagat/
-
+#Demanar detall d'una sortida concreta d'un alumne
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/detallSortida/455/
+# On 455 és l'identificador de la sortida
 #Resposta: 
-{"pagament_guardat":"True"}
+[{"idSortida":"455","titol":"prova111","desde":"25/09/2024 11:25","finsa":"03/10/2024 11:25",
+"programa":"Descripció acvitat 111","condicions":"Condicions general activitat 111",
+"infoPagament":"El pagament s'ha de realitzar a través d'aquesta mateixa plataforma",
+"preu":"10.00","dataLimitPagament":"2024-09-24 11:29:00","pagament":true,"realitzat":false,"idPagament":7352}]
+
+
+#Enllaç d'entrada a la Webview per a realitzar pagament d'una sortida
+curl -H "Authorization: Bearer ${JWTOKEN}" https://127.0.0.1:8000/sortides/pagoOnlineApi/4297/
+# On 4297 és l'identificador del pagament
+#Retorna la pàgina html amb les dades del pagament per anar al TPV
+
 
 
 $# ------------------- Altres proves ------------------------------

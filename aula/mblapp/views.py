@@ -289,80 +289,92 @@ def alumnes_dades(request, format=None):
 
 
 
-
 @api_view(['GET'])
 @permission_classes((EsUsuariDeLaAPI,))
-def alumnes_activitats (request, format=None):
+def sortides(request):
     """
-    Retorna totes les activitats i pagaments d'un alumne/a.
+    Retorna les activitats/pagaments de l'alumne
     """
     qrtoken = request.user.qrportal
     alumne = qrtoken.alumne_referenciat
-    content = [{
-        "id": alumne.id,
-        "darrera_sincronitzacio": qrtoken.darrera_sincronitzacio,
-    }]
+
+    content = []
 
     sortides = alumne.notificasortida_set.all()
     # sortides a on s'ha convocat a l'alumne
     sortidesnotificat = Sortida.objects.filter(notificasortida__alumne=alumne)
     # sortides pagades a les que ja no s'ha convocat a l'alumne
-    sortidespagadesperalumne = SortidaPagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list(
-        'sortida', flat=True).distinct()
+    sortidespagadesperalumne = SortidaPagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list('sortida', flat=True).distinct()
     sortidespagadesnonotificades = Sortida.objects.filter(id__in=sortidespagadesperalumne,
                                                           pagaments__pagament__alumne=alumne,
                                                           pagaments__pagament__pagament_realitzat=True).exclude(notificasortida__alumne=alumne)
     # totes les sortides relacionades amb l'alumne
     activitats = sortidesnotificat.union(sortidespagadesnonotificades)
-
-
     sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list('id', flat=True).distinct()
     sortides_justificades = alumne.sortides_falta_justificat.values_list('id', flat=True).distinct()
 
-
-    for act in activitats.order_by('-calendari_desde'):
-        if act.tipus == 'P':
-            data = act.termini_pagament
+    for sortida in activitats.order_by('-calendari_desde'):
+        if sortida.tipus_de_pagament == 'ON':
+            try:
+                pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
+                realitzat = pagament.pagament_realitzat
+            except Pagament.DoesNotExist:
+                pagament = None
+                realitzat = False
         else:
-            data = act.calendari_desde
-
-        #  NO INSCRIT A L’ACTIVITAT. L'alumne ha d'assistir al centre excepte si són de viatge de final de curs.
-        comentari_no_ve = u""
-        if act.pk in sortides_on_no_assistira:
-            comentari_no_ve = u"NO INSCRIT A L’ACTIVITAT."
-            if act.pk in sortides_justificades:
-                comentari_no_ve += u"NO INSCRIT A L’ACTIVITAT. Té justificada l'absència."
-        comentari = comentari_no_ve
-
-        # Si el pagament no es fa a través de l'app, pagat="", si es fa a través de l'app tindrà valor "SI" o "NO"
-        pagat = ""
-        id_pagament=""
-        if act.tipus_de_pagament == 'ON':
-            # pagament corresponent a una sortida i un alumne
-            pagament_sortida_alumne = get_object_or_404(Pagament, alumne=alumne, sortida=act)
-            id_pagament = pagament_sortida_alumne.id
-            # Pagaments pendents o ja fets. Si sortida caducada no mostra pagament pendent.
-            if (act.termini_pagament and act.termini_pagament >= datetime.now()) or not bool(
-                    act.termini_pagament) or pagament_sortida_alumne.pagamentFet:
-                if pagament_sortida_alumne.pagamentFet:
-                    pagat="SI"
-                else:
-                    if settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
-                        pagat="NO"
-
-        content = content + [{"tipus": unicode(act.tipus),
-                   "titol": unicode(act.titol),
-                   "data-inici": unicode(data.strftime(("%d.%m.%Y %H:%M:%S"))),
-                   "data-fi": unicode(act.calendari_finsa.strftime(("%d.%m.%Y %H:%M:%S"))),
-                   "descripcio": unicode(act.programa_de_la_sortida),
-                   "condicions-generals": unicode(act.condicions_generals),
-                   "tipus-pagament": unicode(act.tipus_de_pagament),
-                   "preu": unicode(act.preu_per_alumne) if act.preu_per_alumne else '0',
-                   "termini": unicode(act.termini_pagament.strftime("%d.%m.%Y %H:%M:%S")) if act.termini_pagament else '',
-                   "forma-pagament": unicode(act.informacio_pagament),
-                   "comentari": unicode(comentari),
-                   "pagat": unicode(pagat),
-                   "codi-pagament":unicode(id_pagament),
-                   }]
-
+            pagament = None
+            realitzat = False
+        assistiraALaSortida = True
+        assistiraAClasse = False
+        if sortida.pk in sortides_on_no_assistira:
+            assistiraALaSortida = False #no assisteix a la sortida
+            assistiraAClasse = True
+            if sortida.pk in sortides_justificades:
+                assistiraAClasse = False #no assisteix a la sortida ni a classe (ho té justificat)
+        content = content + [{"id": sortida.id,
+                              "titol": str(sortida.titol),
+                              "data": str(sortida.calendari_desde),
+                              "assistiraALaSortida": assistiraALaSortida,
+                              "assistiraAClasse": assistiraAClasse,
+                              "pagament": bool(pagament),
+                              "realitzat": realitzat,
+                              "idPagament": pagament.id if pagament else None
+                                  }]
     return Response(content)
+
+
+
+
+@api_view(['GET'])
+@permission_classes((EsUsuariDeLaAPI,))
+def detallSortida(request, pk):
+    """
+    Rep el pk d'una activitat/pagament i retorna informació de l'activitat/pagament
+    """
+    qrtoken = request.user.qrportal
+    alumne = qrtoken.alumne_referenciat
+    sortida = Sortida.objects.get(pk=pk)
+
+    try:
+        pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
+        realitzat = pagament.pagament_realitzat
+    except Pagament.DoesNotExist:
+        pagament = None
+        realitzat = False
+
+    content = []
+    content = content + [{"idSortida": pk,
+                              "titol": str(sortida.titol),
+                              "desde": sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),
+                              "finsa": sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),
+                              "programa": sortida.programa_de_la_sortida,
+                              "condicions": sortida.condicions_generals,
+                              "infoPagament": sortida.informacio_pagament,
+                              "preu": str(sortida.preu_per_alumne) if sortida.preu_per_alumne else u'0',
+                              "dataLimitPagament": str(sortida.termini_pagament) if sortida.termini_pagament else '',
+                              "pagament": bool(pagament),
+                              "realitzat": realitzat,
+                              "idPagament": pagament.id if pagament else None
+                        }]
+    return Response(content)
+
