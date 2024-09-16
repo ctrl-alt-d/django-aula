@@ -21,11 +21,6 @@ Nota: El tutor pot imprimir tants i tants QR's com vulgui.
 * La part servidora anota la data en que li ha enviat a la família les dades.
 
 Nota: Sempre s'envien totes les dades, no és incremental.
-### Estat actual:
-
-Falta per programar:
-
-* Envia a l'app assistència, incidències i expulsions. Cal ampliar-ho a la resta ( sancions, qualitativa, sortides,.... )
 
 
 ### Provatures part servidora des de la línia de comandes
@@ -82,6 +77,30 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumn
 {"grup":"SMX2A","datanaixement":"13/5/2004","telefon":"","responsables":
 [{"nom":"Ganchozo Risco, Miriam Graciela","mail":"keylu5810@hotmail.com","tfn":""},
 {"nom":"","mail":"","tfn":""}],"adreça":"CR Pere III 62  ESC. C 1er 1era , Figueres"}
+
+
+#Demanar sortides d'un alumne
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/
+#Resposta: 
+[{"id":188,"titol":"Taller prototipatge","data":"2024-01-11 17:45:00","assistiraALaSortida":true,"assistiraAClasse":false,"pagament":false,"realitzat":false,"idPagament":null},
+{"id":455,"titol":"prova111","data":"2024-09-25 11:25:00","assistiraALaSortida":false,"assistiraAClasse":false,"pagament":true,"realitzat":false,"idPagament":7352}]
+
+
+#Demanar detall d'una sortida concreta d'un alumne
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/detallSortida/455/
+# On 455 és l'identificador de la sortida
+#Resposta: 
+[{"idSortida":"455","titol":"prova111","desde":"25/09/2024 11:25","finsa":"03/10/2024 11:25",
+"programa":"Descripció acvitat 111","condicions":"Condicions general activitat 111",
+"infoPagament":"El pagament s'ha de realitzar a través d'aquesta mateixa plataforma",
+"preu":"10.00","dataLimitPagament":"2024-09-24 11:29:00","pagament":true,"realitzat":false,"idPagament":7352}]
+
+
+#Enllaç d'entrada a la Webview per a realitzar pagament d'una sortida
+curl -H "Authorization: Bearer ${JWTOKEN}" https://127.0.0.1:8000/sortides/pagoOnlineApi/4297/
+# On 4297 és l'identificador del pagament
+#Retorna la pàgina html amb les dades del pagament per anar al TPV
+
 
 
 $# ------------------- Altres proves ------------------------------
