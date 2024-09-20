@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
-# amorilla@xtec.cat 
+# amorilla@xtec.cat
 # Configura l'idioma correcte per les dates
 
 from django.conf import settings

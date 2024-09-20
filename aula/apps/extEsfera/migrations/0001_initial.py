@@ -11,34 +11,66 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('alumnes', '0007_alumne_municipi'),
+        ("alumnes", "0007_alumne_municipi"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Grup2Aula',
+            name="Grup2Aula",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('grup_esfera', models.CharField(blank=True, max_length=60, unique=True)),
-                ('Grup2Aula', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='grup2aulaesfera_set', to='alumnes.Grup')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "grup_esfera",
+                    models.CharField(blank=True, max_length=60, unique=True),
+                ),
+                (
+                    "Grup2Aula",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="grup2aulaesfera_set",
+                        to="alumnes.Grup",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['Grup2Aula', 'grup_esfera'],
-                'verbose_name': 'Mapeig Grup Aula Esfera',
-                'verbose_name_plural': 'Mapejos Grups Aula Esfera',
+                "ordering": ["Grup2Aula", "grup_esfera"],
+                "verbose_name": "Mapeig Grup Aula Esfera",
+                "verbose_name_plural": "Mapejos Grups Aula Esfera",
             },
         ),
         migrations.CreateModel(
-            name='ParametreEsfera',
+            name="ParametreEsfera",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nom_parametre', models.CharField(help_text='Nom Par\xe0metre', max_length=45, unique=True)),
-                ('valor_parametre', models.CharField(blank=True, max_length=240)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "nom_parametre",
+                    models.CharField(
+                        help_text="Nom Par\xe0metre", max_length=45, unique=True
+                    ),
+                ),
+                ("valor_parametre", models.CharField(blank=True, max_length=240)),
             ],
             options={
-                'ordering': ['nom_parametre'],
-                'verbose_name': 'Par\xe0metre Esfera',
-                'verbose_name_plural': 'Par\xe0metres Esfera',
+                "ordering": ["nom_parametre"],
+                "verbose_name": "Par\xe0metre Esfera",
+                "verbose_name_plural": "Par\xe0metres Esfera",
             },
         ),
     ]

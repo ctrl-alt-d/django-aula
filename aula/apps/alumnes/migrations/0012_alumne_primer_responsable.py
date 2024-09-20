@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0011_auto_20191002_1753'),
+        ("alumnes", "0011_auto_20191002_1753"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='alumne',
-            name='primer_responsable',
-            field=models.IntegerField(choices=[(0, 'Responsable 1'), (1, 'Responsable 2')], default=0, help_text="Principal responsable de l'alumne/a"),
+            model_name="alumne",
+            name="primer_responsable",
+            field=models.IntegerField(
+                choices=[(0, "Responsable 1"), (1, "Responsable 2")],
+                default=0,
+                help_text="Principal responsable de l'alumne/a",
+            ),
         ),
     ]

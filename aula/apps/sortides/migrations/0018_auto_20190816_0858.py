@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sortides', '0017_pagament_ordre_pagament'),
+        ("sortides", "0017_pagament_ordre_pagament"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='pagament',
-            name='data_hora_pagament',
+            model_name="pagament",
+            name="data_hora_pagament",
             field=models.CharField(max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='pagament',
-            name='pagament_realitzat',
+            model_name="pagament",
+            name="pagament_realitzat",
             field=models.BooleanField(default=False, null=True),
         ),
     ]

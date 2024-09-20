@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('horaris', '0003_auto_20180411_1942'),
+        ("horaris", "0003_auto_20180411_1942"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='diadelasetmana',
-            name='dia_2_lletres',
-            field=models.CharField(max_length=6, unique=True, verbose_name='Dia'),
+            model_name="diadelasetmana",
+            name="dia_2_lletres",
+            field=models.CharField(max_length=6, unique=True, verbose_name="Dia"),
         ),
         migrations.AlterField(
-            model_name='diadelasetmana',
-            name='dia_de_la_setmana',
-            field=models.CharField(max_length=45, unique=True, verbose_name='Dia de la setmana'),
+            model_name="diadelasetmana",
+            name="dia_de_la_setmana",
+            field=models.CharField(
+                max_length=45, unique=True, verbose_name="Dia de la setmana"
+            ),
         ),
     ]

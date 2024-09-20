@@ -2,6 +2,7 @@
 
 from django import forms as forms
 
+
 class sincronitzaEsferaForm(forms.Form):
     fitxerEsfera = forms.FileField(required=True)
 

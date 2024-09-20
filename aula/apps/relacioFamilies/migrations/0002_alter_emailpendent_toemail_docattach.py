@@ -9,25 +9,47 @@ import private_storage.storage.files
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('relacioFamilies', '0001_initial'),
+        ("relacioFamilies", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='emailpendent',
-            name='toemail',
+            model_name="emailpendent",
+            name="toemail",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.CreateModel(
-            name='DocAttach',
+            name="DocAttach",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fitxer', private_storage.fields.PrivateFileField(storage=private_storage.storage.files.PrivateFileSystemStorage(), upload_to='email/', verbose_name='Fitxer adjunt')),
-                ('email', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to='relacioFamilies.emailpendent')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "fitxer",
+                    private_storage.fields.PrivateFileField(
+                        storage=private_storage.storage.files.PrivateFileSystemStorage(),
+                        upload_to="email/",
+                        verbose_name="Fitxer adjunt",
+                    ),
+                ),
+                (
+                    "email",
+                    models.ForeignKey(
+                        blank=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="relacioFamilies.emailpendent",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Attach File',
-                'verbose_name_plural': 'Attach Files',
+                "verbose_name": "Attach File",
+                "verbose_name_plural": "Attach Files",
             },
         ),
     ]

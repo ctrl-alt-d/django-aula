@@ -6,4 +6,3 @@ from django.contrib import admin
 admin.site.register(Franja2Aula)
 admin.site.register(Grup2Aula)
 admin.site.register(ParametreKronowin)
-

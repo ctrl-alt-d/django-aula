@@ -8,23 +8,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sortides', '0008_auto_20171113_1718'),
+        ("sortides", "0008_auto_20171113_1718"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='sortida',
-            name='pagament_efectiu',
-            field=models.BooleanField(default=False, help_text="La sortida s'ha de pagar en efectiu", verbose_name='Pagament de la sortida en efectiu'),
+            model_name="sortida",
+            name="pagament_efectiu",
+            field=models.BooleanField(
+                default=False,
+                help_text="La sortida s'ha de pagar en efectiu",
+                verbose_name="Pagament de la sortida en efectiu",
+            ),
         ),
         migrations.AddField(
-            model_name='sortida',
-            name='pagament_entitat_bancaria',
-            field=models.BooleanField(default=True, help_text="La sortida s'ha de pagar a l'entitat banc\xe0ria", verbose_name="Pagament de la sortida a l'entitat banc\xe0ria"),
+            model_name="sortida",
+            name="pagament_entitat_bancaria",
+            field=models.BooleanField(
+                default=True,
+                help_text="La sortida s'ha de pagar a l'entitat banc\xe0ria",
+                verbose_name="Pagament de la sortida a l'entitat banc\xe0ria",
+            ),
         ),
         migrations.AddField(
-            model_name='sortida',
-            name='pagament_online',
-            field=models.BooleanField(default=False, help_text="La sortida s'ha de pagar online des del DJAU (en proves)", verbose_name='Pagament de la sortida online des del DJAU (en proves)'),
+            model_name="sortida",
+            name="pagament_online",
+            field=models.BooleanField(
+                default=False,
+                help_text="La sortida s'ha de pagar online des del DJAU (en proves)",
+                verbose_name="Pagament de la sortida online des del DJAU (en proves)",
+            ),
         ),
     ]

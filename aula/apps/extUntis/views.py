@@ -10,39 +10,40 @@ from aula.apps.extUntis.forms import sincronitzaUntisForm
 from aula.apps.usuaris.models import Accio
 
 from aula.utils import tools
-#---------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------
+
 
 @login_required
-@group_required(['direcció'])
+@group_required(["direcció"])
 def sincronitzaUntis(request):
-    credentials = tools.getImpersonateUser(request) 
-    (user, l4) = credentials   
-    
-    if request.method == 'POST':
+    credentials = tools.getImpersonateUser(request)
+    (user, l4) = credentials
+
+    if request.method == "POST":
         form = sincronitzaUntisForm(request.POST, request.FILES)
         if form.is_valid():
 
-            f = request.FILES['fitxer_Untis']
+            f = request.FILES["fitxer_Untis"]
             resultat = s.sincronitza(f.read(), request.user)
-            #LOGGING
-            Accio.objects.create( 
-                    tipus = 'SU',
-                    usuari = user,
-                    l4 = l4,
-                    impersonated_from = request.user if request.user != user else None,
-                    text = u"""Sincronitzar horaris des d'arxiu Untis."""
-                )
-            
+            # LOGGING
+            Accio.objects.create(
+                tipus="SU",
+                usuari=user,
+                l4=l4,
+                impersonated_from=request.user if request.user != user else None,
+                text="""Sincronitzar horaris des d'arxiu Untis.""",
+            )
+
         return render(
-                        request,
-                        'resultat.html', 
-                        {'head': u'Resultat sincronització Untis' ,
-                         'msgs': resultat },
-                     )
+            request,
+            "resultat.html",
+            {"head": "Resultat sincronització Untis", "msgs": resultat},
+        )
     else:
         form = sincronitzaUntisForm()
     return render(
-                        request,
-                        'sincronitzaUntis.html', 
-                        {'form': form},
-                 )
+        request,
+        "sincronitzaUntis.html",
+        {"form": form},
+    )

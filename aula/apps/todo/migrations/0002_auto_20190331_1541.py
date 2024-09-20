@@ -6,23 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('todo', '0001_initial'),
+        ("todo", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='todo',
-            name='estat',
-            field=models.CharField(choices=[('P', 'Pendent'), ('R', 'Realitzat')], default='P', max_length=2),
+            model_name="todo",
+            name="estat",
+            field=models.CharField(
+                choices=[("P", "Pendent"), ("R", "Realitzat")],
+                default="P",
+                max_length=2,
+            ),
         ),
         migrations.AlterField(
-            model_name='todo',
-            name='informacio_adicional',
-            field=models.TextField(help_text='Informació adicional', verbose_name='Informació adicional'),
+            model_name="todo",
+            name="informacio_adicional",
+            field=models.TextField(
+                help_text="Informació adicional", verbose_name="Informació adicional"
+            ),
         ),
         migrations.AlterField(
-            model_name='todo',
-            name='prioritat',
-            field=models.CharField(blank=True, choices=[('V', 'Molt Important'), ('P', 'Poc Inportant')], max_length=2),
+            model_name="todo",
+            name="prioritat",
+            field=models.CharField(
+                blank=True,
+                choices=[("V", "Molt Important"), ("P", "Poc Inportant")],
+                max_length=2,
+            ),
         ),
     ]

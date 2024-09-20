@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tutoria', '0007_alter_actuacio_assumpte'),
+        ("tutoria", "0007_alter_actuacio_assumpte"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='cartaabsentisme',
-            name='avisat_tutor',
+            model_name="cartaabsentisme",
+            name="avisat_tutor",
             field=models.BooleanField(default=False, editable=False),
         ),
     ]

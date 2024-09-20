@@ -2,18 +2,19 @@
 import django_tables2 as tables
 from aula.apps.material.models import ReservaRecurs
 
+
 class HorariRecursTable(tables.Table):
     Hora = tables.TemplateColumn(
-        verbose_name='',
-        template_code=u"""
+        verbose_name="",
+        template_code="""
                         {{record.franja}}
                         """,
         orderable=False,
     )
 
     Reserves = tables.TemplateColumn(
-        attrs={'th': {'width': '80%'}},
-        template_code=u"""
+        attrs={"th": {"width": "80%"}},
+        template_code="""
         
                         <div class="progress">
                         {% if record.reserva %}
@@ -45,8 +46,8 @@ class HorariRecursTable(tables.Table):
         orderable=False,
     )
     Reservar = tables.TemplateColumn(
-        verbose_name='',
-        template_code=u"""
+        verbose_name="",
+        template_code="""
                         <span class="gi-2x">
                             {% if record.reservable %}
                                 <a href="/recursos/tramitarReservaRecurs/{{record.recurs.pk}}/{{record.franja.pk}}/{{record.dia.year}}/{{record.dia.month}}/{{record.dia.day}}/">
@@ -61,20 +62,20 @@ class HorariRecursTable(tables.Table):
                             {% endif %}
                         </span>
                         """,
-
     )
 
     class Meta:
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        template = 'bootable2.html'
+        template = "bootable2.html"
+
 
 class Table2_ReservaRecurs(tables.Table):
 
-    dia_reserva = tables.Column(order_by=('dia_reserva', 'hora'))
-    hora = tables.Column(orderable = False)
-    eliminar =  tables.TemplateColumn(
-                                    template_code = u"""
+    dia_reserva = tables.Column(order_by=("dia_reserva", "hora"))
+    hora = tables.Column(orderable=False)
+    eliminar = tables.TemplateColumn(
+        template_code="""
                                         {% if not record.es_del_passat%} 
                                             <a href='javascript:confirmAction("/recursos/eliminarReservaRecurs/{{record.pk}}" ,  
                                                                             " {{ "Segur que vols anul·lar la reserva del material:"|escapejs}} {{record.recurs.nom_recurs}} {{"hora:"}} {{record.hora}}?")'>
@@ -82,15 +83,13 @@ class Table2_ReservaRecurs(tables.Table):
                                             </a>
                                         {% endif %}
                                         """,
-                                    verbose_name = "",
-                                    orderable = False,
-                     )
-
-
+        verbose_name="",
+        orderable=False,
+    )
 
     class Meta:
         model = ReservaRecurs
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("dia_reserva", "hora", "recurs", "motiu", "eliminar" )
+        sequence = ("dia_reserva", "hora", "recurs", "motiu", "eliminar")
         fields = sequence
-        template = 'bootable2.html' 
+        template = "bootable2.html"

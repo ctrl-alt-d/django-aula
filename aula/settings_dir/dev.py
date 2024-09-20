@@ -17,13 +17,13 @@ DEBUG = True
 SQL_DEBUG = True
 
 DATABASES = {
-    'default': {
-        'ENGINE': env.str('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': env.str('DB_NAME', default=location('db.sqlite')),
-        'USER': env.str('DB_USER', default=''),
-        'PASSWORD': env.str('DB_PASSWORD', default=''),
-        'HOST': env.str('DB_HOST', default=''),
-        'ATOMIC_REQUESTS': env.bool('DB_ATOMIC_REQUESTS', default=True),
+    "default": {
+        "ENGINE": env.str("DB_ENGINE", default="django.db.backends.sqlite3"),
+        "NAME": env.str("DB_NAME", default=location("db.sqlite")),
+        "USER": env.str("DB_USER", default=""),
+        "PASSWORD": env.str("DB_PASSWORD", default=""),
+        "HOST": env.str("DB_HOST", default=""),
+        "ATOMIC_REQUESTS": env.bool("DB_ATOMIC_REQUESTS", default=True),
     }
 }
 
@@ -44,19 +44,16 @@ DATABASES = {
 
 INSTALLED_APPS = [
     #'debug_toolbar',
-    'demo',
+    "demo",
 ] + INSTALLED_APPS
 
 MIDDLEWARE += [
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False
-}
+DEBUG_TOOLBAR_CONFIG = {"INTERCEPT_REDIRECTS": False}
 
-EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_SUBJECT_PREFIX = "[DEMO AULA] "
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 COMPRESS_ENABLED = False
-

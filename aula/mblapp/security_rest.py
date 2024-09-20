@@ -11,12 +11,13 @@ class EsUsuariDeLaAPI(permissions.BasePermission):
 
     def has_permission(self, request, view):
         sense_restriccions_acces = settings.ACCES_RESTRINGIT_A_GRUPS is None
-        api_pot_entrar = ( sense_restriccions_acces
-                           or ( not sense_restriccions_acces and "API" in settings.ACCES_RESTRINGIT_A_GRUPS )
-                         )
-        return (bool(request.user) and
-                request.user.is_authenticated and
-                request.user.alumne_app_set.exists() and
-                request.user.groups.filter(name="API").exists() and
-                api_pot_entrar
-                )
+        api_pot_entrar = sense_restriccions_acces or (
+            not sense_restriccions_acces and "API" in settings.ACCES_RESTRINGIT_A_GRUPS
+        )
+        return (
+            bool(request.user)
+            and request.user.is_authenticated
+            and request.user.alumne_app_set.exists()
+            and request.user.groups.filter(name="API").exists()
+            and api_pot_entrar
+        )

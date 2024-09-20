@@ -9,13 +9,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('horaris', '0002_horari_aula'),
+        ("horaris", "0002_horari_aula"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='horari',
-            name='aula',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='aules.Aula'),
+            model_name="horari",
+            name="aula",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="aules.Aula",
+            ),
         ),
     ]

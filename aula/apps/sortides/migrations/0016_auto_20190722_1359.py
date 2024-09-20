@@ -7,24 +7,45 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0009_auto_20190331_1541'),
-        ('sortides', '0015_auto_20190715_1118'),
+        ("alumnes", "0009_auto_20190331_1541"),
+        ("sortides", "0015_auto_20190715_1118"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Pagament',
+            name="Pagament",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('data_hora_pagament', models.DateTimeField(null=True)),
-                ('pagament_realitzat', models.BooleanField(null=True)),
-                ('alumne', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='alumnes.Alumne')),
-                ('sortida', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='sortides.Sortida')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("data_hora_pagament", models.DateTimeField(null=True)),
+                ("pagament_realitzat", models.BooleanField(null=True)),
+                (
+                    "alumne",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="alumnes.Alumne"
+                    ),
+                ),
+                (
+                    "sortida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="sortides.Sortida",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='sortida',
-            name='pagaments',
-            field=models.ManyToManyField(through='sortides.Pagament', to='alumnes.Alumne'),
+            model_name="sortida",
+            name="pagaments",
+            field=models.ManyToManyField(
+                through="sortides.Pagament", to="alumnes.Alumne"
+            ),
         ),
     ]

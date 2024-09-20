@@ -7,24 +7,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sortides', '0036_alter_sortida_empresa_de_transport_and_more'),
+        ("sortides", "0036_alter_sortida_empresa_de_transport_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='QuotaCentre',
-            fields=[
-            ],
+            name="QuotaCentre",
+            fields=[],
             options={
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('sortides.quota',),
+            bases=("sortides.quota",),
         ),
         migrations.AlterField(
-            model_name='quota',
-            name='any',
-            field=models.IntegerField(default=aula.apps.sortides.models.return_any_actual, help_text="Correspon a l'any on comença el curs. Ex. curs any1/any2, seria any1."),
+            model_name="quota",
+            name="any",
+            field=models.IntegerField(
+                default=aula.apps.sortides.models.return_any_actual,
+                help_text="Correspon a l'any on comença el curs. Ex. curs any1/any2, seria any1.",
+            ),
         ),
     ]

@@ -7,121 +7,192 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0013_alumne_observacions'),
-        ('sortides', '0022_auto_20200223_0105'),
+        ("alumnes", "0013_alumne_observacions"),
+        ("sortides", "0022_auto_20200223_0105"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TipusQuota',
+            name="TipusQuota",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nom', models.CharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nom", models.CharField(max_length=100, unique=True)),
             ],
             options={
-                'verbose_name': 'Tipus de quota',
-                'verbose_name_plural': 'Tipus de quotes',
-                'ordering': ['nom'],
+                "verbose_name": "Tipus de quota",
+                "verbose_name_plural": "Tipus de quotes",
+                "ordering": ["nom"],
             },
         ),
         migrations.CreateModel(
-            name='TPV',
+            name="TPV",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nom', models.CharField(max_length=32, unique=True, verbose_name='Nom')),
-                ('codi', models.CharField(max_length=32, verbose_name='Codi Comerç')),
-                ('key', models.CharField(max_length=64, verbose_name='Key')),
-                ('descripcio', models.CharField(max_length=200, verbose_name='Descripció')),
-                ('entornReal', models.BooleanField(default=False, verbose_name='Fa servir entorn real')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "nom",
+                    models.CharField(max_length=32, unique=True, verbose_name="Nom"),
+                ),
+                ("codi", models.CharField(max_length=32, verbose_name="Codi Comerç")),
+                ("key", models.CharField(max_length=64, verbose_name="Key")),
+                (
+                    "descripcio",
+                    models.CharField(max_length=200, verbose_name="Descripció"),
+                ),
+                (
+                    "entornReal",
+                    models.BooleanField(
+                        default=False, verbose_name="Fa servir entorn real"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'TPV',
-                'verbose_name_plural': 'TPVs',
+                "verbose_name": "TPV",
+                "verbose_name_plural": "TPVs",
             },
         ),
         migrations.CreateModel(
-            name='QuotaPagament',
-            fields=[
-            ],
+            name="QuotaPagament",
+            fields=[],
             options={
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('sortides.pagament',),
+            bases=("sortides.pagament",),
         ),
         migrations.CreateModel(
-            name='SortidaPagament',
-            fields=[
-            ],
+            name="SortidaPagament",
+            fields=[],
             options={
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('sortides.pagament',),
+            bases=("sortides.pagament",),
         ),
         migrations.AddField(
-            model_name='pagament',
-            name='dataLimit',
+            model_name="pagament",
+            name="dataLimit",
             field=models.DateField(null=True),
         ),
         migrations.AddField(
-            model_name='pagament',
-            name='estat',
-            field=models.CharField(blank=True, default='', max_length=1, null=True),
+            model_name="pagament",
+            name="estat",
+            field=models.CharField(blank=True, default="", max_length=1, null=True),
         ),
         migrations.AddField(
-            model_name='pagament',
-            name='fracciona',
+            model_name="pagament",
+            name="fracciona",
             field=models.BooleanField(default=False, null=True),
         ),
         migrations.AddField(
-            model_name='pagament',
-            name='importParcial',
+            model_name="pagament",
+            name="importParcial",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=7),
         ),
         migrations.AlterField(
-            model_name='pagament',
-            name='alumne',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='alumnes.alumne'),
+            model_name="pagament",
+            name="alumne",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="alumnes.alumne",
+            ),
         ),
         migrations.AlterField(
-            model_name='pagament',
-            name='data_hora_pagament',
+            model_name="pagament",
+            name="data_hora_pagament",
             field=models.DateTimeField(null=True),
         ),
         migrations.AlterField(
-            model_name='pagament',
-            name='sortida',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='sortides.sortida'),
+            model_name="pagament",
+            name="sortida",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="sortides.sortida",
+            ),
         ),
         migrations.CreateModel(
-            name='Quota',
+            name="Quota",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('importQuota', models.DecimalField(decimal_places=2, default=0, max_digits=7)),
-                ('dataLimit', models.DateField()),
-                ('any', models.IntegerField(default=2020)),
-                ('descripcio', models.CharField(max_length=200)),
-                ('curs', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='alumnes.curs')),
-                ('tipus', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='sortides.tipusquota')),
-                ('tpv', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='sortides.tpv')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "importQuota",
+                    models.DecimalField(decimal_places=2, default=0, max_digits=7),
+                ),
+                ("dataLimit", models.DateField()),
+                ("any", models.IntegerField(default=2020)),
+                ("descripcio", models.CharField(max_length=200)),
+                (
+                    "curs",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="alumnes.curs",
+                    ),
+                ),
+                (
+                    "tipus",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to="sortides.tipusquota",
+                    ),
+                ),
+                (
+                    "tpv",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="sortides.tpv"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Quota',
-                'verbose_name_plural': 'Quotes',
-                'ordering': ['any', 'curs__nom_curs_complert'],
+                "verbose_name": "Quota",
+                "verbose_name_plural": "Quotes",
+                "ordering": ["any", "curs__nom_curs_complert"],
             },
         ),
         migrations.AddField(
-            model_name='pagament',
-            name='quota',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='sortides.quota'),
+            model_name="pagament",
+            name="quota",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="sortides.quota",
+            ),
         ),
         migrations.AddField(
-            model_name='sortida',
-            name='tpv',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='sortides.tpv'),
+            model_name="sortida",
+            name="tpv",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="sortides.tpv",
+            ),
         ),
     ]

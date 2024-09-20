@@ -7,23 +7,49 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0014_auto_20210501_2256'),
+        ("alumnes", "0014_auto_20210501_2256"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DadesAddicionalsAlumne',
+            name="DadesAddicionalsAlumne",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('label', models.CharField(help_text='Nom del camp addicional', max_length=50)),
-                ('value', models.CharField(blank=True, help_text='Contingut del camp addicional', max_length=500, null=True)),
-                ('alumne', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='alumnes.alumne')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "label",
+                    models.CharField(
+                        help_text="Nom del camp addicional", max_length=50
+                    ),
+                ),
+                (
+                    "value",
+                    models.CharField(
+                        blank=True,
+                        help_text="Contingut del camp addicional",
+                        max_length=500,
+                        null=True,
+                    ),
+                ),
+                (
+                    "alumne",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="alumnes.alumne"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': "Dada addicional de l'alumne",
-                'verbose_name_plural': 'Dades addicionals dels alumnes',
-                'abstract': False,
-                'unique_together': {('alumne', 'label')},
+                "verbose_name": "Dada addicional de l'alumne",
+                "verbose_name_plural": "Dades addicionals dels alumnes",
+                "abstract": False,
+                "unique_together": {("alumne", "label")},
             },
         ),
     ]

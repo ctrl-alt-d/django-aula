@@ -4,4 +4,3 @@ from aula.apps.extEsfera.models import ParametreEsfera
 from django.contrib import admin
 
 admin.site.register(ParametreEsfera)
-

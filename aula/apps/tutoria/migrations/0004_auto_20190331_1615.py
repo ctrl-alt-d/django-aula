@@ -7,48 +7,69 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tutoria', '0003_cartaabsentisme_faltes_des_de_data'),
+        ("tutoria", "0003_cartaabsentisme_faltes_des_de_data"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='actuacio',
-            name='amb_qui_es_actuacio',
-            field=models.CharField(choices=[('A', 'Alumne'), ('F', 'Familia'), ('T', 'Altres')], help_text="Sobre qui es realitza l'actuació", max_length=1),
+            model_name="actuacio",
+            name="amb_qui_es_actuacio",
+            field=models.CharField(
+                choices=[("A", "Alumne"), ("F", "Familia"), ("T", "Altres")],
+                help_text="Sobre qui es realitza l'actuació",
+                max_length=1,
+            ),
         ),
         migrations.AlterField(
-            model_name='actuacio',
-            name='qui_fa_actuacio',
-            field=models.CharField(choices=[('T', 'Tutor'), ('C', "Cap d'estudis"), ('E', 'Equip psicop.'), ('A', 'Altres')], help_text="Qui realitza l'actuació", max_length=1),
+            model_name="actuacio",
+            name="qui_fa_actuacio",
+            field=models.CharField(
+                choices=[
+                    ("T", "Tutor"),
+                    ("C", "Cap d'estudis"),
+                    ("E", "Equip psicop."),
+                    ("A", "Altres"),
+                ],
+                help_text="Qui realitza l'actuació",
+                max_length=1,
+            ),
         ),
         migrations.AlterField(
-            model_name='cartaabsentisme',
-            name='data_carta',
-            field=models.DateField(verbose_name='Data de la carta'),
+            model_name="cartaabsentisme",
+            name="data_carta",
+            field=models.DateField(verbose_name="Data de la carta"),
         ),
         migrations.AlterField(
-            model_name='cartaabsentisme',
-            name='faltes_des_de_data',
-            field=models.DateField(blank=True, editable=False, null=True, verbose_name='Faltes des de data'),
+            model_name="cartaabsentisme",
+            name="faltes_des_de_data",
+            field=models.DateField(
+                blank=True, editable=False, null=True, verbose_name="Faltes des de data"
+            ),
         ),
         migrations.AlterField(
-            model_name='cartaabsentisme',
-            name='faltes_fins_a_data',
-            field=models.DateField(editable=False, verbose_name='Faltes fins a data'),
+            model_name="cartaabsentisme",
+            name="faltes_fins_a_data",
+            field=models.DateField(editable=False, verbose_name="Faltes fins a data"),
         ),
         migrations.AlterField(
-            model_name='cartaabsentisme',
-            name='faltes_incloses',
-            field=models.TextField(blank=True, editable=False, verbose_name='Faltes incloses a la carta'),
+            model_name="cartaabsentisme",
+            name="faltes_incloses",
+            field=models.TextField(
+                blank=True, editable=False, verbose_name="Faltes incloses a la carta"
+            ),
         ),
         migrations.AlterField(
-            model_name='cartaabsentisme',
-            name='professor',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='usuaris.Professor', verbose_name='Professor que signa la carta'),
+            model_name="cartaabsentisme",
+            name="professor",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="usuaris.Professor",
+                verbose_name="Professor que signa la carta",
+            ),
         ),
         migrations.AlterField(
-            model_name='seguimenttutorialrespostes',
-            name='professorQueInforma',
-            field=models.CharField(blank=True, default='', max_length=200),
+            model_name="seguimenttutorialrespostes",
+            name="professorQueInforma",
+            field=models.CharField(blank=True, default="", max_length=200),
         ),
     ]

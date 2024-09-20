@@ -6,33 +6,62 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('incidencies', '0005_auto_20180411_1707'),
+        ("incidencies", "0005_auto_20180411_1707"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='expulsio',
-            name='estat',
-            field=models.CharField(choices=[('ES', 'Esborrany'), ('AS', 'Assignada'), ('TR', 'Tramitada')], default='ES', max_length=2),
+            model_name="expulsio",
+            name="estat",
+            field=models.CharField(
+                choices=[("ES", "Esborrany"), ("AS", "Assignada"), ("TR", "Tramitada")],
+                default="ES",
+                max_length=2,
+            ),
         ),
         migrations.AlterField(
-            model_name='frassesincidenciaaula',
-            name='frase',
-            field=models.CharField(help_text="Escriu una frase que podrà ser triada a l'hora de posar una incidència", max_length=240, unique=True, verbose_name='Frase'),
+            model_name="frassesincidenciaaula",
+            name="frase",
+            field=models.CharField(
+                help_text="Escriu una frase que podrà ser triada a l'hora de posar una incidència",
+                max_length=240,
+                unique=True,
+                verbose_name="Frase",
+            ),
         ),
         migrations.AlterField(
-            model_name='incidencia',
-            name='gestionada_pel_tutor_motiu',
-            field=models.CharField(choices=[('1AHora', 'Gestionada pel tutor: Retard de 1a hora'), ('ForaAula', "Gestionada pel tutor: Incidència fora d'aula"), ('Guardia', 'Gestionada pel tutor: Incidència en hora de Guàrdia'), ('N/A', 'Gestionada pel tutor')], default='', editable=False, max_length=20),
+            model_name="incidencia",
+            name="gestionada_pel_tutor_motiu",
+            field=models.CharField(
+                choices=[
+                    ("1AHora", "Gestionada pel tutor: Retard de 1a hora"),
+                    ("ForaAula", "Gestionada pel tutor: Incidència fora d'aula"),
+                    ("Guardia", "Gestionada pel tutor: Incidència en hora de Guàrdia"),
+                    ("N/A", "Gestionada pel tutor"),
+                ],
+                default="",
+                editable=False,
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='tipusincidencia',
-            name='tipus',
-            field=models.CharField(help_text="Tipus d'incidència", max_length=50, unique=True, verbose_name='Tipus'),
+            model_name="tipusincidencia",
+            name="tipus",
+            field=models.CharField(
+                help_text="Tipus d'incidència",
+                max_length=50,
+                unique=True,
+                verbose_name="Tipus",
+            ),
         ),
         migrations.AlterField(
-            model_name='tipussancio',
-            name='tipus',
-            field=models.CharField(help_text='Tipus de sanció', max_length=50, unique=True, verbose_name='Tipus'),
+            model_name="tipussancio",
+            name="tipus",
+            field=models.CharField(
+                help_text="Tipus de sanció",
+                max_length=50,
+                unique=True,
+                verbose_name="Tipus",
+            ),
         ),
     ]

@@ -2,18 +2,19 @@
 import django_tables2 as tables
 from aula.apps.aules.models import ReservaAula
 
+
 class HorariAulaTable(tables.Table):
     Hora = tables.TemplateColumn(
-        verbose_name='',
-        template_code=u"""
+        verbose_name="",
+        template_code="""
                         {{record.franja}}
                         """,
         orderable=False,
     )
 
     Reserves = tables.TemplateColumn(
-        attrs={'th': {'width': '80%'}},
-        template_code=u"""
+        attrs={"th": {"width": "80%"}},
+        template_code="""
         
                         <div class="progress">
                         {% if record.reserva %}
@@ -45,8 +46,8 @@ class HorariAulaTable(tables.Table):
         orderable=False,
     )
     Reservar = tables.TemplateColumn(
-        verbose_name='',
-        template_code=u"""
+        verbose_name="",
+        template_code="""
                         <span class="gi-2x">
                             {% if record.reservable %}
                                 <a href="/aules/tramitarReservaAula/{{record.aula.pk}}/{{record.franja.pk}}/{{record.dia.year}}/{{record.dia.month}}/{{record.dia.day}}/">
@@ -61,26 +62,27 @@ class HorariAulaTable(tables.Table):
                             {% endif %}
                         </span>
                         """,
-
     )
 
     class Meta:
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        template = 'bootable2.html'
+        template = "bootable2.html"
+
 
 class Table2_ReservaAula(tables.Table):
 
-    dia_reserva = tables.Column(order_by=('dia_reserva', 'hora'))
-    hora = tables.Column(orderable = False)
-    get_assignatures =  tables.TemplateColumn(template_code = u"""
+    dia_reserva = tables.Column(order_by=("dia_reserva", "hora"))
+    hora = tables.Column(orderable=False)
+    get_assignatures = tables.TemplateColumn(
+        template_code="""
                                         {{record.get_assignatures}}
                                         """,
-                                    verbose_name = "",
-                                    orderable = False,
-                     )
-    eliminar =  tables.TemplateColumn(
-                                    template_code = u"""
+        verbose_name="",
+        orderable=False,
+    )
+    eliminar = tables.TemplateColumn(
+        template_code="""
                                         {% if not record.es_del_passat and not record.associada_a_impartir %} 
                                             <a href='javascript:confirmAction("/aules/eliminarReservaAula/{{record.pk}}" ,  
                                                                             " {{ "Segur que vols anul·lar la reserva de l'aula"|escapejs}} {{record.aula.nom_aula}} {{"hora:"}} {{record.hora}}?")'>
@@ -88,15 +90,20 @@ class Table2_ReservaAula(tables.Table):
                                             </a>
                                         {% endif %}
                                         """,
-                                    verbose_name = "",
-                                    orderable = False,
-                     )
-
-
+        verbose_name="",
+        orderable=False,
+    )
 
     class Meta:
         model = ReservaAula
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("dia_reserva", "hora", "get_assignatures", "aula", "motiu", "eliminar" )
+        sequence = (
+            "dia_reserva",
+            "hora",
+            "get_assignatures",
+            "aula",
+            "motiu",
+            "eliminar",
+        )
         fields = sequence
-        template = 'bootable2.html' 
+        template = "bootable2.html"

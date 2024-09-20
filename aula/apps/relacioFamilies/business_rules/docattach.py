@@ -2,10 +2,11 @@
 import os
 from django.conf import settings
 
-def docattach_post_delete( sender, instance, **lwargs ):
+
+def docattach_post_delete(sender, instance, **lwargs):
 
     try:
         if instance.fitxer:
             os.remove(os.path.join(settings.PRIVATE_STORAGE_ROOT, instance.fitxer.name))
     except PermissionError as e:
-        print("docattach_post_delete-Error accés",str(e))
+        print("docattach_post_delete-Error accés", str(e))

@@ -9,13 +9,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('presencia', '0004_impartir_reserva'),
+        ("presencia", "0004_impartir_reserva"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='impartir',
-            name='reserva',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='aules.ReservaAula'),
+            model_name="impartir",
+            name="reserva",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="aules.ReservaAula",
+            ),
         ),
     ]

@@ -7,18 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sortides', '0023_auto_20201220_1759'),
+        ("sortides", "0023_auto_20201220_1759"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='quota',
-            name='any',
-            field=models.IntegerField(default=aula.apps.sortides.models.return_any_actual),
+            model_name="quota",
+            name="any",
+            field=models.IntegerField(
+                default=aula.apps.sortides.models.return_any_actual
+            ),
         ),
         migrations.AlterField(
-            model_name='quota',
-            name='dataLimit',
+            model_name="quota",
+            name="dataLimit",
             field=models.DateField(blank=True, null=True),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0017_nivell_preexclusiva'),
-        ('presencia', '0010_alter_impartir_professor_guardia_and_more'),
+        ("alumnes", "0017_nivell_preexclusiva"),
+        ("presencia", "0010_alter_impartir_professor_guardia_and_more"),
     ]
 
     operations = [
         migrations.AlterIndexTogether(
-            name='controlassistencia',
-            index_together={('alumne', 'estat', 'relacio_familia_notificada')},
+            name="controlassistencia",
+            index_together={("alumne", "estat", "relacio_familia_notificada")},
         ),
     ]

@@ -6,13 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sortides', '0033_alter_sortida_estat'),
+        ("sortides", "0033_alter_sortida_estat"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sortida',
-            name='subtipus',
-            field=models.CharField(choices=[('AS', 'Sortida'), ('AX', 'Xerrada'), ('AT', 'Taller'), ('AA', 'Altres'), ('PD', 'Dossier'), ('PM', 'Material'), ('PA', 'Matrícula'), ('PP', 'Pagament parcial')], default='AS', help_text="Subtipus d'activitat", max_length=2),
+            model_name="sortida",
+            name="subtipus",
+            field=models.CharField(
+                choices=[
+                    ("AS", "Sortida"),
+                    ("AX", "Xerrada"),
+                    ("AT", "Taller"),
+                    ("AA", "Altres"),
+                    ("PD", "Dossier"),
+                    ("PM", "Material"),
+                    ("PA", "Matrícula"),
+                    ("PP", "Pagament parcial"),
+                ],
+                default="AS",
+                help_text="Subtipus d'activitat",
+                max_length=2,
+            ),
         ),
     ]

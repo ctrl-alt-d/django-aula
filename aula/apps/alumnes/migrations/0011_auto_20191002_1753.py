@@ -8,13 +8,19 @@ import private_storage.storage.files
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('alumnes', '0010_alumne_foto'),
+        ("alumnes", "0010_alumne_foto"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='alumne',
-            name='foto',
-            field=private_storage.fields.PrivateFileField(blank=True, null=True, storage=private_storage.storage.files.PrivateFileSystemStorage(), upload_to='alumnes/fotos', verbose_name='Foto'),
+            model_name="alumne",
+            name="foto",
+            field=private_storage.fields.PrivateFileField(
+                blank=True,
+                null=True,
+                storage=private_storage.storage.files.PrivateFileSystemStorage(),
+                upload_to="alumnes/fotos",
+                verbose_name="Foto",
+            ),
         ),
     ]

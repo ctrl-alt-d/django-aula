@@ -7,19 +7,31 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('usuaris', '0010_dadesaddicionalsprofessor_foto'),
-        ('presencia', '0009_controlassistencia_comunicat'),
+        ("usuaris", "0010_dadesaddicionalsprofessor_foto"),
+        ("presencia", "0009_controlassistencia_comunicat"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='impartir',
-            name='professor_guardia',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='professor_guardia', to='usuaris.professor'),
+            model_name="impartir",
+            name="professor_guardia",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="professor_guardia",
+                to="usuaris.professor",
+            ),
         ),
         migrations.AlterField(
-            model_name='impartir',
-            name='professor_passa_llista',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='professor_passa_llista', to='usuaris.professor'),
+            model_name="impartir",
+            name="professor_passa_llista",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="professor_passa_llista",
+                to="usuaris.professor",
+            ),
         ),
     ]

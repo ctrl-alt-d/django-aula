@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tutoria', '0008_cartaabsentisme_avisat_tutor'),
+        ("tutoria", "0008_cartaabsentisme_avisat_tutor"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='cartaabsentisme',
-            name='data_carta',
-            field=models.DateField(null=True, verbose_name='Data de la carta'),
+            model_name="cartaabsentisme",
+            name="data_carta",
+            field=models.DateField(null=True, verbose_name="Data de la carta"),
         ),
     ]

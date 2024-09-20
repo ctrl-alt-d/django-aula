@@ -10,10 +10,11 @@ from django.template.defaulttags import register
 
 from aula.apps.alumnes.models import Alumne
 
+
 class MissatgesTable(tables.Table):
     Data = tables.TemplateColumn(
-        attrs={'th': {'width': '25%'}},
-        template_code=u"""
+        attrs={"th": {"width": "25%"}},
+        template_code="""
                             {% now "jS F Y H:i" as ara %} 
                             {% if record.moment_lectura|date:"jS F Y H:i" == ara %}
                                 <span class="blink_me text-danger"> <strong> Nou-> </strong></span>
@@ -37,31 +38,40 @@ class MissatgesTable(tables.Table):
     )
 
     Remitent = tables.TemplateColumn(
-        template_code=u"""
+        template_code="""
                                 """,
         orderable=False,
     )
 
-
-    def render_Remitent(self,record):
+    def render_Remitent(self, record):
         try:
-            missatge_class = list(MISSATGES[record.missatge.tipus_de_missatge].keys())[0]
+            missatge_class = list(MISSATGES[record.missatge.tipus_de_missatge].keys())[
+                0
+            ]
         except:
-            missatge_class = 'dark'
-        missatge='<span class="text-' + missatge_class + '">'
-        
-        if record.missatge.remitent.groups.filter( name = 'alumne' ).exists():
+            missatge_class = "dark"
+        missatge = '<span class="text-' + missatge_class + '">'
+
+        if record.missatge.remitent.groups.filter(name="alumne").exists():
             alumne = get_object_or_404(Alumne, user_associat=record.missatge.remitent)
-            missatge = missatge + u"Missatge des del portal famílies de: {alumne}".format(alumne=alumne)
+            missatge = (
+                missatge
+                + "Missatge des del portal famílies de: {alumne}".format(alumne=alumne)
+            )
         else:
             if record.missatge.remitent.last_name:
-                missatge = missatge + record.missatge.remitent.first_name + ' ' + record.missatge.remitent.last_name
+                missatge = (
+                    missatge
+                    + record.missatge.remitent.first_name
+                    + " "
+                    + record.missatge.remitent.last_name
+                )
                 if record.missatge.remitent.email:
-                    missatge = missatge + '\n' + record.missatge.remitent.email
+                    missatge = missatge + "\n" + record.missatge.remitent.email
             else:
                 missatge = missatge + record.missatge.remitent.username
-            
-        missatge = missatge + '</span>'
+
+        missatge = missatge + "</span>"
         return mark_safe(missatge)
 
     @register.simple_tag
@@ -69,11 +79,11 @@ class MissatgesTable(tables.Table):
         try:
             return list(MISSATGES[key].keys())[0]
         except:
-            return 'dark'
+            return "dark"
 
     Contingut = tables.TemplateColumn(
-        attrs={'th': {'width': '60%'}},
-        template_code=u"""  
+        attrs={"th": {"width": "60%"}},
+        template_code="""  
                                     <div class="text-{%Missatges_content record.missatge.tipus_de_missatge%}">
                                         {{record.missatge.text_missatge|linebreaks}}
                                         {% if record.missatge.errors %}
@@ -103,7 +113,7 @@ class MissatgesTable(tables.Table):
     )
     Seguit = tables.TemplateColumn(
         verbose_name=" ",
-        template_code=u"""
+        template_code="""
                                     {% if record.missatge.enllac %}
                                         <a  href="/missatgeria/llegeix/{{record.pk}}"> 
                                              {% if record.followed %}
@@ -120,5 +130,4 @@ class MissatgesTable(tables.Table):
     class Meta:
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        template = 'bootable2.html'
-
+        template = "bootable2.html"

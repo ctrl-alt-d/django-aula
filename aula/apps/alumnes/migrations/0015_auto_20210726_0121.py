@@ -7,34 +7,52 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sortides', '0024_auto_20210417_1323'),
-        ('alumnes', '0014_auto_20210501_2256'),
+        ("sortides", "0024_auto_20210417_1323"),
+        ("alumnes", "0014_auto_20210501_2256"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='curs',
-            name='confirmacio_oberta',
-            field=models.BooleanField(default=False, verbose_name='Confirmació activada'),
+            model_name="curs",
+            name="confirmacio_oberta",
+            field=models.BooleanField(
+                default=False, verbose_name="Confirmació activada"
+            ),
         ),
         migrations.AddField(
-            model_name='curs',
-            name='limit_confirmacio',
-            field=models.DateField(blank=True, help_text='Dia límit per fer confirmació de matrícula', null=True, verbose_name='Límit confirmació'),
+            model_name="curs",
+            name="limit_confirmacio",
+            field=models.DateField(
+                blank=True,
+                help_text="Dia límit per fer confirmació de matrícula",
+                null=True,
+                verbose_name="Límit confirmació",
+            ),
         ),
         migrations.AddField(
-            model_name='nivell',
-            name='limit_matricula',
-            field=models.DateField(blank=True, help_text='Dia límit per fer confirmació de matrícula', null=True, verbose_name='Límit matrícula'),
+            model_name="nivell",
+            name="limit_matricula",
+            field=models.DateField(
+                blank=True,
+                help_text="Dia límit per fer confirmació de matrícula",
+                null=True,
+                verbose_name="Límit matrícula",
+            ),
         ),
         migrations.AddField(
-            model_name='nivell',
-            name='matricula_oberta',
-            field=models.BooleanField(default=False, verbose_name='Matrícula oberta'),
+            model_name="nivell",
+            name="matricula_oberta",
+            field=models.BooleanField(default=False, verbose_name="Matrícula oberta"),
         ),
         migrations.AddField(
-            model_name='nivell',
-            name='taxes',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='sortides.tipusquota'),
+            model_name="nivell",
+            name="taxes",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="sortides.tipusquota",
+            ),
         ),
     ]

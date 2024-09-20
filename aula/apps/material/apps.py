@@ -4,4 +4,4 @@ from django.apps import AppConfig
 
 
 class MaterialConfig(AppConfig):
-    name = 'aula.apps.material'
+    name = "aula.apps.material"

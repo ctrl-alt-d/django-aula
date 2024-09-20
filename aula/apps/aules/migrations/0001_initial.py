@@ -12,47 +12,106 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('horaris', '0001_initial'),
+        ("horaris", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('presencia', '0003_choicesnohadeseralaula'),
+        ("presencia", "0003_choicesnohadeseralaula"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Aula',
+            name="Aula",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nom_aula', models.CharField(blank=True, max_length=45)),
-                ('descripcio_aula', models.CharField(blank=True, help_text='Exemple: Aforament m\xe0xim 30 persones. Exemple: 20 ordenadors sobretaula', max_length=240)),
-                ('horari_lliure', models.BooleanField(default=False)),
-                ('reservable', models.BooleanField(default=True)),
-                ('disponibilitat_horaria', models.ManyToManyField(to='horaris.FranjaHoraria')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nom_aula", models.CharField(blank=True, max_length=45)),
+                (
+                    "descripcio_aula",
+                    models.CharField(
+                        blank=True,
+                        help_text="Exemple: Aforament m\xe0xim 30 persones. Exemple: 20 ordenadors sobretaula",
+                        max_length=240,
+                    ),
+                ),
+                ("horari_lliure", models.BooleanField(default=False)),
+                ("reservable", models.BooleanField(default=True)),
+                (
+                    "disponibilitat_horaria",
+                    models.ManyToManyField(to="horaris.FranjaHoraria"),
+                ),
             ],
             options={
-                'ordering': ['nom_aula'],
-                'verbose_name': 'Aula',
-                'verbose_name_plural': 'Aules',
+                "ordering": ["nom_aula"],
+                "verbose_name": "Aula",
+                "verbose_name_plural": "Aules",
             },
         ),
         migrations.CreateModel(
-            name='ReservaAula',
+            name="ReservaAula",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dia_reserva', models.DateField()),
-                ('hora_inici', models.TimeField()),
-                ('hora_fi', models.TimeField()),
-                ('motiu', models.CharField(help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de fam\xedlies", max_length=120)),
-                ('aula', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='aules.Aula')),
-                ('hora', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='horaris.FranjaHoraria')),
-                ('impartir', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='presencia.Impartir')),
-                ('usuari', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("dia_reserva", models.DateField()),
+                ("hora_inici", models.TimeField()),
+                ("hora_fi", models.TimeField()),
+                (
+                    "motiu",
+                    models.CharField(
+                        help_text="No entrar dades personals, no entrar noms d'alumnes, no entrar noms de fam\xedlies",
+                        max_length=120,
+                    ),
+                ),
+                (
+                    "aula",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, to="aules.Aula"
+                    ),
+                ),
+                (
+                    "hora",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="horaris.FranjaHoraria",
+                    ),
+                ),
+                (
+                    "impartir",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="presencia.Impartir",
+                    ),
+                ),
+                (
+                    "usuari",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['dia_reserva', 'hora_inici'],
+                "ordering": ["dia_reserva", "hora_inici"],
             },
         ),
         migrations.AlterUniqueTogether(
-            name='reservaaula',
-            unique_together=set([('aula', 'dia_reserva', 'hora_inici')]),
+            name="reservaaula",
+            unique_together=set([("aula", "dia_reserva", "hora_inici")]),
         ),
     ]

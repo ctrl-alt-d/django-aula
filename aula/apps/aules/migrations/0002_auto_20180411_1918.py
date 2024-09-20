@@ -9,31 +9,41 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aules', '0001_initial'),
+        ("aules", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='aula',
-            name='descripcio_aula',
-            field=models.CharField(blank=True, help_text='Exemple: Aforament m\xe0xim 30 persones. Exemple: 20 Ordinadors sobretaula', max_length=240),
+            model_name="aula",
+            name="descripcio_aula",
+            field=models.CharField(
+                blank=True,
+                help_text="Exemple: Aforament m\xe0xim 30 persones. Exemple: 20 Ordinadors sobretaula",
+                max_length=240,
+            ),
         ),
         migrations.AlterField(
-            model_name='aula',
-            name='disponibilitat_horaria',
-            field=models.ManyToManyField(blank=True, to='horaris.FranjaHoraria'),
+            model_name="aula",
+            name="disponibilitat_horaria",
+            field=models.ManyToManyField(blank=True, to="horaris.FranjaHoraria"),
         ),
         migrations.AlterField(
-            model_name='reservaaula',
-            name='hora',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='horaris.FranjaHoraria', verbose_name='Franja Horaria'),
+            model_name="reservaaula",
+            name="hora",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="horaris.FranjaHoraria",
+                verbose_name="Franja Horaria",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='reservaaula',
+            name="reservaaula",
             unique_together=set([]),
         ),
         migrations.RemoveField(
-            model_name='reservaaula',
-            name='impartir',
+            model_name="reservaaula",
+            name="impartir",
         ),
     ]

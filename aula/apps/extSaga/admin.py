@@ -4,4 +4,3 @@ from aula.apps.extSaga.models import ParametreSaga
 from django.contrib import admin
 
 admin.site.register(ParametreSaga)
-
