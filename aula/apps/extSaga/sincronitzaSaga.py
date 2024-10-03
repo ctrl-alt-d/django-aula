@@ -234,14 +234,14 @@ def sincronitza(f, user = None):
             a.foto = alumneDadesAnteriors.foto
             a.primer_responsable = alumneDadesAnteriors.primer_responsable
             a.observacions = alumneDadesAnteriors.observacions
-            a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
-            #el recuperem, havia estat baixa:
+             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
                 a.data_alta = date.today()
+                a.motiu_bloqueig = ""
             else:
                 a.data_alta = alumneDadesAnteriors.data_alta
-
+                a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
 
         a.save()
         cursos.add(a.grup.curs)
