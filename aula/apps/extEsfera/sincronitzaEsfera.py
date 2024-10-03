@@ -218,27 +218,21 @@ def sincronitza(f, user = None):
 
             a.user_associat = alumneDadesAnteriors.user_associat
             a.usuaris_app_associats.set(alumneDadesAnteriors.usuaris_app_associats.all())
-            
+            a.correu_relacio_familia_pare = alumneDadesAnteriors.correu_relacio_familia_pare
+            a.correu_relacio_familia_mare = alumneDadesAnteriors.correu_relacio_familia_mare
+            a.relacio_familia_darrera_notificacio = alumneDadesAnteriors.relacio_familia_darrera_notificacio
+            a.periodicitat_faltes = alumneDadesAnteriors.periodicitat_faltes
+            a.periodicitat_incidencies = alumneDadesAnteriors.periodicitat_incidencies
+            a.tutors_volen_rebre_correu = alumneDadesAnteriors.tutors_volen_rebre_correu = False
+            a.foto = alumneDadesAnteriors.foto
+            a.primer_responsable = alumneDadesAnteriors.primer_responsable
+            a.observacions = alumneDadesAnteriors.observacions
+            a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
                 a.data_alta = date.today()
-                a.motiu_bloqueig = u'No sol·licitat'
-                a.tutors_volen_rebre_correu = False
-                a.foto = alumneDadesAnteriors.foto
-                a.primer_responsable = alumneDadesAnteriors.primer_responsable
-                a.observacions = alumneDadesAnteriors.observacions
             else:
-                a.correu_relacio_familia_pare         = alumneDadesAnteriors.correu_relacio_familia_pare
-                a.correu_relacio_familia_mare         = alumneDadesAnteriors.correu_relacio_familia_mare
-                a.motiu_bloqueig                      = alumneDadesAnteriors.motiu_bloqueig
-                a.relacio_familia_darrera_notificacio = alumneDadesAnteriors.relacio_familia_darrera_notificacio
-                a.periodicitat_faltes                 = alumneDadesAnteriors.periodicitat_faltes
-                a.periodicitat_incidencies            = alumneDadesAnteriors.periodicitat_incidencies
-                a.tutors_volen_rebre_correu           = alumneDadesAnteriors.tutors_volen_rebre_correu = False
-                a.foto = alumneDadesAnteriors.foto
-                a.primer_responsable = alumneDadesAnteriors.primer_responsable
-                a.observacions = alumneDadesAnteriors.observacions
                 a.data_alta = alumneDadesAnteriors.data_alta
                 
         a.save()
