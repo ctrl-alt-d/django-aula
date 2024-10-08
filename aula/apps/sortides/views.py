@@ -1192,7 +1192,8 @@ def sortidaExcel( request, pk ):
                ','.join(filter(None, [alumne.rp1_mobil, alumne.rp2_mobil, alumne.telefons])),
                u"No assisteix a la sortida" if alumne in no_assisteixen else u""
                ]
-        if sortida.tipus_de_pagament=='ON':
+        novindran = sortida.alumnes_que_no_vindran.all()
+        if sortida.tipus_de_pagament=='ON' and alumne not in novindran:
             pagament = SortidaPagament.objects.get(alumne=alumne, sortida=sortida)
             pagament_realitzat = pagament.pagament_realitzat
             ordre = pagament.ordre_pagament if pagament.ordre_pagament and pagament.pagament_realitzat else ''
