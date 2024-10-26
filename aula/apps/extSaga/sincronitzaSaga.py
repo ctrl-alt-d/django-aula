@@ -8,6 +8,7 @@ from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.missatgeria.models import Missatge
 from aula.apps.usuaris.models import Professor
 from aula.apps.extSaga.models import ParametreSaga
+from aula.apps.relacioFamilies.tools import creaResponsables
 
 from django.db.models import Q
 
@@ -81,6 +82,10 @@ def sincronitza(f, user = None):
         a.ralc = ''
         a.telefons = ''
         dni = ''
+        # Guarda usuaris Responsable
+        # Es tracta d'una modificació provisional per a poder fer proves
+        resp1 = {}
+        resp2 = {}
         #a.tutors = ''
         #a.correu_tutors = ''
 
@@ -116,37 +121,49 @@ def sincronitza(f, user = None):
                 a.centre_de_procedencia = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_LOCALITAT"):
                 a.localitat = unicode(value,'iso-8859-1')
+                resp1["localitat"]=a.localitat
+                resp2["localitat"]=a.localitat
             if columnName.endswith( u"MUNICIPI"):
                 a.municipi = unicode(value,'iso-8859-1')
+                resp1["municipi"]=a.municipi
+                resp2["municipi"]=a.municipi
             # if columnName.find( u"_TELÈFON RESP")>=0 or columnName.find( u"_MÒBIL RESP")>=0 or columnName.find( u"_ALTRES TELÈFONS")>=0 :
             #     a.telefons += unicode(value,'iso-8859-1') + u', '
             if columnName.endswith(u"_TELÈFON RESP. 1" ):
-                a.rp1_telefon = unicode(value,'iso-8859-1')
+                if "telefon" not in resp1: resp1["telefon"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_TELÈFON RESP. 2" ):
-                a.rp2_telefon = unicode(value,'iso-8859-1')
+                if "telefon" not in resp2: resp2["telefon"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_MÒBIL RESP. 1" ):
-                a.rp1_mobil = unicode(value,'iso-8859-1')
+                resp1["telefon"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_MÒBIL RESP. 2" ):
-                a.rp2_mobil = unicode(value,'iso-8859-1')
+                resp2["telefon"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 1" ):
-                a.rp1_correu = unicode(value,'iso-8859-1')
+                resp1["correu"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 2" ):
-                a.rp2_correu = unicode(value,'iso-8859-1')
+                resp2["correu"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_ALTRES TELÈFONS"):
                 a.altres_telefons = unicode(value, 'iso-8859-1')
 
             # if columnName.find( u"_RESPONSABLE")>=0:
             #     a.tutors = unicode(value,'iso-8859-1') + u', '
             if columnName.endswith(u"_RESPONSABLE 1" ):
-                a.rp1_nom = unicode(value,'iso-8859-1')
+                resp1["nom"] = unicode(value,'iso-8859-1')
             if columnName.endswith(u"_RESPONSABLE 2" ):
-                a.rp2_nom = unicode(value,'iso-8859-1')
+                resp2["nom"] = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_ADREÇA" ):
                 a.adreca = unicode(value,'iso-8859-1')
+                resp1["adreca"]=a.adreca
+                resp2["adreca"]=a.adreca
             if columnName.endswith( u"_CP"):
                 a.cp = unicode(value,'iso-8859-1')
+                resp1["cp"]=a.cp
+                resp2["cp"]=a.cp
             if columnName.endswith( u"_DOC. IDENTITAT"):
                 dni = unicode(value,'iso-8859-1')
+            if columnName.endswith( u"_DOC. IDENTITAT RESP. 1"):
+                resp1["dni"] = unicode(value,'iso-8859-1')[-9:]
+            if columnName.endswith( u"_DOC. IDENTITAT RESP. 2"):
+                resp2["dni"] = unicode(value,'iso-8859-1')[-9:]
 
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
@@ -244,6 +261,9 @@ def sincronitza(f, user = None):
                 a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
 
         a.save()
+        # Crea usuaris Responsable
+        # Es tracta d'una modificació provisional per a poder fer proves
+        creaResponsables(a, [resp1, resp2])
         cursos.add(a.grup.curs)
     #
     # Baixes:

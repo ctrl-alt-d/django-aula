@@ -39,7 +39,7 @@ from aula.utils.tools import classebuida
 
 #exceptions
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from aula.apps.usuaris.models import User2Professor, AlumneUser
+from aula.apps.usuaris.models import User2Professor, AlumneUser, User2Responsable
 from aula.apps.tutoria.models import Tutor
 from aula.utils.decorators import group_required
 
@@ -47,7 +47,7 @@ from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
 from datetime import datetime, timedelta
 
-from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail
+from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -608,8 +608,7 @@ def canviParametres( request ):
     if  not CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES:
         raise Http404()
 
-    alumne = Alumne.objects.get( user_associat = user )
-
+    _, responsable, alumne = getRol( user )
     edatAlumne = None
     try:
         edatAlumne = alumne.edat()
@@ -824,16 +823,14 @@ def elMeuInforme( request, pk = None ):
     
     tePermis = True
     semiImpersonat = False
-    if pk:
-        professor = User2Professor( user )
-        alumne =  Alumne.objects.get( pk = pk )   
-        tePermis = professor in alumne.tutorsDeLAlumne() 
-        semiImpersonat = True
-    else:
+    professor, responsable, alumne = getRol(user)
+    if pk and professor:
         try:
-            alumne = Alumne.objects.get( user_associat = user )
+            alumne =  Alumne.objects.get( pk = pk )   
+            tePermis = professor in alumne.tutorsDeLAlumne()
+            semiImpersonat = True
         except Exception as e:
-            alumne = None
+            tePermis = False 
     
     if not alumne or not tePermis:
         raise Http404 
@@ -1843,3 +1840,21 @@ def pintaNoves( numero ):
 
 def blanc(request):
     return render(request, 'blanc.html', {},)
+
+@login_required
+def canviaAlumne( request, idalumne ):
+    '''
+    idalumne és l'id del model Alumne que es vol gestionar
+    Si és tracta d'un usuari responsable i l'id d'alumne correspon
+    a un dels seus alumnes associats, passa a gestionar aquest alumne.
+    '''
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+    
+    responsable = User2Responsable( user )
+    if responsable:
+        a=Alumne.objects.filter( pk = int(idalumne) )
+        if a.exists() and a.first() in responsable.alumnes_associats.all():
+            responsable.alumne_actual = a.first()
+            responsable.save()
+    return HttpResponseRedirect('/')

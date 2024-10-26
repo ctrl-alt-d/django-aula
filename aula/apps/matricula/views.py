@@ -21,6 +21,7 @@ from django.conf import settings
 from aula.apps.matricula.viewshelper import situacioMat, mailMatricula, següentCurs, quotaSegüentCurs, \
         enviaMissatge, gestionaPag, alumne2Mat, updateAlumne, getCanvis, mat_selecciona, next_mat, inforgpd, \
         enviaIniciMat, ResumLlistat
+from aula.apps.usuaris.tools import getRol
 
 @login_required
 @group_required(['direcció','administradors'])
@@ -406,19 +407,20 @@ def OmpleDades(request):
     Omple la Matrícula de l'alumne
     '''
     user=request.user
+    _, responsable, alumne = getRol( user )
     infos=[]
     try:
-        if user.alumne:
+        if alumne:
             nany=django.utils.timezone.now().year
-            info = situacioMat(user.alumne, nany)
+            info = situacioMat(alumne, nany)
             if info=='D':
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__escollir'))
             if info=='C':
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
             if info=='M':
                 # Matrícula segons preinscripcio o de continuitat
-                p=Preinscripcio.objects.filter(ralc=user.alumne.ralc, any=nany, estat='Enviada')
-                mat=alumne2Mat(user.alumne, nany, p)
+                p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada')
+                mat=alumne2Mat(alumne, nany, p)
                 mat.save()
                 if mat.estat=='A':
                     nomAlumne=(mat.nom+" "+mat.cognoms) if mat.nom and mat.cognoms else mat.idAlumne

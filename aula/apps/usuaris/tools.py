@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import random
-from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser
+from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser, User2Professor, User2Alumne, User2Responsable
 from datetime import datetime
 from datetime import timedelta
 from django.db.models import Q
@@ -880,4 +880,26 @@ def desbloqueja( alumne ):
 
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
-
+def getRol(usuari):
+    '''
+    Comprova quin tipus d'usuari correspon.
+    Si es tracta d'un alumne retorna None, None, Alumne
+    Si es tracta d'un responsable retorna None, Responsable, Alumne
+    Si es tracta d'un professor retorna Professor, None, None
+    Si no es tracta de cap cas retorna None, None, None
+    '''
+    professor, responsable, alumne = None, None, None
+    if usuari.username.startswith("almn"):
+        alumne = User2Alumne( usuari )
+    elif usuari.username.startswith("resp"):
+        responsable = User2Responsable( usuari )
+        if responsable:
+            tots = responsable.alumnes_associats.order_by('cognoms','nom')
+            if responsable.alumne_actual in tots:
+                alumne = responsable.alumne_actual
+            else:
+                if tots.exists():
+                    alumne = tots.first()
+            if not alumne: responsable=None
+    if not alumne and not responsable: professor = User2Professor( usuari )
+    return professor, responsable, alumne
