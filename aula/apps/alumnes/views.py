@@ -729,6 +729,7 @@ def llistaGrupsPromocionar(request):
 @login_required
 @group_required(['direcció'])
 def nouAlumnePromocionar(request):
+    # TODO usuariResponsable, esborrar aquesta funció ?
     #Aqui va el tractament del formulari i tota la polla...
 
     if request.method == 'POST':

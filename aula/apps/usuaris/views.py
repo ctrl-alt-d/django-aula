@@ -307,7 +307,6 @@ def elsProfessors( request ):
         
 
 def loginUser( request ):
-    from aula.apps.matricula.viewshelper import get_url_alumne
     
     head=u'Login' 
 
@@ -340,9 +339,6 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
-                        url_mat=get_url_alumne(user)
-                        if url_mat:
-                            return HttpResponseRedirect( url_mat )
                         return HttpResponseRedirect( url_next )
                     else:
                         LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
@@ -438,7 +434,7 @@ def recoverPasswd( request , username, oneTimePasswd ):
     return alumneRecoverPasswd( request , username, oneTimePasswd )
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
-    from aula.apps.matricula.viewshelper import get_url_alumne, MatriculaOberta
+    from aula.apps.matricula.viewshelper import MatriculaOberta
     
     # Comprova que correspongui a dades vàlides actuals
     if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):
@@ -503,9 +499,6 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address) 
                                 
                 url_next = '/' 
-                url_mat=get_url_alumne(user)
-                if url_mat:
-                    return HttpResponseRedirect( url_mat )
                 return HttpResponseRedirect( url_next )        
             else:
                 try:

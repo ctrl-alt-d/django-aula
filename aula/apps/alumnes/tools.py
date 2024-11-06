@@ -156,6 +156,7 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
         
         
 def crea_alumne(nom, cognoms, dataNaixement, grup):
+    # TODO usuariResponsable, fa falta aquesta funció?
     # Exemple d'ús:
     #    from aula.apps.alumnes.tools import crea_alumne
     #    crea_alumne("Cynthia", "Martínez Camps", "4-10-1996", "2CTX")

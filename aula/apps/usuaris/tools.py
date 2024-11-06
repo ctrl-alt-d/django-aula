@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import random
-from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser, User2Professor, User2Alumne, User2Responsable
+from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser, User2Professor, User2Alumne, User2Responsable, NotifUsuari
 from datetime import datetime
 from datetime import timedelta
 from django.db.models import Q
@@ -880,26 +880,75 @@ def desbloqueja( alumne ):
 
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
-def getRol(usuari):
+def getRol(usuari, request):
     '''
     Comprova quin tipus d'usuari correspon.
     Si es tracta d'un alumne retorna None, None, Alumne
-    Si es tracta d'un responsable retorna None, Responsable, Alumne
+    Si es tracta d'un responsable retorna None, Responsable, Alumne o None, Responsable, None
     Si es tracta d'un professor retorna Professor, None, None
     Si no es tracta de cap cas retorna None, None, None
     '''
-    professor, responsable, alumne = None, None, None
     if usuari.username.startswith("almn"):
         alumne = User2Alumne( usuari )
+        return None, None, alumne
     elif usuari.username.startswith("resp"):
         responsable = User2Responsable( usuari )
-        if responsable:
-            tots = responsable.alumnes_associats.order_by('cognoms','nom')
-            if responsable.alumne_actual in tots:
-                alumne = responsable.alumne_actual
-            else:
-                if tots.exists():
-                    alumne = tots.first()
-            if not alumne: responsable=None
-    if not alumne and not responsable: professor = User2Professor( usuari )
-    return professor, responsable, alumne
+        if responsable and responsable.get_alumnes_associats():
+            if "alumne_actual" in request.session:
+                pk = request.session["alumne_actual"] 
+                alumne = Alumne.objects.filter( pk = pk )
+                if alumne.exists():
+                    alumne=alumne.first()
+                    return None, responsable, alumne
+        return None, responsable, None
+    professor = User2Professor( usuari )
+    return professor, None, None
+
+def creaNotifAlumne(alumne):
+    '''
+    Apunta una notificació a l'alumne i als seus responsables.
+    Aquesta notificació correspon al cas d'enviament d'email, només crea notificacions si
+    els usuaris tenen email informat.
+    '''
+    resp1, resp2 = alumne.get_responsables()
+    usuaris=[[alumne.get_user_associat(), alumne.correu], 
+             [resp1.get_user_associat(), resp1.correu_relacio_familia] if resp1 else [None, None], 
+             [resp2.get_user_associat(), resp2.correu_relacio_familia] if resp2 else [None, None]]
+    for usuari, correu in usuaris:
+        if not usuari or not correu: continue
+        creaNotifUsuari(usuari, alumne)
+
+def creaNotifUsuari(usuari, alumne, tipus='N'):
+    '''
+    Apunta una notificació a l'usuari-alumne.
+    tipus 'N' Notificació, 'R' Revisió
+    '''
+    notificacio=NotifUsuari()
+    notificacio.usuari=usuari
+    notificacio.alumne=alumne
+    notificacio.tipus=tipus
+    notificacio.save()
+
+def obteNotificacio(usuari, alumne, datahora):
+    '''
+    usuari
+    datahora de creació de l'event del qual es vol saber quan s'ha notificat
+    retorna la data-hora de la primera notificació posterior a datahora o
+    retorna None si no existeix
+    '''
+    primera=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N', moment__gt=datahora).order_by('moment').first()
+    if primera: return primera.moment
+    return None
+
+def obteRevisio(usuari, alumne, datahora):
+    '''
+    usuari
+    datahora de creació de l'event del qual es vol saber quan s'ha revisat
+    retorna la data-hora de la primera revisió posterior a datahora o
+    retorna None si no existeix
+    '''
+    tot=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R', moment__gt=datahora).order_by('moment')
+    if tot.count()<2:
+        # L'última notificació 'R' correspon a la sessió actual, fan falta un mínim de dos
+        return None
+    return tot.first().moment

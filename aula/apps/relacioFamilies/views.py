@@ -24,7 +24,7 @@ from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
-from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm
+from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm, escollirAlumneForm
 from aula.mblapp.table2_models import Table2_QRPortalAlumne
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
@@ -47,7 +47,7 @@ from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
 from datetime import datetime, timedelta
 
-from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol
+from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -608,7 +608,7 @@ def canviParametres( request ):
     if  not CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES:
         raise Http404()
 
-    _, responsable, alumne = getRol( user )
+    _, responsable, alumne = getRol( user, request )
     edatAlumne = None
     try:
         edatAlumne = alumne.edat()
@@ -823,7 +823,7 @@ def elMeuInforme( request, pk = None ):
     
     tePermis = True
     semiImpersonat = False
-    professor, responsable, alumne = getRol(user)
+    professor, responsable, alumne = getRol(user, request )
     if pk and professor:
         try:
             alumne =  Alumne.objects.get( pk = pk )   
@@ -833,6 +833,9 @@ def elMeuInforme( request, pk = None ):
             tePermis = False 
     
     if not alumne or not tePermis:
+        if responsable:
+            # Selecciona l'alumne del responsable
+            return HttpResponseRedirect('/open/escollirAlumne/')
         raise Http404 
     
     head = u'{0} ({1})'.format(alumne , unicode( alumne.grup ) )
@@ -910,7 +913,7 @@ def elMeuInforme( request, pk = None ):
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = unicode(control.impartir.dia_impartir.strftime( '%d/%m/%Y' ))  
-            camp.negreta = False if control.relacio_familia_revisada else True      
+            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
             filera.append(camp)
     
             #----------------------------------------------
@@ -921,19 +924,19 @@ def elMeuInforme( request, pk = None ):
                                                  control.impartir.horari.assignatura.nom_assignatura,
                                                  control.impartir.horari.hora 
                                     )        
-            camp.negreta = False if control.relacio_familia_revisada else True      
+            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(control.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if control.relacio_familia_notificada else ''
-            camp.negreta = False if control.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(control.get_relacio_familia_notificada(user, alumne).strftime('%d/%m/%Y %H:%M')) if control.get_relacio_familia_notificada(user, alumne) else ''
+            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(control.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if control.relacio_familia_revisada else ''
-            camp.negreta = False if control.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(control.get_relacio_familia_revisada(user, alumne).strftime('%d/%m/%Y %H:%M')) if control.get_relacio_familia_revisada(user, alumne) else ''
+            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
             filera.append(camp)
 
 #             assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
@@ -948,6 +951,9 @@ def elMeuInforme( request, pk = None ):
         if not semiImpersonat:
             controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
             controlsNous.update( relacio_familia_revisada = ara )           
+            # Ja no s'ha de fer servir 'relacio_familia_notificada', 'relacio_familia_revisada'
+            # TODO modificar l'ús de 'relacio_familia_notificada', 'relacio_familia_revisada'
+            creaNotifUsuari(user, alumne)
     
 
         
@@ -1854,7 +1860,32 @@ def canviaAlumne( request, idalumne ):
     responsable = User2Responsable( user )
     if responsable:
         a=Alumne.objects.filter( pk = int(idalumne) )
-        if a.exists() and a.first() in responsable.alumnes_associats.all():
-            responsable.alumne_actual = a.first()
-            responsable.save()
+        if a.exists() and a.first() in responsable.get_alumnes_associats():
+            alum=a.first()
+            if "alumne_actual" not in request.session or request.session["alumne_actual"]!=alum.id:
+                creaNotifUsuari(user, alum, 'R')
+            request.session["alumne_actual"]=alum.id
+    return HttpResponseRedirect('/')
+
+@login_required
+def escollirAlumne(request):
+    _, responsable, _ = getRol( request.user, request )
+    if responsable:
+        if responsable.get_alumnes_associats().count()>1:
+            if request.method == 'POST':
+                form = escollirAlumneForm(request.user, responsable, request.POST)
+                if form.is_valid():
+                    alumneid=form.cleaned_data['alumne']
+                    return HttpResponseRedirect(reverse_lazy('relacio_families__canviaAlumne',
+                                                kwargs={"idalumne": alumneid},))
+            else:
+                form = escollirAlumneForm(request.user, responsable)
+            return render(request, 'form.html', {'form': form, 'head': u'Selecciona l\'alumne' ,})
+        else:
+            if responsable.get_alumnes_associats().count()==1:
+                return HttpResponseRedirect(reverse_lazy('relacio_families__canviaAlumne',
+                                                    kwargs={"idalumne": responsable.get_alumnes_associats().first().id},))
+            else:
+                # No té alumnes
+                return HttpResponseRedirect('/logout/')
     return HttpResponseRedirect('/')

@@ -151,4 +151,13 @@ class comunicatForm(forms.Form):
         cleaned_data['horainici'] = horai
         cleaned_data['horafi'] = horaf
         return cleaned_data
+
+class escollirAlumneForm(forms.Form):
     
+    alumne=forms.ChoiceField(label=u"Selecciona l'alumne a gestionar",
+                                required=True,
+                                widget=forms.RadioSelect())
+    
+    def __init__(self, user, responsable, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['alumne'].choices=[ (a.id, a.nom+" "+a.cognoms) for a in responsable.get_alumnes_associats()]

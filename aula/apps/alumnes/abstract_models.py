@@ -174,6 +174,7 @@ class AbstractAlumne(models.Model):
     rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
+    # TODO  canviar-ho a ForeignKey de Responsable
     primer_responsable = models.IntegerField( choices = PRIMER_RESPONSABLE, blank=False,
                                                default = 0,
                                                help_text = u"Principal responsable de l'alumne/a")
@@ -248,10 +249,13 @@ class AbstractAlumne(models.Model):
         return True if TeCorreuPare_o_Mare and usuariActiu else False
     
     def get_correus_relacio_familia(self):
-        return  [ x for x in [ self.correu_relacio_familia_pare, self.correu_relacio_familia_mare] if x  ]
+        return [ x.correu_relacio_familia for x in self.responsables.all() if x and x.correu_relacio_familia ]
 
     def get_correus_tots(self):
-        return  [ x for x in [ self.correu_relacio_familia_pare, self.correu_relacio_familia_mare, self.correu_tutors, self.rp1_correu, self.rp2_correu, self.correu] if x  ]
+        tots=self.get_correus_relacio_familia()
+        tots=tots+[ x.correu for x in self.responsables.all() if x and x.correu ]
+        tots=tots+[ self.correu_tutors, self.correu ]
+        return tots
 
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None
@@ -322,7 +326,37 @@ class AbstractAlumne(models.Model):
     def get_foto_or_default(self):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
-
+    
+    def get_responsables(self, rp1_dni=None, rp2_dni=None):
+        '''
+        Selecciona els responsables de l'alumne que corresponen
+        als dnis indicats.
+        Si no s'aporten els dnis, selecciona els responsables
+        existents de l'alumne.
+        retorna els 2 responsables, poden ser None si no existeixen.
+        '''
+        if not bool(rp1_dni) and not bool(rp2_dni):
+            responsables=list(self.responsables.all())
+            # Ha de retornar 2 elements, afegeix None
+            for i in range(len(responsables),2):
+                responsables.append(None)
+            return responsables
+        resp1=self.responsables.filter(dni=rp1_dni).first()
+        resp2=self.responsables.filter(dni=rp2_dni).first()
+        return resp1, resp2
+    
+    def esborraAltres_responsables(self, dnis):
+        '''
+        Elimina altres responsables anteriors, només
+        conserva els que corresponen a la llista de dnis.
+        Els responsables sense alumnes queden com a baixa.
+        dnis list amb els dnis vàlids de responsables
+        '''
+        for r in self.responsables.exclude(dni__in=dnis):
+            r.alumnes_associats.remove(self)
+            if not r.alumnes_associats.exists():
+                # Fa baixa si el responsable es queda sense alumnes
+                r.delete()
 
 class AbstractDadesAddicionalsAlumne(models.Model):
 

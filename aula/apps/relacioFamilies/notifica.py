@@ -10,7 +10,7 @@ from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core import mail
 from django.core.mail import EmailMessage
 from django.db import transaction
-from aula.apps.usuaris.tools import informaNoCorreus, geturlconf
+from aula.apps.usuaris.tools import informaNoCorreus, geturlconf, creaNotifAlumne
 from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
 def llista_pendents():
@@ -219,7 +219,10 @@ def notifica():
                 #if hiHaNovetatsPresencia:
                 alumne.relacio_familia_darrera_notificacio = ara
                 alumne.save()
-
+                # Ja no s'ha de fer servir 'relacio_familia_darrera_notificacio'
+                # TODO modificar l'ús de 'relacio_familia_darrera_notificacio'
+                creaNotifAlumne(alumne)
+                
                 #LOGGING
                 Accio.objects.create( 
                         tipus = 'NF',

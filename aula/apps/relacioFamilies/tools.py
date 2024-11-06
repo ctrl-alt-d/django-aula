@@ -4,12 +4,15 @@ from datetime import date
 from aula.apps.relacioFamilies.models import Responsable
 from django.forms.models import model_to_dict
 
-def creaResponsables(alumne, responsables):
+def creaResponsables(alumne, responsables, manteDades=False):
     '''
     alumne és l'alumne dels responsables.
     responsables és una llista de diccionaris, cada diccionari conté els camps d'un responsable.
+    manteDades si True no modifica les dades actuals, del responsable existent, amb les del diccionari.
     Crea els responsables de la llista o els actualitza, i els associa a l'alumne.
+    Treu l'associació dels responsables que ja no corresponen.
     '''
+    dnis_resp=[]
     for dades in responsables:
         if "dni" not in dades or not bool(dades["dni"]): continue
         resp=Responsable.objects.filter(dni=dades["dni"])
@@ -22,23 +25,24 @@ def creaResponsables(alumne, responsables):
             resp.alumnes_associats.add(alumne)
         else:
             resp=resp[0]
-            actual=model_to_dict(resp)
-            camps=dades.keys()
-            # Actualitza amb les noves dades
-            for f in camps:
-                actual[f]=dades[f]
-            if 'user_associat' in actual: del actual['user_associat']
-            if 'alumnes_associats' in actual: del actual['alumnes_associats']
-            if 'alumne_actual' in actual: del actual['alumne_actual']
+            actual=model_to_dict(resp,exclude=['user_associat', 'alumnes_associats'])
+            if not manteDades:
+                camps=dades.keys()
+                # Actualitza amb les noves dades
+                for f in camps:
+                    actual[f]=dades[f]
             respMod=Responsable(**actual)
             respMod.user_associat=resp.user_associat
-            respMod.alumnes_associats.set(resp.alumnes_associats.all())
-            respMod.alumne_actual=resp.alumne_actual
             if respMod.data_baixa:
                 # Si era baixa -> ara és alta
                 respMod.data_baixa = None
                 respMod.motiu_bloqueig = ''
+                respMod.user_associat.is_active=True
+                respMod.user_associat.save()
+            else:
+                respMod.alumnes_associats.set(resp.alumnes_associats.all())
             respMod.save()
             respMod.alumnes_associats.add(alumne)
-
+        dnis_resp.append(resp.dni)
+    alumne.esborraAltres_responsables(dnis_resp)
 

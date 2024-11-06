@@ -3,7 +3,7 @@ from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.matricula.models import Matricula
 from aula.apps.sortides.models import QuotaPagament
 from aula.apps.alumnes.models import Curs, Nivell
-from aula.utils.widgets import DateTextImput, MultipleFileField, CustomClearableFileInput
+from aula.utils.widgets import DateTextImput, MultipleFileField, CustomClearableFileInput, empty
 from django.utils import version
 import django.utils.timezone
 from django.conf import settings
@@ -44,10 +44,15 @@ class DadesForm1(forms.ModelForm):
         fields = ['curs', 'nom','cognoms', 'centre_de_procedencia','data_naixement','alumne_correu','adreca','localitat','cp',]
 
 class DadesForm2(forms.ModelForm):
+    from django.utils.safestring import mark_safe
+    etiqueta1 = forms.CharField( widget=empty, disabled=True, required=False, label=mark_safe('Primer responsable:'))
+    etiqueta2 = forms.CharField( widget=empty, disabled=True, required=False, label=mark_safe('<br>Segon responsable:'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['rp1_dni'].required=True
         self.fields['rp1_nom'].required=True
+        self.fields['rp1_cognoms'].required=True
         self.fields['rp1_telefon'].required=True
         self.fields['rp1_correu'].required=True
     
@@ -69,7 +74,8 @@ class DadesForm2(forms.ModelForm):
     
     class Meta:
         model=Matricula
-        fields = ['rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',]
+        fields = ['etiqueta1','rp1_dni','rp1_nom','rp1_cognoms','rp1_parentiu','rp1_telefon','rp1_correu','rp1_adreca','rp1_localitat','rp1_cp',
+                  'etiqueta2','rp2_dni','rp2_nom','rp2_cognoms','rp2_parentiu','rp2_telefon','rp2_correu','rp2_adreca','rp2_localitat','rp2_cp',]
 
 class DadesForm2b(forms.ModelForm):
     
@@ -167,6 +173,9 @@ class DadesForm3(forms.ModelForm):
 
 class ConfirmaMat(forms.ModelForm):
     
+    from django.utils.safestring import mark_safe
+    etiqueta1 = forms.CharField( widget=empty, disabled=True, required=False, label=mark_safe('<br>Primer responsable:'))
+    etiqueta2 = forms.CharField( widget=empty, disabled=True, required=False, label=mark_safe('<br>Segon responsable:'))
     opcions=forms.ChoiceField(  label=u"Continuarà el proper curs a ESO o Batxillerat ?",
                                 required=True,
                                 choices=Matricula.CONF_CHOICES,
@@ -175,7 +184,8 @@ class ConfirmaMat(forms.ModelForm):
     class Meta:
         model=Matricula
         fields = ['opcions', 'nom','cognoms', 'data_naixement', 'alumne_correu','adreca','localitat','cp',\
-                  'rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',\
+                  'etiqueta1','rp1_dni','rp1_nom','rp1_cognoms','rp1_parentiu','rp1_telefon','rp1_correu','rp1_adreca','rp1_localitat','rp1_cp',\
+                  'etiqueta2','rp2_dni','rp2_nom','rp2_cognoms','rp2_parentiu','rp2_telefon','rp2_correu','rp2_adreca','rp2_localitat','rp2_cp',\
                   'acceptar_condicions',]
     
     def __init__(self, user, *args, **kwargs):
@@ -185,7 +195,9 @@ class ConfirmaMat(forms.ModelForm):
         self.fields['adreca'].required=True
         self.fields['localitat'].required=True
         self.fields['cp'].required=True
+        self.fields['rp1_dni'].required=True
         self.fields['rp1_nom'].required=True
+        self.fields['rp1_cognoms'].required=True
         self.fields['rp1_telefon'].required=True
         self.fields['rp1_correu'].required=True
         self.fields['nom'].widget.attrs['readonly'] = True

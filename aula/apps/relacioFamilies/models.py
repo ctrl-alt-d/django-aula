@@ -43,8 +43,7 @@ class Responsable(models.Model):
     data_alta = models.DateField( default = timezone.now, null=False )
     data_baixa = models.DateField( null=True, blank = True )
     user_associat = models.OneToOneField(User , null=True, on_delete=models.SET_NULL)
-    alumnes_associats = models.ManyToManyField(Alumne, related_name="alumnes")
-    alumne_actual = models.ForeignKey(Alumne, null = True, on_delete=models.SET_NULL)
+    alumnes_associats = models.ManyToManyField(Alumne, related_name="responsables")
     correu_relacio_familia =  models.EmailField( u'Correu Notifi. Tutors', help_text = u'Correu de notificacions', blank=True)
     relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
     periodicitat_faltes = models.IntegerField( choices = Alumne.PERIODICITAT_FALTES_CHOICES, blank=False,
@@ -66,6 +65,9 @@ class Responsable(models.Model):
 
     def delete(self):
         self.data_baixa = datetime.today()
+        self.motiu_bloqueig = 'Baixa'
+        self.user_associat.is_active=False
+        self.user_associat.save()
         self.save()
         
     def esBaixa(self):
@@ -77,6 +79,8 @@ class Responsable(models.Model):
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None
     
+    def get_alumnes_associats(self):
+        return self.alumnes_associats.filter(data_baixa__isnull=True).order_by('cognoms','nom')
 
 
 from django.db.models.signals import post_delete, post_save

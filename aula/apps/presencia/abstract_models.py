@@ -6,6 +6,7 @@ from django.apps import apps
 #consultes
 from django.db.models import Q
 from aula.utils.tools import unicode
+from aula.apps.usuaris.tools import obteNotificacio, obteRevisio
 
 class AbstractImpartir(models.Model):
     horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
@@ -187,15 +188,14 @@ class AbstractControlAssistencia(models.Model):
     relacio_familia_notificada = models.DateTimeField( null=True ) 
     
     comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
+    moment = models.DateTimeField( null=True )
     
     class Meta:
         abstract = True
         verbose_name = u'Entrada al Control d\'Assistencia'
         verbose_name_plural = u'Entrades al Control d\'Assistencia'
         unique_together = (("alumne", "impartir"))
-        index_together = [
-            ["alumne", "estat", "relacio_familia_notificada"],
-        ]
+        indexes = [models.Index(fields=["alumne", "estat", "relacio_familia_notificada"]),]
 
     def __str__(self):
         return unicode(self.alumne) + u' -> '+ unicode(self.estat)
@@ -218,6 +218,12 @@ class AbstractControlAssistencia(models.Model):
         if self.comunicat:
             text=text+". "+self.comunicat.text_missatge
         return text
+
+    def get_relacio_familia_revisada(self, usuari, alumne):
+        return obteRevisio(usuari, alumne, self.moment)
+
+    def get_relacio_familia_notificada(self, usuari, alumne):
+        return obteNotificacio(usuari, alumne, self.moment)
 
 
 class AbstractNoHaDeSerALAula(models.Model):
