@@ -183,9 +183,11 @@ class AbstractControlAssistencia(models.Model):
     swaped = models.BooleanField(default=False)
     estat_backup = models.ForeignKey('presencia.EstatControlAssistencia', related_name='controlassistencia_as_bkup', db_index=True, null=True, blank=True, on_delete=models.CASCADE)
     professor_backup = models.ForeignKey('usuaris.Professor', related_name='controlassistencia_as_bkup', null=True, blank=True, on_delete=models.CASCADE)
-    
+
+    #DEPRECATED
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
+    #DEPRECATED
     
     comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
     moment = models.DateTimeField( null=True )
@@ -220,9 +222,27 @@ class AbstractControlAssistencia(models.Model):
         return text
 
     def get_relacio_familia_revisada(self, usuari, alumne):
+        '''
+        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
+        '''
+        if not bool(self.moment):
+            if self.relacio_familia_revisada: return self.relacio_familia_revisada
+            if self.impartir.dia_passa_llista: return obteRevisio(usuari, alumne, self.impartir.dia_passa_llista)
+        '''
+        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
+        '''
         return obteRevisio(usuari, alumne, self.moment)
 
     def get_relacio_familia_notificada(self, usuari, alumne):
+        '''
+        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
+        '''
+        if not bool(self.moment):
+            if self.relacio_familia_notificada: return self.relacio_familia_notificada
+            if self.impartir.dia_passa_llista: return obteNotificacio(usuari, alumne, self.impartir.dia_passa_llista)
+        '''
+        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
+        '''
         return obteNotificacio(usuari, alumne, self.moment)
 
 

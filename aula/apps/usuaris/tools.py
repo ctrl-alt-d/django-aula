@@ -936,6 +936,7 @@ def obteNotificacio(usuari, alumne, datahora):
     retorna la data-hora de la primera notificació posterior a datahora o
     retorna None si no existeix
     '''
+    if not bool(datahora): return None
     primera=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N', moment__gt=datahora).order_by('moment').first()
     if primera: return primera.moment
     return None
@@ -947,6 +948,7 @@ def obteRevisio(usuari, alumne, datahora):
     retorna la data-hora de la primera revisió posterior a datahora o
     retorna None si no existeix
     '''
+    if not bool(datahora): return None
     tot=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R', moment__gt=datahora).order_by('moment')
     if tot.count()<2:
         # L'última notificació 'R' correspon a la sessió actual, fan falta un mínim de dos
