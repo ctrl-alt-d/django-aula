@@ -113,7 +113,8 @@ def controlAssistencia_pre_delete( sender, instance, **kwargs):
     
 def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
-    if not instance.moment and (instance.instanceDB and instance.instanceDB.estat!=instance.estat or not instance.instanceDB):
+    if not instance.moment or not instance.instanceDB or (instance.instanceDB and instance.instanceDB.estat!=instance.estat):
+        # Modifica moment si s'han fet canvis
         instance.moment=dt.datetime.now()
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
