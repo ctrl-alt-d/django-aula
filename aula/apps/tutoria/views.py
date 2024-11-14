@@ -2471,9 +2471,9 @@ def avisTutorCartaPerFaltes(professor):
             carta, created = CartaAbsentisme.objects.get_or_create(alumne=alumne,
                                                                    data_carta=None,
                                                                    carta_numero=darrera_carta_n,
-                                                                   professor=professor,
+                                                                   #professor=professor,
                                                                    defaults={'faltes_fins_a_data': datetime(1999, 1, 1),
-                                                                             'nfaltes': 0, 'tipus_carta': ''})
+                                                                             'nfaltes': 0, 'tipus_carta': '', 'professor':professor})
             if created:
                 carta.carta_numero += 1
                 carta.save()
