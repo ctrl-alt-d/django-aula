@@ -28,6 +28,12 @@ def calcula_menu( user , path, sessioImpersonada ):
     so = not al and Group.objects.get_or_create(name= 'sortides' )[0] in user.groups.all()
     tp = not al and Group.objects.get_or_create(name= 'tpvs' )[0] in user.groups.all()
     tu = not al and pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )    
+    
+    if pr and not pl:
+        grupProfessional, _ = Group.objects.get_or_create(name='professional')
+        user.groups.add(grupProfessional)
+        pl=True
+    
     tots = al or ad or di or pr or pl or co or pg or so or tp or am
     
     #Comprovar si té missatges sense llegir
