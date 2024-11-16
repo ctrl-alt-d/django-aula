@@ -3,7 +3,6 @@
 from django.db import migrations, models
 import django
 
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -20,22 +19,12 @@ class Migration(migrations.Migration):
                 model_name='controlassistencia',
                 index=models.Index(fields=['alumne', 'estat', 'relacio_familia_notificada'], name='presencia_c_alumne__6961f9_idx'),
             ),
-            migrations.AddField(
-                model_name='controlassistencia',
-                name='moment',
-                field=models.DateTimeField(null=True),
-            ),
         ]
     if django.get_version() >= '4.1':
         operations = [
-            migrations.RenameIndex(
-                model_name='controlassistencia',
-                new_name='presencia_c_alumne__6961f9_idx',
-                old_name='presencia_controlassiste_alumne_id_estat_id_relac_8957bdde_idx',
-            ),
-            migrations.AddField(
-                model_name='controlassistencia',
-                name='moment',
-                field=models.DateTimeField(null=True),
-            ),
+        migrations.RenameIndex(
+            model_name='controlassistencia',
+            new_name='presencia_c_alumne__6961f9_idx',
+            old_name='presencia_controlassiste_alumne_id_estat_id_relac_8957bdde_idx',
+        ),
         ]

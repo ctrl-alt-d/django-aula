@@ -8,11 +8,16 @@ class Migration(migrations.Migration):
     dependencies = [
         ('alumnes', '0018_alumne_usuaris_app_associats'),
         ('missatgeria', '0003_auto_20190331_1541'),
-        ('presencia', '0012_rename_controlassistencia_alumne_estat_relacio_familia_notificada_presencia_c_alumne__6961f9_idx_and'),
+        ('presencia', '0012_rename_presencia_controlassiste_alumne_id_estat_id_relac_8957bdde_idx_presencia_c_alumne__6961f9_idx'),
         ('usuaris', '0014_notifusuari'),
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='controlassistencia',
+            name='moment',
+            field=models.DateTimeField(null=True),
+        ),
         migrations.RemoveIndex(
             model_name='controlassistencia',
             name='presencia_c_alumne__6961f9_idx',
