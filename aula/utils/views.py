@@ -49,6 +49,7 @@ def logout_page(request):
     try:
         del request.session['impersonacio']
         del request.session['alumne_actual']
+        del request.session['ultima_revisio']
     except KeyError:
         pass
     
@@ -68,8 +69,8 @@ def menu(request):
         try:
             if Group.objects.get(name='alumne') in request.user.groups.all():
                 if "alumne_actual" not in request.session:
-                    _, responsable, _ = getRol(request.user, request)
-                    if responsable:
+                    _, responsable, alumne = getRol(request.user, request)
+                    if responsable or alumne:
                         return HttpResponseRedirect( '/open/escollirAlumne/')
                 
                 url_mat=get_url_alumne(request.user, request)

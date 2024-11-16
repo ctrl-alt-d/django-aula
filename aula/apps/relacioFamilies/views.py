@@ -39,7 +39,7 @@ from aula.utils.tools import classebuida
 
 #exceptions
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from aula.apps.usuaris.models import User2Professor, AlumneUser, User2Responsable
+from aula.apps.usuaris.models import User2Professor, AlumneUser, User2Responsable, User2Alumne
 from aula.apps.tutoria.models import Tutor
 from aula.utils.decorators import group_required
 
@@ -47,7 +47,7 @@ from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
 from datetime import datetime, timedelta
 
-from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari
+from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari, ultimaRevisio
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -1858,18 +1858,24 @@ def canviaAlumne( request, idalumne ):
     (user, l4 ) = credentials
     
     responsable = User2Responsable( user )
+    alum = None
     if responsable:
         a=Alumne.objects.filter( pk = int(idalumne) )
         if a.exists() and a.first() in responsable.get_alumnes_associats():
             alum=a.first()
-            if "alumne_actual" not in request.session or request.session["alumne_actual"]!=alum.id:
-                creaNotifUsuari(user, alum, 'R')
-            request.session["alumne_actual"]=alum.id
+    else:
+        alum = User2Alumne( user )
+    if alum:
+        if "alumne_actual" not in request.session or request.session["alumne_actual"]!=alum.id:
+            creaNotifUsuari(user, alum, 'R')
+        ultima=ultimaRevisio(user, alum)
+        request.session["ultima_revisio"]=ultima.strftime( '%d/%m/%Y %H:%M:%S' ) if ultima else ''
+        request.session["alumne_actual"]=alum.id
     return HttpResponseRedirect('/')
 
 @login_required
 def escollirAlumne(request):
-    _, responsable, _ = getRol( request.user, request )
+    _, responsable, alumne = getRol( request.user, request )
     if responsable:
         if responsable.get_alumnes_associats().count()>1:
             if request.method == 'POST':
@@ -1888,4 +1894,8 @@ def escollirAlumne(request):
             else:
                 # No té alumnes
                 return HttpResponseRedirect('/logout/')
+    if alumne:
+        alumneid=alumne.id
+        return HttpResponseRedirect(reverse_lazy('relacio_families__canviaAlumne',
+                                                kwargs={"idalumne": alumneid},))
     return HttpResponseRedirect('/')

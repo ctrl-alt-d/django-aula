@@ -954,3 +954,24 @@ def obteRevisio(usuari, alumne, datahora):
         # L'última notificació 'R' correspon a la sessió actual, fan falta un mínim de dos
         return None
     return tot.first().moment
+
+def ultimaRevisio(usuari, alumne):
+    '''
+    usuari responsable o alumne
+    alumne gestionat
+    retorna la data-hora de l'última revisió
+    retorna None si no existeix
+    '''
+    tot=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R').order_by('-moment')
+    if tot.count()<2:
+        # L'última notificació 'R' correspon a la sessió actual, fan falta un mínim de dos
+        return None
+    return tot[1].moment
+
+def ultimaRevisioSessio(request):
+    '''
+    retorna la data-hora de l'última revisió des de la sessió
+    retorna None si no existeix
+    '''
+    if "ultima_revisio" in request.session: return datetime.strptime(request.session["ultima_revisio"], '%d/%m/%Y %H:%M:%S')
+    return None
