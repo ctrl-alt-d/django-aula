@@ -65,6 +65,7 @@ def capture_token_api(request, format=None):
     """
     Rep un token i retorna un usuari de la API (is_active=False)
     """
+    import secrets
 
     # deserialitzem
     data = JSONParser().parse(request)
@@ -102,7 +103,7 @@ def capture_token_api(request, format=None):
 
     # creo un nou usuari per aquest token
     allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' +  '0Oo^?#!'
-    password_xunga = User.objects.make_random_password(length=12, allowed_chars=allowed_chars)
+    password_xunga = ''.join(secrets.choice(allowed_chars) for i in range(12))
     nou_usuari = User.objects.create_user( username = "API"+token.localitzador ,
                                            email = "",
                                            password = password_xunga )
