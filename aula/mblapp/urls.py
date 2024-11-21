@@ -20,6 +20,6 @@ urlpatterns = [
             name='appmobil__api__alumnes_dades'),
     re_path(r'^sortides/$', mblapp_views.sortides,
             name='appmobil__api__sortides'),
-    re_path(r'^detallSortida/(?P<pk>\d+)/$', mblapp_views.detallSortida,
+    re_path(r'^sortides/(?P<pk>\d+)/$', mblapp_views.detallSortida,
             name='appmobil__api__detall_sortida'),
 ]

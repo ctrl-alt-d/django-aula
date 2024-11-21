@@ -301,18 +301,21 @@ def sortides(request):
     content = []
 
     sortides = alumne.notificasortida_set.all()
-    # sortides a on s'ha convocat a l'alumne
-    sortidesnotificat = Sortida.objects.filter(notificasortida__alumne=alumne)
-    # sortides pagades a les que ja no s'ha convocat a l'alumne
-    sortidespagadesperalumne = SortidaPagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list('sortida', flat=True).distinct()
-    sortidespagadesnonotificades = Sortida.objects.filter(id__in=sortidespagadesperalumne,
-                                                          pagaments__pagament__alumne=alumne,
-                                                          pagaments__pagament__pagament_realitzat=True).exclude(notificasortida__alumne=alumne)
-    # totes les sortides relacionades amb l'alumne
-    activitats = sortidesnotificat.union(sortidespagadesnonotificades)
     sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list('id', flat=True).distinct()
     sortides_justificades = alumne.sortides_falta_justificat.values_list('id', flat=True).distinct()
-
+    # sortides a on s'ha convocat a l'alumne
+    sortidesnotificat = Sortida.objects.filter(notificasortida__alumne=alumne).exclude(id__in=sortides_on_no_assistira).exclude(id__in=sortides_justificades)
+    # sortides pagades a les que ja no s'ha convocat a l'alumne
+    sortidespagadesperalumne = SortidaPagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list('sortida', flat=True).distinct()
+    sortidespagadesnonotificades = (Sortida.objects.filter(id__in=sortidespagadesperalumne,
+                                                          pagaments__pagament__alumne=alumne,
+                                                          pagaments__pagament__pagament_realitzat=True)
+                                    .exclude(notificasortida__alumne=alumne)
+                                    .exclude(id__in=sortides_on_no_assistira)
+                                    .exclude(id__in=sortides_justificades))
+    # totes les sortides relacionades amb l'alumne
+    activitats = sortidesnotificat.union(sortidespagadesnonotificades)
+    # sortides que s'han de passar a l'app
     for sortida in activitats.order_by('-calendari_desde'):
         if sortida.tipus_de_pagament == 'ON':
             try:
@@ -324,21 +327,11 @@ def sortides(request):
         else:
             pagament = None
             realitzat = False
-        assistiraALaSortida = True
-        assistiraAClasse = False
-        if sortida.pk in sortides_on_no_assistira:
-            assistiraALaSortida = False #no assisteix a la sortida
-            assistiraAClasse = True
-            if sortida.pk in sortides_justificades:
-                assistiraAClasse = False #no assisteix a la sortida ni a classe (ho té justificat)
         content = content + [{"id": sortida.id,
                               "titol": str(sortida.titol),
                               "data": str(sortida.calendari_desde),
-                              "assistiraALaSortida": assistiraALaSortida,
-                              "assistiraAClasse": assistiraAClasse,
                               "pagament": bool(pagament),
                               "realitzat": realitzat,
-                              "idPagament": pagament.id if pagament else None
                                   }]
     return Response(content)
 
@@ -363,16 +356,12 @@ def detallSortida(request, pk):
         realitzat = False
 
     content = []
-    content = content + [{"idSortida": pk,
-                              "titol": str(sortida.titol),
+    content = content + [{"titol": str(sortida.titol),
                               "desde": sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),
                               "finsa": sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),
-                              "programa": sortida.programa_de_la_sortida,
-                              "condicions": sortida.condicions_generals,
-                              "infoPagament": sortida.informacio_pagament,
+                              "programa": "\n".join([sortida.programa_de_la_sortida, sortida.condicions_generals,sortida.informacio_pagament ]),
                               "preu": str(sortida.preu_per_alumne) if sortida.preu_per_alumne else u'0',
                               "dataLimitPagament": str(sortida.termini_pagament) if sortida.termini_pagament else '',
-                              "pagament": bool(pagament),
                               "realitzat": realitzat,
                               "idPagament": pagament.id if pagament else None
                         }]

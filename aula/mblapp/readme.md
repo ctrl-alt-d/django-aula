@@ -82,19 +82,21 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumn
 #Demanar sortides d'un alumne
 curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/
 #Resposta: 
-[{"id":188,"titol":"Taller prototipatge","data":"2024-01-11 17:45:00","assistiraALaSortida":true,"assistiraAClasse":false,"pagament":false,"realitzat":false,"idPagament":null},
-{"id":455,"titol":"prova111","data":"2024-09-25 11:25:00","assistiraALaSortida":false,"assistiraAClasse":false,"pagament":true,"realitzat":false,"idPagament":7352}]
-
+[{"id":62,"titol":"BATALLA DE L'EBRE","data":"2024-11-12 06:00:00","pagament":true,"realitzat":true},
+{"id":111,"titol":"Ciència Sorprenent","data":"2024-11-11 11:00:00","pagament":false,"realitzat":false},
+{"id":136,"titol":"COM COMENÇA TOT  4ESO C i PS","data":"2024-11-06 13:40:00","pagament":false,"realitzat":false},
+{"id":89,"titol":"MATFESTA-PARADES","data":"2024-10-25 08:20:00","pagament":false,"realitzat":false},
+{"id":51,"titol":"English let's go","data":"2024-10-03 08:10:00","pagament":false,"realitzat":false},
+{"id":58,"titol":"VIATGE DE FINAL D'ETAPA","data":"2024-09-25 00:00:00","pagament":true,"realitzat":true},
+{"id":20,"titol":"ESO4 Convivència La Vajol","data":"2024-09-18 08:30:00","pagament":false,"realitzat":false}]
 
 #Demanar detall d'una sortida concreta d'un alumne
-curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/detallSortida/455/
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/455/
 # On 455 és l'identificador de la sortida
 #Resposta: 
-[{"idSortida":"455","titol":"prova111","desde":"25/09/2024 11:25","finsa":"03/10/2024 11:25",
-"programa":"Descripció acvitat 111","condicions":"Condicions general activitat 111",
-"infoPagament":"El pagament s'ha de realitzar a través d'aquesta mateixa plataforma",
-"preu":"10.00","dataLimitPagament":"2024-09-24 11:29:00","pagament":true,"realitzat":false,"idPagament":7352}]
-
+[{"titol":"BATALLA DE L'EBRE","desde":"12/11/2024 06:00","finsa":"13/11/2024 21:00",
+"programa":"Sortida per treballar la Guerra Civil Espanyola, en concret en espais on e",
+preu":"53.00", "dataLimitPagament":"2024-10-31 23:59:00","realitzat":true,"idPagament":2144}]
 
 #Enllaç d'entrada a la Webview per a realitzar pagament d'una sortida
 curl -H "Authorization: Bearer ${JWTOKEN}" https://127.0.0.1:8000/sortides/pagoOnlineApi/4297/
