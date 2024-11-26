@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import itertools
 
-from django.apps import apps
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -70,7 +69,7 @@ from aula.apps.tutoria.table2_models import Table2_Actuacions
 from django.contrib import messages
 from django.conf import settings
 from aula.apps.presenciaSetmanal.views import ProfeNoPot
-from ..missatgeria.missatges_a_usuaris import ALUMNE_GENERADA_CARTA, tipusMissatge
+from ..missatgeria.missatges_a_usuaris import ALUMNE_GENERAR_CARTA, tipusMissatge
 
 
 @login_required
@@ -1133,20 +1132,18 @@ def gestioCartes(request):
 
 @login_required
 @group_required(['professors'])
-def novaCarta(request, pk_carta):
+def novaCarta(request, pk_alumne):
     credentials = tools.getImpersonateUser(request)
     (user, l4) = credentials
     professor = User2Professor(user)
-    #alumne = get_object_or_404(Alumne, pk=pk_alumne)
-    carta = get_object_or_404(CartaAbsentisme, pk=pk_carta)
-    alumne = carta.alumne
+    alumne = get_object_or_404(Alumne, pk=pk_alumne)
 
     # seg-------------------
     te_permis = (l4 or
                  professor in alumne.tutorsDeLAlumne())
     if not te_permis:
         raise Http404()
-
+    carta = CartaAbsentisme( alumne = alumne , professor = professor )
     frmFact = modelform_factory(CartaAbsentisme, fields=('data_carta', ))
     if request.method == 'POST':
         form = frmFact( request.POST, instance = carta )
@@ -2454,46 +2451,3 @@ def justificarSortidaAlumne(request, pk ):
                 )
 
 
-def avisTutorCartaPerFaltes(professor):
-    grups = [t.grup for t in Tutor.objects.filter(professor=professor)]
-    grups.append('Altres')
-    for grup in grups:
-        if grup == 'Altres':
-            consulta_alumnes = Q(pk__in=[ti.alumne.pk for ti in professor.tutorindividualitzat_set.all()])
-        else:
-            consulta_alumnes = Q(grup=grup)
-        for alumne in Alumne.objects.filter(consulta_alumnes, data_baixa__isnull=True):
-            cal_avisar_tutor = False
-            try:
-                darrera_carta_n = alumne.cartaabsentisme_set.exclude(carta_esborrada_moment__isnull=False).order_by('-carta_numero')[0].carta_numero
-            except IndexError:
-                darrera_carta_n = 0
-            carta, created = CartaAbsentisme.objects.get_or_create(alumne=alumne,
-                                                                   data_carta=None,
-                                                                   carta_numero=darrera_carta_n,
-                                                                   #professor=professor,
-                                                                   defaults={'faltes_fins_a_data': datetime(1999, 1, 1),
-                                                                             'nfaltes': 0, 'tipus_carta': '', 'professor':professor})
-            if created:
-                carta.carta_numero += 1
-                carta.save()
-            try:
-                    carta.clean()
-                    llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get(carta.tipus_carta,
-                                                                                  settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA)
-                    cal_avisar_tutor = carta.nfaltes >= llindar
-            except:
-                    pass
-            if cal_avisar_tutor and not carta.avisat_tutor:
-                    missatge = ALUMNE_GENERADA_CARTA
-                    txt = missatge.format(alumne)
-                    enllac = reverse('tutoria__cartes_assistencia__gestio_cartes')
-                    tipus_de_missatge = tipusMissatge(missatge)
-                    Missatge = apps.get_model('missatgeria', 'Missatge')
-                    msg = Missatge(remitent=professor.getUser(), text_missatge=txt, enllac=enllac,
-                                   tipus_de_missatge=tipus_de_missatge)
-                    for tutor in alumne.tutorsDeLAlumne():
-                        importancia = 'VI'
-                        msg.envia_a_usuari(tutor, importancia)
-                    carta.avisat_tutor = True
-            carta.save()
