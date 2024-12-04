@@ -12,18 +12,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
+        errors=[]
         try:
             self.stdout.write(u"Iniciant control emails rebutjats" )
             controlDSN()
             self.stdout.write(u"Fi procés control emails rebutjats" )
+        except Exception as e:
+            self.stdout.write(u"Error al control d'emails rebutjats: {0}".format( unicode(e) ) )
+            errors += [unicode(e)]
+        try:
             self.stdout.write(u"Iniciant procés notificacions" )
             notifica()
             self.stdout.write(u"Fi procés notificacions" )
             llista_pendents()
         except Exception as e:
             self.stdout.write(u"Error al procés notificacions: {0}".format( unicode(e) ) )
-            errors = [unicode(e)]            
-         
+            errors += [unicode(e)]
+        
+        if bool(errors):
             #Deixar missatge a la base de dades (utilitzar self.user )
             from aula.apps.missatgeria.models import Missatge
             from django.contrib.auth.models import User, Group

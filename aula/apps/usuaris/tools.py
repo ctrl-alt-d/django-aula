@@ -470,7 +470,11 @@ def checkDSN(msg):
                 ad=dsn.get('Arrival-Date')
                 if ad: data=datemailTodatetime(ad)
                 dc=dsn.get('diagnostic-code')
-                if dc: diagnostic=dc.split(';')[1]
+                try:
+                    if dc and type(dc) is str: diagnostic=dc.split(';')[1]
+                    else: diagnostic=str(dc)
+                except:
+                    diagnostic = 'Unknown error'
         informa(emailRetornat, status, action, data, diagnostic, text)  
         
 def controlDSN(dies=1):
