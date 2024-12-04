@@ -36,7 +36,7 @@ def totesLesCartesRpt( ):
     
     taula.fileres = []    
     
-    for carta in CartaAbsentisme.objects.filter(data_carta__isnull=False).order_by( '-data_carta'):
+    for carta in CartaAbsentisme.objects.all().order_by( '-data_carta'):
             
         filera = []
         
