@@ -127,7 +127,6 @@ class AbstractCartaAbsentisme(models.Model):
     carta_esborrada_moment = models.DateTimeField( editable = False, blank=True, null =True  )
     nfaltes = models.IntegerField( editable = False , verbose_name = u"Absències injustificades")
     impresa = models.BooleanField( editable = False, default = False )
-    avisat_tutor = models.BooleanField( editable = False, default = False )
     class Meta:
         abstract = True
         ordering = [ 'alumne', 'carta_numero' ]
