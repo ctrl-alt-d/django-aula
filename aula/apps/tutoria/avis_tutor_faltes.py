@@ -65,6 +65,7 @@ def calcular_dades_carta(alumne, data_carta=None):
                 if llindar==0:
                     errors.append(u"Error triant la carta a enviar a la família. Alumne {0}, sense nombre màxim de faltes per enviar carta".formnat(alumne))
     else:
+            maxCartes = 3
             if False:
                 pass
             elif carta_numero in [1,2,] and alumne.cursa_nivell(u"ESO"):
@@ -89,7 +90,8 @@ def calcular_dades_carta(alumne, data_carta=None):
         'faltes_fins_a_data': faltes_fins_a_data,
         'nfaltes': nfaltes,
         'llindar': llindar,
-        'errors': errors
+        'errors': errors,
+        'maxcartes': maxCartes
     }
 
 
@@ -125,7 +127,7 @@ def avisTutorCartaPerFaltes():
     totalcartes = 0
     for alumne in Alumne.objects.filter(data_baixa__isnull=True):
         dades_carta = calcular_dades_carta(alumne)
-        if dades_carta['nfaltes'] >= dades_carta['llindar']:
+        if dades_carta['carta_numero'] <= dades_carta['maxcartes'] and dades_carta['nfaltes'] >= dades_carta['llindar']:
             enviar_missatge_tutor(alumne)
             totalcartes += 1
     print(f"Total missatges enviats: {totalcartes}")
