@@ -346,7 +346,10 @@ def detallSortida(request, pk):
     """
     qrtoken = request.user.qrportal
     alumne = qrtoken.alumne_referenciat
-    sortida = Sortida.objects.get(pk=pk)
+    try:
+        sortida = Sortida.objects.get(pk=pk)
+    except:
+        raise serializers.ValidationError({'error': ["Sortida inexistent"]})
 
     try:
         pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
@@ -355,8 +358,8 @@ def detallSortida(request, pk):
         pagament = None
         realitzat = False
 
-    content = []
-    content = content + [{"titol": str(sortida.titol),
+
+    content = {"titol": str(sortida.titol),
                               "desde": sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),
                               "finsa": sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),
                               "programa": "\n".join([sortida.programa_de_la_sortida, sortida.condicions_generals,sortida.informacio_pagament ]),
@@ -364,6 +367,5 @@ def detallSortida(request, pk):
                               "dataLimitPagament": str(sortida.termini_pagament) if sortida.termini_pagament else '',
                               "realitzat": realitzat,
                               "idPagament": pagament.id if pagament else None
-                        }]
+                        }
     return Response(content)
-
