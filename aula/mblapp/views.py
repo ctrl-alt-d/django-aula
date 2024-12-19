@@ -347,6 +347,7 @@ def detallSortida(request, pk):
     qrtoken = request.user.qrportal
     alumne = qrtoken.alumne_referenciat
     try:
+        int (pk)
         sortida = Sortida.objects.get(pk=pk)
     except:
         raise serializers.ValidationError({'error': ["Sortida inexistent"]})
