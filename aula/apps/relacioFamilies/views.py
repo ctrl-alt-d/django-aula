@@ -57,6 +57,7 @@ from django.utils.html import escapejs
 import django.utils.timezone
 from aula.apps.matricula.viewshelper import inforgpd
 from aula.apps.missatgeria.models import Missatge
+from django.utils import formats
 
 #@login_required
 #@group_required(['professors'])
@@ -1315,26 +1316,13 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.data_neixement )        
+        camp.contingut = formats.date_format(alumne.data_neixement, "SHORT_DATE_FORMAT") 
         filera.append(camp)
     
         taula.fileres.append( filera )
     
-            #----telefons------------------------------------------
-        filera = []
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'Telèfon'        
-        filera.append(camp)
     
-        camp = tools.classebuida()
-        camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.altres_telefons )
-        filera.append(camp)
-    
-        taula.fileres.append( filera )
-    
-            #----Pares------------------------------------------
+        #----Pares------------------------------------------
         filera = []
         camp = tools.classebuida()
         camp.enllac = None
@@ -1344,12 +1332,8 @@ def elMeuInforme( request, pk = None ):
         camp = tools.classebuida()
         camp.enllac = None
 
-        camp.multipleContingut = [(u'{0} ({1} , {2})'.format(alumne.rp1_nom,
-                                                             alumne.rp1_telefon,
-                                                             alumne.rp1_mobil), None),
-                                  (u'{0} ({1} , {2})'.format(alumne.rp2_nom,
-                                                             alumne.rp2_telefon,
-                                                             alumne.rp2_mobil),None),
+        camp.multipleContingut = [(alumne.rp1_nom, None),
+                                  (alumne.rp2_nom,None),
                                   ]
         filera.append(camp)
     
