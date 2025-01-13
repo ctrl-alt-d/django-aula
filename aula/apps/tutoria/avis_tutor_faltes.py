@@ -52,6 +52,7 @@ def calcular_dades_carta(alumne, data_carta=None):
         te_mes_de_16 = (curs_any_fi() - alumne.data_neixement.year) > 16
     except:
         te_mes_de_16 = False
+    assolitMaxCartes= False
     perNivell = True if len(settings.CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA) > 0 else False
     if perNivell:
             faltes = settings.CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA.get(alumne.getNivellCustom())
@@ -61,11 +62,11 @@ def calcular_dades_carta(alumne, data_carta=None):
             tipus_carta=''
             if carta_numero>maxCartes and maxCartes>0:
                 errors.append(u'Aquest alumne ha arribat al màxim de cartes' )
+                assolitMaxCartes = True
             else:
                 if llindar==0:
                     errors.append(u"Error triant la carta a enviar a la família. Alumne {0}, sense nombre màxim de faltes per enviar carta".formnat(alumne))
     else:
-            maxCartes = 3
             if False:
                 pass
             elif carta_numero in [1,2,] and alumne.cursa_nivell(u"ESO"):
@@ -80,6 +81,7 @@ def calcular_dades_carta(alumne, data_carta=None):
                 errors.append(u"Error triant la carta a enviar a la família. Alumne {0}, sense nivell assignat".format(alumne))
             else:
                 errors.append(u'Aquest alumne ha arribat al màxim de cartes' )
+                assolitMaxCartes = True
             llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get(tipus_carta,
                                                                           settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA)
 
@@ -91,7 +93,7 @@ def calcular_dades_carta(alumne, data_carta=None):
         'nfaltes': nfaltes,
         'llindar': llindar,
         'errors': errors,
-        'maxcartes': maxCartes
+        'assolitmaxcartes': assolitMaxCartes
     }
 
 
@@ -127,7 +129,7 @@ def avisTutorCartaPerFaltes():
     totalcartes = 0
     for alumne in Alumne.objects.filter(data_baixa__isnull=True):
         dades_carta = calcular_dades_carta(alumne)
-        if dades_carta['carta_numero'] <= dades_carta['maxcartes'] and dades_carta['nfaltes'] >= dades_carta['llindar']:
+        if not dades_carta['assolitmaxcartes'] and dades_carta['nfaltes'] >= dades_carta['llindar']:
             enviar_missatge_tutor(alumne)
             totalcartes += 1
     print(f"Total missatges enviats: {totalcartes}")
