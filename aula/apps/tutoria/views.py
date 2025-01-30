@@ -48,7 +48,7 @@ from aula.apps.horaris.models import FranjaHoraria, Horari
 from aula.apps.incidencies.models import Incidencia, Expulsio
 from aula.utils.tools import llista, unicode
 from aula.apps.avaluacioQualitativa.forms import alumnesGrupForm
-from aula.utils.forms import dataForm, ckbxForm, choiceForm
+from aula.utils.forms import afegeigFormControlClass, dataForm, ckbxForm, choiceForm
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 import json as simplejson
 from django.core import serializers
@@ -408,7 +408,8 @@ def novaActuacio(request):
         formset.append( formActuacio )
 
 
-
+    afegeigFormControlClass(formActuacio)
+    
     return render(
                 request,
                 'formset.html',
@@ -1268,6 +1269,7 @@ def elsMeusAlumnesTutoratsEntreDates(request):
     else:
         form = elsMeusAlumnesTutoratsEntreDatesForm( grups = possibles_grups )
 
+        afegeigFormControlClass(form)
     return render(
                 request,
                 'form.html',
