@@ -17,7 +17,9 @@ from aula.apps.missatgeria.missatges_a_usuaris import (
     ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
 )
+from aula.apps.sortides.filters import SortidaFilter
 from aula.settings import URL_DJANGO_AULA
+from aula.utils.forms import afegeigFormControlClass
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect, DateTimeTextImput
 from django.contrib.auth.decorators import login_required
 from aula.utils.decorators import group_required
@@ -280,7 +282,11 @@ def sortidesAllList(request, tipus=None):
     sortides = Sortida.objects.distinct()
     if tipus:
         sortides = sortides.filter(tipus=tipus)
-    table = Table2_Sortides(data=sortides, origen="All")
+        
+    filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
+
+    table = Table2_Sortides(data=filter.qs, origen="All")
+    
     if tipus == "P":
         table.exclude = (
             "ciutat",
@@ -299,12 +305,15 @@ def sortidesAllList(request, tipus=None):
     url = r"{0}{1}".format(
         settings.URL_DJANGO_AULA, reverse("sortides__sortides__ical")
     )
-
+    
+    afegeigFormControlClass(filter.form)
+    
     return render(
         request,
         "table2.html",
         {
             "table": table,
+            "filter": filter,
             "url": url,
         },
     )
