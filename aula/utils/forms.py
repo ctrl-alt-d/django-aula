@@ -48,6 +48,11 @@ class choiceForm(forms.Form):
         self.fields['opcio'].help_text = self.help_text          
 
 
+def afegeigFormControlClass(unForm):
+    for field in unForm.base_fields:
+        unForm.base_fields[field].widget.attrs.update({'class': 'form-control'})
+
+
 class initDBForm(forms.Form):
      
     confirma = forms.BooleanField( label=u'Confirma inicialització',required = True,

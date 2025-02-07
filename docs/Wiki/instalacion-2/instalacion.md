@@ -567,6 +567,7 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+30 2 * * 2,4,6 su - www-data -c "/opt/djau2022/scripts/avisa_tutor_faltes.sh" >> /opt/django/log/avisa_tutor_faltes_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
 

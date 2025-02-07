@@ -12,6 +12,13 @@
 
 	{% block pretaula %} {% endblock %}
 
+	{% if filter %}
+	<form method="get">
+        {{ filter.form.as_p }}
+        <input class="btn btn-sm btn-primary" type="submit" />
+    </form>
+	{% endif %}
+
 	{% render_table table %}
 
 	{% if urladd %}

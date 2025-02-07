@@ -8,7 +8,7 @@ from django.forms.widgets import Widget
 from django_select2.forms import ModelSelect2Widget
 
 class elsMeusAlumnesTutoratsEntreDatesForm( forms.Form ):
-    grup = forms.ChoiceField(   )
+    grup = forms.ChoiceField(  help_text=u'Tria un grup per veure dades del grup.')
     dataDesDe =  forms.DateField(label=u'Data des de', 
                                        initial=datetime.date.today,
                                        required = False, 
