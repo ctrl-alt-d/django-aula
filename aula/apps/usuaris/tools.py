@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.db.models import Q
 from django.conf import settings
 from aula.apps.alumnes.models import Alumne
+from aula.apps.relacioFamilies.models import Responsable
 import re
 import dns.resolver
 import smtplib
@@ -612,14 +613,20 @@ def gmailcontrolDSN(dies):
     return True
 
 def enviaOneTimePasswd( email ):
-    q_correu_pare = Q( correu_relacio_familia_pare__iexact = email )
-    q_correu_mare = Q( correu_relacio_familia_mare__iexact = email )
     nUsuaris = 0
     nErrors = 0
     errors = []
-    alumnes = Alumne.objects.filter( q_correu_pare | q_correu_mare )
+    responsables = Responsable.objects.filter( correu_relacio_familia__iexact = email )
+    for resp in responsables:
+        resultat = enviaOneTimePasswdAlumne( resp, email )
+        nUsuaris += 1
+        if resultat['errors']:
+            nErrors += 1
+            errors.append( ', '.join( resultat['errors'] ) )
+
+    alumnes = Alumne.objects.filter( correu__iexact = email )
     for alumne in alumnes:
-        resultat = enviaOneTimePasswdAlumne( alumne )
+        resultat = enviaOneTimePasswdAlumne( alumne, email )
         nUsuaris += 1
         if resultat['errors']:
             nErrors += 1
@@ -643,11 +650,10 @@ def enviaOneTimePasswd( email ):
                               u"Contacti amb el tutor o amb el cap d'estudis."  ]
                             if nUsuaris == 0 else [], }
 
-def enviaOneTimePasswdAlumne( alumne, force = False ):
+def enviaOneTimePasswdAlumne( alumne, email, force = False ):
 
     usuari = alumne.get_user_associat().username
-    actiu =  alumne.esta_relacio_familia_actiu()
-    correusFamilia = alumne.get_correus_relacio_familia()
+    actiu = alumne.get_user_associat().is_active
 
     infos = []
     warnings = []
@@ -658,11 +664,8 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
     total_enviats = OneTimePasswd.objects.filter( usuari =alumne.user_associat, moment_expedicio__gte = fa_24h  ).count()
     if total_enviats >= 3:
         errors.append( u'Màxim número de missatges enviats a aquest correu durant les darrers 24h.' )
-    elif not correusFamilia:
-        warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels pares estigui informada")
-        errors.append( u"Error enviant codi de recuperació d'accés" )
     elif alumne.esBaixa():
-        warnings.append( u"Aquest alumne és baixa. No se li pot enviar codi d'accés.")
+        warnings.append( u"Aquest usuari és baixa. No se li pot enviar codi d'accés.")
         errors.append( u"Error enviant codi de recuperació d'accés")
     else:
         #preparo el codi a la bdd:
@@ -672,9 +675,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
         #envio missatge:
         urlDjangoAula = settings.URL_DJANGO_AULA
         url = "{0}/usuaris/recoverPasswd/{1}/{2}".format( urlDjangoAula, usuari, clau )
-        txtCapcelera = u"Enviat missatge a {0} .".format(
-                                u", ".join( correusFamilia )
-                                                                )
+        txtCapcelera = u"Enviat missatge a {0} .".format( email )
         infos.append(txtCapcelera)
         assumpte = u"{0} - Recuperar/Obtenir accés a l'aplicatiu Djau de {1}".format(alumne.nom, settings.NOM_CENTRE )
         missatge = [
@@ -708,7 +709,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
             send_mail(assumpte,
                       u'\n'.join( missatge ),
                       fromuser,
-                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ],
+                      [ email ],
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:

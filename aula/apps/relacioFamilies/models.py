@@ -62,7 +62,7 @@ class Responsable(models.Model):
 
     def __str__(self):
         return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom +\
-                    (u' (' + u' , '.join(filter(None, [self.telefon, self.correu])) + u')')
+                    (u' (' + u' , '.join(filter(None, [self.telefon, self.correu_relacio_familia])) + u')')
     
     def delete(self):
         self.data_baixa = datetime.today()
@@ -90,7 +90,7 @@ class Responsable(models.Model):
         return self.telefon
     
     def get_correu(self):
-        return self.correu
+        return self.correu_relacio_familia
 
 from django.db.models.signals import post_delete, post_save
 from aula.apps.relacioFamilies.business_rules.docattach import docattach_post_delete
