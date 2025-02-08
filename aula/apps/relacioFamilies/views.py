@@ -412,14 +412,14 @@ def configuraConnexio( request , pk ):
     resp1, resp2 = alumne.get_responsables()
     dades_resp1=''
     dades_resp2=''
-    if resp1: dades_resp1 = [str(resp1), resp1.telefon, resp1.correu]
-    if resp2: dades_resp2 = [str(resp2), resp2.telefon, resp2.correu]
+    if resp1: dades_resp1 = str(resp1)
+    if resp2: dades_resp2 = str(resp2)
     
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
-          ('Dades responsable 1', ' - '.join(filter(None,dades_resp1))),
-          ('Dades responsable 2', ' - '.join(filter(None,dades_resp2))),
+          ('Dades responsable 1', dades_resp1),
+          ('Dades responsable 2', dades_resp2),
           ('Telèfon Alumne', alumne.telefons + ', ' + alumne.altres_telefons),
     ]
     
@@ -904,8 +904,8 @@ def elMeuInforme( request, pk = None ):
         # TODO depèn de usuari responsable
         #  user pot ser profe o responsable
         #  si profe --> tenim varis responsables amb última revisió possiblement diferent
-        #controlsNous = controls.filter( relacio_familia_revisada__isnull = True )
-        controlsNous = controls.filter( moment__lte = ultimaRevisio(user, alumne))        
+        controlsNous = controls.filter( relacio_familia_revisada__isnull = True )
+        #controlsNous = controls.filter( moment__lte = ultimaRevisio(user, alumne))        
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Faltes i retards {0}'.format( pintaNoves( controlsNous.count() ) )
@@ -1003,8 +1003,8 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)    
         if not semiImpersonat:
-            #controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            #controlsNous.update( relacio_familia_revisada = ara )           
+            controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            controlsNous.update( relacio_familia_revisada = ara )           
             # Ja no s'ha de fer servir 'relacio_familia_notificada', 'relacio_familia_revisada'
             # TODO modificar l'ús de 'relacio_familia_notificada', 'relacio_familia_revisada'
             creaNotifUsuari(user, alumne)

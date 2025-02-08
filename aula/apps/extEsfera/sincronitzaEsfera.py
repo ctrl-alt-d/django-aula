@@ -226,6 +226,7 @@ def sincronitza(f, user = None):
             a.tutors_volen_rebre_correu = alumneDadesAnteriors.tutors_volen_rebre_correu = False
             a.foto = alumneDadesAnteriors.foto
             a.primer_responsable = alumneDadesAnteriors.primer_responsable
+            a.responsable_preferent = alumneDadesAnteriors.responsable_preferent
             a.observacions = alumneDadesAnteriors.observacions
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:

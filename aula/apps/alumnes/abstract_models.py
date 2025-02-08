@@ -175,7 +175,7 @@ class AbstractAlumne(models.Model):
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
     # TODO  canviar-ho a ForeignKey de Responsable
-    # responsable_preferent = models.ForeignKey("relacioFamilies.Responsable", null=True, on_delete=models.SET_NULL, label = "Responsable preferent", help_text = u"Responsable preferent de l'alumne/a")
+    responsable_preferent = models.ForeignKey("relacioFamilies.Responsable", null=True, on_delete=models.SET_NULL, help_text = u"Responsable preferent de l'alumne/a")
     primer_responsable = models.IntegerField( choices = PRIMER_RESPONSABLE, blank=False,
                                                default = 0,
                                                help_text = u"Principal responsable de l'alumne/a")
@@ -333,7 +333,7 @@ class AbstractAlumne(models.Model):
         Selecciona els responsables de l'alumne que corresponen
         als dnis indicats.
         Si no s'aporten els dnis, selecciona els responsables
-        existents de l'alumne.
+        existents de l'alumne, en aquest cas el primer és el preferent.
         retorna els 2 responsables, poden ser None si no existeixen.
         '''
         if not bool(rp1_dni) and not bool(rp2_dni):
@@ -341,18 +341,22 @@ class AbstractAlumne(models.Model):
             # Ha de retornar 2 elements, afegeix None
             for i in range(len(responsables),2):
                 responsables.append(None)
+            if self.responsable_preferent and responsables[0]!=self.responsable_preferent and responsables[1]:
+                responsables.reverse()
             return responsables
         resp1=self.responsables.filter(dni=rp1_dni).first()
         resp2=self.responsables.filter(dni=rp2_dni).first()
         return resp1, resp2
     
-    def esborraAltres_responsables(self, dnis):
+    def esborraAntics_responsables(self, dnis):
         '''
         Elimina altres responsables anteriors, només
         conserva els que corresponen a la llista de dnis.
         Els responsables sense alumnes queden com a baixa.
         dnis list amb els dnis vàlids de responsables
         '''
+        if self.responsable_preferent and self.responsable_preferent.dni not in dnis:
+            self.responsable_preferent=None
         for r in self.responsables.exclude(dni__in=dnis):
             r.alumnes_associats.remove(self)
             if not r.alumnes_associats.exists():

@@ -44,5 +44,5 @@ def creaResponsables(alumne, responsables, manteDades=False):
             respMod.save()
             respMod.alumnes_associats.add(alumne)
         dnis_resp.append(resp.dni)
-    alumne.esborraAltres_responsables(dnis_resp)
+    alumne.esborraAntics_responsables(dnis_resp)
 

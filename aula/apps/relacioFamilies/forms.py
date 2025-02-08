@@ -35,7 +35,7 @@ class AlumneModelForm(forms.ModelForm):
 
     class Meta:
         model = Alumne
-        fields = ['primer_responsable', 'correu', 'periodicitat_faltes', 'periodicitat_incidencies', 'foto', 'observacions']
+        fields = ['responsable_preferent', 'correu', 'periodicitat_faltes', 'periodicitat_incidencies', 'foto', 'observacions']
         labels = {
             'correu': "Correu de l'alumne",
             }
@@ -44,12 +44,12 @@ class AlumneModelForm(forms.ModelForm):
         super(AlumneModelForm, self).__init__(*args, **kwargs)
         if tutor:
             responsables = self.instance.get_responsables()
-            responsable_choices = ((x, str(x)) for x in responsables)
-            #TODO self.fields['primer_responsable'] = forms.ChoiceField(choices=responsable_choices)
-            self.fields['primer_responsable'].help_text = "Responsable preferent de l'alumne/a"
-            self.fields['primer_responsable'].label = "Responsable preferent"
+            responsable_choices = [(x.id, x.get_nom()) for x in responsables]
+            self.fields['responsable_preferent'] = forms.ChoiceField(choices=responsable_choices)
+            self.fields['responsable_preferent'].help_text = "Responsable preferent de l'alumne/a"
+            self.fields['responsable_preferent'].label = "Responsable preferent"
         else:
-            self.fields.pop('primer_responsable')
+            self.fields.pop('responsable_preferent')
 
     def clean_foto(self):
         foto = self.cleaned_data['foto']
@@ -57,6 +57,10 @@ class AlumneModelForm(forms.ModelForm):
         if not ok:
             raise forms.ValidationError(mess)
         return foto
+    
+    def clean_responsable_preferent(self):
+        respid=self.cleaned_data['responsable_preferent']
+        return Responsable.objects.get(id=respid)
 
     def save(self):
         #redimensionar i utilitzar ralc com a nom de foto
@@ -78,7 +82,7 @@ class ResponsableModelForm(forms.ModelForm):
             'periodicitat_faltes': prefix+'_periodicitat_faltes',
             'periodicitat_incidencies': prefix+'_periodicitat_incidencies',
             }
-        self.fields['correu_relacio_familia'].label='Correu responsable '+str(self.instance)
+        self.fields['correu_relacio_familia'].label='Correu responsable '+ self.instance.get_nom()
     
     def add_prefix(self, field_name):
         field_name = self.custom_names.get(field_name, field_name)

@@ -61,8 +61,9 @@ class Responsable(models.Model):
         verbose_name_plural = u'Responsables'
 
     def __str__(self):
-        return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom 
-
+        return (u'És baixa: ' if self.esBaixa() else u'') +  self.cognoms + ', ' + self.nom +\
+                    (u' (' + u' , '.join(filter(None, [self.telefon, self.correu])) + u')')
+    
     def delete(self):
         self.data_baixa = datetime.today()
         self.motiu_bloqueig = 'Baixa'
@@ -81,7 +82,15 @@ class Responsable(models.Model):
     
     def get_alumnes_associats(self):
         return self.alumnes_associats.filter(data_baixa__isnull=True).order_by('cognoms','nom')
-
+    
+    def get_nom(self):
+        return self.cognoms + ', ' + self.nom
+    
+    def get_telefon(self):
+        return self.telefon
+    
+    def get_correu(self):
+        return self.correu
 
 from django.db.models.signals import post_delete, post_save
 from aula.apps.relacioFamilies.business_rules.docattach import docattach_post_delete

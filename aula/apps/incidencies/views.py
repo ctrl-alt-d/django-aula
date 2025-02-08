@@ -645,24 +645,15 @@ def editaExpulsio( request, pk ):
         edatAlumne = expulsio.alumne.edat()
     except:
         pass
-
-    nomResponsable1 = expulsio.alumne.rp1_nom if expulsio.alumne.rp1_nom else ''
-    nomResponsable2 = expulsio.alumne.rp2_nom if expulsio.alumne.rp2_nom else ''
-    telefonResponsable1 = expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon else ''
-    telefonResponsable2 = expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon else ''
-    mobilResponsable1 = expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else ''
-    mobilResponsable2 = expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else ''
-    infoResponsable1 = nomResponsable1 + (u' (' + u' , '.join(filter(None, [telefonResponsable1, mobilResponsable1])) + u')')
-    infoResponsable2 = nomResponsable2 + (u' (' + u' , '.join(filter(None, [telefonResponsable2, mobilResponsable2])) + u')')
-    responsable1 = infoResponsable1 if expulsio.alumne.primer_responsable == 0 else infoResponsable2
-    responsable2 = infoResponsable2 if expulsio.alumne.primer_responsable == 0 else infoResponsable1
-
+    
+    responsable1, responsable2 = expulsio.alumne.get_responsables()
+        
     infoForm = [
         ('Alumne', unicode(expulsio.alumne)),
         ('Dia', expulsio.dia_expulsio),
         ('Hora', expulsio.franja_expulsio),
-        ('Responsable preferent', responsable1),
-        ('Responsable (altre)', responsable2),
+        ('Responsable preferent', str(responsable1)),
+        ('Responsable (altre)', str(responsable2)),
         ('Altres telèfons', expulsio.alumne.altres_telefons),
         ('Edat alumne', edatAlumne),
         ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),

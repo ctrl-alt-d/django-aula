@@ -1432,6 +1432,8 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         taula.fileres = []
 
+        resp1, resp2 = alumne.get_responsables()
+        
             # ----nom------------------------------------------
         filera = []
         camp = tools.classebuida()
@@ -1441,7 +1443,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(alumne.rp1_nom) if alumne.primer_responsable == 0 else u'{0}'.format(alumne.rp2_nom)
+        camp.contingut = u'{0}'.format(resp1.get_nom()) if resp1 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1455,10 +1457,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        telefons = ', '.join(
-            filter(None, [alumne.rp1_telefon, alumne.rp1_mobil])) if alumne.primer_responsable == 0 else '/ '.join(
-            filter(None, [alumne.rp2_telefon, alumne.rp2_mobil]))
-        camp.contingut = u'{0}'.format(telefons)
+        camp.contingut = u'{0}'.format(resp1.get_telefon()) if resp1 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1472,7 +1471,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(alumne.rp1_correu) if alumne.primer_responsable == 0 else u'{0}'.format(alumne.rp2_correu)
+        camp.contingut = u'{0}'.format(resp1.get_correu()) if resp1 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1510,7 +1509,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(alumne.rp2_nom) if alumne.primer_responsable == 0 else u'{0}'.format(alumne.rp1_nom)
+        camp.contingut = u'{0}'.format(resp2.get_nom()) if resp2 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1524,10 +1523,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        telefons = ', '.join(
-            filter(None, [alumne.rp2_telefon, alumne.rp2_mobil])) if alumne.primer_responsable == 0 else '/ '.join(
-            filter(None, [alumne.rp1_telefon, alumne.rp1_mobil]))
-        camp.contingut = u'{0}'.format(telefons)
+        camp.contingut = u'{0}'.format(resp2.get_telefon()) if resp2 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1541,7 +1537,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(alumne.rp2_correu) if alumne.primer_responsable == 0 else u'{0}'.format(alumne.rp1_correu)
+        camp.contingut = u'{0}'.format(resp2.get_correu()) if resp2 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)

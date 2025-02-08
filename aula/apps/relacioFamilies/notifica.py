@@ -135,8 +135,8 @@ def notifica():
             noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
             noves_faltes_assistencia = ControlAssistencia.objects.filter( alumne = alumne, 
                                                                           #impartir__dia_impartir__gte = fa_2_setmanes,
-                                                                          #relacio_familia_notificada__isnull = True,
-                                                                          moment__lte = ultimaNotificacio(usuari, alumne),
+                                                                          relacio_familia_notificada__isnull = True,
+                                                                          # TODO moment__lte = ultimaNotificacio(usuari, alumne),
                                                                           estat__pk__in = presencies_notificar )
             noves_respostes_qualitativa = ( alumne
                                             .respostaavaluacioqualitativa_set
@@ -220,7 +220,7 @@ def notifica():
                 noves_incidencies.update( relacio_familia_notificada = ara )
                 noves_expulsions.update( relacio_familia_notificada = ara )
                 noves_sancions.update( relacio_familia_notificada = ara )
-                #noves_faltes_assistencia.update( relacio_familia_notificada = ara )
+                noves_faltes_assistencia.update( relacio_familia_notificada = ara )
                 noves_respostes_qualitativa.update( relacio_familia_notificada = ara )
                 #if hiHaNovetatsPresencia:
                 alumne.relacio_familia_darrera_notificacio = ara

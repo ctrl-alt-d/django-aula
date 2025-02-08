@@ -14,6 +14,10 @@ def alumne_post_save(sender, instance, created, **kwargs):
             user_associat.save()
         instance.user_associat_id = user_associat.pk      
         instance.user_associat = user_associat
-        Alumne.objects.filter( pk = instance.pk ).update( user_associat = user_associat )     
+        Alumne.objects.filter( pk = instance.pk ).update( user_associat = user_associat )
+        resp1, resp2 = instance.get_responsables()
+        if instance.responsable_preferent and resp1!=instance.responsable_preferent and resp2!=instance.responsable_preferent: 
+            instance.responsable_preferent=None
+            Alumne.objects.filter( pk = instance.pk ).update( responsable_preferent = None )
         
 
