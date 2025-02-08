@@ -7,6 +7,7 @@ from django import forms
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from aula.apps.alumnes.models import Alumne
+from aula.apps.relacioFamilies.models import Responsable
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 from aula.utils.widgets import SelectAjax, DataHoresAlumneAjax
 
@@ -34,25 +35,21 @@ class AlumneModelForm(forms.ModelForm):
 
     class Meta:
         model = Alumne
-        fields = ['primer_responsable','correu_relacio_familia_pare', 'correu_relacio_familia_mare',
-                  'periodicitat_faltes', 'periodicitat_incidencies', 'foto', 'observacions']
+        fields = ['primer_responsable', 'correu', 'periodicitat_faltes', 'periodicitat_incidencies', 'foto', 'observacions']
         labels = {
-            "correu_relacio_familia_pare": "Correu Notifi. Responsable 1",
-            "correu_relacio_familia_mare": "Correu Notifi. Responsable 2",
-        }
-        help_texts = {
-            "correu_relacio_familia_pare": "Correu notificació d'un responsable",
-            "correu_relacio_familia_mare": "Correu notificació d'altre responsable(opcional)"
-        }
-
-
-    def __init__(self, *args, **kwargs):
+            'correu': "Correu de l'alumne",
+            }
+    
+    def __init__(self, tutor, *args, **kwargs):
         super(AlumneModelForm, self).__init__(*args, **kwargs)
-        responsables = [self.instance.rp1_nom, self.instance.rp2_nom]
-        responsable_choices = ((x, responsables[x]) for x in range(len(responsables)))
-        self.fields['primer_responsable'] = forms.ChoiceField(choices=responsable_choices)
-        self.fields['primer_responsable'].help_text = "Principal responsable de l'alumne/a"
-        self.fields['primer_responsable'].label = "Responsable preferent"
+        if tutor:
+            responsables = self.instance.get_responsables()
+            responsable_choices = ((x, str(x)) for x in responsables)
+            #TODO self.fields['primer_responsable'] = forms.ChoiceField(choices=responsable_choices)
+            self.fields['primer_responsable'].help_text = "Responsable preferent de l'alumne/a"
+            self.fields['primer_responsable'].label = "Responsable preferent"
+        else:
+            self.fields.pop('primer_responsable')
 
     def clean_foto(self):
         foto = self.cleaned_data['foto']
@@ -67,6 +64,29 @@ class AlumneModelForm(forms.ModelForm):
             self.instance.foto = convertirFoto(self.files['foto'], self.instance.ralc, self.instance.foto)
         except: pass
         super(AlumneModelForm, self).save()
+
+class ResponsableModelForm(forms.ModelForm):
+    custom_names = {'correu_relacio_familia': None,
+                    'periodicitat_faltes': None,
+                    'periodicitat_incidencies': None,
+                    }
+    
+    def __init__(self, prefix, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.custom_names={
+            'correu_relacio_familia': prefix+'_correu_relacio_familia',
+            'periodicitat_faltes': prefix+'_periodicitat_faltes',
+            'periodicitat_incidencies': prefix+'_periodicitat_incidencies',
+            }
+        self.fields['correu_relacio_familia'].label='Correu responsable '+str(self.instance)
+    
+    def add_prefix(self, field_name):
+        field_name = self.custom_names.get(field_name, field_name)
+        return super().add_prefix(field_name)
+    
+    class Meta:
+        model = Responsable
+        fields = ['correu_relacio_familia', 'periodicitat_faltes', 'periodicitat_incidencies']
 
 class ChoiceFieldNoValidation(forms.ChoiceField):
     def validate(self, value):

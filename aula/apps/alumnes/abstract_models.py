@@ -175,6 +175,7 @@ class AbstractAlumne(models.Model):
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
     # TODO  canviar-ho a ForeignKey de Responsable
+    # responsable_preferent = models.ForeignKey("relacioFamilies.Responsable", null=True, on_delete=models.SET_NULL, label = "Responsable preferent", help_text = u"Responsable preferent de l'alumne/a")
     primer_responsable = models.IntegerField( choices = PRIMER_RESPONSABLE, blank=False,
                                                default = 0,
                                                help_text = u"Principal responsable de l'alumne/a")

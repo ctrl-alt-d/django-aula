@@ -945,6 +945,17 @@ def obteNotificacio(usuari, alumne, datahora):
     if primera: return primera.moment
     return None
 
+def ultimaNotificacio(usuari, alumne):
+    '''
+    usuari
+    alumne
+    retorna la data-hora de l'última notificació o
+    retorna None si no existeix
+    '''
+    ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N').order_by('-moment').first()
+    if ultima: return ultima.moment
+    return None
+
 def obteRevisio(usuari, alumne, datahora):
     '''
     usuari

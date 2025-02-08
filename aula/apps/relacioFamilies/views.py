@@ -24,7 +24,8 @@ from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
-from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm, escollirAlumneForm
+from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm, escollirAlumneForm, ResponsableModelForm
+from aula.apps.relacioFamilies.models import Responsable
 from aula.mblapp.table2_models import Table2_QRPortalAlumne
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
@@ -408,18 +409,20 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil if alumne.rp1_mobil else alumne.rp1_telefon, alumne.rp1_correu]
-    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil if alumne.rp2_mobil else alumne.rp2_telefon, alumne.rp2_correu]
-
+    resp1, resp2 = alumne.get_responsables()
+    dades_resp1=''
+    dades_resp2=''
+    if resp1: dades_resp1 = [str(resp1), resp1.telefon, resp1.correu]
+    if resp2: dades_resp2 = [str(resp2), resp2.telefon, resp2.correu]
+    
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
           ('Dades responsable 1', ' - '.join(filter(None,dades_resp1))),
           ('Dades responsable 2', ' - '.join(filter(None,dades_resp2))),
-          ('Altres telèfons alumne', alumne.altres_telefons),
+          ('Telèfon Alumne', alumne.telefons + ', ' + alumne.altres_telefons),
     ]
-
-
+    
     if alumne.dadesaddicionalsalumne_set.exists():
         for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:
             if 'Tutor' in element['visibilitat']:
@@ -428,43 +431,74 @@ def configuraConnexio( request , pk ):
                 except:
                     valor = '-'
                 infoForm.append((element['label'] + u'(Esfer@/Saga)', valor))
-
+    
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
                                       widgets={
                                           'foto': FileInput,}
                                          )
-
+    ResponsableFormSet = modelform_factory(Responsable,
+                                          form=ResponsableModelForm
+                                        )
+    
     if request.method == 'POST':
-        form = AlumneFormSet(  request.POST , request.FILES, instance=alumne )
-        if form.is_valid(  ):
+        formAlmn = AlumneFormSet(True, request.POST, request.FILES, instance=alumne)
+        if resp1: formResp1 = ResponsableFormSet('resp1', request.POST, request.FILES, instance=resp1)
+        if resp2: formResp2 = ResponsableFormSet('resp2', request.POST, request.FILES, instance=resp2)
+        hihaerrors=False
+        if formAlmn.is_valid() and (not resp1 or formResp1.is_valid()) and (not resp2 or formResp2.is_valid()):
             #Comprova els dominis de correu
             errors = {}
-            email=form.cleaned_data['correu_relacio_familia_pare']
+            email=formAlmn.cleaned_data['correu']
             res, email = testEmail(email, False)
             if res<-1:
-                errors.setdefault('correu_relacio_familia_pare', []).append(u'''Adreça no vàlida''')
-            email=form.cleaned_data['correu_relacio_familia_mare']
-            res, email = testEmail(email, False)
-            if res<-1:
-                errors.setdefault('correu_relacio_familia_mare', []).append(u'''Adreça no vàlida''')
-
+                errors.setdefault('correu', []).append(u'''Adreça no vàlida''')
             if len(errors)>0:
-                form._errors.update(errors)
+                formAlmn._errors.update(errors)
+                hihaerrors=True
             else:
-                form.save()
-                url_next = '/open/dadesRelacioFamilies#{0}'.format(alumne.pk  ) 
-                return HttpResponseRedirect( url_next )
+                formAlmn.save()
+            if resp1:
+                errors = {}
+                email=formResp1.cleaned_data['correu_relacio_familia']
+                res, email = testEmail(email, False)
+                if res<-1:
+                    errors.setdefault('correu_relacio_familia', []).append(u'''Adreça no vàlida''')
+                if len(errors)>0:
+                    formResp1._errors.update(errors)
+                    hihaerrors=True
+                else:
+                    formResp1.save()
+            if resp2:
+                errors = {}
+                email=formResp2.cleaned_data['correu_relacio_familia']
+                res, email = testEmail(email, False)
+                if res<-1:
+                    errors.setdefault('correu_relacio_familia', []).append(u'''Adreça no vàlida''')
+                if len(errors)>0:
+                    formResp2._errors.update(errors)
+                    hihaerrors=True
+                else:
+                    formResp2.save()
+            url_next = '/open/dadesRelacioFamilies#{0}'.format(alumne.pk  ) 
+            if not hihaerrors: return HttpResponseRedirect( url_next )
 
     else:
-        form = AlumneFormSet(instance=alumne)                
+        formAlmn = AlumneFormSet(True, instance=alumne)
+        if resp1: formResp1 = ResponsableFormSet('resp1', instance=resp1)
+        if resp2: formResp2 = ResponsableFormSet('resp2', instance=resp2)
         
+    formset=[]
+    formAlmn.infoForm=infoForm
+    formset.append( formAlmn )
+    if resp1: formset.append( formResp1 )
+    if resp2: formset.append( formResp2 )
+    
     return render(
                 request,
                 'configuraConnexio.html',
-                    {'form': form,
+                    {'formset': formset,
                      'image': imageUrl,
-                     'infoForm': infoForm,
                      'head': u'Gestió relació família' ,
                      'formSetDelimited':True},
                 )
@@ -532,7 +566,7 @@ def dadesRelacioFamilies( request ):
             ]
 
             familia_pendent_de_mirar = {}
-
+            # TODO usuari reponsable. Depèn de cada responsable.
             for codi, model in familia_pendent_de_mirar_models:
                 familia_pendent_de_mirar[codi]= ( model
                                                     .objects
@@ -610,21 +644,19 @@ def canviParametres( request ):
         raise Http404()
 
     _, responsable, alumne = getRol( user, request )
+    if not alumne: return HttpResponseRedirect('/')
     edatAlumne = None
     try:
-        edatAlumne = alumne.edat()
+        if alumne: edatAlumne = alumne.edat()
     except:
         pass
 
     infoForm = [
         ('Alumne', unicode(alumne)),
-        # ( 'Telèfon Alumne', alumne.telefons),
-        ('Telèfon Alumne', alumne.rp1_telefon + u', ' + alumne.rp2_telefon + u', ' + alumne.altres_telefons),
-        # ( 'Nom tutors', alumne.tutors),
-        ('Nom tutors', alumne.rp1_nom + u', ' + alumne.rp2_nom),
-        # ('Correu tutors (Saga)', alumne.correu_tutors),
-        ('Correu tutors (Saga)', alumne.rp1_correu + u', ' + alumne.rp2_correu),
-        ('Edat alumne', edatAlumne),
+        ('Telèfon Alumne', alumne.telefons + ', ' + alumne.altres_telefons),
+        #('Correu alumne', alumne.correu),
+        ('Edat alumne', str(edatAlumne) + ' (' + formats.date_format(alumne.data_neixement, "SHORT_DATE_FORMAT") + ')' ),
+        ('RALC', alumne.ralc),
     ]
     
     AlumneFormSet = modelform_factory(Alumne,
@@ -632,37 +664,55 @@ def canviParametres( request ):
                                       widgets={
                                           'foto': FileInput,}
                                          )
+    if responsable:
+        ResponsableFormSet = modelform_factory(Responsable,
+                                          form=ResponsableModelForm
+                                        )
     
     if request.method == 'POST':
-        form = AlumneFormSet(  request.POST , request.FILES, instance=alumne )
-        if form.is_valid(  ):
+        formAlmn = AlumneFormSet(False, request.POST, request.FILES, instance=alumne)
+        if responsable: formResp = ResponsableFormSet('resp', request.POST, request.FILES, instance=responsable)
+        hihaerrors=False
+        if formAlmn.is_valid() and (not responsable or formResp.is_valid()):
             #Comprova els dominis de correu
             errors = {}
-            email=form.cleaned_data['correu_relacio_familia_pare']
+            email=formAlmn.cleaned_data['correu']
             res, email = testEmail(email, False)
             if res<-1:
-                errors.setdefault('correu_relacio_familia_pare', []).append(u'''Adreça no vàlida''')
-            email=form.cleaned_data['correu_relacio_familia_mare']
-            res, email = testEmail(email, False)
-            if res<-1:
-                errors.setdefault('correu_relacio_familia_mare', []).append(u'''Adreça no vàlida''')
-
+                errors.setdefault('correu', []).append(u'''Adreça no vàlida''')
             if len(errors)>0:
-                form._errors.update(errors)
+                formAlmn._errors.update(errors)
+                hihaerrors=True
             else:
-                form.save()
-                url_next = '/open/elMeuInforme/'
-                return HttpResponseRedirect( url_next )
+                formAlmn.save()
+            if responsable: 
+                errors = {}
+                email=formResp.cleaned_data['correu_relacio_familia']
+                res, email = testEmail(email, False)
+                if res<-1:
+                    errors.setdefault('correu_relacio_familia', []).append(u'''Adreça no vàlida''')
+                if len(errors)>0:
+                    formResp._errors.update(errors)
+                    hihaherrors=True
+                else:
+                    formResp.save()
+            if not hihaerrors:
+                return HttpResponseRedirect( '/open/elMeuInforme/' )
 
     else:
-        form = AlumneFormSet(instance=alumne)
+        formAlmn = AlumneFormSet(False, instance=alumne)
+        if responsable: formResp = ResponsableFormSet('resp', instance=responsable)
+
+    formset=[]
+    formAlmn.infoForm=infoForm
+    formset.append( formAlmn )
+    if responsable: formset.append( formResp )
 
     return render(
                 request,
                 'configuraConnexio.html',
-                    {'form': form,
+                    {'formset': formset,
                      'image': alumne.get_foto_or_default,
-                     'infoForm': infoForm,
                      'head': u'Canvi de paràmetres' ,
                      'formSetDelimited':True,
                      'rgpd': inforgpd()},
@@ -851,8 +901,11 @@ def elMeuInforme( request, pk = None ):
                                                               ).filter(  
                                                         estat__isnull=False                                                          
                                                             )
-        controlsNous = controls.filter( relacio_familia_revisada__isnull = True )
-        
+        # TODO depèn de usuari responsable
+        #  user pot ser profe o responsable
+        #  si profe --> tenim varis responsables amb última revisió possiblement diferent
+        #controlsNous = controls.filter( relacio_familia_revisada__isnull = True )
+        controlsNous = controls.filter( moment__lte = ultimaRevisio(user, alumne))        
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Faltes i retards {0}'.format( pintaNoves( controlsNous.count() ) )
@@ -950,8 +1003,8 @@ def elMeuInforme( request, pk = None ):
     
         report.append(taula)    
         if not semiImpersonat:
-            controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            controlsNous.update( relacio_familia_revisada = ara )           
+            #controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
+            #controlsNous.update( relacio_familia_revisada = ara )           
             # Ja no s'ha de fer servir 'relacio_familia_notificada', 'relacio_familia_revisada'
             # TODO modificar l'ús de 'relacio_familia_notificada', 'relacio_familia_revisada'
             creaNotifUsuari(user, alumne)
@@ -1335,8 +1388,9 @@ def elMeuInforme( request, pk = None ):
         camp = tools.classebuida()
         camp.enllac = None
 
-        camp.multipleContingut = [(alumne.rp1_nom, None),
-                                  (alumne.rp2_nom,None),
+        resp1, resp2 = alumne.get_responsables()
+        camp.multipleContingut = [(str(resp1) if resp1 else '', None),
+                                  (str(resp2) if resp2 else '', None),
                                   ]
         filera.append(camp)
     

@@ -10,7 +10,7 @@ from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core import mail
 from django.core.mail import EmailMessage
 from django.db import transaction
-from aula.apps.usuaris.tools import informaNoCorreus, geturlconf, creaNotifAlumne
+from aula.apps.usuaris.tools import informaNoCorreus, geturlconf, creaNotifAlumne, ultimaNotificacio
 from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
 def llista_pendents():
@@ -104,9 +104,14 @@ def notifica():
 
 
     for alumne_id in llista_alumnes:
+        #TODO usuari responsable. S'ha de fer un bucle dels responsables
+        #     Les informacions són diferents per cada responsable, alumne
         try:
             alumne = Alumne.objects.get( pk = alumne_id )
-
+            responsables = alumne.get_responsables()
+            # TODO
+            usuari = responsables[0].get_user_associat() if responsables else alumne.get_user_associat()
+            
             adreca_mail_informada = bool( alumne.correu_relacio_familia_pare or alumne.correu_relacio_familia_mare )
             app_instalada = alumne.qr_portal_set.exists()
 
@@ -130,7 +135,8 @@ def notifica():
             noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
             noves_faltes_assistencia = ControlAssistencia.objects.filter( alumne = alumne, 
                                                                           #impartir__dia_impartir__gte = fa_2_setmanes,
-                                                                          relacio_familia_notificada__isnull = True,
+                                                                          #relacio_familia_notificada__isnull = True,
+                                                                          moment__lte = ultimaNotificacio(usuari, alumne),
                                                                           estat__pk__in = presencies_notificar )
             noves_respostes_qualitativa = ( alumne
                                             .respostaavaluacioqualitativa_set
@@ -214,7 +220,7 @@ def notifica():
                 noves_incidencies.update( relacio_familia_notificada = ara )
                 noves_expulsions.update( relacio_familia_notificada = ara )
                 noves_sancions.update( relacio_familia_notificada = ara )
-                noves_faltes_assistencia.update( relacio_familia_notificada = ara )
+                #noves_faltes_assistencia.update( relacio_familia_notificada = ara )
                 noves_respostes_qualitativa.update( relacio_familia_notificada = ara )
                 #if hiHaNovetatsPresencia:
                 alumne.relacio_familia_darrera_notificacio = ara

@@ -1501,7 +1501,7 @@ def editaSancio( request, pk ):
     infoForm = [
           ('Alumne',unicode( sancio.alumne) ),
           ( 'Telèfon Alumne', sancio.alumne.telefons),                     
-          ( 'Nom tutors', sancio.alumne.tutors),                     
+          ( 'Nom tutors', sancio.alumne.tutors), # TODO dades de responsables                    
           ( 'Edat alumne', edatAlumne ),                     
           ( 'Carta impresa (sanció bloquejada)', sancio.impres ),                     
                 ]

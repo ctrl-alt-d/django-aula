@@ -535,14 +535,17 @@ def allow_private_files(private_file):
 
     if not request.user.is_authenticated: return False
     
+    professor, responsable, alumne = getRol( user, request )
+    
     if private_file.relative_name.startswith('matricula'):
-        data=Document.objects.filter(matricula__alumne__user_associat=user, fitxer=private_file.relative_name)
+        data=Document.objects.filter(matricula__alumne=alumne, fitxer=private_file.relative_name)
         if data:
             return request.user.is_authenticated
     
-    prop=Alumne.objects.filter(user_associat=user, foto=private_file.relative_name)
-    if prop:
-        return request.user.is_authenticated
+    if alumne:
+        prop=Alumne.objects.filter(id=alumne.id, foto=private_file.relative_name)
+        if prop:
+            return request.user.is_authenticated
 
     pertany_al_grup_permes = (user
                               .groups

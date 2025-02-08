@@ -20,6 +20,10 @@ def controlAssistencia_clean( instance ):
     instance.instanceDB = None if not isUpdate else instance.__class__.objects.get( pk = instance.pk )
     
     errors = {}
+     
+    if instance.instanceDB and instance.instanceDB.estat == instance.estat and instance.instanceDB.comunicat != instance.comunicat:
+        # Es tracta d'una família afegint un comunicat
+        return
     
     tutors = [ tutor for tutor in instance.alumne.tutorsDeLAlumne() ]
     if user: instance.professor = User2Professor( user )

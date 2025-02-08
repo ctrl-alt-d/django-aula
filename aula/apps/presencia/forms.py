@@ -40,8 +40,8 @@ class ControlAssistenciaForm(ModelForm):
             self.fields['comunicat'].initial=Missatge.objects.get(pk=self.instance.comunicat.id)
             self.fields['comunicat'].widget = modalButton(bname='Comunicat', info=self.instance.comunicat.text_missatge)
         else:
-           self.fields['comunicat'].initial=None
-           self.fields['comunicat'].widget = forms.HiddenInput()
+            self.fields['comunicat'].initial=None
+            self.fields['comunicat'].widget = forms.HiddenInput()
         self.fields['foto'].initial=self.instance.alumne.foto
 
     def clean_comunicat(self):
