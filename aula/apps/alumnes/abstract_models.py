@@ -153,11 +153,19 @@ class AbstractAlumne(models.Model):
     cognoms = models.CharField("Cognoms",max_length=240)
     data_neixement = models.DateField("Data naixement",null=True)
     estat_sincronitzacio = models.CharField(choices=ESTAT_SINCRO_CHOICES ,max_length=3, blank=True)
+
+    #DEPRECATED vvv
     correu_tutors = models.CharField(max_length=240, blank=True)
     correu_relacio_familia_pare =  models.EmailField( u'1r Correu Notifi. Tutors', help_text = u'Correu de notificacions de un tutor', blank=True)
     correu_relacio_familia_mare =  models.EmailField( u'2n Correu Notifi. Tutors', help_text = u"Correu de notificacions de l'altre tutor (opcional)", blank=True)
+    #DEPRECATED ^^^
+
     motiu_bloqueig = models.CharField(max_length=250, blank=True)
+
+    #DEPRECATED vvv
     tutors_volen_rebre_correu = models.BooleanField()
+    #DEPRECATED ^^^
+
     centre_de_procedencia = models.CharField(max_length=250, blank=True)
     localitat = models.CharField(max_length=240, blank=True)
     municipi = models.CharField(max_length=240, blank=True)
@@ -166,6 +174,8 @@ class AbstractAlumne(models.Model):
     tutors = models.CharField(max_length=250, blank=True)
     adreca = models.CharField(max_length=250, blank=True)
     correu = models.CharField(max_length=240, blank=True)
+
+    #DEPRECATED vvv
     rp1_nom = models.CharField(max_length=250, blank=True) #responsable 1
     rp1_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp1_mobil = models.CharField(max_length=250, blank=True, db_index=True)
@@ -174,11 +184,16 @@ class AbstractAlumne(models.Model):
     rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
-    # TODO  canviar-ho a ForeignKey de Responsable
+    #DEPRECATED ^^^
+
     responsable_preferent = models.ForeignKey("relacioFamilies.Responsable", null=True, on_delete=models.SET_NULL, help_text = u"Responsable preferent de l'alumne/a")
+
+    #DEPRECATED vvv
     primer_responsable = models.IntegerField( choices = PRIMER_RESPONSABLE, blank=False,
                                                default = 0,
                                                help_text = u"Principal responsable de l'alumne/a")
+    #DEPRECATED ^^^
+
     altres_telefons = models.CharField(max_length=250, blank=True)
 
     data_alta = models.DateField( default = timezone.now, null=False )
@@ -189,7 +204,10 @@ class AbstractAlumne(models.Model):
     usuaris_app_associats = models.ManyToManyField(User, through="usuaris.QRPortal",
                                                    related_name="alumne_app_set",
                                                    related_query_name="alumne_app")
+    #DEPRECATED vvv
     relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
+    #DEPRECATED ^^^
+
     
     periodicitat_faltes = models.IntegerField( choices = PERIODICITAT_FALTES_CHOICES, blank=False,
                                                default = 1,

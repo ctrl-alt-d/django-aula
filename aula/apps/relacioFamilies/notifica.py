@@ -104,139 +104,139 @@ def notifica():
 
 
     for alumne_id in llista_alumnes:
-        #TODO usuari responsable. S'ha de fer un bucle dels responsables
-        #     Les informacions són diferents per cada responsable, alumne
         try:
             alumne = Alumne.objects.get( pk = alumne_id )
-            responsables = alumne.get_responsables()
-            # TODO
-            usuari = responsables[0].get_user_associat() if responsables else alumne.get_user_associat()
-            
-            adreca_mail_informada = bool( alumne.correu_relacio_familia_pare or alumne.correu_relacio_familia_mare )
-            app_instalada = alumne.qr_portal_set.exists()
+            # Bucle dels responsables i alumne
+            # La configuració de notificació és diferent per cada responsable o alumne.
+            destinataris = [r for r in alumne.get_responsables() if r] + [alumne]
 
-            fa_n_dies = ara - timedelta(  days = alumne.periodicitat_faltes )
-            noves_sortides = NotificaSortida.objects.filter( alumne = alumne, relacio_familia_notificada__isnull = True  )
-            if settings.CUSTOM_QUOTES_ACTIVES:
-                #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
-                fa7dies = ara - timedelta( days = 7 )
-                en7dies = ara + timedelta( days = 7 )
-                '''
-                Selecciona pagaments no comunicats o pagaments pendents que no s'han comunicat en l'última setmana i 
-                la data límit ja ha passat o falten menys de 7 dies.
-                '''
-                nous_pagaments = QuotaPagament.objects.filter(
-                    Q(data_hora_pagament__isnull=True) | (Q(data_hora_pagament__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
-                    alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False)
-            else:
-                nous_pagaments = QuotaPagament.objects.none()
-            noves_incidencies = alumne.incidencia_set.filter( relacio_familia_notificada__isnull = True  )
-            noves_expulsions = alumne.expulsio_set.exclude( estat = 'ES').filter(    relacio_familia_notificada__isnull = True  )
-            noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
-            noves_faltes_assistencia = ControlAssistencia.objects.filter( alumne = alumne, 
-                                                                          #impartir__dia_impartir__gte = fa_2_setmanes,
-                                                                          relacio_familia_notificada__isnull = True,
-                                                                          # TODO moment__lte = ultimaNotificacio(usuari, alumne),
-                                                                          estat__pk__in = presencies_notificar )
-            noves_respostes_qualitativa = ( alumne
-                                            .respostaavaluacioqualitativa_set
-                                            .filter( qualitativa__in = qualitatives_en_curs )
-                                            .filter( relacio_familia_notificada__isnull = True )
-                                            )
-
-            #comprovo si hi ha novetats de presencia i incidències
-            fa_dies_que_no_notifiquem = alumne.relacio_familia_darrera_notificacio is None or \
-                                        alumne.relacio_familia_darrera_notificacio < fa_n_dies
-            hiHaNovetatsPresencia =  alumne.periodicitat_faltes > 0 and \
-                                     fa_dies_que_no_notifiquem and \
-                                     noves_faltes_assistencia.exists()
-            hiHaNovetatsQualitativa = noves_respostes_qualitativa.exists()
-            hiHaNovetatsSortides = noves_sortides.exists()
-            hiHaNovetatsPagaments = nous_pagaments.exists()
-            hiHaNovetatsIncidencies = ( alumne.periodicitat_incidencies and
-                                       ( noves_incidencies.exists() or noves_expulsions.exists() or noves_sancions.exists() )
-                                      )
-            hiHaNovetats =  (
-                             hiHaNovetatsQualitativa or
-                             hiHaNovetatsPresencia or
-                             hiHaNovetatsSortides or
-                             hiHaNovetatsPagaments or
-                             hiHaNovetatsIncidencies
-                             )                  
-            #print u'Avaluant a {0}'.format( alumne )
-            enviatOK = False
-            if hiHaNovetats and adreca_mail_informada:
-                #enviar correu i marcar novetats com a notificades:
-                assumpte = u"{0} - Notificacions al Djau - {1}".format(alumne.nom, settings.NOM_CENTRE )
-                missatge = [u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
-                            u"",
-                            u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
-                            u"",
-                            u"Benvolgut/da,",
-                            u"",
-                            u"Us comuniquem que teniu noves notificacions de l'alumne {0} a l'aplicació Djau del centre {1}".format(alumne.nom+' '+alumne.cognoms, urlDjangoAula),
-                            u"",
-                            u"Recordeu que el vostre nom d'usuari és: {0}".format( alumne.get_user_associat().username ),
-                            u"",
-                            u"Per qualsevol dubte que tingueu al respecte poseu-vos en contacte amb el tutor/a.",
-                            u"",
-                            u"Cordialment,",
-                            u"",
-                            settings.NOM_CENTRE,
-                            u"",
-                            u"{0}".format( textTutorial ),
-                            ]
-                
-                try:                        
-                    fromuser = settings.DEFAULT_FROM_EMAIL
-                    if settings.DEBUG:
-                        print (u'Enviant missatge a {0}'.format( alumne ))
-                    email = EmailMessage(
-                        assumpte,
-                        u'\n'.join(missatge),
-                        fromuser, #from
-                        [],   #to
-                        alumne.get_correus_relacio_familia(),  #Bcc
-                    )
-                    email.send(fail_silently=False)
-                    enviatOK = True
-                except:
-                    if settings.DEBUG:
-                        print (u'Error enviant missatge a {0}'.format( alumne ))
-                    enviatOK = False
-                    #Enviar msg a admins, ull! podem inundar de missatges si fallen tots els alumnes.
-                    num_correus_no_enviats += 1
-            #actualitzo QR's
-            if hiHaNovetats:
-                n_tokens = alumne.qr_portal_set.update( novetats_detectades_moment = ara  )
-            else:
-                n_tokens = None
-
-            enviatOK = enviatOK or bool(n_tokens)  # s'ha enviat per algun dels mitjants
-            if enviatOK:                    
-                noves_sortides.update( relacio_familia_notificada = ara )
-                #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
-                nous_pagaments.update( data_hora_pagament = ara )
-                noves_incidencies.update( relacio_familia_notificada = ara )
-                noves_expulsions.update( relacio_familia_notificada = ara )
-                noves_sancions.update( relacio_familia_notificada = ara )
-                noves_faltes_assistencia.update( relacio_familia_notificada = ara )
-                noves_respostes_qualitativa.update( relacio_familia_notificada = ara )
-                #if hiHaNovetatsPresencia:
-                alumne.relacio_familia_darrera_notificacio = ara
-                alumne.save()
-                # Ja no s'ha de fer servir 'relacio_familia_darrera_notificacio'
-                # TODO modificar l'ús de 'relacio_familia_darrera_notificacio'
-                creaNotifAlumne(alumne)
-                
-                #LOGGING
-                Accio.objects.create( 
-                        tipus = 'NF',
-                        usuari = alumne.get_user_associat(),
-                        l4 = False,
-                        impersonated_from = None,
-                        text = u"""Notifica Relació Famílies a {0}.""".format( alumne )
-                    )   
+            for usuari in destinataris:
+                # TODO distingir cas Responsable de cas Alumne
+                adreca_mail_informada = bool( alumne.get_correus_relacio_familia() )
+                app_instalada = alumne.qr_portal_set.exists()
+    
+                fa_n_dies = ara - timedelta(  days = alumne.periodicitat_faltes )
+                noves_sortides = NotificaSortida.objects.filter( alumne = alumne, relacio_familia_notificada__isnull = True  )
+                if settings.CUSTOM_QUOTES_ACTIVES:
+                    #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                    fa7dies = ara - timedelta( days = 7 )
+                    en7dies = ara + timedelta( days = 7 )
+                    '''
+                    Selecciona pagaments no comunicats o pagaments pendents que no s'han comunicat en l'última setmana i 
+                    la data límit ja ha passat o falten menys de 7 dies.
+                    '''
+                    nous_pagaments = QuotaPagament.objects.filter(
+                        Q(data_hora_pagament__isnull=True) | (Q(data_hora_pagament__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
+                        alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False)
+                else:
+                    nous_pagaments = QuotaPagament.objects.none()
+                noves_incidencies = alumne.incidencia_set.filter( relacio_familia_notificada__isnull = True  )
+                noves_expulsions = alumne.expulsio_set.exclude( estat = 'ES').filter(    relacio_familia_notificada__isnull = True  )
+                noves_sancions = alumne.sancio_set.filter( impres=True, relacio_familia_notificada__isnull = True  )
+                noves_faltes_assistencia = ControlAssistencia.objects.filter( alumne = alumne, 
+                                                                              #impartir__dia_impartir__gte = fa_2_setmanes,
+                                                                              relacio_familia_notificada__isnull = True,
+                                                                              # TODO moment__lte = ultimaNotificacio(usuari, alumne),
+                                                                              estat__pk__in = presencies_notificar )
+                noves_respostes_qualitativa = ( alumne
+                                                .respostaavaluacioqualitativa_set
+                                                .filter( qualitativa__in = qualitatives_en_curs )
+                                                .filter( relacio_familia_notificada__isnull = True )
+                                                )
+    
+                #comprovo si hi ha novetats de presencia i incidències
+                fa_dies_que_no_notifiquem = alumne.relacio_familia_darrera_notificacio is None or \
+                                            alumne.relacio_familia_darrera_notificacio < fa_n_dies
+                hiHaNovetatsPresencia =  alumne.periodicitat_faltes > 0 and \
+                                         fa_dies_que_no_notifiquem and \
+                                         noves_faltes_assistencia.exists()
+                hiHaNovetatsQualitativa = noves_respostes_qualitativa.exists()
+                hiHaNovetatsSortides = noves_sortides.exists()
+                hiHaNovetatsPagaments = nous_pagaments.exists()
+                hiHaNovetatsIncidencies = ( alumne.periodicitat_incidencies and
+                                           ( noves_incidencies.exists() or noves_expulsions.exists() or noves_sancions.exists() )
+                                          )
+                hiHaNovetats =  (
+                                 hiHaNovetatsQualitativa or
+                                 hiHaNovetatsPresencia or
+                                 hiHaNovetatsSortides or
+                                 hiHaNovetatsPagaments or
+                                 hiHaNovetatsIncidencies
+                                 )                  
+                #print u'Avaluant a {0}'.format( alumne )
+                enviatOK = False
+                if hiHaNovetats and adreca_mail_informada:
+                    #enviar correu i marcar novetats com a notificades:
+                    assumpte = u"{0} - Notificacions al Djau - {1}".format(alumne.nom, settings.NOM_CENTRE )
+                    missatge = [u"Aquest missatge ha estat enviat per un sistema automàtic. No responguis  a aquest e-mail, el missatge no serà llegit per ningú.",
+                                u"",
+                                u"Per qualsevol dubte/notificació posa't en contacte amb el tutor/a.",
+                                u"",
+                                u"Benvolgut/da,",
+                                u"",
+                                u"Us comuniquem que teniu noves notificacions de l'alumne {0} a l'aplicació Djau del centre {1}".format(alumne.nom+' '+alumne.cognoms, urlDjangoAula),
+                                u"",
+                                u"Recordeu que el vostre nom d'usuari és: {0}".format( alumne.get_user_associat().username ),
+                                u"",
+                                u"Per qualsevol dubte que tingueu al respecte poseu-vos en contacte amb el tutor/a.",
+                                u"",
+                                u"Cordialment,",
+                                u"",
+                                settings.NOM_CENTRE,
+                                u"",
+                                u"{0}".format( textTutorial ),
+                                ]
+                    
+                    try:                        
+                        fromuser = settings.DEFAULT_FROM_EMAIL
+                        if settings.DEBUG:
+                            print (u'Enviant missatge a {0}'.format( alumne ))
+                        email = EmailMessage(
+                            assumpte,
+                            u'\n'.join(missatge),
+                            fromuser, #from
+                            [],   #to
+                            alumne.get_correus_relacio_familia(),  #Bcc
+                        )
+                        email.send(fail_silently=False)
+                        enviatOK = True
+                    except:
+                        if settings.DEBUG:
+                            print (u'Error enviant missatge a {0}'.format( alumne ))
+                        enviatOK = False
+                        #Enviar msg a admins, ull! podem inundar de missatges si fallen tots els alumnes.
+                        num_correus_no_enviats += 1
+                #actualitzo QR's
+                if hiHaNovetats:
+                    n_tokens = alumne.qr_portal_set.update( novetats_detectades_moment = ara  )
+                else:
+                    n_tokens = None
+    
+                enviatOK = enviatOK or bool(n_tokens)  # s'ha enviat per algun dels mitjants
+                if enviatOK:                    
+                    noves_sortides.update( relacio_familia_notificada = ara )
+                    #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                    nous_pagaments.update( data_hora_pagament = ara )
+                    noves_incidencies.update( relacio_familia_notificada = ara )
+                    noves_expulsions.update( relacio_familia_notificada = ara )
+                    noves_sancions.update( relacio_familia_notificada = ara )
+                    noves_faltes_assistencia.update( relacio_familia_notificada = ara )
+                    noves_respostes_qualitativa.update( relacio_familia_notificada = ara )
+                    #if hiHaNovetatsPresencia:
+                    alumne.relacio_familia_darrera_notificacio = ara
+                    alumne.save()
+                    # Ja no s'ha de fer servir 'relacio_familia_darrera_notificacio'
+                    # TODO modificar l'ús de 'relacio_familia_darrera_notificacio'
+                    creaNotifAlumne(alumne)
+                    
+                    #LOGGING
+                    Accio.objects.create( 
+                            tipus = 'NF',
+                            usuari = alumne.get_user_associat(),
+                            l4 = False,
+                            impersonated_from = None,
+                            text = u"""Notifica Relació Famílies a {0}.""".format( alumne )
+                        )   
                                 
         except ObjectDoesNotExist:
             pass

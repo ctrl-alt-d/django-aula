@@ -184,10 +184,10 @@ class AbstractControlAssistencia(models.Model):
     estat_backup = models.ForeignKey('presencia.EstatControlAssistencia', related_name='controlassistencia_as_bkup', db_index=True, null=True, blank=True, on_delete=models.CASCADE)
     professor_backup = models.ForeignKey('usuaris.Professor', related_name='controlassistencia_as_bkup', null=True, blank=True, on_delete=models.CASCADE)
 
-    #DEPRECATED
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
-    #DEPRECATED
+    #DEPRECATED ^^^
     
     comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
     moment = models.DateTimeField( null=True )

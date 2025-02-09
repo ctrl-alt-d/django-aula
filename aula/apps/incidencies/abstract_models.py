@@ -44,8 +44,11 @@ class AbstractSancio(models.Model):
     comentaris_cap_d_estudis = models.TextField(blank=True, help_text=u"Comentaris interns del cap d'estudis")
     signat = models.CharField(max_length=250)
     impres = models.BooleanField(help_text=u"Un cop imprès el document ja no pot modificar-se la sanció", default=False)
+
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
+    #DEPRECATED ^^^
 
     class Meta:
         abstract = True        
@@ -117,8 +120,10 @@ class AbstractExpulsio(models.Model):
     es_expulsio_per_acumulacio_incidencies = models.BooleanField( default=False )
     es_vigent = models.BooleanField( default=True , db_index=True)
 
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True )    
+    #DEPRECATED ^^^
 
     class Meta:
         abstract = True
@@ -242,9 +247,11 @@ class AbstractIncidencia(models.Model):
     provoca_sancio = models.ForeignKey('incidencies.Sancio', 
                                        blank=True, null=True, on_delete = models.PROTECT  )
 
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
 
     relacio_familia_notificada = models.DateTimeField( null=True )
+    #DEPRECATED ^^^
     
     def es_incidencia_d_aula(self):
         return ( self.control_assistencia is not None) 
