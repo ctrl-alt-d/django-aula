@@ -28,6 +28,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
     
     controls_grup = ControlAssistencia.objects.filter( q_grup & q_assignatures & q_hores & q_professor )
     
+    # Obté els alumnes escollits segons grup, assignatura i professor
     alumnes = AlumneNomSentit.objects.filter( controlassistencia__pk__in = controls_grup.values_list('pk', flat=True)
                                       ).distinct()
     
@@ -92,6 +93,8 @@ def faltesAssistenciaEntreDatesProfessorRpt(
     taula.capceleres.append( capcelera )
 
     taula.fileres = []
+    # controls de la matèria, independentment del grup i professor.
+    # Agrupa tot el corresponent a diversos professors o grups de desdoblament.
     controls = ControlAssistencia.objects.filter( q_assignatures & q_hores )
     
     for alumne in  alumnes:

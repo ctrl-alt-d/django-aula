@@ -511,12 +511,18 @@ def elsMeusAlumnesAndAssignatures( request ):
 
         capcelera_nFaltes = tools.classebuida()
         capcelera_nFaltes.amplade = 15
+        
+        # nClasses_grup és el total d'hores que el professor fa al grup.
+        # Només té en compte hores amb alumnes.
         nClasses_grup = Impartir.objects.filter( horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup 
                                             ).exclude(
                                             controlassistencia__alumne__isnull=True,
                                             ).distinct().count()
+                                            
+        # nClassesImpartides_grup són les hores que ja ha impartit aquest professor al grup.
+        # Només té en compte hores amb alumnes.
         nClassesImpartides_grup =   Impartir.objects.filter( 
                                             horari__professor = professor ,
                                             horari__assignatura = assignatura, 
@@ -525,25 +531,31 @@ def elsMeusAlumnesAndAssignatures( request ):
                                             ).exclude(
                                             controlassistencia__alumne__isnull=True,
                                             ).distinct().count()
+        # Obté els alumnes escollits segons grup, assignatura i professor
         alumnes=Alumne.objects.filter( 
                             controlassistencia__impartir__horari__grup = grup,
                             controlassistencia__impartir__horari__assignatura = assignatura, 
                             controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms')
                                             
+        # nClasses_materia és el total d'hores que els alumnes fan d'aquesta matèria.
+        # Varia en funció de l'alumne, es selecciona la màxima quantitat obtinguda per algun alumne.
         nClasses_materia = Impartir.objects.filter(controlassistencia__alumne__in=alumnes, horari__assignatura = assignatura) \
                                                 .values('controlassistencia__alumne') \
                                                 .annotate(hores = Count('id', distinct=True)) \
-                                                .aggregate(maxval=Max('hores'))
+                                                .aggregate(maxval=Max('hores')).get('maxval', nClasses_grup)
         
+        # nClassesImpartides_materia són les hores que ja han impartit aquests alumnes en aquesta matèria.
+        # Varia en funció de l'alumne, es selecciona la màxima quantitat obtinguda per algun alumne.
         nClassesImpartides_materia = Impartir.objects.filter(controlassistencia__alumne__in=alumnes, horari__assignatura = assignatura, dia_impartir__lte = date.today() ) \
                                                 .values('controlassistencia__alumne') \
                                                 .annotate(hores = Count('id', distinct=True)) \
-                                                .aggregate(maxval=Max('hores'))
+                                                .aggregate(maxval=Max('hores')).get('maxval', nClassesImpartides_grup)
 
-        if nClasses_grup==nClasses_materia['maxval'] or nClassesImpartides_grup==nClassesImpartides_materia['maxval']:
+        if nClasses_grup==nClasses_materia or nClassesImpartides_grup==nClassesImpartides_materia:
             capcelera_nFaltes.contingut = u' {0}h impartides / {1}h'.format( nClassesImpartides_grup, nClasses_grup )
         else:
-            capcelera_nFaltes.contingut = u' {0}h({2}h) impartides / {1}h({3}h)'.format( nClassesImpartides_grup, nClasses_grup, nClassesImpartides_materia['maxval'], nClasses_materia['maxval'] )            
+            # Mostra les hores corresponents al professor i entre parèntesis les totals de la matèria
+            capcelera_nFaltes.contingut = u' {0}h({2}h) impartides / {1}h({3}h)'.format( nClassesImpartides_grup, nClasses_grup, nClassesImpartides_materia, nClasses_materia )            
 
         capcelera_contacte = tools.classebuida()
         capcelera_contacte.amplade = 10
@@ -575,6 +587,8 @@ def elsMeusAlumnesAndAssignatures( request ):
 
         taula.fileres = []
         for alumne in alumnes:
+            # Per cada alumne es mostra la informació corresponent a la matèria, independentment del grup i professor.
+            # Agrupa tot el corresponent a diversos professors o grups de desdoblament.
             
             filera = []
 
@@ -602,6 +616,7 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-incidències--------------------------------------------
             camp_nIncidencies = tools.classebuida()
             camp_nIncidencies.enllac = None
+            #Selecciona totes les dades d'aquest alumne a la matèria.
             nIncidencies = alumne.incidencia_set.filter(
                                                         #control_assistencia__impartir__horari__grup = grup,
                                                         #control_assistencia__impartir__horari__professor = professor, 
@@ -628,7 +643,7 @@ def elsMeusAlumnesAndAssignatures( request ):
 #                                        ausencia = Sum( 'estat__pct_ausencia' ),
 #                                        classes = Count( 'estat' ) 
 #                                                        )
-            
+            # Tots els controls d'aquest alumne a la matèria.
             controls = alumne.controlassistencia_set.filter(   
                                                     impartir__dia_impartir__lte = datetime.today(), 
                                                     #impartir__horari__grup = grup,
