@@ -34,7 +34,6 @@ from aula.apps.alumnes.forms import triaAlumneForm
 #helpers
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.presencia.models import Impartir
 from datetime import date, datetime, timedelta
 from django.db.models import Q
 from django.forms.models import modelformset_factory, modelform_factory
@@ -472,7 +471,8 @@ def triaAlumneAlumneAjax( request, id_grup ):
 @login_required
 @group_required(['professors'])
 def elsMeusAlumnesAndAssignatures( request ):
-
+    from django.db.models import Count, Max
+    
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
     
@@ -511,18 +511,39 @@ def elsMeusAlumnesAndAssignatures( request ):
 
         capcelera_nFaltes = tools.classebuida()
         capcelera_nFaltes.amplade = 15
-        nClasses = Impartir.objects.filter( horari__professor = professor ,
+        nClasses_grup = Impartir.objects.filter( horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup 
-                                            ).count()
-        nClassesImpartides =   Impartir.objects.filter( 
+                                            ).exclude(
+                                            controlassistencia__alumne__isnull=True,
+                                            ).distinct().count()
+        nClassesImpartides_grup =   Impartir.objects.filter( 
                                             horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup, 
                                             dia_impartir__lte = date.today() 
-                                            ).count() 
+                                            ).exclude(
+                                            controlassistencia__alumne__isnull=True,
+                                            ).distinct().count()
+        alumnes=Alumne.objects.filter( 
+                            controlassistencia__impartir__horari__grup = grup,
+                            controlassistencia__impartir__horari__assignatura = assignatura, 
+                            controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms')
+                                            
+        nClasses_materia = Impartir.objects.filter(controlassistencia__alumne__in=alumnes, horari__assignatura = assignatura) \
+                                                .values('controlassistencia__alumne') \
+                                                .annotate(hores = Count('id', distinct=True)) \
+                                                .aggregate(maxval=Max('hores'))
+        
+        nClassesImpartides_materia = Impartir.objects.filter(controlassistencia__alumne__in=alumnes, horari__assignatura = assignatura, dia_impartir__lte = date.today() ) \
+                                                .values('controlassistencia__alumne') \
+                                                .annotate(hores = Count('id', distinct=True)) \
+                                                .aggregate(maxval=Max('hores'))
 
-        capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
+        if nClasses_grup==nClasses_materia['maxval'] or nClassesImpartides_grup==nClassesImpartides_materia['maxval']:
+            capcelera_nFaltes.contingut = u' {0}h impartides / {1}h'.format( nClassesImpartides_grup, nClasses_grup )
+        else:
+            capcelera_nFaltes.contingut = u' {0}h({2}h) impartides / {1}h({3}h)'.format( nClassesImpartides_grup, nClasses_grup, nClassesImpartides_materia['maxval'], nClasses_materia['maxval'] )            
 
         capcelera_contacte = tools.classebuida()
         capcelera_contacte.amplade = 10
@@ -553,10 +574,7 @@ def elsMeusAlumnesAndAssignatures( request ):
         taula.capceleres.append(capcelera_observacions)
 
         taula.fileres = []
-        for alumne in Alumne.objects.filter( 
-                            controlassistencia__impartir__horari__grup = grup,
-                            controlassistencia__impartir__horari__assignatura = assignatura, 
-                            controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms'):
+        for alumne in alumnes:
             
             filera = []
 
@@ -585,14 +603,14 @@ def elsMeusAlumnesAndAssignatures( request ):
             camp_nIncidencies = tools.classebuida()
             camp_nIncidencies.enllac = None
             nIncidencies = alumne.incidencia_set.filter(
-                                                        control_assistencia__impartir__horari__grup = grup,
-                                                        control_assistencia__impartir__horari__professor = professor, 
+                                                        #control_assistencia__impartir__horari__grup = grup,
+                                                        #control_assistencia__impartir__horari__professor = professor, 
                                                         control_assistencia__impartir__horari__assignatura = assignatura,
                                                         tipus__es_informativa = False 
                                                        ).count()
             nExpulsions = alumne.expulsio_set.filter( 
-                                                        control_assistencia__impartir__horari__grup = grup,
-                                                        control_assistencia__impartir__horari__professor = professor, 
+                                                        #control_assistencia__impartir__horari__grup = grup,
+                                                        #control_assistencia__impartir__horari__professor = professor, 
                                                         control_assistencia__impartir__horari__assignatura = assignatura
                                                     ).exclude(
                                                         estat = 'ES'
@@ -613,8 +631,8 @@ def elsMeusAlumnesAndAssignatures( request ):
             
             controls = alumne.controlassistencia_set.filter(   
                                                     impartir__dia_impartir__lte = datetime.today(), 
-                                                    impartir__horari__grup = grup,
-                                                    impartir__horari__professor = professor, 
+                                                    #impartir__horari__grup = grup,
+                                                    #impartir__horari__professor = professor, 
                                                     impartir__horari__assignatura = assignatura 
                                                            )
             
