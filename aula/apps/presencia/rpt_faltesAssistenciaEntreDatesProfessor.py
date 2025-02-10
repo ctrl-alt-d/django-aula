@@ -26,9 +26,9 @@ def faltesAssistenciaEntreDatesProfessorRpt(
     q_darrer_dia = Q(impartir__dia_impartir = dataFinsA ) & Q(impartir__horari__hora__hora_fi__lte = horaFinsA.hora_fi)
     q_hores = q_primer_dia | q_mig | q_darrer_dia
     
-    controls = ControlAssistencia.objects.filter( q_grup & q_assignatures & q_hores & q_professor )
+    controls_grup = ControlAssistencia.objects.filter( q_grup & q_assignatures & q_hores & q_professor )
     
-    alumnes = AlumneNomSentit.objects.filter( controlassistencia__pk__in = controls.values_list('pk', flat=True)
+    alumnes = AlumneNomSentit.objects.filter( controlassistencia__pk__in = controls_grup.values_list('pk', flat=True)
                                       ).distinct()
     
     report = []
@@ -92,6 +92,7 @@ def faltesAssistenciaEntreDatesProfessorRpt(
     taula.capceleres.append( capcelera )
 
     taula.fileres = []
+    controls = ControlAssistencia.objects.filter( q_assignatures & q_hores )
     
     for alumne in  alumnes:
                 
