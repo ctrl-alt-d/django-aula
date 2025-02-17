@@ -933,6 +933,7 @@ def creaNotifUsuari(usuari, alumne, tipus='N'):
     notificacio.alumne=alumne
     notificacio.tipus=tipus
     notificacio.save()
+    return notificacio
 
 def obteNotificacio(usuari, alumne, datahora):
     '''

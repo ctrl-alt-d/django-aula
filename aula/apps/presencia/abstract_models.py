@@ -6,7 +6,7 @@ from django.apps import apps
 #consultes
 from django.db.models import Q
 from aula.utils.tools import unicode
-from aula.apps.usuaris.tools import obteNotificacio, obteRevisio
+from aula.apps.usuaris.tools import obteNotificacio, obteRevisio, creaNotifUsuari
 
 class AbstractImpartir(models.Model):
     horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
@@ -189,6 +189,8 @@ class AbstractControlAssistencia(models.Model):
     relacio_familia_notificada = models.DateTimeField( null=True ) 
     #DEPRECATED ^^^
     
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
+    
     comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
     moment = models.DateTimeField( null=True )
     
@@ -220,31 +222,32 @@ class AbstractControlAssistencia(models.Model):
         if self.comunicat:
             text=text+". "+self.comunicat.text_missatge
         return text
-
-    def get_relacio_familia_revisada(self, usuari, alumne):
-        '''
-        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
-        '''
-        if not bool(self.moment):
-            if self.relacio_familia_revisada: return self.relacio_familia_revisada
-            if self.impartir.dia_passa_llista: return obteRevisio(usuari, alumne, self.impartir.dia_passa_llista)
-        '''
-        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
-        '''
-        return obteRevisio(usuari, alumne, self.moment)
-
-    def get_relacio_familia_notificada(self, usuari, alumne):
-        '''
-        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
-        '''
-        if not bool(self.moment):
-            if self.relacio_familia_notificada: return self.relacio_familia_notificada
-            if self.impartir.dia_passa_llista: return obteNotificacio(usuari, alumne, self.impartir.dia_passa_llista)
-        '''
-        Per compatibilitat amb contingut antic de la base de dades DEPRECATED
-        '''
-        return obteNotificacio(usuari, alumne, self.moment)
-
+    
+    def set_notificacio(self, notificacio):
+        # Què passa si canvia estat d'un control d'assistència?
+        if not notificacio: return
+        notifs=self.notificacions_familia.filter(usuari=notificacio.usuari, tipus='N')
+        if notifs:
+            for n in notifs: self.notificacions_familia.remove(n)
+        self.notificacions_familia.add(notificacio)
+    
+    def set_revisio(self, revisio):
+        if not revisio: return
+        notifs=self.notificacions_familia.filter(usuari=revisio.usuari, tipus='R')
+        if notifs:
+            for n in notifs: self.notificacions_familia.remove(n)
+        self.notificacions_familia.add(revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        # -->  notificació, revisió
+        if not fmt_data: fmt_data='%d/%m/%Y %H:%M'
+        notif = self.notificacions_familia.filter(usuari=usuari, tipus='N').first()
+        if notif: notif=notif.moment.strftime(fmt_data)
+        else: notif=''
+        revis = self.notificacions_familia.filter(usuari=usuari, tipus='R').first()
+        if revis: revis=revis.moment.strftime(fmt_data)
+        else: revis=''
+        return notif, revis
 
 class AbstractNoHaDeSerALAula(models.Model):
     #cal recalcular-lo en aquesta casos:

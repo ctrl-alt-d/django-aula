@@ -117,9 +117,10 @@ def controlAssistencia_pre_delete( sender, instance, **kwargs):
     
 def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
-    if not instance.moment or not instance.instanceDB or (instance.instanceDB and instance.instanceDB.estat!=instance.estat):
-        # Modifica moment si s'han fet canvis
-        instance.moment=dt.datetime.now()
+    if instance.instanceDB and instance.instanceDB.estat!=instance.estat and instance.estat.codi_estat in ['F','R','J']:
+            # Elimina notificacions i revisions si s'ha fet 
+            # un canvi d'estat i el nou estat és 'no present'
+            instance.notificacions_familia.clear()
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
   

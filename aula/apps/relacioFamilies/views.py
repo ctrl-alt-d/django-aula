@@ -48,7 +48,8 @@ from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
 from datetime import datetime, timedelta
 
-from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari, ultimaRevisio
+from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari, ultimaRevisio,\
+    ultimaNotificacio
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -892,6 +893,12 @@ def elMeuInforme( request, pk = None ):
     head = u'{0} ({1})'.format(alumne , unicode( alumne.grup ) )
     
     ara = datetime.now()
+    notifAlumne=None
+    revisAlumne=None
+    if not professor:
+        # Des de l'última revisió hi ha hagut notificacions?
+        if ultimaRevisio(user, alumne)<ultimaNotificacio(user, alumne):
+            revisAlumne=creaNotifUsuari(user, alumne, 'R')
     
     report = []
 
@@ -901,11 +908,14 @@ def elMeuInforme( request, pk = None ):
                                                               ).filter(  
                                                         estat__isnull=False                                                          
                                                             )
-        # TODO depèn de usuari responsable
-        #  user pot ser profe o responsable
-        #  si profe --> tenim varis responsables amb última revisió possiblement diferent
-        controlsNous = controls.filter( relacio_familia_revisada__isnull = True )
-        #controlsNous = controls.filter( moment__lte = ultimaRevisio(user, alumne))        
+        # Depèn d'user, pot ser profe o responsable
+        if professor:
+            controlsNous = controls.exclude( notificacions_familia__tipus = 'R' )
+        else:
+            controlsNous = controls.filter( Q(notificacions_familia__usuari = user) | Q(notificacions_familia__isnull = True)).exclude(notificacions_familia__tipus = 'R' )
+            if controlsNous.filter(notificacions_familia__isnull=True):
+                if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+                if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Faltes i retards {0}'.format( pintaNoves( controlsNous.count() ) )
@@ -961,13 +971,16 @@ def elMeuInforme( request, pk = None ):
         
         for control in tots_els_controls:
             
+            notificacio, revisio = control.get_notif_revisio(user)
+            negreta = False if revisio else True
+            
             filera = []
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = unicode(control.impartir.dia_impartir.strftime( '%d/%m/%Y' ))  
-            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
+            camp.negreta = negreta
             filera.append(camp)
     
             #----------------------------------------------
@@ -978,38 +991,28 @@ def elMeuInforme( request, pk = None ):
                                                  control.impartir.horari.assignatura.nom_assignatura,
                                                  control.impartir.horari.hora 
                                     )        
-            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
+            camp.negreta = negreta
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(control.get_relacio_familia_notificada(user, alumne).strftime('%d/%m/%Y %H:%M')) if control.get_relacio_familia_notificada(user, alumne) else ''
-            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(control.get_relacio_familia_revisada(user, alumne).strftime('%d/%m/%Y %H:%M')) if control.get_relacio_familia_revisada(user, alumne) else ''
-            camp.negreta = False if control.get_relacio_familia_revisada(user, alumne) else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
 
-#             assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
-#                                              'badge': control.estat.codi_estat == 'F', 
-#                                              'title': escapejs( camp.contingut )
-#                                             } )
-    
             #--
             taula.fileres.append( filera )
-    
+            if not semiImpersonat:
+                if not notificacio: control.set_notificacio(notifAlumne)
+                if not revisio: control.set_revisio(revisAlumne)
+                
         report.append(taula)    
-        if not semiImpersonat:
-            controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            controlsNous.update( relacio_familia_revisada = ara )           
-            # Ja no s'ha de fer servir 'relacio_familia_notificada', 'relacio_familia_revisada'
-            # TODO modificar l'ús de 'relacio_familia_notificada', 'relacio_familia_revisada'
-            creaNotifUsuari(user, alumne)
-    
-
         
     #----observacions --------------------------------------------------------------------
         observacions = alumne.incidencia_set.filter( tipus__es_informativa = True)
