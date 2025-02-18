@@ -253,6 +253,8 @@ class AbstractIncidencia(models.Model):
     relacio_familia_notificada = models.DateTimeField( null=True )
     #DEPRECATED ^^^
     
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
+    
     def es_incidencia_d_aula(self):
         return ( self.control_assistencia is not None) 
     

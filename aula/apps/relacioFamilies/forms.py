@@ -44,7 +44,7 @@ class AlumneModelForm(forms.ModelForm):
         super(AlumneModelForm, self).__init__(*args, **kwargs)
         if tutor:
             responsables = self.instance.get_responsables()
-            responsable_choices = [(x.id, x.get_nom()) for x in responsables]
+            responsable_choices = [(x.id, x.get_nom()) for x in responsables if x]
             self.fields['responsable_preferent'] = forms.ChoiceField(choices=responsable_choices)
             self.fields['responsable_preferent'].help_text = "Responsable preferent de l'alumne/a"
             self.fields['responsable_preferent'].label = "Responsable preferent"

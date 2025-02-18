@@ -6,7 +6,7 @@ from django.apps import apps
 #consultes
 from django.db.models import Q
 from aula.utils.tools import unicode
-from aula.apps.usuaris.tools import obteNotificacio, obteRevisio, creaNotifUsuari
+from aula.apps.usuaris.models import User2Professor
 
 class AbstractImpartir(models.Model):
     horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
@@ -190,16 +190,14 @@ class AbstractControlAssistencia(models.Model):
     #DEPRECATED ^^^
     
     notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
-    
     comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
-    moment = models.DateTimeField( null=True )
     
     class Meta:
         abstract = True
         verbose_name = u'Entrada al Control d\'Assistencia'
         verbose_name_plural = u'Entrades al Control d\'Assistencia'
         unique_together = (("alumne", "impartir"))
-        indexes = [models.Index(fields=["alumne", "estat", "moment"]),]
+        indexes = [models.Index(fields=["alumne", "estat"]),]
 
     def __str__(self):
         return unicode(self.alumne) + u' -> '+ unicode(self.estat)
@@ -239,12 +237,18 @@ class AbstractControlAssistencia(models.Model):
         self.notificacions_familia.add(revisio)
     
     def get_notif_revisio(self, usuari, fmt_data=None):
-        # -->  notificació, revisió
+        '''
+        Retorna notificació, revisió de l'usuari
+        '''
         if not fmt_data: fmt_data='%d/%m/%Y %H:%M'
-        notif = self.notificacions_familia.filter(usuari=usuari, tipus='N').first()
+        if User2Professor( usuari ):
+            notif = self.notificacions_familia.filter(tipus='N').order_by('moment').first()
+            revis = self.notificacions_familia.filter(tipus='R').order_by('moment').first()
+        else:
+            notif = self.notificacions_familia.filter(usuari=usuari, tipus='N').order_by('-moment').first()
+            revis = self.notificacions_familia.filter(usuari=usuari, tipus='R').order_by('-moment').first()
         if notif: notif=notif.moment.strftime(fmt_data)
         else: notif=''
-        revis = self.notificacions_familia.filter(usuari=usuari, tipus='R').first()
         if revis: revis=revis.moment.strftime(fmt_data)
         else: revis=''
         return notif, revis

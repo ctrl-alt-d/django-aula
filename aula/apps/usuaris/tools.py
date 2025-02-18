@@ -935,18 +935,6 @@ def creaNotifUsuari(usuari, alumne, tipus='N'):
     notificacio.save()
     return notificacio
 
-def obteNotificacio(usuari, alumne, datahora):
-    '''
-    usuari
-    datahora de creació de l'event del qual es vol saber quan s'ha notificat
-    retorna la data-hora de la primera notificació posterior a datahora o
-    retorna None si no existeix
-    '''
-    if not bool(datahora): return None
-    primera=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N', moment__gt=datahora).order_by('moment').first()
-    if primera: return primera.moment
-    return None
-
 def ultimaNotificacio(usuari, alumne):
     '''
     usuari
@@ -958,20 +946,6 @@ def ultimaNotificacio(usuari, alumne):
     if ultima: return ultima.moment
     return None
 
-def obteRevisio(usuari, alumne, datahora):
-    '''
-    usuari
-    datahora de creació de l'event del qual es vol saber quan s'ha revisat
-    retorna la data-hora de la primera revisió posterior a datahora o
-    retorna None si no existeix
-    '''
-    if not bool(datahora): return None
-    tot=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R', moment__gt=datahora).order_by('moment')
-    if tot.count()<2:
-        # L'última notificació 'R' correspon a la sessió actual, fan falta un mínim de dos
-        return None
-    return tot.first().moment
-
 def ultimaRevisio(usuari, alumne):
     '''
     usuari responsable o alumne
@@ -979,16 +953,6 @@ def ultimaRevisio(usuari, alumne):
     retorna la data-hora de l'última revisió
     retorna None si no existeix
     '''
-    tot=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R').order_by('-moment')
-    if tot.count()<2:
-        # L'última notificació 'R' correspon a la sessió actual, fan falta un mínim de dos
-        return None
-    return tot[1].moment
-
-def ultimaRevisioSessio(request):
-    '''
-    retorna la data-hora de l'última revisió des de la sessió
-    retorna None si no existeix
-    '''
-    if "ultima_revisio" in request.session: return datetime.strptime(request.session["ultima_revisio"], '%d/%m/%Y %H:%M:%S')
+    ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R').order_by('-moment').first()
+    if ultima: return ultima.moment
     return None

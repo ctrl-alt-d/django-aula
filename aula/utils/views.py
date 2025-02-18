@@ -49,7 +49,6 @@ def logout_page(request):
     try:
         del request.session['impersonacio']
         del request.session['alumne_actual']
-        del request.session['ultima_revisio']
     except KeyError:
         pass
     
