@@ -6,7 +6,7 @@ from django.apps import apps
 #consultes
 from django.db.models import Q
 from aula.utils.tools import unicode
-from aula.apps.usuaris.models import User2Professor
+from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
 
 class AbstractImpartir(models.Model):
     horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
@@ -223,35 +223,16 @@ class AbstractControlAssistencia(models.Model):
     
     def set_notificacio(self, notificacio):
         # Què passa si canvia estat d'un control d'assistència?
-        if not notificacio: return
-        notifs=self.notificacions_familia.filter(usuari=notificacio.usuari, tipus='N')
-        if notifs:
-            for n in notifs: self.notificacions_familia.remove(n)
-        self.notificacions_familia.add(notificacio)
+        set_notificacio(self, notificacio)
     
     def set_revisio(self, revisio):
-        if not revisio: return
-        notifs=self.notificacions_familia.filter(usuari=revisio.usuari, tipus='R')
-        if notifs:
-            for n in notifs: self.notificacions_familia.remove(n)
-        self.notificacions_familia.add(revisio)
+        set_revisio(self, revisio)
     
     def get_notif_revisio(self, usuari, fmt_data=None):
         '''
-        Retorna notificació, revisió de l'usuari
+        Retorna str, str amb notificació, revisió de l'usuari
         '''
-        if not fmt_data: fmt_data='%d/%m/%Y %H:%M'
-        if User2Professor( usuari ):
-            notif = self.notificacions_familia.filter(tipus='N').order_by('moment').first()
-            revis = self.notificacions_familia.filter(tipus='R').order_by('moment').first()
-        else:
-            notif = self.notificacions_familia.filter(usuari=usuari, tipus='N').order_by('-moment').first()
-            revis = self.notificacions_familia.filter(usuari=usuari, tipus='R').order_by('-moment').first()
-        if notif: notif=notif.moment.strftime(fmt_data)
-        else: notif=''
-        if revis: revis=revis.moment.strftime(fmt_data)
-        else: revis=''
-        return notif, revis
+        return get_notif_revisio(self, usuari, fmt_data)
 
 class AbstractNoHaDeSerALAula(models.Model):
     #cal recalcular-lo en aquesta casos:

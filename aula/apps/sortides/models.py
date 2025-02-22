@@ -2,6 +2,7 @@
 from django.db import models
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
+from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne
 from django.apps import apps
@@ -376,12 +377,29 @@ class SortidaPagament(Pagament):
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne, on_delete=models.CASCADE )
     sortida = models.ForeignKey(Sortida, on_delete=models.CASCADE )
+    
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True )
-
+    #DEPRECATED ^^^
+    
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
+    
     def __str__(self):
         return u"{} {}".format( self.alumne, self.sortida )
-
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
+    
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
 from django.db.models.signals import m2m_changed, pre_save #post_save, pre_delete
 

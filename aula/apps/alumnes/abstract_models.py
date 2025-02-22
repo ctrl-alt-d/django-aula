@@ -263,23 +263,36 @@ class AbstractAlumne(models.Model):
         super(AbstractAlumne,self).delete()
         
     def esta_relacio_familia_actiu(self):
-        TeCorreuPare_o_Mare = self.correu_relacio_familia_pare  or self.correu_relacio_familia_mare 
+        # TODO majors o menors d'edat
+        TeCorreuPare_o_Mare = bool(self.get_correus_relacio_familia())
         usuariActiu = self.get_user_associat() is not None and self.user_associat.is_active
-        return True if TeCorreuPare_o_Mare and usuariActiu else False
+        usuariActiu = usuariActiu or any(self.responsablesActius())
+        return TeCorreuPare_o_Mare and usuariActiu
+    
+    def responsablesActius(self):
+        return [ x.get_user_associat() is not None and x.user_associat.is_active for x in self.get_responsables() if x ]
+    
+    def get_correu(self):
+        return self.correu
     
     def get_correus_relacio_familia(self):
-        return [ x.correu_relacio_familia for x in self.responsables.all() if x and x.correu_relacio_familia ]
+        return [ x.correu_relacio_familia for x in self.get_responsables() if x and x.correu_relacio_familia ]
 
     def get_correus_tots(self):
         tots=self.get_correus_relacio_familia()
-        tots=tots+[ x.correu for x in self.responsables.all() if x and x.correu ]
-        tots=tots+[ self.correu_tutors, self.correu ]
+        tots=tots+[ x.correu for x in self.get_responsables() if x and x.correu ]
+        tots=tots+[ self.get_correu() ]
         return tots
-
+    
+    def get_telefons(self):
+        return [ t for t in [self.telefons, self.altres_telefons] if t ]
+    
+    def get_telefons_tots(self):
+        return self.get_telefons() + self.get_telefons_responsables()
+    
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None
-
-
+    
     def get_seguiment_tutorial(self):       
         if not hasattr(self, 'seguimenttutorial'):
             a=self
@@ -365,6 +378,12 @@ class AbstractAlumne(models.Model):
         resp1=self.responsables.filter(dni=rp1_dni).first()
         resp2=self.responsables.filter(dni=rp2_dni).first()
         return resp1, resp2
+    
+    def get_noms_responsables(self):
+        return [ x.get_nom() for x in self.get_responsables() if x ]
+    
+    def get_telefons_responsables(self):
+        return [ x.get_telefon() for x in self.get_responsables() if x ]
     
     def esborraAntics_responsables(self, dnis):
         '''

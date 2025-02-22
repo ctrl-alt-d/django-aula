@@ -647,14 +647,14 @@ def editaExpulsio( request, pk ):
         pass
     
     responsable1, responsable2 = expulsio.alumne.get_responsables()
-        
+    
     infoForm = [
         ('Alumne', unicode(expulsio.alumne)),
         ('Dia', expulsio.dia_expulsio),
         ('Hora', expulsio.franja_expulsio),
-        ('Responsable preferent', str(responsable1)),
-        ('Responsable (altre)', str(responsable2)),
-        ('Altres telèfons', expulsio.alumne.altres_telefons),
+        ( 'Responsable preferent', ','.join([responsable1.get_nom(), responsable1.get_telefon()] if responsable1 else '')),
+        ( 'Responsable (altre)', ','.join([responsable2.get_nom(), responsable2.get_telefon()] if responsable2 else '')),
+        ( 'Altres telèfons', ','.join(expulsio.alumne.get_telefons())),
         ('Edat alumne', edatAlumne),
         ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
         ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
@@ -1489,10 +1489,13 @@ def editaSancio( request, pk ):
     except:
         pass
     
+    responsable1, responsable2 = sancio.alumne.get_responsables()
+    
     infoForm = [
           ('Alumne',unicode( sancio.alumne) ),
-          ( 'Telèfon Alumne', sancio.alumne.telefons),                     
-          ( 'Nom tutors', sancio.alumne.tutors), # TODO dades de responsables                    
+          ( 'Responsable preferent', ','.join([responsable1.get_nom(), responsable1.get_telefon()] if responsable1 else '')),
+          ( 'Responsable (altre)', ','.join([responsable2.get_nom(), responsable2.get_telefon()] if responsable2 else '')),
+          ( 'Altres telèfons', ','.join(sancio.alumne.get_telefons())),
           ( 'Edat alumne', edatAlumne ),                     
           ( 'Carta impresa (sanció bloquejada)', sancio.impres ),                     
                 ]
@@ -1560,6 +1563,7 @@ def editaSancio( request, pk ):
         formSelectIncidencies = incidenciesRelacionadesForm( querysetIncidencies = sancio.incidencia_set.order_by('dia_incidencia').all(),
                                                              querysetExpulsions  = sancio.expulsio_set.order_by('dia_expulsio').all() )
 
+    formSancio.infoForm=infoForm
     formset = [ formSancio, formSelectIncidencies ]
     formset.extend ( [  can_delete ] if l4 else []  )
     

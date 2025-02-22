@@ -225,12 +225,13 @@ def enviamail(subject, message, from_email, to_email, connection=None):
 def comunicaMatricula(tipus, curs, alumne, connection=None):
     '''
     Fa comunicació de missatge de matrícula per alumne i responsables.
-    TODO Depenent de si major d'edat ? Envia a tots? Només el principal?
+    TODO usuariResponsable Depenent de si major d'edat ? Envia a tots? Només el principal?
     '''
     if alumne.edat()>=18 or not alumne.responsables.exists():
         mailMatricula(tipus, curs, alumne.correu, alumne, connection=connection)
-    for r in alumne.responsables.all():
-        mailMatricula(tipus, curs, r.correu_relacio_familia, alumne, r, connection)
+    for r in alumne.get_responsables():
+        if r:
+            mailMatricula(tipus, curs, r.correu_relacio_familia, alumne, r, connection)
     
 def mailMatricula(tipus, curs, email, alumne, responsable=None, connection=None):
     '''
@@ -472,7 +473,6 @@ def activaAlumne(al):
     if not al.data_alta or al.data_baixa: 
         al.data_alta = django.utils.timezone.now()
         al.data_baixa = None
-    al.relacio_familia_darrera_notificacio = None
     al.periodicitat_faltes = 7
     al.periodicitat_incidencies = True
     al.save()

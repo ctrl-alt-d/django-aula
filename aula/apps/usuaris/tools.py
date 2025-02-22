@@ -909,20 +909,6 @@ def getRol(usuari, request):
     professor = User2Professor( usuari )
     return professor, None, None
 
-def creaNotifAlumne(alumne):
-    '''
-    Apunta una notificació a l'alumne i als seus responsables.
-    Aquesta notificació correspon al cas d'enviament d'email, només crea notificacions si
-    els usuaris tenen email informat.
-    '''
-    resp1, resp2 = alumne.get_responsables()
-    usuaris=[[alumne.get_user_associat(), alumne.correu], 
-             [resp1.get_user_associat(), resp1.correu_relacio_familia] if resp1 else [None, None], 
-             [resp2.get_user_associat(), resp2.correu_relacio_familia] if resp2 else [None, None]]
-    for usuari, correu in usuaris:
-        if not usuari or not correu: continue
-        creaNotifUsuari(usuari, alumne)
-
 def creaNotifUsuari(usuari, alumne, tipus='N'):
     '''
     Apunta una notificació a l'usuari-alumne.
@@ -942,7 +928,16 @@ def ultimaNotificacio(usuari, alumne):
     retorna la data-hora de l'última notificació o
     retorna None si no existeix
     '''
-    ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N').order_by('-moment').first()
+    #DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if alumne.relacio_familia_darrera_notificacio:
+            return alumne.relacio_familia_darrera_notificacio
+    except:
+        pass
+    #DEPRECATED ^^^
+    if usuari: ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N').order_by('-moment').first()
+    else: ultima=NotifUsuari.objects.filter(alumne=alumne, tipus='N').order_by('-moment').first()
     if ultima: return ultima.moment
     return None
 
@@ -956,3 +951,46 @@ def ultimaRevisio(usuari, alumne):
     ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R').order_by('-moment').first()
     if ultima: return ultima.moment
     return None
+
+def set_notificacio(element, notificacio, tipus='N'):
+    if not notificacio: return
+    notifs=element.notificacions_familia.filter(usuari=notificacio.usuari, tipus=tipus)
+    if notifs:
+        for n in notifs: element.notificacions_familia.remove(n)
+    element.notificacions_familia.add(notificacio)
+
+def set_revisio(element, revisio):
+    set_notificacio(element, revisio, tipus='R')
+
+def get_notif_revisio(element, usuari, fmt_data=None):
+    '''
+    Retorna str, str amb notificació, revisió de l'usuari
+    '''
+    if not fmt_data: fmt_data='%d/%m/%Y %H:%M'
+    #DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if element.relacio_familia_revisada:
+            notif=revis=''
+            if element.relacio_familia_revisada:
+                revis=element.relacio_familia_revisada.strftime(fmt_data)
+            if element.relacio_familia_notificada:
+                notif=element.relacio_familia_notificada.strftime(fmt_data)
+            else:
+                notif=revis
+            return notif, revis
+    except:
+        pass
+    #DEPRECATED ^^^
+    if User2Professor( usuari ):
+        notif = element.notificacions_familia.filter(tipus='N').order_by('moment').first()
+        revis = element.notificacions_familia.filter(tipus='R').order_by('moment').first()
+    else:
+        notif = element.notificacions_familia.filter(usuari=usuari, tipus='N').order_by('-moment').first()
+        revis = element.notificacions_familia.filter(usuari=usuari, tipus='R').order_by('-moment').first()
+    if notif: notif=notif.moment.strftime(fmt_data)
+    else: notif=''
+    if revis: revis=revis.moment.strftime(fmt_data)
+    else: revis=''
+    return notif, revis
+    

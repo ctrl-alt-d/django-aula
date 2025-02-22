@@ -70,7 +70,7 @@ from django.contrib import messages
 from django.conf import settings
 from aula.apps.presenciaSetmanal.views import ProfeNoPot
 from ..missatgeria.missatges_a_usuaris import ALUMNE_GENERAR_CARTA, tipusMissatge
-
+from aula.apps.usuaris.tools import ultimaNotificacio
 
 @login_required
 @group_required(['professors'] )
@@ -2084,7 +2084,7 @@ def informeCompletFaltesIncidencies(request):
                 connexio_darrers_dies = LoginUsuari.objects.filter( exitos = True, usuari__pk = user_associat.pk, moment__gte =  fa_15_dies ).exists()
 
                 darrera_connexio = LoginUsuari.objects.filter( exitos = True, usuari__pk = user_associat.pk ).order_by('-moment')[:1]
-                darrera_notificacio = alumne.relacio_familia_darrera_notificacio
+                darrera_notificacio = ultimaNotificacio(None, alumne)
                 te_correus_associats = bool( alumne.get_correus_relacio_familia() )
 
                 opcio = 's'
@@ -2146,7 +2146,7 @@ def informeCompletFaltesIncidencies(request):
                 connexio_darrers_dies = LoginUsuari.objects.filter( exitos = True, usuari__pk = user_associat.pk, moment__gte =  fa_15_dies ).exists()
 
                 darrera_connexio = LoginUsuari.objects.filter( exitos = True, usuari__pk = user_associat.pk ).order_by('-moment')[:1]
-                darrera_notificacio = alumne.relacio_familia_darrera_notificacio
+                darrera_notificacio = ultimaNotificacio(None, alumne)
                 te_correus_associats = bool( alumne.get_correus_relacio_familia() )
 
                 opcio = 's'

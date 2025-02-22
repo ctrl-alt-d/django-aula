@@ -39,7 +39,7 @@ from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
-from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
+from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor, User2Responsable
 from aula.utils.tools import getClientAdress
 
 from django.contrib import messages
@@ -339,6 +339,13 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
+                        # TODO usuariResponsable afegir related_name
+                        if User2Responsable(user):
+                            user.responsable.motiu_bloqueig = ''
+                            user.responsable.save()
+                        elif not User2Professor(user):
+                            user.alumne.motiu_bloqueig = ''
+                            user.alumne.save()
                         return HttpResponseRedirect( url_next )
                     else:
                         LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP

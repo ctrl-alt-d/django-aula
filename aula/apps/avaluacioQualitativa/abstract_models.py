@@ -1,6 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 from django.db import models
+from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
 
 class AbstractItemQualitativa(models.Model):
     codi_agrupacio = models.CharField(u'Codi agrupació', max_length=10, blank=True, null=False,
@@ -38,9 +39,13 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
     item = models.ForeignKey( "avaluacioQualitativa.ItemQualitativa", blank=True, null=True , on_delete=models.CASCADE)
     frase_oberta = models.CharField(u'Frase oberta', max_length=120,  help_text = u'Frase oberta', blank=True)
     
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True, editable=False )    
     relacio_familia_notificada = models.DateTimeField( null=True, editable=False ) 
-        
+    #DEPRECATED ^^^
+    
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
+    
     class Meta:
         abstract = True        
         ordering = ['qualitativa','assignatura','alumne' ]
@@ -53,6 +58,18 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
             return self.item.text
         else:
             return self.frase_oberta
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
             
     
 
