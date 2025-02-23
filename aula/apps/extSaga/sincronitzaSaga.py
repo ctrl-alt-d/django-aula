@@ -52,7 +52,6 @@ def sincronitza(f, user = None):
     #Exclou els alumnes AMB esborrat i amb estat MAN (creats manualment)
     Alumne.objects.exclude( estat_sincronitzacio__exact = 'DEL' ).exclude( estat_sincronitzacio__exact = 'MAN') \
         .update( estat_sincronitzacio = 'PRC')
-        #,"00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_ADRE�A","03_CP","04_CENTRE PROCED�NCIA","05_CODI LOCALITAT","06_CORREU ELECTR�NIC","07_DATA NAIXEMENT","08_DOC. IDENTITAT","09_GRUPSCLASSE","10_NOM LOCALITAT","11_TEL�FONS","12_TUTOR(S)"
     reader = csv.DictReader(f)
     errors_nAlumnesSenseGrup=0
     info_nAlumnesLlegits=0
@@ -61,14 +60,19 @@ def sincronitza(f, user = None):
     info_nAlumnesCanviasDeGrup=0
     info_nAlumnesModificats=0
     info_nMissatgesEnviats = 0
+    info_nResponsablesCreats = 0
 
     AlumnesCanviatsDeGrup = []
     AlumnesInsertats = []
 
- #,"00_IDENTIFICADOR DE L'ALUMNE/A","01_NOM","02_DATA NAIXEMENT",
- #"03_ADREÇA","04_CENTRE PROCEDÈNCIA","05_GRUPSCLASSE","06_CORREU ELECTRÒNIC","07_LOCALITAT",
- #"08_TELÈFON RESP. 1","09_TELÈFON RESP. 2","10_RESPONSABLE 2","11_RESPONSABLE 1"
-
+    '''
+        '00_IDENTIFICADOR DE L'ALUMNE/A','01_NOM','02_DATA NAIXEMENT','03_RESPONSABLE 1','04_TELÈFON RESP. 1','05_MÒBIL RESP. 1',
+        '06_ADREÇA ELECTR. RESP. 1','07_RESPONSABLE 2','08_TELÈFON RESP. 2','09_MÒBIL RESP. 2','10_ADREÇA ELECTR. RESP. 2','11_ADREÇA',
+        '12_LOCALITAT','13_MUNICIPI','14_CORREU ELECTRÒNIC','15_ALTRES TELÈFONS','16_CENTRE PROCEDÈNCIA','17_GRUPSCLASSE',
+        '18_DOC. IDENTITAT','19_CP',
+        '23_PARENTIU RESP. 1','24_DOC. IDENTITAT RESP. 1','25_ADREÇA RESP. 1','26_LOCALITAT RESP. 1','27_MUNICIPI RESP. 1','28_CP RESP. 1',
+        '29_PARENTIU RESP. 2','30_DOC. IDENTITAT RESP. 2','31_ADREÇA RESP. 2','32_LOCALITAT RESP. 2','33_MUNICIPI RESP. 2','34_CP RESP. 2',
+    '''
     trobatGrupClasse = False
     trobatNom = False
     trobatDataNeixement = False
@@ -83,7 +87,6 @@ def sincronitza(f, user = None):
         a.telefons = ''
         dni = ''
         # Guarda usuaris Responsable
-        # Es tracta d'una modificació provisional per a poder fer proves
         resp1 = {}
         resp2 = {}
         #a.tutors = ''
@@ -93,10 +96,9 @@ def sincronitza(f, user = None):
             if bool(value) and isinstance(value, str):
                 value=value.strip()
             columnName = unicode(columnName,'iso-8859-1')
-            #columnName = unicode( rawColumnName, 'iso-8859-1'  )
             uvalue =  unicode(value,'iso-8859-1')
             if columnName.endswith(u"_IDENTIFICADOR DE L'ALUMNE/A"):
-                a.ralc=unicode(value,'iso-8859-1')
+                a.ralc=uvalue
                 trobatRalc = True
             if columnName.endswith( u"_NOM"):
                 a.nom =uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
@@ -109,62 +111,73 @@ def sincronitza(f, user = None):
                 except:
                     return { 'errors': [ u"error carregant {0}".format( uvalue ), ], 'warnings': [], 'infos': [] }
                 trobatGrupClasse = True
-            #if columnName.endswith( u"_CORREU ELECTRÒNIC")  or columnName.find( u"_ADREÇA ELECTR. RESP.")>=0 :
-            #    a.correu_tutors += unicode(value,'iso-8859-1') + u', '
             if columnName.endswith( u"_CORREU ELECTRÒNIC"):
-                a.correu = unicode(value,'iso-8859-1')
+                a.correu = uvalue
             if columnName.endswith( u"_DATA NAIXEMENT"):
-                dia=time.strptime( unicode(value,'iso-8859-1'),'%d/%m/%Y')
+                dia=time.strptime( uvalue,'%d/%m/%Y')
                 a.data_neixement = time.strftime('%Y-%m-%d', dia)
                 trobatDataNeixement = True
             if columnName.endswith( u"_CENTRE PROCEDÈNCIA"):
-                a.centre_de_procedencia = unicode(value,'iso-8859-1')
+                a.centre_de_procedencia = uvalue
             if columnName.endswith( u"_LOCALITAT"):
-                a.localitat = unicode(value,'iso-8859-1')
-                resp1["localitat"]=a.localitat
-                resp2["localitat"]=a.localitat
+                a.localitat = uvalue
             if columnName.endswith( u"MUNICIPI"):
-                a.municipi = unicode(value,'iso-8859-1')
-                resp1["municipi"]=a.municipi
-                resp2["municipi"]=a.municipi
-            # if columnName.find( u"_TELÈFON RESP")>=0 or columnName.find( u"_MÒBIL RESP")>=0 or columnName.find( u"_ALTRES TELÈFONS")>=0 :
-            #     a.telefons += unicode(value,'iso-8859-1') + u', '
+                a.municipi = uvalue
             if columnName.endswith(u"_TELÈFON RESP. 1" ):
-                if "telefon" not in resp1: resp1["telefon"] = unicode(value,'iso-8859-1')
+                if "telefon" not in resp1: resp1["telefon"] = uvalue
+                else: resp1["telefon"] = ', '.join([resp1["telefon"]] + [uvalue]);
             if columnName.endswith(u"_TELÈFON RESP. 2" ):
-                if "telefon" not in resp2: resp2["telefon"] = unicode(value,'iso-8859-1')
+                if "telefon" not in resp2: resp2["telefon"] = uvalue
+                else: resp2["telefon"] = ', '.join([resp2["telefon"]] + [uvalue]);
             if columnName.endswith(u"_MÒBIL RESP. 1" ):
-                resp1["telefon"] = unicode(value,'iso-8859-1')
+                if "telefon" not in resp1: resp1["telefon"] = uvalue
+                else: resp1["telefon"] = ', '.join([resp1["telefon"]] + [uvalue]);
             if columnName.endswith(u"_MÒBIL RESP. 2" ):
-                resp2["telefon"] = unicode(value,'iso-8859-1')
+                if "telefon" not in resp2: resp2["telefon"] = uvalue
+                else: resp2["telefon"] = ', '.join([resp2["telefon"]] + [uvalue]);
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 1" ):
-                resp1["correu"] = unicode(value,'iso-8859-1')
+                resp1["correu"] = uvalue
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 2" ):
-                resp2["correu"] = unicode(value,'iso-8859-1')
+                resp2["correu"] = uvalue
             if columnName.endswith(u"_ALTRES TELÈFONS"):
-                a.altres_telefons = unicode(value, 'iso-8859-1')
+                a.altres_telefons = uvalue
 
-            # if columnName.find( u"_RESPONSABLE")>=0:
-            #     a.tutors = unicode(value,'iso-8859-1') + u', '
-            if columnName.endswith(u"_RESPONSABLE 1" ):
-                resp1["nom"] = unicode(value,'iso-8859-1')
-            if columnName.endswith(u"_RESPONSABLE 2" ):
-                resp2["nom"] = unicode(value,'iso-8859-1')
             if columnName.endswith( u"_ADREÇA" ):
-                a.adreca = unicode(value,'iso-8859-1')
-                resp1["adreca"]=a.adreca
-                resp2["adreca"]=a.adreca
+                a.adreca = uvalue
             if columnName.endswith( u"_CP"):
-                a.cp = unicode(value,'iso-8859-1')
-                resp1["cp"]=a.cp
-                resp2["cp"]=a.cp
+                a.cp = uvalue
             if columnName.endswith( u"_DOC. IDENTITAT"):
-                dni = unicode(value,'iso-8859-1')
+                dni = uvalue
             if columnName.endswith( u"_DOC. IDENTITAT RESP. 1"):
-                resp1["dni"] = unicode(value,'iso-8859-1')[-9:]
+                resp1["dni"] = uvalue[-9:]
+            if columnName.endswith(u"_RESPONSABLE 1" ):
+                resp1["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
+                resp1["cognoms"] = uvalue.split(',')[0]
+            if columnName.endswith( u"_PARENTIU RESP. 1"):
+                resp1["parentiu"]=uvalue
+            if columnName.endswith( u"_ADREÇA RESP. 1" ):
+                resp1["adreca"]=uvalue
+            if columnName.endswith( u"_LOCALITAT RESP. 1"):
+                resp1["localitat"]=uvalue
+            if columnName.endswith( u"_MUNICIPI RESP. 1"):
+                resp1["municipi"]=uvalue
+            if columnName.endswith( u"_CP RESP. 1"):
+                resp1["cp"]=uvalue
             if columnName.endswith( u"_DOC. IDENTITAT RESP. 2"):
-                resp2["dni"] = unicode(value,'iso-8859-1')[-9:]
-
+                resp2["dni"] = uvalue[-9:]
+            if columnName.endswith(u"_RESPONSABLE 2" ):
+                resp2["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
+                resp2["cognoms"] = uvalue.split(',')[0]
+            if columnName.endswith( u"_PARENTIU RESP. 2"):
+                resp2["parentiu"]=uvalue
+            if columnName.endswith( u"_ADREÇA RESP. 2" ):
+                resp2["adreca"]=uvalue
+            if columnName.endswith( u"_LOCALITAT RESP. 2"):
+                resp2["localitat"]=uvalue
+            if columnName.endswith( u"_MUNICIPI RESP. 2"):
+                resp2["municipi"]=uvalue
+            if columnName.endswith( u"_CP RESP. 2"):
+                resp2["cp"]=uvalue
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
             return { 'errors': [ u'Falten camps al fitxer' ], 'warnings': [], 'infos': [] }
@@ -242,17 +255,13 @@ def sincronitza(f, user = None):
 
             a.user_associat = alumneDadesAnteriors.user_associat
             a.usuaris_app_associats.set(alumneDadesAnteriors.usuaris_app_associats.all())
-            a.correu_relacio_familia_pare = alumneDadesAnteriors.correu_relacio_familia_pare
-            a.correu_relacio_familia_mare = alumneDadesAnteriors.correu_relacio_familia_mare
-            a.relacio_familia_darrera_notificacio = alumneDadesAnteriors.relacio_familia_darrera_notificacio
             a.periodicitat_faltes = alumneDadesAnteriors.periodicitat_faltes
             a.periodicitat_incidencies = alumneDadesAnteriors.periodicitat_incidencies
-            a.tutors_volen_rebre_correu = alumneDadesAnteriors.tutors_volen_rebre_correu = False
             a.foto = alumneDadesAnteriors.foto
-            a.primer_responsable = alumneDadesAnteriors.primer_responsable
             a.responsable_preferent = alumneDadesAnteriors.responsable_preferent
             a.observacions = alumneDadesAnteriors.observacions
-             #el recuperem, havia estat baixa:
+            a.tutors_volen_rebre_correu = False  #  TODO usuariResponsable a eliminar
+            #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
                 a.data_alta = date.today()
@@ -263,9 +272,9 @@ def sincronitza(f, user = None):
 
         a.save()
         # Crea usuaris Responsable
-        # Es tracta d'una modificació provisional per a poder fer proves
-        creaResponsables(a, [resp1, resp2])
+        info_nResponsablesCreats += creaResponsables(a, [resp1, resp2])
         cursos.add(a.grup.curs)
+        
     #
     # Baixes:
     #
@@ -391,11 +400,13 @@ def sincronitza(f, user = None):
     infos=    [   ]
     infos.append(u'{0} alumnes llegits'.format(info_nAlumnesLlegits) )
     infos.append(u'{0} alumnes insertats'.format(info_nAlumnesInsertats) )
+    infos.append(u'{0} alumnes modificats'.format(info_nAlumnesModificats ) )
     infos.append(u'{0} alumnes esborrats'.format(info_nAlumnesEsborrats ) )
     infos.append(u'{0} alumnes canviats de grup'.format(info_nAlumnesCanviasDeGrup ) )
     infos.append(u'{0} alumnes en estat sincronització manual'.format( \
         len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
+    infos.append(u'{0} responsables creats'.format(info_nResponsablesCreats ) )
     missatge = IMPORTACIO_SAGA_FINALITZADA
     tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(

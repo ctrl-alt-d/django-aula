@@ -9,6 +9,7 @@ from aula.apps.missatgeria.missatges_a_usuaris import MISSATGES
 from django.template.defaulttags import register
 
 from aula.apps.alumnes.models import Alumne
+from aula.apps.relacioFamilies.models import Responsable
 
 class MissatgesTable(tables.Table):
     Data = tables.TemplateColumn(
@@ -51,7 +52,10 @@ class MissatgesTable(tables.Table):
         missatge='<span class="text-' + missatge_class + '">'
         
         if record.missatge.remitent.groups.filter( name = 'alumne' ).exists():
-            alumne = get_object_or_404(Alumne, user_associat=record.missatge.remitent)
+            try:
+                alumne = get_object_or_404(Alumne, user_associat=record.missatge.remitent)
+            except:
+                alumne = get_object_or_404(Responsable, user_associat=record.missatge.remitent)
             missatge = missatge + u"Missatge des del portal famílies de: {alumne}".format(alumne=alumne)
         else:
             if record.missatge.remitent.last_name:

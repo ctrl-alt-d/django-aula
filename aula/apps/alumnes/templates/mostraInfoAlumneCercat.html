@@ -27,9 +27,9 @@
                                 {% endif %}
                             {% endif %}
                           )<br />
-                      <span class="glyphicon glyphicon-user"> </span> {{ alumne.rp1_nom }} ({{ alumne.rp1_correu }} , {{ alumne.rp1_telefon }} - {{ alumne.rp1_mobil }})<br />
-                      {% if alumne.rp2_nom %}
-                        <span class="glyphicon glyphicon-user"> </span> {{ alumne.rp2_nom }} ({{ alumne.rp2_correu }} , {{ alumne.rp2_telefon }} - {{ alumne.rp2_mobil }})<br />
+                      <span class="glyphicon glyphicon-user"> </span> {{ alumne.get_noms_responsables.0 }} ({{ alumne.get_correus_relacio_familia.0 }} , {{ alumne.get_telefons_responsables.0 }})<br />
+                      {% if alumne.get_noms_responsables|length > 1 %}
+                        <span class="glyphicon glyphicon-user"> </span> {{ alumne.get_noms_responsables.1 }} ({{ alumne.get_correus_relacio_familia.1 }} , {{ alumne.get_telefons_responsables.1 }})<br />
                       {% endif %}
           {% endif %}
           {% if mostra_detalls or es_professor%}

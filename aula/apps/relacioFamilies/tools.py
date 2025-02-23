@@ -13,6 +13,7 @@ def creaResponsables(alumne, responsables, manteDades=False):
     Treu l'associació dels responsables que ja no corresponen.
     '''
     dnis_resp=[]
+    nous=0
     for dades in responsables:
         if "dni" not in dades or not bool(dades["dni"]): continue
         resp=Responsable.objects.filter(dni=dades["dni"])
@@ -23,6 +24,7 @@ def creaResponsables(alumne, responsables, manteDades=False):
             resp.motiu_bloqueig = u'No sol·licitat'
             resp.save()
             resp.alumnes_associats.add(alumne)
+            nous += 1
         else:
             resp=resp[0]
             actual=model_to_dict(resp,exclude=['user_associat', 'alumnes_associats'])
@@ -45,4 +47,5 @@ def creaResponsables(alumne, responsables, manteDades=False):
             respMod.alumnes_associats.add(alumne)
         dnis_resp.append(resp.dni)
     alumne.esborraAntics_responsables(dnis_resp)
+    return nous
 

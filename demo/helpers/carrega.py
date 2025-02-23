@@ -23,6 +23,7 @@ from aula.apps.presencia.models import Impartir, EstatControlAssistencia
 
 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
 from aula.utils.tools import unicode
+from aula.apps.relacioFamilies.models import Responsable
 
 def fesCarrega( ):
     msg = u""
@@ -59,8 +60,8 @@ def fesCarrega( ):
                          )
 
     print (u"#GENEREM FITXERS DE DADES  ")                        
-    generaFitxerSaga(fitxerSaga, nivellsCursosGrups, override=False  )
-    generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes, override=False )
+    generaFitxerSaga(fitxerSaga, nivellsCursosGrups, override=True  )
+    generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes, override=True )
     
     print (u"#CREEM NIVELL-CURS-GRUP")
     handlerKronowin=open( fitxerKronowin, 'r' )
@@ -69,8 +70,8 @@ def fesCarrega( ):
     sincronitzaKronowin.creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
     
     print (u"#Creem correspondències amb horaris")
-    frangesAula = FranjaHoraria.objects.filter( hora_inici__in = ['09:15', '10:30', '11:30' ,'12:45',
-                                                                  '15:45', '16:45', '18:05', '19:00'] ).order_by ( 'hora_inici' )
+    frangesAula = FranjaHoraria.objects.filter( pk__in = list(range(2,7))+list(range(10,15)) )\
+                                                            .exclude(nom_franja__icontains='pati').order_by ( 'hora_inici' )
     frangesKronowin = list(frangesMatins) + list(frangesTardes)
     for frangaAula, franjaKronowin in zip(frangesAula, frangesKronowin  ):
         Franja2Aula.objects.get_or_create( franja_kronowin= franjaKronowin,  franja_aula = frangaAula )
@@ -87,12 +88,12 @@ def fesCarrega( ):
     print (u"#Importem Kronowin 1 ( Per crear professors )")
     handlerKronowin=open( fitxerKronowin, 'r' )
     result = sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
-    print (u"Resultat importació kroniwin 1: ", result["errors"], result["warnings"], sep=" ")  
+    print (u"Resultat importació kronowin 1: ", result["errors"], result["warnings"], sep=" ")  
     
     print (u"#Importem Kronowin 2 ( Per importar horaris )")
     handlerKronowin=open( fitxerKronowin, 'r' )
     result = sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
-    print (u"Resultat importació kroniwin 2: ", result["errors"], result["warnings"], sep=" ")  
+    print (u"Resultat importació kronowin 2: ", result["errors"], result["warnings"], sep=" ")  
 
     print (u"#Importem saga")
     handlerSaga=open( fitxerSaga, 'r' )
@@ -159,7 +160,29 @@ def fesCarrega( ):
         p.set_password( 'djAu' )
         p.save()
         
-    msg += u"\nTots els passwords de professors: 'djAu' "
+    print (u"canviant dades dels responsables")
+    varisAlumnes=[]
+    for p in Responsable.objects.all():
+        p.get_user_associat().set_password( 'djAu' )
+        p.get_user_associat().is_active = True
+        p.get_user_associat().save()
+        if p.get_alumnes_associats().count()>1:
+            varisAlumnes.append(p.get_user_associat().username)
+            
+    print (u"canviant dades dels alumnes")
+    for p in Alumne.objects.all():
+        p.get_user_associat().set_password( 'djAu' )
+        p.get_user_associat().is_active = True
+        p.get_user_associat().save()
+        
+    msg += "\nResponsables rang: " + u" - ".join( sorted( set( [ unicode( Responsable.objects.order_by('id').first().get_user_associat().username ),
+                                                          unicode( Responsable.objects.order_by('id').last().get_user_associat().username )
+                                                          ] ) ) )
+    msg += "\nAlguns responsables amb varis alumnes: " + u" ,".join( sorted( set( varisAlumnes ) )[:10] )
+    msg += "\nAlumnes rang: " + u" - ".join( sorted( set( [ unicode( Alumne.objects.order_by('id').first().get_user_associat().username ),
+                                                          unicode( Alumne.objects.order_by('id').last().get_user_associat().username )
+                                                          ] ) ) )
+    msg += u"\nTots els passwords d'usuari: 'djAu' "
         
     return msg
 
