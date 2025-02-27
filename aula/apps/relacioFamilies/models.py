@@ -89,8 +89,16 @@ class Responsable(models.Model):
     def get_telefon(self):
         return self.telefon
     
+    def get_correu_importat(self):
+        return self.correu
+    
     def get_correu(self):
         return self.correu_relacio_familia
+    
+    def get_dades(self):
+        return "{0} ({1},{2}) {3}".format(self.get_nom(), self.get_telefon(), self.get_correu(),
+                        "Altres: {0}".format(self.get_correu_importat()) if bool(self.get_correu_importat()) and 
+                                                    self.get_correu_importat()!=self.get_correu() else '')
 
 from django.db.models.signals import post_delete, post_save
 from aula.apps.relacioFamilies.business_rules.docattach import docattach_post_delete

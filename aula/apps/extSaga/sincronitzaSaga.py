@@ -36,6 +36,17 @@ def autoRalc(ident):
         return ralc
     return ident
 
+def posarDada(dada, text):
+    if type(dada)==list:
+        for d in dada:
+            text=posarDada(d, text)
+    elif dada not in text:
+        if bool(text):
+            text = ', '.join([text] + [dada])
+        else:
+            text = dada
+    return text
+
 def sincronitza(f, user = None):
 
     errors = []
@@ -84,7 +95,7 @@ def sincronitza(f, user = None):
         info_nAlumnesLlegits+=1
         a=Alumne()
         a.ralc = ''
-        a.telefons = ''
+        a.altres_telefons = ''
         dni = ''
         # Guarda usuaris Responsable
         resp1 = {}
@@ -125,22 +136,30 @@ def sincronitza(f, user = None):
                 a.municipi = uvalue
             if columnName.endswith(u"_TELÈFON RESP. 1" ):
                 if "telefon" not in resp1: resp1["telefon"] = uvalue
-                else: resp1["telefon"] = ', '.join([resp1["telefon"]] + [uvalue]);
-            if columnName.endswith(u"_TELÈFON RESP. 2" ):
-                if "telefon" not in resp2: resp2["telefon"] = uvalue
-                else: resp2["telefon"] = ', '.join([resp2["telefon"]] + [uvalue]);
+                else:
+                    a.altres_telefons = posarDada(uvalue, a.altres_telefons)
             if columnName.endswith(u"_MÒBIL RESP. 1" ):
                 if "telefon" not in resp1: resp1["telefon"] = uvalue
-                else: resp1["telefon"] = ', '.join([resp1["telefon"]] + [uvalue]);
+                else:
+                    anterior = resp1["telefon"]
+                    resp1["telefon"] = uvalue
+                    a.altres_telefons = posarDada(anterior, a.altres_telefons)
+            if columnName.endswith(u"_TELÈFON RESP. 2" ):
+                if "telefon" not in resp2: resp2["telefon"] = uvalue
+                else:
+                    a.altres_telefons = posarDada(uvalue, a.altres_telefons)
             if columnName.endswith(u"_MÒBIL RESP. 2" ):
                 if "telefon" not in resp2: resp2["telefon"] = uvalue
-                else: resp2["telefon"] = ', '.join([resp2["telefon"]] + [uvalue]);
+                else:
+                    anterior = resp2["telefon"]
+                    resp2["telefon"] = uvalue
+                    a.altres_telefons = posarDada(anterior, a.altres_telefons)
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 1" ):
                 resp1["correu"] = uvalue
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 2" ):
                 resp2["correu"] = uvalue
             if columnName.endswith(u"_ALTRES TELÈFONS"):
-                a.altres_telefons = uvalue
+                a.altres_telefons = posarDada(uvalue, a.altres_telefons)
 
             if columnName.endswith( u"_ADREÇA" ):
                 a.adreca = uvalue
@@ -149,10 +168,14 @@ def sincronitza(f, user = None):
             if columnName.endswith( u"_DOC. IDENTITAT"):
                 dni = uvalue
             if columnName.endswith( u"_DOC. IDENTITAT RESP. 1"):
-                resp1["dni"] = uvalue[-9:]
+                resp1["dni"] = uvalue[-10:]
             if columnName.endswith(u"_RESPONSABLE 1" ):
-                resp1["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
-                resp1["cognoms"] = uvalue.split(',')[0]
+                if len(uvalue.split(','))>1:
+                    resp1["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
+                    resp1["cognoms"] = uvalue.split(',')[0]
+                else:
+                    resp1["nom"] = uvalue.split(',')[0].lstrip().rstrip()                #nomes fins a la coma
+                    resp1["cognoms"] = ''
             if columnName.endswith( u"_PARENTIU RESP. 1"):
                 resp1["parentiu"]=uvalue
             if columnName.endswith( u"_ADREÇA RESP. 1" ):
@@ -164,10 +187,14 @@ def sincronitza(f, user = None):
             if columnName.endswith( u"_CP RESP. 1"):
                 resp1["cp"]=uvalue
             if columnName.endswith( u"_DOC. IDENTITAT RESP. 2"):
-                resp2["dni"] = uvalue[-9:]
+                resp2["dni"] = uvalue[-10:]
             if columnName.endswith(u"_RESPONSABLE 2" ):
-                resp2["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
-                resp2["cognoms"] = uvalue.split(',')[0]
+                if len(uvalue.split(','))>1:
+                    resp2["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
+                    resp2["cognoms"] = uvalue.split(',')[0]
+                else:
+                    resp2["nom"] = uvalue.split(',')[0].lstrip().rstrip()                #nomes fins a la coma
+                    resp2["cognoms"] = ''
             if columnName.endswith( u"_PARENTIU RESP. 2"):
                 resp2["parentiu"]=uvalue
             if columnName.endswith( u"_ADREÇA RESP. 2" ):
@@ -264,6 +291,7 @@ def sincronitza(f, user = None):
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
+                info_nAlumnesModificats-=1
                 a.data_alta = date.today()
                 a.motiu_bloqueig = ""
             else:
@@ -274,6 +302,13 @@ def sincronitza(f, user = None):
         # Crea usuaris Responsable
         info_nResponsablesCreats += creaResponsables(a, [resp1, resp2])
         cursos.add(a.grup.curs)
+        #DEPRECATED vvv
+        if alumneDadesAnteriors and not alumneDadesAnteriors.responsable_preferent:
+            resp1, resp2 = a.get_responsables()
+            if alumneDadesAnteriors.primer_responsable==1 and resp2: a.responsable_preferent = resp2
+            else: a.responsable_preferent = resp1
+            a.save()
+        #DEPRECATED ^^^
         
     #
     # Baixes:

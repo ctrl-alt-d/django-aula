@@ -21,7 +21,7 @@ from aula.apps.extEsfera.models import Grup2Aula
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
 
 from aula.utils.tools import unicode
-
+from aula.apps.extSaga.sincronitzaSaga import posarDada
 
 def sincronitza(f, user = None):
 
@@ -89,7 +89,7 @@ def sincronitza(f, user = None):
     for row in rows[6:max_row - 1]:  # la darrera fila també és brossa
         a = Alumne()
         a.ralc = ''
-        a.telefons = ''
+        a.altres_telefons = ''
         r1 = {}
         r2 = {}
         for index, cell in enumerate(row):
@@ -135,16 +135,24 @@ def sincronitza(f, user = None):
                     a.municipi = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith(u"Contacte 1er tutor alumne - Valor"):
                     dades_tutor1 = dades_responsable(unicode(cell.value) if cell.value else "")
-                    r1["telefon"] = ', '.join(dades_tutor1["fixes"] + dades_tutor1["mobils"]);
+                    if dades_tutor1["mobils"]:
+                        r1["telefon"] = dades_tutor1["mobils"];
+                        a.altres_telefons = posarDada(dades_tutor1["fixes"], a.altres_telefons)
+                    elif dades_tutor1["fixes"]:
+                        r1["telefon"] = dades_tutor1["fixes"];
                     r1["correu"] = ', '.join(dades_tutor1["mails"]);
                 if col_indexs[index].endswith(u"Contacte 2on tutor alumne - Valor"):
                     dades_tutor2 = dades_responsable(unicode(cell.value) if cell.value else "")
-                    r2["telefon"] = ', '.join(dades_tutor2["fixes"] + dades_tutor2["mobils"]);
+                    if dades_tutor2["mobils"]:
+                        r2["telefon"] = dades_tutor2["mobils"];
+                        a.altres_telefons = posarDada(dades_tutor2["fixes"], a.altres_telefons)
+                    elif dades_tutor2["fixes"]:
+                        r2["telefon"] = dades_tutor2["fixes"];
                     r2["correu"] = ', '.join(dades_tutor2["mails"]);
                 if col_indexs[index].endswith(u"Contacte altres alumne - Valor"):
                     telefons_alumne = dades_responsable(unicode(cell.value) if cell.value else "")
-                    a.altres_telefons = ', '.join(telefons_alumne["fixes"]);
-                    a.altres_telefons = a.altres_telefons + ', '.join(telefons_alumne["mobils"]);
+                    a.altres_telefons = posarDada(telefons_alumne["fixes"], a.altres_telefons)
+                    a.altres_telefons = posarDada(telefons_alumne["mobils"], a.altres_telefons)
                 if col_indexs[index].endswith(u"Tutor 1 - 1r cognom"):
                     r1["cognoms"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith(u"Tutor 1 - 2n cognom"):
@@ -174,7 +182,7 @@ def sincronitza(f, user = None):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
 
                 if col_indexs[index].endswith('Tutor 1 - doc. identitat'):
-                    r1["dni"] = unicode(cell.value) if cell.value else ""
+                    r1["dni"] = unicode(cell.value)[-10:] if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - tipus via'):
                     r1["adreca"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - nom via'):
@@ -196,7 +204,7 @@ def sincronitza(f, user = None):
                 if col_indexs[index].endswith('Tutor 1 - municipi'):
                     r1["municipi"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - doc. identitat'):
-                    r2["dni"] = unicode(cell.value) if cell.value else ""
+                    r2["dni"] = unicode(cell.value)[-10:] if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - tipus via'):
                     r2["adreca"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - nom via'):
@@ -275,6 +283,7 @@ def sincronitza(f, user = None):
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
+                info_nAlumnesModificats-=1
                 a.data_alta = date.today()
                 a.motiu_bloqueig = ""
             else:
@@ -285,6 +294,13 @@ def sincronitza(f, user = None):
         # Crea usuaris Responsable
         info_nResponsablesCreats += creaResponsables(a, [r1, r2])
         cursos.add(a.grup.curs)
+        #DEPRECATED vvv
+        if alumneDadesAnteriors and not alumneDadesAnteriors.responsable_preferent:
+            resp1, resp2 = a.get_responsables()
+            if alumneDadesAnteriors.primer_responsable==1 and resp2: a.responsable_preferent = resp2
+            else: a.responsable_preferent = resp1
+            a.save()
+        #DEPRECATED ^^^
         
     #
     # Baixes:

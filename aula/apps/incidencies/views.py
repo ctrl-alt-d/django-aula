@@ -646,16 +646,16 @@ def editaExpulsio( request, pk ):
     except:
         pass
     
-    responsable1, responsable2 = expulsio.alumne.get_responsables()
+    resps = expulsio.alumne.get_dades_responsables()
     
     infoForm = [
         ('Alumne', unicode(expulsio.alumne)),
+        ('Edat alumne', edatAlumne),
         ('Dia', expulsio.dia_expulsio),
         ('Hora', expulsio.franja_expulsio),
-        ( 'Responsable preferent', ','.join([responsable1.get_nom(), responsable1.get_telefon()] if responsable1 else '')),
-        ( 'Responsable (altre)', ','.join([responsable2.get_nom(), responsable2.get_telefon()] if responsable2 else '')),
-        ( 'Altres telèfons', ','.join(expulsio.alumne.get_telefons())),
-        ('Edat alumne', edatAlumne),
+        ('Responsable preferent', resps['respPre']),
+        ('Responsable (altre)', resps['respAlt']),
+        ('Altres telèfons', ','.join(expulsio.alumne.get_telefons())),
         ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
         ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
     ]
@@ -1489,14 +1489,14 @@ def editaSancio( request, pk ):
     except:
         pass
     
-    responsable1, responsable2 = sancio.alumne.get_responsables()
+    resps = sancio.alumne.get_dades_responsables()
     
     infoForm = [
           ('Alumne',unicode( sancio.alumne) ),
-          ( 'Responsable preferent', ','.join([responsable1.get_nom(), responsable1.get_telefon()] if responsable1 else '')),
-          ( 'Responsable (altre)', ','.join([responsable2.get_nom(), responsable2.get_telefon()] if responsable2 else '')),
-          ( 'Altres telèfons', ','.join(sancio.alumne.get_telefons())),
           ( 'Edat alumne', edatAlumne ),                     
+          ('Responsable preferent', resps['respPre']),
+          ('Responsable (altre)', resps['respAlt']),
+          ( 'Altres telèfons', ','.join(sancio.alumne.get_telefons())),
           ( 'Carta impresa (sanció bloquejada)', sancio.impres ),                     
                 ]
     

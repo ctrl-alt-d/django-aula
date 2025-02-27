@@ -410,18 +410,14 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    resp1, resp2 = alumne.get_responsables()
-    dades_resp1=''
-    dades_resp2=''
-    if resp1: dades_resp1 = str(resp1)
-    if resp2: dades_resp2 = str(resp2)
+    resps = alumne.get_dades_responsables()
     
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
-          ('Dades responsable 1', dades_resp1),
-          ('Dades responsable 2', dades_resp2),
-          ('Telèfon Alumne', alumne.telefons + ', ' + alumne.altres_telefons),
+          ('Responsable preferent', resps['respPre']),
+          ('Responsable (altre)', resps['respAlt']),
+          ('Altres telèfons', ','.join(alumne.get_telefons())),
     ]
     
     if alumne.dadesaddicionalsalumne_set.exists():
@@ -441,6 +437,7 @@ def configuraConnexio( request , pk ):
     ResponsableFormSet = modelform_factory(Responsable,
                                           form=ResponsableModelForm
                                         )
+    resp1, resp2 = alumne.get_responsables()
     
     if request.method == 'POST':
         formAlmn = AlumneFormSet(True, request.POST, request.FILES, instance=alumne)
@@ -674,14 +671,19 @@ def canviParametres( request ):
         if alumne: edatAlumne = alumne.edat()
     except:
         pass
-
+    
+    resps = alumne.get_dades_responsables()
+    
     infoForm = [
         ('Alumne', unicode(alumne)),
-        ('Telèfon Alumne', alumne.telefons + ', ' + alumne.altres_telefons),
-        #('Correu alumne', alumne.correu),
         ('Edat alumne', str(edatAlumne) + ' (' + formats.date_format(alumne.data_neixement, "SHORT_DATE_FORMAT") + ')' ),
         ('RALC', alumne.ralc),
+        ('Responsable preferent', resps['respPre']),
+        ('Responsable (altre)', resps['respAlt']),
+        ('Altres telèfons', ','.join(alumne.get_telefons())),
+        ('Correu alumne', alumne.get_correu()),
     ]
+        
     
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
@@ -1417,6 +1419,20 @@ def elMeuInforme( request, pk = None ):
         
         taula.fileres = []
     
+            #----nom------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Nom'
+        filera.append(camp)
+        
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format( str(alumne) if responsable else alumne.get_nom_sentit() )        
+        filera.append(camp)
+        
+        taula.fileres.append( filera )
+        
             #----grup------------------------------------------
         filera = []
         camp = tools.classebuida()
@@ -1456,10 +1472,9 @@ def elMeuInforme( request, pk = None ):
         camp = tools.classebuida()
         camp.enllac = None
 
-        resp1, resp2 = alumne.get_responsables()
-        camp.multipleContingut = [(str(resp1) if resp1 else '', None),
-                                  (str(resp2) if resp2 else '', None),
-                                  ]
+        resps = alumne.get_dades_responsables()
+        camp.multipleContingut = [(resps['respPre'], None,),
+                                  (resps['respAlt'], None,)]
         filera.append(camp)
     
         taula.fileres.append( filera )

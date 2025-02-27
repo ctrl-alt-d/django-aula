@@ -676,27 +676,9 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-nom--------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            noms = alumne.get_noms_responsables()
-            rp1_nom, rp2_nom = '', ''
-            if noms: 
-                rp1_nom=noms[0]
-                if len(noms)>1: rp2_nom=noms[1]
-            tels = alumne.get_telefons_responsables()
-            rp1_telefon, rp2_telefon = '', ''
-            if tels: 
-                rp1_telefon=tels[0]
-                if len(tels)>1: rp2_telefon=tels[1]
-            correus = alumne.get_correus_relacio_familia()
-            rp1_correu, rp2_correu = '', ''
-            if correus: 
-                rp1_correu=correus[0]
-                if len(correus)>1: rp2_correu=correus[1]
-            camp.multipleContingut = [(u'{0} ({1}, {2})'.format( rp1_nom,
-                                                                 rp1_telefon,
-                                                                 rp1_correu ), None,),
-                                      (u'{0} ({1}, {2})'.format( rp2_nom,
-                                                                 rp2_telefon,
-                                                                 rp2_correu ), None,)]
+            resps = alumne.get_dades_responsables()
+            camp.multipleContingut = [(resps['respPre'], None,),
+                                      (resps['respAlt'], None,)]
             filera.append(camp)
 
             labels = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]

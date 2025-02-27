@@ -287,9 +287,6 @@ class AbstractAlumne(models.Model):
     def get_telefons(self):
         return [ t for t in [self.telefons, self.altres_telefons] if t ]
     
-    def get_telefons_tots(self):
-        return self.get_telefons() + self.get_telefons_responsables()
-    
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None
     
@@ -379,11 +376,12 @@ class AbstractAlumne(models.Model):
         resp2=self.responsables.filter(dni=rp2_dni).first()
         return resp1, resp2
     
-    def get_noms_responsables(self):
-        return [ x.get_nom() for x in self.get_responsables() if x ]
-    
-    def get_telefons_responsables(self):
-        return [ x.get_telefon() for x in self.get_responsables() if x ]
+    def get_dades_responsables(self):
+        dades={}
+        resp1, resp2 = self.get_responsables()
+        dades['respPre']=resp1.get_dades() if resp1 else ''
+        dades['respAlt']=resp2.get_dades() if resp2 else ''
+        return dades
     
     def esborraAntics_responsables(self, dnis):
         '''
@@ -392,8 +390,6 @@ class AbstractAlumne(models.Model):
         Els responsables sense alumnes queden com a baixa.
         dnis list amb els dnis vàlids de responsables
         '''
-        if self.responsable_preferent and self.responsable_preferent.dni not in dnis:
-            self.responsable_preferent=None
         for r in self.responsables.exclude(dni__in=dnis):
             r.alumnes_associats.remove(self)
             if not r.alumnes_associats.exists():

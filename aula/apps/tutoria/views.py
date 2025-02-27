@@ -1874,7 +1874,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         capcelera = tools.classebuida()
         capcelera.amplade = 15
-        capcelera.contingut = u'Següiment tutorial'
+        capcelera.contingut = u'Seguiment tutorial'
         capcelera.enllac = ""
         taula.capceleres.append(capcelera)
 
