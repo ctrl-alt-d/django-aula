@@ -10,7 +10,8 @@ lxml
 six
 django-debug-toolbar
 python-dateutil
-django-tables2
+django-tables2 == 2.7.0 ; python_version <= '3.8'
+django-tables2 > 2.7.0 ; python_version > '3.8'
 icalendar
 django-appconf
 Pillow
