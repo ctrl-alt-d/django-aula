@@ -305,9 +305,7 @@ def sortidesAllList(request, tipus=None):
     url = r"{0}{1}".format(
         settings.URL_DJANGO_AULA, reverse("sortides__sortides__ical")
     )
-    
-    afegeigFormControlClass(filter.form)
-    
+        
     return render(
         request,
         "table2.html",

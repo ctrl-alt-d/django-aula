@@ -194,8 +194,12 @@ INSTALLED_APPS_DJANGO = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_gsuite_email',
+    'crispy_forms',
+    'crispy_bootstrap3',
 ]
-    
+
+CRISPY_TEMPLATE_PACK = "bootstrap3"
+
 INSTALLED_APPS_AULA = [
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
