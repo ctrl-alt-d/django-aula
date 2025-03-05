@@ -3,6 +3,7 @@
 {% load django_tables2 %}
 {% load static %}
 {% load humanize %}
+{% load crispy_forms_tags %}
 
 {% block extrahead %}
 <link rel="stylesheet" href="{{STATIC_URL}}BOOTABLE2/css/estil.css?ver=1" />
@@ -14,8 +15,9 @@
 
 	{% if filter %}
 	<form method="get">
-        {{ filter.form.as_p }}
-        <input class="btn btn-sm btn-primary" type="submit" />
+		{% csrf_token %}
+		{% crispy filter.form filter.helper %}
+        
     </form>
 	{% endif %}
 

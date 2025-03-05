@@ -33,3 +33,5 @@ django-filter
 qrcode
 djangorestframework-simplejwt
 djau-gsuite-email
+crispy-bootstrap3==2024.1
+django-crispy-forms==2.3
