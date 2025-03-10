@@ -465,7 +465,6 @@ def posaIncidenciaPrimeraHora( request ):
                 'formset.html',
                     {'formset': formset,
                      'titol_formulari': 'Incidència per retard entrada al centre', 
-                     'head': 'Incidència primera hora' ,
                      'missatge': missatge
                     },
                 )
@@ -655,7 +654,7 @@ def editaExpulsio( request, pk ):
         ('Hora', expulsio.franja_expulsio),
         ('Responsable preferent', resps['respPre']),
         ('Responsable (altre)', resps['respAlt']),
-        ('Altres telèfons', ','.join(expulsio.alumne.get_telefons())),
+        ('Altres telèfons', expulsio.alumne.get_telefons()),
         ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
         ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
     ]
@@ -1496,7 +1495,7 @@ def editaSancio( request, pk ):
           ( 'Edat alumne', edatAlumne ),                     
           ('Responsable preferent', resps['respPre']),
           ('Responsable (altre)', resps['respAlt']),
-          ( 'Altres telèfons', ','.join(sancio.alumne.get_telefons())),
+          ( 'Altres telèfons', sancio.alumne.get_telefons()),
           ( 'Carta impresa (sanció bloquejada)', sancio.impres ),                     
                 ]
     

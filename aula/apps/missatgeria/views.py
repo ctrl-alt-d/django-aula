@@ -57,7 +57,7 @@ def elMeuMur( request, pg ,tipus = 'all'):
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 25}).configure(table)
 
     missatges = dict()
-    for key,value in MISSATGES.items():
+    for key,value in iter(MISSATGES.items()):
         missatges [key] = list(value.keys())[0]
         
     #Afegeix tipus TOT per opció de veure tots els missatges
@@ -178,7 +178,6 @@ def enviaMissatgeTutors( request ):
                 'formset.html',
                     {'formset': formset,
                      'titol_formulari': u"Missatge a professors tutors de l'alumne",                    
-                     'head': 'Avís a tutors.' ,
                     },
                 )
 
@@ -299,7 +298,6 @@ def enviaMissatgeProfessorsPas(request):
         'formset.html',
         {'formset': formset,
          'titol_formulari': u"Missatge a professors i/o PAS",
-         'head': u"Missatge a membres del professorat o consergeria",
          },
         )
 
@@ -376,7 +374,6 @@ def EmailFamilies(request):
         'formset.html',
         {'formset': formset,
          'titol_formulari': u"Email per a les famílies",
-         'head': u"Email a totes les famílies",
          },
         )
     

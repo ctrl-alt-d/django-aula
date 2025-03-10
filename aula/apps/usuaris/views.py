@@ -53,7 +53,7 @@ from icalendar import vCalAddress, vText
 from django.templatetags.tz import localtime
 
 @login_required
-@group_required(['professors', 'consergeria'])
+@group_required(['professors', 'consergeria', 'tpvs'])
 def canviDadesUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials

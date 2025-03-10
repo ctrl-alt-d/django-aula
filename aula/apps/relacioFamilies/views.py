@@ -48,8 +48,7 @@ from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
 from datetime import datetime, timedelta
 
-from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari, ultimaRevisio,\
-    ultimaNotificacio
+from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -417,7 +416,7 @@ def configuraConnexio( request , pk ):
           ('Edat alumne', edatAlumne),
           ('Responsable preferent', resps['respPre']),
           ('Responsable (altre)', resps['respAlt']),
-          ('Altres telèfons', ','.join(alumne.get_telefons())),
+          ('Altres telèfons', alumne.get_telefons()),
     ]
     
     if alumne.dadesaddicionalsalumne_set.exists():
@@ -437,7 +436,8 @@ def configuraConnexio( request , pk ):
     ResponsableFormSet = modelform_factory(Responsable,
                                           form=ResponsableModelForm
                                         )
-    resp1, resp2 = alumne.get_responsables()
+    
+    resp1, resp2 = alumne.get_responsables(compatible=True)
     
     if request.method == 'POST':
         formAlmn = AlumneFormSet(True, request.POST, request.FILES, instance=alumne)
@@ -466,7 +466,7 @@ def configuraConnexio( request , pk ):
                     formResp1._errors.update(errors)
                     hihaerrors=True
                 else:
-                    formResp1.save()
+                    if resp1.dni: formResp1.save()
             if resp2:
                 errors = {}
                 email=formResp2.cleaned_data['correu_relacio_familia']
@@ -477,7 +477,7 @@ def configuraConnexio( request , pk ):
                     formResp2._errors.update(errors)
                     hihaerrors=True
                 else:
-                    formResp2.save()
+                    if resp2.dni: formResp2.save()
             url_next = '/open/dadesRelacioFamilies#{0}'.format(alumne.pk  ) 
             if not hihaerrors: return HttpResponseRedirect( url_next )
 
@@ -579,7 +579,7 @@ def dadesRelacioFamilies( request ):
                 except:
                     pass
                 #DEPRECATED ^^^
-                if not familia_pendent_de_mirar.get(codi, None) and codi!=u'pagament(s)':
+                if not familia_pendent_de_mirar.get(codi, None) or not familia_pendent_de_mirar[codi].exists():
                     familia_pendent_de_mirar[codi]= ( model
                                                         .objects
                                                         .filter( alumne__in = alumnes )
@@ -618,10 +618,11 @@ def dadesRelacioFamilies( request ):
                 for r in alumne.get_responsables():
                     if not r: continue
                     if not bool(r.motiu_bloqueig): bloquejat_text = []
-                    count = r.user_associat.LoginUsuari.filter(exitos=True).count()
+                    if r.get_user_associat(): count = r.get_user_associat().LoginUsuari.filter(exitos=True).count()
+                    else: count=0
                     nConnexions = nConnexions + count
                     if count > 0:
-                        dataDarreraConnexio.append(r.user_associat.LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment)
+                        dataDarreraConnexio.append(r.get_user_associat().LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment)
                 camp.multipleContingut = bloquejat_text + [ ( u'( {0} connexs. )'.format(nConnexions) , None, ), ]
                 if nConnexions > 0:
                     camp.multipleContingut.append( ( u'Darrera Connx: {0}'.format(  max(dataDarreraConnexio).strftime( '%d/%m/%Y' ) ), None, ) )
@@ -680,7 +681,7 @@ def canviParametres( request ):
         ('RALC', alumne.ralc),
         ('Responsable preferent', resps['respPre']),
         ('Responsable (altre)', resps['respAlt']),
-        ('Altres telèfons', ','.join(alumne.get_telefons())),
+        ('Altres telèfons', alumne.get_telefons()),
         ('Correu alumne', alumne.get_correu()),
     ]
         
@@ -943,13 +944,6 @@ def elMeuInforme( request, pk = None ):
     ara = datetime.now()
     notifAlumne=None
     revisAlumne=None
-    if not professor:
-        # Des de l'última revisió hi ha hagut notificacions?
-        ultrevi=ultimaRevisio(user, alumne)
-        ultnotif=ultimaNotificacio(user, alumne)
-        if not ultrevi or not ultnotif or ultrevi < ultnotif:
-            # Crea la revisió actual
-            revisAlumne=creaNotifUsuari(user, alumne, 'R')
     
     report = []
 
@@ -960,9 +954,8 @@ def elMeuInforme( request, pk = None ):
                                                         estat__isnull=False                                                          
                                                             )
         controlsNous, creaNotif = getNousElements(controls, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if controlsNous and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
             
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -1065,9 +1058,8 @@ def elMeuInforme( request, pk = None ):
     #----observacions --------------------------------------------------------------------
         observacions = alumne.incidencia_set.filter( tipus__es_informativa = True)
         observacionsNoves, creaNotif = getNousElements(observacions, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if observacionsNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
             
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -1142,9 +1134,8 @@ def elMeuInforme( request, pk = None ):
     #----incidències --------------------------------------------------------------------
         incidencies = alumne.incidencia_set.filter( tipus__es_informativa = False )
         incidenciesNoves, creaNotif = getNousElements(incidencies, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if incidenciesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
             
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -1225,9 +1216,8 @@ def elMeuInforme( request, pk = None ):
     #----Expulsions --------------------------------------------------------------------
         expulsions = alumne.expulsio_set.exclude( estat = 'ES' )
         expulsionsNoves, creaNotif = getNousElements(expulsions, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if expulsionsNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
             
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -1321,9 +1311,8 @@ def elMeuInforme( request, pk = None ):
     if detall in ['all', 'incidencies']:
         sancions = alumne.sancio_set.filter( impres = True )
         sancionsNoves, creaNotif = getNousElements(sancions, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if sancionsNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
             
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
@@ -1522,7 +1511,10 @@ def elMeuInforme( request, pk = None ):
 
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
-    pagquotesNoves = pagquotes.filter(pagament_realitzat=False)
+    pagquotesNoves, creaNotif = getNousElements(pagquotes.filter(pagament_realitzat=False), user)
+    if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+    if pagquotesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+
     infQuota=detall in ['all', 'sortides'] and (pagquotes or settings.CUSTOM_QUOTES_ACTIVES)
 
     titol_sortides = 'Activitats/Pagaments'
@@ -1541,9 +1533,8 @@ def elMeuInforme( request, pk = None ):
         activitats=sortidesnotificat.union(sortidespagadesnonotificades)
         
         sortidesNoves, creaNotif = getNousElements(sortides, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if sortidesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
         sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list( 'id', flat=True ).distinct()           
         sortides_justificades = alumne.sortides_falta_justificat.values_list( 'id', flat=True ).distinct()           
         
@@ -1677,9 +1668,9 @@ def elMeuInforme( request, pk = None ):
 
             # ----------------------------------------------
             if act.tipus_de_pagament == 'ON':
-                alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
-                    act.alumnes_justificacio.all())
-                alumne_tret_de_lactivitat = alumne in alumnat_tret_de_lactivitat
+                #alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
+                #    act.alumnes_justificacio.all())
+                alumne_tret_de_lactivitat = alumne in act.alumnes_que_no_vindran.all() or alumne in act.alumnes_justificacio.all() 
                 camp = tools.classebuida()
                 camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
                 #pagament corresponent a una sortida i un alumne
@@ -1757,38 +1748,40 @@ def elMeuInforme( request, pk = None ):
             taula.fileres = []
 
         for pagquota in pagquotes.order_by( '-quota__any', '-quota__dataLimit', 'dataLimit' ):
+            notificacio, revisio = pagquota.get_notif_revisio(user)
+            negreta = not bool( pagquota.pagamentFet )
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = naturalday(pagquota.getdataLimit)
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = ''       
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0}'.format( pagquota.quota.descripcio )        
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = pagquota.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagquota.data_hora_pagament and not pagquota.pagamentFet else ''
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.contingut = u'{0}'.format( notificacio )
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = pagquota.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagquota.data_hora_pagament and pagquota.pagamentFet else ''
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.contingut = u'{0}'.format( revisio )
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
@@ -1830,6 +1823,9 @@ def elMeuInforme( request, pk = None ):
 
             #--
             taula.fileres.append( filera )
+            if not semiImpersonat:
+                if not notificacio and not revisio: pagquota.set_notificacio(notifAlumne)
+                if not revisio: pagquota.set_revisio(revisAlumne)
     
         report.append(taula)
 
@@ -1847,9 +1843,8 @@ def elMeuInforme( request, pk = None ):
         
         respostes = alumne.respostaavaluacioqualitativa_set.filter( qualitativa__in = qualitatives_en_curs )
         respostesNoves, creaNotif = getNousElements(respostes, user)
-        if creaNotif:
-            if not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
-            if not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if respostesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
             
         assignatures = list(set( [r.assignatura for r in respostes] ))
         hi_ha_tipus_assignatura = ( bool(assignatures)

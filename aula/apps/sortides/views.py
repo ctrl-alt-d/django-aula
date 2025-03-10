@@ -1560,7 +1560,7 @@ def sortidaExcel(request, pk):
                 else ""
             ),
             ",".join(
-                filter(None, [alumne.rp1_mobil, alumne.rp2_mobil, alumne.telefons])
+                filter(None, [alumne.get_tots_telefons()])
             ),
             "No assisteix a la sortida" if alumne in no_assisteixen else "",
         ]
@@ -1701,10 +1701,10 @@ def generaOrdre(pagament):
     concatenat amb l'identificador de pagament (7 dígits)
     """
 
-    return (str(pagament.alumne.pk) + ("0000000" + str(pagament.pk))[-7:])[-12:]
+    return ("00000" + str(pagament.alumne.pk) + ("0000000" + str(pagament.pk))[-7:])[-12:]
 
 
-def esRecent(datahora, minuts=7):
+def esRecent(datahora, minuts=3):
     """
     Retorna True si la datahora és anterior en menys de minuts de l'hora actual.
     """
@@ -1728,6 +1728,21 @@ def logPagaments(txt, tipus="ADMINISTRACIO"):
     administradors = get_object_or_404(Group, name="administradors")
     msg.envia_a_grup(administradors, importancia=importancia)
 
+def demoAllIn(request, pagament):
+    if pagament.estat=="E" or not pagament.alumne: return
+    version = request.GET.get("Ds_SignatureVersion", "")
+    parameters = request.GET.get("Ds_MerchantParameters", "")
+    firma_rebuda = request.GET.get("Ds_Signature", "")
+    if version or parameters or firma_rebuda:
+        pagament.pagament_realitzat = True
+        pagament.data_hora_pagament = datetime.now()
+        pagament.ordre_pagament = generaOrdre(pagament)
+        pagament.estat = "F"
+        pagament.save()    
+
+def demo(request):
+    codi, _, entornReal = TPVsettings(request.user)
+    return "127.0.0.1:8000" in settings.URL_DJANGO_AULA and codi=='999008881' and not entornReal
 
 @login_required
 def pagoOnline(request, pk):
@@ -1745,6 +1760,11 @@ def pagoOnline(request, pk):
     nexturl = request.GET.get("next")
     if not nexturl:
         nexturl = "/"
+
+    # Simula el pagament per al cas DEMO amb runserver 127.0.0.1:8000
+    if demo(request):
+        demoAllIn(request, pagament)
+    
     if pagament.estat == "E":
         """
         Pagament erroni, es pot donar el cas si l'usuari ha obert diverses finestres de pagament
@@ -1800,21 +1820,15 @@ def pagoOnline(request, pk):
                 )
             else:
                 # es considera que ha caducat
-                #  Crea nou pagament
-                noup = clonePagament(pagament)
-                # logPagaments('Pagament caducat: '+str(pagament.pk)+' alumne: '+str(pagament.alumne.id))
+                # prepara el pagament per a reintentar
+                # TODO usuariResponsable
                 if not pagament.ordre_pagament and pagament.alumne:
                     # es genera ordre_pagament si fa falta
                     pagament.ordre_pagament = generaOrdre(pagament)
-                # marca com erroni
-                pagament.alumne = None
+                pagament.estat = ""
                 pagament.data_hora_pagament = datetime.now()
-                # guarda pagament caducat
                 pagament.save()
-                # Nou pagament
-                pagament = noup
-                pk = pagament.pk
-
+                
     if pagament.sortida:
         sortida = pagament.sortida
         preu = sortida.preu_per_alumne
@@ -2540,11 +2554,8 @@ def quotesCurs(request, curs, tipus, nany, auto):
             llistapag = []
             for a in llista:
                 pagaments = get_QuotaPagament(a, tipus, nany)
-                email = (
-                    a.correu_relacio_familia_pare
-                    if a.correu_relacio_familia_pare
-                    else a.correu_relacio_familia_mare
-                )
+                email = a.get_correus_relacio_familia()
+                if email: email=email[0]
                 if pagaments:
                     for pg in pagaments:
                         llistapag.append(
@@ -2641,11 +2652,8 @@ def quotesCurs(request, curs, tipus, nany, auto):
         llistapag = []
         for a in llista:
             pagaments = get_QuotaPagament(a, tipus, nany)
-            email = (
-                a.correu_relacio_familia_pare
-                if a.correu_relacio_familia_pare
-                else a.correu_relacio_familia_mare
-            )
+            email = a.get_correus_relacio_familia()
+            if email: email=email[0]
             if pagaments:
                 for pg in pagaments:
                     llistapag.append(

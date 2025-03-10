@@ -414,8 +414,7 @@ def novaActuacio(request):
                 request,
                 'formset.html',
                     {'formset': formset,
-                     'head': 'Actuació' ,
-                     'titol_formulari': u"Alta d'una nova actuació",
+                    'titol_formulari': u"Alta d'una nova actuació",
                     },
                 )
 
@@ -485,7 +484,6 @@ def editaActuacio(request, pk):
                 'formset.html',
                     {'formset': formset,
                      'infoForm': infoForm,
-                     'head': 'Actuació' ,
                      'titol_formulari': u"Edició d'una actuació",
                     },
                 )
@@ -1432,7 +1430,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         taula.fileres = []
 
-        resp1, resp2 = alumne.get_responsables()
+        resp1, resp2 = alumne.get_responsables(compatible=True)
         
             # ----nom------------------------------------------
         filera = []
@@ -1471,7 +1469,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(resp1.get_correu()) if resp1 else ''
+        camp.contingut = u'{0}'.format(resp1.get_correu_importat()) if resp1 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1537,7 +1535,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(resp2.get_correu()) if resp2 else ''
+        camp.contingut = u'{0}'.format(resp2.get_correu_importat()) if resp2 else ''
         filera.append(camp)
 
         taula.fileres.append(filera)
@@ -1576,7 +1574,7 @@ def detallTutoriaAlumne( request, pk , detall = 'all'):
 
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format(alumne.altres_telefons)
+        camp.contingut = alumne.get_telefons()
         filera.append(camp)
 
         taula.fileres.append(filera)

@@ -101,7 +101,6 @@ def sincronitza(f, user = None):
         resp1 = {}
         resp2 = {}
         #a.tutors = ''
-        #a.correu_tutors = ''
 
         for columnName, value in iter(row.items()):
             if bool(value) and isinstance(value, str):
@@ -253,7 +252,6 @@ def sincronitza(f, user = None):
             a.estat_sincronitzacio = 'S-I'
             a.data_alta = date.today()
             a.motiu_bloqueig = u'No sol·licitat'
-            a.tutors_volen_rebre_correu = False
 
             info_nAlumnesInsertats+=1
             AlumnesInsertats.append(a)
@@ -287,7 +285,6 @@ def sincronitza(f, user = None):
             a.foto = alumneDadesAnteriors.foto
             a.responsable_preferent = alumneDadesAnteriors.responsable_preferent
             a.observacions = alumneDadesAnteriors.observacions
-            a.tutors_volen_rebre_correu = False  #  TODO usuariResponsable a eliminar
             #el recuperem, havia estat baixa:
             if alumneDadesAnteriors.data_baixa:
                 info_nAlumnesInsertats+=1
@@ -303,7 +300,7 @@ def sincronitza(f, user = None):
         info_nResponsablesCreats += creaResponsables(a, [resp1, resp2])
         cursos.add(a.grup.curs)
         #DEPRECATED vvv
-        if alumneDadesAnteriors and not alumneDadesAnteriors.responsable_preferent:
+        if alumneDadesAnteriors and not alumneDadesAnteriors.responsable_preferent and alumneDadesAnteriors.responsables.exists():
             resp1, resp2 = a.get_responsables()
             if alumneDadesAnteriors.primer_responsable==1 and resp2: a.responsable_preferent = resp2
             else: a.responsable_preferent = resp1

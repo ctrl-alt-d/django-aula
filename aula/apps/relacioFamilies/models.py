@@ -45,7 +45,6 @@ class Responsable(models.Model):
     user_associat = models.OneToOneField(User , null=True, on_delete=models.SET_NULL)
     alumnes_associats = models.ManyToManyField(Alumne, related_name="responsables")
     correu_relacio_familia =  models.EmailField( u'Correu Notifi. Tutors', help_text = u'Correu de notificacions', blank=True)
-    relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
     periodicitat_faltes = models.IntegerField( choices = Alumne.PERIODICITAT_FALTES_CHOICES, blank=False,
                                                default = 1,
                                                help_text = u'Interval de temps mínim entre dues notificacions')
@@ -92,13 +91,13 @@ class Responsable(models.Model):
     def get_correu_importat(self):
         return self.correu
     
-    def get_correu(self):
+    def get_correu_relacio(self):
         return self.correu_relacio_familia
     
     def get_dades(self):
-        return "{0} ({1},{2}) {3}".format(self.get_nom(), self.get_telefon(), self.get_correu(),
+        return "{0} ({1},{2}) {3}".format(self.get_nom(), self.get_telefon(), self.get_correu_relacio(),
                         "Altres: {0}".format(self.get_correu_importat()) if bool(self.get_correu_importat()) and 
-                                                    self.get_correu_importat()!=self.get_correu() else '')
+                                                    self.get_correu_importat()!=self.get_correu_relacio() else '')
 
 from django.db.models.signals import post_delete, post_save
 from aula.apps.relacioFamilies.business_rules.docattach import docattach_post_delete

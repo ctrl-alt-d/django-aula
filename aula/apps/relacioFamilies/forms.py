@@ -43,11 +43,15 @@ class AlumneModelForm(forms.ModelForm):
     def __init__(self, tutor, *args, **kwargs):
         super(AlumneModelForm, self).__init__(*args, **kwargs)
         if tutor:
+            # TODO usuariResponsable compatibilitat
             responsables = self.instance.get_responsables()
-            responsable_choices = [(x.id, x.get_nom()) for x in responsables if x]
-            self.fields['responsable_preferent'] = forms.ChoiceField(choices=responsable_choices)
-            self.fields['responsable_preferent'].help_text = "Responsable preferent de l'alumne/a"
-            self.fields['responsable_preferent'].label = "Responsable preferent"
+            if not any(responsables):
+                self.fields.pop('responsable_preferent')
+            else:
+                responsable_choices = [(x.id, x.get_nom()) for x in responsables if x]
+                self.fields['responsable_preferent'] = forms.ChoiceField(choices=responsable_choices)
+                self.fields['responsable_preferent'].help_text = "Responsable preferent de l'alumne/a"
+                self.fields['responsable_preferent'].label = "Responsable preferent"
         else:
             self.fields.pop('responsable_preferent')
 
@@ -60,7 +64,11 @@ class AlumneModelForm(forms.ModelForm):
     
     def clean_responsable_preferent(self):
         respid=self.cleaned_data['responsable_preferent']
-        return Responsable.objects.get(id=respid)
+        try:
+            resp=Responsable.objects.get(id=respid)
+        except:
+            resp=None
+        return resp
 
     def save(self):
         #redimensionar i utilitzar ralc com a nom de foto
@@ -75,6 +83,10 @@ class ResponsableModelForm(forms.ModelForm):
                     'periodicitat_incidencies': None,
                     }
     
+    class Meta:
+        model = Responsable
+        fields = ['correu_relacio_familia', 'periodicitat_faltes', 'periodicitat_incidencies']
+        
     def __init__(self, prefix, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.custom_names={
@@ -88,10 +100,6 @@ class ResponsableModelForm(forms.ModelForm):
         field_name = self.custom_names.get(field_name, field_name)
         return super().add_prefix(field_name)
     
-    class Meta:
-        model = Responsable
-        fields = ['correu_relacio_familia', 'periodicitat_faltes', 'periodicitat_incidencies']
-
 class ChoiceFieldNoValidation(forms.ChoiceField):
     def validate(self, value):
         pass
@@ -128,6 +136,20 @@ class comunicatForm(forms.Form):
         self.fields['datainici'].widget = DataHoresAlumneAjax(id_selhores='horainici', almnid=alumne.id, id_dt_end='datafi', pd=primerdia, ud=ultimdia)
         self.fields['datafi'].widget = DataHoresAlumneAjax(id_selhores='horafi', almnid=alumne.id, pd=pdia, ud=udia)
 
+    def clean_observacions(self):
+        from itertools import groupby
+        import re
+        
+        motiu=self.cleaned_data['motiu']
+        observ=self.cleaned_data['observacions']
+        if motiu=="A" and not bool(observ):
+            raise forms.ValidationError('Si "Altres", s\'ha d\'explicar a observacions')
+        ncar=0
+        if bool(observ): ncar=len(list(groupby(sorted(re.sub(r'[^a-zA-Z]', '', observ)))))
+        if bool(observ) and ncar<5:
+            raise forms.ValidationError('Si us plau, afegeixi una mica més de detall a observacions')
+        return observ
+
     def clean(self):
         from aula.apps.horaris.models import FranjaHoraria
         cleaned_data = super().clean()
@@ -135,8 +157,6 @@ class comunicatForm(forms.Form):
         dataf=cleaned_data.get('datafi')
         horai=cleaned_data.get('horainici')
         horaf=cleaned_data.get('horafi')
-        motiu=cleaned_data.get('motiu')
-        observ=cleaned_data.get('observacions')
         if not bool(dataf):
             dataf=datai
             cleaned_data['datafi'] = dataf
@@ -168,8 +188,6 @@ class comunicatForm(forms.Form):
         if dataf==datai and horai!=horaf and not franjaf:
             self.add_error('horainici','Si dia complet no fa falta hora inici')
             return cleaned_data
-        if motiu=="A" and not observ:
-            self.add_error('observacions', 'Si "Altres", s\'ha d\'explicar a observacions' )
         cleaned_data['datainici'] = datai
         cleaned_data['datafi'] = dataf
         cleaned_data['horainici'] = horai

@@ -2,11 +2,15 @@
 
 {% block extrahead %} {% endblock %}
 
-{% block head %}
-  {{ head }}
-{% endblock %}
 
 {% block content  %}
+	{% block head %}
+		{% if head %}
+		<h2 style="margin-bottom: 25px;">{{ head }}</h2>
+		<p/>
+		<p/>
+		{% endif %}
+	{% endblock %}
   {% block preform  %}
 	  {% if missatge %}
 		  <div class="info">
@@ -48,7 +52,7 @@
 	          <p class="text-right hidden-xs"><label>{{ label }}:</label></p>
               <p class="visible-xs"><label>{{ label }}:</label></p>
 	        </div>
-	        <div class="col-sm-5 col-xs-12 ">      
+	        <div class="col-sm-8 col-xs-12 ">      
 	          {{ value }}
       		</div>
       	</div>
@@ -84,7 +88,7 @@
 				{% endif %}
               </p> 
 	        </div>
-	        <div class="col-sm-5 col-xs-12 tria_tag">
+	        <div class="col-sm-8 col-xs-12 tria_tag">
 	            {{ field }}
 
 		    {% else %}

@@ -226,16 +226,7 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     Si l'usuari (no alumne) s'ha connectat al Djau des de la data aleshores també rep el missatge
 
     '''
-
-    enviaUsuari=False
-    if usuari:
-        #  Si usuari s'ha connectat des de la data aleshores també se li comunica
-        connexions = usuari.LoginUsuari.filter(exitos=True).order_by( '-moment' )
-        if connexions.exists():
-            dataDarreraConnexio = connexions[0].moment
-            if dataDarreraConnexio>data:
-                enviaUsuari=True
-
+    
     missatge = MAIL_REBUTJAT
     tipus_de_missatge = tipusMissatge(missatge)
     missatge = missatge.format(str(usuari) if usuari else "desconegut", emailRetornat, str(data), motiu)
@@ -251,15 +242,6 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
                 tipus_de_missatge = tipus_de_missatge, enllac=url )
     for d in destinataris:
         msg.envia_a_usuari( d , 'VI')
-    if enviaUsuari:
-        try:
-            url=geturlconf('USU',usuari)
-        except:
-            url=''
-        if url!='':
-            msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
-                        tipus_de_missatge = tipus_de_missatge, enllac=url )
-            msg.envia_a_usuari( usuari , 'VI')
 
 def informaNoCorreus(destinataris,usuari,url):
     '''
@@ -305,110 +287,56 @@ def geturlconf(tipus,usuari):
         if al:
             url='/admin/alumnes/alumne/{0}/change/'.format(codi) if codi else '' # administrador per alumne pk
         else:
-            url='/admin/auth/user/{0}/change/'.format(codi) if codi else ''     # administrador per no alumne pk
+            url='/admin/auth/user/{0}/change/'.format(codi) if codi else ''     # administrador per usuari no alumne
     else:
-        if tipus=='TUT':
-            url='/open/configuraConnexio/{0}/'.format(codi) if al else '' # tutor per modificar alumne pk
+        if tipus=='TUT' and al:
+            url='/open/configuraConnexio/{0}/'.format(codi) if codi else '' # tutor per modificar alumne pk
         else:
-            if al:
-                url='' # '/open/canviParametres/'    # usuari alumne
-            else:
+            if tipus=='USU' and not al:
                 url='/usuaris/canviDadesUsuari/'   # usuari no alumne
+            else:
+                url=''
     return url
 
 def informa(emailRetornat, status, action, data, diagnostic, text):
     '''
-    Determina qui ha de rebre les notificacions d'email retornat
+    Envia notificacions per email retornat
     emailRetornat adreça que ha rebutjat el correu
     status codi d'error
     action actuació del servidor de correu
     data en la qual el servidor va rebre el correu
     diagnostic explicació del problema
     text  missatge del correu
-    Si el email retornat correspon a un alumne --> notifica al tutor
-    Si correspon a un altre --> notifica als administradors
+    Si l'email retornat correspon a un alumne o responsable --> notifica al tutor
+    Si correspon a un altre usuari --> notifica a l'usuari
+    En tots els casos, inclosos desconeguts, notifica als administradors
 
     '''
 
     motiu=status+" "+ action +" "+ diagnostic
-    # Fa recerca de l'usuari al text del missatge rebutjat
-    # Podria ser que l'adreça de correu correspongui a varis usuaris
-    pos=text.find("recoverPasswd")
-    if pos!=-1:
-        usuari=text[pos:].split("/")[1].strip()
-    else:
-        pos=text.find("nom d'usuari és")
-        if pos!=-1:
-            pos1=pos+len("nom d'usuari és")
-            pos2=text.find("Per qualsevol dubte que")
-            usuari=text[pos1:pos2].split(":")[1].strip()
-        else:
-            usuari=None
-
-    altre=None
     administradors = Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
-    if usuari is None:
-        #No s'ha pogut determinar l'usuari per el missatge
-        correus = (Q( correu_relacio_familia_pare = emailRetornat ) |
-            Q( correu_relacio_familia_mare = emailRetornat ) | Q(correu_tutors = emailRetornat) |
-            Q(rp1_correu = emailRetornat) | Q(rp2_correu = emailRetornat) | Q(correu = emailRetornat))
-        alumnes=Alumne.objects.filter(correus).filter(data_baixa__isnull = True).distinct()
-        if alumnes.exists():
-            #És un o varis alumnes
-            #Cada alumne amb el seu tutor
-            #envia a tots els tutors o administradors que corresponguin --> notifica usuari, email, motiu, data
-            for almn in alumnes:
-                if almn.correu_relacio_familia_pare == emailRetornat or almn.correu_relacio_familia_mare == emailRetornat:
-                    # És un correu de tutoria
-                    tutors=almn.tutorsDelGrupDeLAlumne()
-                    informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
-                            geturlconf('TUT',almn.get_user_associat()))
-                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                               geturlconf('ADM',almn.get_user_associat()))
-                else:
-                    # És un altre correu de l'usuari
-                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                            geturlconf('ADM',almn.get_user_associat()))
-            return
-        else:
-            # No és alumne
-            altre=User.objects.filter(email = emailRetornat)
-            altre=altre[0] if altre.exists() else None
-    else:
-        altre=User.objects.filter(username = usuari)
-        if altre.exists():
-            altre=altre[0]
-            almn=AlumneUser(pk=altre.pk).getAlumne()
-            if almn and not almn.esBaixa():
-                #és un alumne
-                if almn.correu_relacio_familia_pare == emailRetornat or almn.correu_relacio_familia_mare == emailRetornat:
-                    # És un correu de tutoria
-                    # determina tutor, notifica al tutor usuari, email, motiu
-                    tutors=almn.tutorsDelGrupDeLAlumne()
-                    informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
-                               geturlconf('TUT',almn.get_user_associat()))
-                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                               geturlconf('ADM',almn.get_user_associat()))
-                else:
-                    if almn.correu_tutors == emailRetornat or almn.rp1_correu == emailRetornat or \
-                         almn.rp2_correu == emailRetornat or almn.correu == emailRetornat:
-                        # És un altre correu de l'usuari
-                        informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                                   geturlconf('ADM',almn.get_user_associat()))
-                return
-            else:
-                if altre.email!=emailRetornat:
-                    # El correu ja s'ha corregit
-                    return
-
-        else:
-            # Usuari inexistent
-            altre=None
-            motiu="Desconegut "+usuari+"\n"+motiu
-    #no és un alumne, envia notificació a administradors
-    #notificació usuari, email, motiu, data
-    informaDSN(administradors,altre,emailRetornat,motiu,data,geturlconf('ADM',altre))
-
+    correus = (Q( correu = emailRetornat ) | Q( responsables__correu_relacio_familia = emailRetornat))
+    alumnes=Alumne.objects.filter(correus).filter(data_baixa__isnull = True).distinct()
+    for almn in alumnes:
+        # És un correu d'alumne o responsable
+        tutors=almn.tutorsDelGrupDeLAlumne()
+        informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
+                geturlconf('TUT',almn.get_user_associat()))
+        informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
+                   geturlconf('ADM',almn.get_user_associat()))
+    
+    altres=User.objects.filter(email = emailRetornat)
+    if altres.exists():
+        # És un correu d'usuari no alumne ni responsable
+        for usuari in altres:
+            informaDSN(usuari,usuari,emailRetornat,motiu,data,
+                    geturlconf('USU',usuari))
+            informaDSN(administradors,usuari,emailRetornat,motiu,data,
+                       geturlconf('ADM',usuari))
+    if not alumnes.exists() and not altres.exists():
+        # És desconegut, pot correspondre a casos d'alumnes en procés de matrícula
+        informaDSN(administradors,None,emailRetornat,motiu,data, geturlconf('ADM',None))
+    
 def setUltimControl(num):
     '''
     Registra a la base de dades una Accio amb el número de l'últim
@@ -829,7 +757,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
             send_mail(assumpte,
                       u'\n'.join( missatge ),
                       fromuser,
-                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ],
+                      correusFamilia,
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
@@ -928,6 +856,9 @@ def ultimaNotificacio(usuari, alumne):
     retorna la data-hora de l'última notificació o
     retorna None si no existeix
     '''
+    if usuari: ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N').order_by('-moment').first()
+    else: ultima=NotifUsuari.objects.filter(alumne=alumne, tipus='N').order_by('-moment').first()
+    if ultima: return ultima.moment
     #DEPRECATED vvv
     # Per compatibilitat amb dades existents
     try:
@@ -936,20 +867,6 @@ def ultimaNotificacio(usuari, alumne):
     except:
         pass
     #DEPRECATED ^^^
-    if usuari: ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N').order_by('-moment').first()
-    else: ultima=NotifUsuari.objects.filter(alumne=alumne, tipus='N').order_by('-moment').first()
-    if ultima: return ultima.moment
-    return None
-
-def ultimaRevisio(usuari, alumne):
-    '''
-    usuari responsable o alumne
-    alumne gestionat
-    retorna la data-hora de l'última revisió
-    retorna None si no existeix
-    '''
-    ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='R').order_by('-moment').first()
-    if ultima: return ultima.moment
     return None
 
 def set_notificacio(element, notificacio, tipus='N'):
@@ -967,18 +884,24 @@ def get_notif_revisio(element, usuari, fmt_data=None):
     Retorna str, str amb notificació, revisió de l'usuari
     '''
     if not fmt_data: fmt_data='%d/%m/%Y %H:%M'
+    revisc=notifc=''
     #DEPRECATED vvv
     # Per compatibilitat amb dades existents
     try:
-        if element.relacio_familia_revisada:
-            notif=revis=''
+        if hasattr(element, "data_hora_pagament"):
+            if element.data_hora_pagament:
+                #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                if element.pagament_realitzat:
+                    revisc=element.data_hora_pagament.strftime(fmt_data)
+                else:
+                    notifc=element.data_hora_pagament.strftime(fmt_data)
+        else:
             if element.relacio_familia_revisada:
-                revis=element.relacio_familia_revisada.strftime(fmt_data)
+                revisc=element.relacio_familia_revisada.strftime(fmt_data)
             if element.relacio_familia_notificada:
-                notif=element.relacio_familia_notificada.strftime(fmt_data)
+                notifc=element.relacio_familia_notificada.strftime(fmt_data)
             else:
-                notif=revis
-            return notif, revis
+                notifc=revisc
     except:
         pass
     #DEPRECATED ^^^
@@ -989,8 +912,8 @@ def get_notif_revisio(element, usuari, fmt_data=None):
         notif = element.notificacions_familia.filter(usuari=usuari, tipus='N').order_by('-moment').first()
         revis = element.notificacions_familia.filter(usuari=usuari, tipus='R').order_by('-moment').first()
     if notif: notif=notif.moment.strftime(fmt_data)
-    else: notif=''
+    else: notif=notifc
     if revis: revis=revis.moment.strftime(fmt_data)
-    else: revis=''
+    else: revis=revisc
     return notif, revis
     

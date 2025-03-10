@@ -469,7 +469,6 @@ def activaAlumne(al):
     
     al.estat_sincronitzacio = 'MAN'
     al.motiu_bloqueig = ''
-    al.tutors_volen_rebre_correu = True
     if not al.data_alta or al.data_baixa: 
         al.data_alta = django.utils.timezone.now()
         al.data_baixa = None
@@ -630,7 +629,7 @@ def alumne2Mat(alumne, nany=None, p=None):
         mat.estat='A'
         mat.acceptar_condicions=False
         # if p:
-        #     # TODO L'alumne ja s'ha creat abans, no fa falta recuperar les dades de la preinscripció, ?
+        #     # TODO usuariResponsable L'alumne ja s'ha creat abans, no fa falta recuperar les dades de la preinscripció, ?
         #     p=p[0]
         #     mat.nom=p.nom
         #     mat.cognoms=p.cognoms
@@ -653,7 +652,7 @@ def alumne2Mat(alumne, nany=None, p=None):
         mat.localitat=alumne.localitat if alumne.localitat else alumne.municipi
         mat.cp=alumne.cp
         mat.curs=alumne.grup.curs  # Curs actual
-        resp1, resp2=alumne.get_responsables()
+        resp1, resp2=alumne.get_responsables(compatible=True)
         if resp1:
             mat.rp1_dni=resp1.dni
             mat.rp1_nom=resp1.nom

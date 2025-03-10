@@ -163,15 +163,17 @@ class AbstractAlumne(models.Model):
     motiu_bloqueig = models.CharField(max_length=250, blank=True)
 
     #DEPRECATED vvv
-    tutors_volen_rebre_correu = models.BooleanField()
+    tutors_volen_rebre_correu = models.BooleanField(null=True)
     #DEPRECATED ^^^
 
     centre_de_procedencia = models.CharField(max_length=250, blank=True)
     localitat = models.CharField(max_length=240, blank=True)
     municipi = models.CharField(max_length=240, blank=True)
     cp = models.CharField(max_length=240, blank=True)
+    #DEPRECATED vvv
     telefons = models.CharField(max_length=250, blank=True, db_index=True)
     tutors = models.CharField(max_length=250, blank=True)
+    #DEPRECATED ^^^
     adreca = models.CharField(max_length=250, blank=True)
     correu = models.CharField(max_length=240, blank=True)
 
@@ -263,8 +265,8 @@ class AbstractAlumne(models.Model):
         super(AbstractAlumne,self).delete()
         
     def esta_relacio_familia_actiu(self):
-        # TODO majors o menors d'edat
-        TeCorreuPare_o_Mare = bool(self.get_correus_relacio_familia())
+        # Si és major d'edat, no fa falta correus_relacio_familia
+        TeCorreuPare_o_Mare = bool(self.get_correus_relacio_familia()) or self.edat()>=18
         usuariActiu = self.get_user_associat() is not None and self.user_associat.is_active
         usuariActiu = usuariActiu or any(self.responsablesActius())
         return TeCorreuPare_o_Mare and usuariActiu
@@ -276,16 +278,16 @@ class AbstractAlumne(models.Model):
         return self.correu
     
     def get_correus_relacio_familia(self):
-        return [ x.correu_relacio_familia for x in self.get_responsables() if x and x.correu_relacio_familia ]
+        return [ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if x and x.correu_relacio_familia ]
 
     def get_correus_tots(self):
         tots=self.get_correus_relacio_familia()
-        tots=tots+[ x.correu for x in self.get_responsables() if x and x.correu ]
+        tots=tots+[ x.correu for x in self.get_responsables(compatible=True) if x and x.correu ]
         tots=tots+[ self.get_correu() ]
         return tots
     
     def get_telefons(self):
-        return [ t for t in [self.telefons, self.altres_telefons] if t ]
+        return u", ".join([ t for t in [self.telefons, self.altres_telefons] if t ])
     
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None
@@ -356,7 +358,7 @@ class AbstractAlumne(models.Model):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
     
-    def get_responsables(self, rp1_dni=None, rp2_dni=None):
+    def get_responsables(self, rp1_dni=None, rp2_dni=None, compatible=False):
         '''
         Selecciona els responsables de l'alumne que corresponen
         als dnis indicats.
@@ -364,8 +366,45 @@ class AbstractAlumne(models.Model):
         existents de l'alumne, en aquest cas el primer és el preferent.
         retorna els 2 responsables, poden ser None si no existeixen.
         '''
+        from django.apps import apps
+        
         if not bool(rp1_dni) and not bool(rp2_dni):
             responsables=list(self.responsables.all())
+            #DEPRECATED vvv
+            if not responsables and compatible:
+                # TODO usuariResponsable cas compatibilitat
+                Responsable=apps.get_model('relacioFamilies', 'Responsable')
+                resp1=resp2=None
+                if self.rp1_nom or self.rp1_correu or self.rp1_mobil or self.rp1_telefon or self.correu_relacio_familia_pare:
+                    if "," in self.rp1_nom:
+                        cognoms, nom = self.rp1_nom.split(",")
+                        nom = nom.strip()
+                        cognoms = cognoms.strip()
+                    else:
+                        nom = self.rp1_nom
+                        cognoms = ''
+                    resp1=Responsable(nom=nom, cognoms=cognoms, correu=self.rp1_correu, 
+                                      telefon=self.rp1_mobil or self.rp1_telefon,
+                                      correu_relacio_familia = self.correu_relacio_familia_pare,
+                                      periodicitat_faltes = self.periodicitat_faltes,
+                                      periodicitat_incidencies = self.periodicitat_incidencies)
+                if self.rp2_nom or self.rp2_correu or self.rp2_mobil or self.rp2_telefon or self.correu_relacio_familia_mare:
+                    if "," in self.rp2_nom:
+                        cognoms, nom = self.rp2_nom.split(",")
+                        nom = nom.strip()
+                        cognoms = cognoms.strip()
+                    else:
+                        nom = self.rp2_nom
+                        cognoms = ''
+                    resp2=Responsable(nom=nom, cognoms=cognoms, correu=self.rp2_correu, 
+                                      telefon=self.rp2_mobil or self.rp2_telefon,
+                                      correu_relacio_familia = self.correu_relacio_familia_mare,
+                                      periodicitat_faltes = self.periodicitat_faltes,
+                                      periodicitat_incidencies = self.periodicitat_incidencies)
+                if self.primer_responsable==1:
+                    resp1, resp2 = resp2, resp1
+                return resp1, resp2
+            #DEPRECATED ^^^
             # Ha de retornar 2 elements, afegeix None
             for i in range(len(responsables),2):
                 responsables.append(None)
@@ -375,10 +414,13 @@ class AbstractAlumne(models.Model):
         resp1=self.responsables.filter(dni=rp1_dni).first()
         resp2=self.responsables.filter(dni=rp2_dni).first()
         return resp1, resp2
+
+    def get_telefons_responsables(self):
+        return [ x.get_telefon() for x in self.get_responsables(compatible=True) if x and x.get_telefon() ]
     
     def get_dades_responsables(self):
         dades={}
-        resp1, resp2 = self.get_responsables()
+        resp1, resp2 = self.get_responsables(compatible=True)
         dades['respPre']=resp1.get_dades() if resp1 else ''
         dades['respAlt']=resp2.get_dades() if resp2 else ''
         return dades

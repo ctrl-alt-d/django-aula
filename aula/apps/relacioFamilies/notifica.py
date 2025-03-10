@@ -49,7 +49,7 @@ def notifica_pendents():
     # tanca la connexió
     connection.close()
     
-def getNousElements(elements, usuari, alumne):
+def getNotifElements(elements, usuari, alumne):
     '''
     Busca elements que tenen pendent la notificació a aquest usuari i alumne
     elements  Query amb els elements a comprovar si n'hi ha de nous, és a dir, no notificats.
@@ -57,11 +57,19 @@ def getNousElements(elements, usuari, alumne):
     alumne    Alumne al que pertanyen els elements
     Retorna   Query amb els elements no notificats trobats.
     '''
+    #DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        elements = elements.exclude( relacio_familia_notificada__isnull = False )
+    except:
+        pass
+    #DEPRECATED ^^^
     Nous = elements.exclude(notificacions_familia__usuari = usuari, notificacions_familia__alumne = alumne)
     return Nous
 
 def setNotifElements(elements, notificacio):
     '''
+    Registra les notificacions als elements indicats
     '''
     for e in elements:
         e.set_notificacio(notificacio)
@@ -78,7 +86,7 @@ def notifica():
     from django.core.mail import send_mail, EmailMessage
     from aula.apps.usuaris.models import Accio
     num_correus_no_enviats=0
-
+    enviats=0
     urlDjangoAula = settings.URL_DJANGO_AULA
     textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL
     
@@ -96,6 +104,9 @@ def notifica():
     #Missatges pendents
     notifica_pendents()
 
+    # Notifica als tutors els casos d'alumnes sense correu informat
+    notificaSenseCorreus()
+    
     #Notificacions        
     ara = datetime.now()
     
@@ -128,25 +139,25 @@ def notifica():
 
             for usuari, tipus in destinataris:
                 # TODO usuariResponsable distingir cas Responsable de cas Alumne o related_name
-                if tipus=='almn':
+                if tipus=='almn' and usuari:
                     relacio_familia_darrera_notificacio = ultimaNotificacio(usuari, alumne)
                     periodicitat_faltes = usuari.alumne.periodicitat_faltes
                     periodicitat_incidencies = usuari.alumne.periodicitat_incidencies
                     correu = usuari.alumne.get_correu()
                     adreca_mail_informada = bool( correu )
                     app_instalada = alumne.qr_portal_set.exists()
-                else:
+                elif tipus=='resp' and usuari:
                     relacio_familia_darrera_notificacio = ultimaNotificacio(usuari, alumne)
                     periodicitat_faltes = usuari.responsable.periodicitat_faltes
                     periodicitat_incidencies = usuari.responsable.periodicitat_incidencies
-                    correu = usuari.responsable.get_correu()
+                    correu = usuari.responsable.get_correu_relacio()
                     adreca_mail_informada = bool( correu )
                     #app_instalada = alumne.qr_portal_set.exists()
+                else: continue
     
                 fa_n_dies = ara - timedelta(  days = periodicitat_faltes )
-                noves_sortides = getNousElements(NotificaSortida.objects.filter( alumne = alumne), usuari, alumne)
+                noves_sortides = getNotifElements(NotificaSortida.objects.filter( alumne = alumne), usuari, alumne)
                 if settings.CUSTOM_QUOTES_ACTIVES:
-                    #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
                     fa7dies = ara - timedelta( days = 7 )
                     en7dies = ara + timedelta( days = 7 )
                     '''
@@ -154,16 +165,16 @@ def notifica():
                     la data límit ja ha passat o falten menys de 7 dies.
                     '''
                     nous_pagaments = QuotaPagament.objects.filter(
-                        Q(data_hora_pagament__isnull=True) | (Q(data_hora_pagament__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
-                        alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False)
+                            Q(notificacions_familia__moment__isnull=True) | (Q(notificacions_familia__moment__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
+                            alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False)
                 else:
                     nous_pagaments = QuotaPagament.objects.none()
-                noves_incidencies = getNousElements(alumne.incidencia_set.all(), usuari, alumne)
-                noves_expulsions = getNousElements(alumne.expulsio_set.exclude( estat = 'ES'), usuari, alumne)
-                noves_sancions = getNousElements(alumne.sancio_set.filter( impres=True ), usuari, alumne)
-                noves_faltes_assistencia = getNousElements(ControlAssistencia.objects.filter( alumne = alumne, 
+                noves_incidencies = getNotifElements(alumne.incidencia_set.all(), usuari, alumne)
+                noves_expulsions = getNotifElements(alumne.expulsio_set.exclude( estat = 'ES'), usuari, alumne)
+                noves_sancions = getNotifElements(alumne.sancio_set.filter( impres=True ), usuari, alumne)
+                noves_faltes_assistencia = getNotifElements(ControlAssistencia.objects.filter( alumne = alumne, 
                                                                               estat__pk__in = presencies_notificar ), usuari, alumne)
-                noves_respostes_qualitativa = getNousElements( alumne
+                noves_respostes_qualitativa = getNotifElements( alumne
                                                 .respostaavaluacioqualitativa_set
                                                 .filter( qualitativa__in = qualitatives_en_curs ),
                                                 usuari, alumne)
@@ -224,6 +235,7 @@ def notifica():
                         )
                         email.send(fail_silently=False)
                         enviatOK = True
+                        enviats += 1
                     except:
                         if settings.DEBUG:
                             print (u'Error enviant missatge a {0}'.format( usuari ))
@@ -240,9 +252,7 @@ def notifica():
                 if enviatOK:                    
                     notifAlumne=creaNotifUsuari(usuari, alumne, 'N')
                     setNotifElements(noves_sortides, notifAlumne)
-                    # TODO usuariResponsable Pagaments necessita notificacions separades
-                    #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
-                    nous_pagaments.update( data_hora_pagament = ara )
+                    setNotifElements(nous_pagaments, notifAlumne)
                     setNotifElements(noves_incidencies, notifAlumne)
                     setNotifElements(noves_expulsions, notifAlumne)
                     setNotifElements(noves_sancions, notifAlumne)
@@ -261,7 +271,7 @@ def notifica():
         except ObjectDoesNotExist:
             pass
     # si hi ha correus que han fallat informar a l'admin
-
+    print("Enviats:", enviats)
     if num_correus_no_enviats > 0:
         raise Exception(u"No s'han pogut enviar {} missatges a famílies.".format(num_correus_no_enviats))
 
@@ -365,6 +375,37 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
 
     return correctes, 0, []
 
+def notificaSenseCorreus():
+    '''
+    Notifica als tutors els alumnes que no tenen cap email informat.
+    Cada alumne ha de tenir correu_relacio_familia d'un dels responsables o correu propi si és major d'edat.
+    Retorna Query amb els alumnes sense correu.
+    '''
+    
+    from aula.apps.alumnes.models import Alumne
+    from django.db.models import Q
+    from datetime import datetime
+      
+    ara = datetime.now()
+    q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
+    
+    # Notifica als tutors els alumnes que no tenen cap email
+    #DEPRECATED vvv
+    if not Alumne.objects.filter(responsables__correu_relacio_familia__isnull = False).exists():
+        return Alumne.objects.none()
+    #DEPRECATED ^^^
+    alumnesSenseCorreu=Alumne.objects.filter(q_no_es_baixa).exclude(responsables__correu_relacio_familia__isnull = False)
+    alumnesMajorsEdat=[]
+    if alumnesSenseCorreu.exists():
+        for a in alumnesSenseCorreu:
+            if a.edat()>=18 and a.correu:
+                # És major d'edat i té correu propi
+                alumnesMajorsEdat.append(a.id)
+                continue
+            tutors=a.tutorsDelGrupDeLAlumne()
+            informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
+    return alumnesSenseCorreu.exclude(id__in=alumnesMajorsEdat)
+
 def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     '''Envia email a tots els correus d'alumnes
     
@@ -381,23 +422,14 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
     
-    # Notifica als tutors els alumnes que no tenen cap email
-    # TODO usuariResponsable casos majors i menors d'edat i autoritzacions
-    alumnesSenseCorreu=Alumne.objects.filter(q_no_es_baixa).exclude(responsables__correu_relacio_familia__isnull = False)
-
-    if alumnesSenseCorreu.exists():
-        for a in alumnesSenseCorreu:
-            tutors=a.tutorsDelGrupDeLAlumne()
-            informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
-
-    correus_alumnes = Alumne.objects.filter(q_no_es_baixa).values_list('responsables__correu_relacio_familia')
+    sense_correu = notificaSenseCorreus()
+    correus_alumnes = Alumne.objects.filter(q_no_es_baixa).difference(sense_correu)\
+                                .values_list('responsables__correu_relacio_familia', 'correu')
     
     # crea llista de correus
-    correus_alumnes=[item for sublist in list(correus_alumnes) for item in sublist]
+    correus_alumnes=[item for sublist in list(correus_alumnes) for item in sublist if item]
     # elimina repetits
-    correus_alumnes=list(dict.fromkeys(correus_alumnes))
-    # elimina buit
-    correus_alumnes.remove('')
+    correus_alumnes=list(set(correus_alumnes))
 
     connection = mail.get_connection()
     # Obre la connexió

@@ -19,11 +19,14 @@ from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.alumnes.gestioGrups import grupsPotencials
 from aula.apps.presencia.regeneraImpartir import regeneraThread
-from aula.apps.presencia.models import Impartir, EstatControlAssistencia
+from aula.apps.presencia.models import Impartir, EstatControlAssistencia, ControlAssistencia
 
 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
 from aula.utils.tools import unicode
 from aula.apps.relacioFamilies.models import Responsable
+from aula.apps.sortides.models import TPV, Quota, TipusQuota, Pagament
+from django.conf import settings
+from django.db.models import F, Value
 
 def fesCarrega( ):
     msg = u""
@@ -60,8 +63,8 @@ def fesCarrega( ):
                          )
 
     print (u"#GENEREM FITXERS DE DADES  ")                        
-    generaFitxerSaga(fitxerSaga, nivellsCursosGrups, override=True  )
-    generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes, override=True )
+    generaFitxerSaga(fitxerSaga, nivellsCursosGrups, override=False  )
+    generaFitxerKronowin( fitxerKronowin, nivellsCursosGrups, nivellsMatins=['ESO',], frangesMatins = frangesMatins, frangesTardes  = frangesTardes, override=False )
     
     print (u"#CREEM NIVELL-CURS-GRUP")
     handlerKronowin=open( fitxerKronowin, 'r' )
@@ -141,6 +144,16 @@ def fesCarrega( ):
                 afegeix.start()
                 afegeix.join()
     
+    # Passa llista a tothom
+    present = EstatControlAssistencia.objects.get( codi_estat = "P" )
+    for ca in ControlAssistencia.objects.filter( impartir__dia_impartir__lt = date.today() ):
+        ca.estat = present
+        ca.professor = ca.impartir.horari.professor
+        ca.save()
+        ca.impartir.professor_passa_llista = ca.impartir.horari.professor
+        ca.impartir.dia_passa_llista = ca.impartir.dia_impartir
+        ca.impartir.save()
+    
     print ("posem unes quantes faltes d'assistència")
     alumnes_faltons = random.sample( list(Alumne.objects.all()), 20 )
     falta = EstatControlAssistencia.objects.get( codi_estat = "F" )
@@ -153,6 +166,18 @@ def fesCarrega( ):
             ca.impartir.dia_passa_llista = date.today()
             ca.impartir.save()
 
+    print("preparant configuració de matrícula")
+    tpv=TPV(None, "centre", settings.CUSTOM_CODI_COMERÇ, settings.CUSTOM_KEY_COMERÇ, "Pagaments al centre", False)
+    tpv.save()
+    for tipus in ["material", "taxes", "taxcurs", "uf"]:
+        tq=TipusQuota(None, tipus)
+        tq.save()
+    q=Quota(None, 10, date.today() + relativedelta( days = 30 ), inici_curs.year, "Material escolar", None, tpv.id, TipusQuota.objects.get(nom="material").id)
+    q.save()
+    q=Quota(None, 360, None, inici_curs.year, "Taxes cicles FP", None, tpv.id, TipusQuota.objects.get(nom="taxcurs").id)
+    q.save()
+    q=Quota(None, 25, None, inici_curs.year, "Taxa UF", None, tpv.id, TipusQuota.objects.get(nom="uf").id)
+    q.save()
 
     print (u"canviant dades dels professors")
     for p in Professor.objects.all():
@@ -171,10 +196,19 @@ def fesCarrega( ):
             
     print (u"canviant dades dels alumnes")
     for p in Alumne.objects.all():
+        nomfitxer=os.path.join(settings.PROJECT_DIR, settings.STATIC_ROOT, 'demo/al'+str(p.id%12+1)+'.jpg')
+        nomnou='foto_almn_'+str(p.ralc)+'.jpg'
+        f=obrirFoto(nomfitxer, nomnou)
+        p.foto=f
+        p.save()
+        f.close()
         p.get_user_associat().set_password( 'djAu' )
         p.get_user_associat().is_active = True
         p.get_user_associat().save()
         
+    # TODO usuariResponsable
+    # Activació de matrícula
+    
     msg += "\nResponsables rang: " + u" - ".join( sorted( set( [ unicode( Responsable.objects.order_by('id').first().get_user_associat().username ),
                                                           unicode( Responsable.objects.order_by('id').last().get_user_associat().username )
                                                           ] ) ) )
@@ -186,3 +220,18 @@ def fesCarrega( ):
         
     return msg
 
+def obrirFoto(fitxer, new_file_name):
+    from PIL import Image
+    import io
+    from django.core.files.uploadedfile import InMemoryUploadedFile
+    
+    img = Image.open(fitxer)
+    thumb_io = io.BytesIO()
+    img.save(thumb_io, 'jpeg')
+    file = InMemoryUploadedFile(thumb_io,
+                                u"foto",
+                                new_file_name,
+                                'image/jpeg',
+                                thumb_io.getbuffer().nbytes,
+                                None)
+    return file

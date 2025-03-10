@@ -26,7 +26,7 @@ class CursAdmin(admin.ModelAdmin):
 
 class AlumnesInLine(admin.TabularInline):
     model = Alumne
-    fields = ('nom', 'cognoms','tutors_volen_rebre_correu','telefons','tutors')
+    fields = ('nom', 'cognoms','correu','telefons','tutors')
     extra = 0
     def delete(self):
         return "No es poden esborrar alumnes manualment"

@@ -173,7 +173,6 @@ def crea_alumne(nom, cognoms, dataNaixement, grup):
     a.estat_sincronitzacio = 'MAN'
     a.data_alta = date.today()
     a.motiu_bloqueig = u'No sol·licitat'
-    a.tutors_volen_rebre_correu = False
     a.save()
 
 def controlsRang(alumne, datai, horai, dataf, horaf):

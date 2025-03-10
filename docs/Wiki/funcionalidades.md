@@ -69,6 +69,15 @@ Buscador de profesores y alumnos.
 
 ![](.gitbook/assets/7.png)
 
+Una activitat té 4 estats: "Esborrany", "Proposada", "Revisada pel Coordinador", "Gestionada pel Cap d'estudis". I els punts pels quals pot passar una activitat són tres:
+
+1- Un professor qualsevol crea una sortida. En crear-la té l'estat "Esborrany". Si el professor/a no té clar tots els camps de la sortida, no la canvia d'estat. Continua treballant sobre la mateixa fins que tots els camps estiguin decidits. Una vegada ho tingui tot, el mateix professor/a la passa a estat "Proposada".
+En aquests estats ("Esborrany" o "Proposada"), el professor/a pot modificar gairebé tots els camps, però n'hi ha alguns que no els pot omplir/modificar perquè no té privilegis, com és el cas d'"Aprovació pel Consell Escolar", per exemple. Les famílies no reben, encara, cap notificació relativa a l'activitat.
+
+2- El coordinador/a d'activitats revisa l'activitat que està proposada. N'hi ha una sèrie de camps que haurà d'omplir, que són els que el professorat no ha pogut omplir per falta de privilegis. En aquest punt, el coordinador/a passa l'activitat a "Revisada pel Coordinador". És llavors, quan les famílies reben una notificació indicant que hi ha una activitat nova. En aquest punt, el professorat encara pot afegir/treure alumnat a l'activitat.
+
+3- El/la Cap d'estudis pot revisar l'activitat i passar-la a l'estat "Gestionada pel Cap d'estudis". En aquest punt el professorat no pot afegir/treure alumnat a l'activitat. Aquest estat no afecta en res a les famílies, només és una forma de deixar "tancada" l'activitat i que el professorat no pugui modificar res.
+
 ### 
 
 ### **Mensajería**

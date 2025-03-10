@@ -324,6 +324,7 @@ class Pagament(models.Model):
         'F' Finalitzat. Pagament correctament finalitzat.
     '''
     estat = models.CharField(max_length=1, blank=True, null=True, default='')
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
     
     def __str__(self):
         return u"Pagament realitzat per l'alumne {}: {}".format( self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
@@ -342,6 +343,18 @@ class Pagament(models.Model):
     def getdataLimit(self):
         return self.dataLimit if self.fracciona or self.dataLimit else self.quota.dataLimit if self.quota else \
             self.sortida.termini_pagament if self.sortida else ''
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
     
 class QuotaPagamentManager(models.Manager):
     def get_queryset(self):
