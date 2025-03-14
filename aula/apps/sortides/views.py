@@ -246,7 +246,11 @@ def sortidesMevesList(request, tipus="A"):
     ).distinct()
     if tipus:
         sortides = sortides.filter(tipus=tipus)
-    table = Table2_Sortides(list(sortides), origen="Meves")
+    
+    mes_de_10 = sortides.count() > 10
+    filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
+        
+    table = Table2_Sortides(list(filter.qs), origen="Meves")
     if tipus == "P":
         table.exclude = (
             "ciutat",
@@ -261,6 +265,7 @@ def sortidesMevesList(request, tipus="A"):
     RequestConfig(
         request, paginate={"paginator_class": DiggPaginator, "per_page": 10}
     ).configure(table)
+    
     return render(
         request,
         "lesMevesSortides.html",
@@ -268,6 +273,7 @@ def sortidesMevesList(request, tipus="A"):
             "table": table,
             "value": dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[tipus],
             "tipus": tipus,
+            'filter': filter if mes_de_10 else None,
         },
     )
 
@@ -282,7 +288,8 @@ def sortidesAllList(request, tipus=None):
     sortides = Sortida.objects.distinct()
     if tipus:
         sortides = sortides.filter(tipus=tipus)
-        
+    
+    mes_de_10 = sortides.count() > 10
     filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
 
     table = Table2_Sortides(data=filter.qs, origen="All")
@@ -311,8 +318,8 @@ def sortidesAllList(request, tipus=None):
         "table2.html",
         {
             "table": table,
-            "filter": filter,
             "url": url,
+            'filter': filter if mes_de_10 else None,
         },
     )
 
@@ -355,10 +362,13 @@ def sortidesGestioList(request, tipus=None):
     if socSecretari and settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
         sortides = sortides.filter(tipus_de_pagament="ON")
 
+    mes_de_10 = sortides.count() > 10
+    filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
+
     if socAdministratiu:
-        table = Table2_Sortides(data=list(sortides), origen="Administratiu")
+        table = Table2_Sortides(data=list(filter.qs), origen="Administratiu")
     else:
-        table = Table2_Sortides(data=list(sortides), origen="Gestio")
+        table = Table2_Sortides(data=list(filter.qs), origen="Gestio")
 
     if tipus == "P":
         table.exclude = (
@@ -383,6 +393,7 @@ def sortidesGestioList(request, tipus=None):
         {
             "table": table,
             "url": url,
+            'filter': filter if mes_de_10 else None,
         },
     )
 

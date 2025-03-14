@@ -36,16 +36,16 @@ class SortidaFilter(django_filters.FilterSet):
     )
 
     data_inici_desde = django_filters.DateFilter(
-        field_name="data_inici",
+        field_name="calendari_desde",
         lookup_expr="gte",
-        label="Data d'inici (des de)",
+        label="Data d'inici posterior a",
         widget=DateTextImput(),
     )
 
     data_inici_fins = django_filters.DateFilter(
-        field_name="data_inici",
+        field_name="calendari_desde",
         lookup_expr="lte",
-        label="Data d'inici (fins a)",
+        label="Data d'inici anterior a",
         widget=DateTextImput(),
     )
 
@@ -61,11 +61,9 @@ class SortidaFilter(django_filters.FilterSet):
 
         extra_divs = [
             Div(Field("ambit", css_class="form-control"), css_class="col-lg-4"),
-            Div(Field("tipus", css_class="form-control"), css_class="col-lg-4"),
         ]
         if tipus == "P":
             # remove 'tipus' from filter fields
-            self.filters.pop("tipus")
             self.filters.pop("ciutat")
 
         # Crispy Forms Helper
@@ -109,7 +107,6 @@ class SortidaFilter(django_filters.FilterSet):
         model = Sortida
         fields = [
             "estat",
-            "tipus",
             "subtipus",
             "titol",
             "ambit",
