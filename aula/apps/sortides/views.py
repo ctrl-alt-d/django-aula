@@ -17,7 +17,7 @@ from aula.apps.missatgeria.missatges_a_usuaris import (
     ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
 )
-from aula.apps.sortides.filters import SortidaFilter
+from aula.apps.sortides.filters import PagamentFilter, SortidaFilter
 from aula.settings import URL_DJANGO_AULA
 from aula.utils.forms import afegeigFormControlClass
 from aula.utils.widgets import DateTextImput, bootStrapButtonSelect, DateTimeTextImput
@@ -246,10 +246,15 @@ def sortidesMevesList(request, tipus="A"):
     ).distinct()
     if tipus:
         sortides = sortides.filter(tipus=tipus)
-    
+
     mes_de_10 = sortides.count() > 10
-    filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
-        
+
+    filter = (
+        PagamentFilter(request.GET, queryset=sortides)
+        if tipus == "P"
+        else SortidaFilter(request.GET, queryset=sortides)
+    )
+
     table = Table2_Sortides(list(filter.qs), origen="Meves")
     if tipus == "P":
         table.exclude = (
@@ -265,7 +270,7 @@ def sortidesMevesList(request, tipus="A"):
     RequestConfig(
         request, paginate={"paginator_class": DiggPaginator, "per_page": 10}
     ).configure(table)
-    
+
     return render(
         request,
         "lesMevesSortides.html",
@@ -273,7 +278,7 @@ def sortidesMevesList(request, tipus="A"):
             "table": table,
             "value": dict(Sortida.TIPUS_ACTIVITAT_CHOICES)[tipus],
             "tipus": tipus,
-            'filter': filter if mes_de_10 else None,
+            "filter": filter if mes_de_10 else None,
         },
     )
 
@@ -288,12 +293,15 @@ def sortidesAllList(request, tipus=None):
     sortides = Sortida.objects.distinct()
     if tipus:
         sortides = sortides.filter(tipus=tipus)
-    
-    mes_de_10 = sortides.count() > 10
-    filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
 
+    mes_de_10 = sortides.count() > 10
+    filter = (
+        PagamentFilter(request.GET, queryset=sortides)
+        if tipus == "P"
+        else SortidaFilter(request.GET, queryset=sortides)
+    )
     table = Table2_Sortides(data=filter.qs, origen="All")
-    
+
     if tipus == "P":
         table.exclude = (
             "ciutat",
@@ -312,14 +320,14 @@ def sortidesAllList(request, tipus=None):
     url = r"{0}{1}".format(
         settings.URL_DJANGO_AULA, reverse("sortides__sortides__ical")
     )
-        
+
     return render(
         request,
         "table2.html",
         {
             "table": table,
             "url": url,
-            'filter': filter if mes_de_10 else None,
+            "filter": filter if mes_de_10 else None,
         },
     )
 
@@ -363,8 +371,11 @@ def sortidesGestioList(request, tipus=None):
         sortides = sortides.filter(tipus_de_pagament="ON")
 
     mes_de_10 = sortides.count() > 10
-    filter = SortidaFilter(request.GET, tipus=tipus, queryset=sortides)
-
+    filter = (
+        PagamentFilter(request.GET, queryset=sortides)
+        if tipus == "P"
+        else SortidaFilter(request.GET, queryset=sortides)
+    )
     if socAdministratiu:
         table = Table2_Sortides(data=list(filter.qs), origen="Administratiu")
     else:
@@ -393,7 +404,7 @@ def sortidesGestioList(request, tipus=None):
         {
             "table": table,
             "url": url,
-            'filter': filter if mes_de_10 else None,
+            "filter": filter if mes_de_10 else None,
         },
     )
 
