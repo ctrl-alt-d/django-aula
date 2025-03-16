@@ -247,7 +247,7 @@ def sortidesMevesList(request, tipus="A"):
     if tipus:
         sortides = sortides.filter(tipus=tipus)
 
-    mes_de_10 = sortides.count() > 1
+    mes_de_10 = sortides.count() > 10
 
     filter = (
         PagamentFilter(request.GET, queryset=sortides)
@@ -294,7 +294,7 @@ def sortidesAllList(request, tipus=None):
     if tipus:
         sortides = sortides.filter(tipus=tipus)
 
-    mes_de_10 = sortides.count() > 1
+    mes_de_10 = sortides.count() > 10
     filter = (
         PagamentFilter(request.GET, queryset=sortides)
         if tipus == "P"
@@ -372,7 +372,7 @@ def sortidesGestioList(request, tipus=None):
     if socSecretari and settings.CUSTOM_SORTIDES_PAGAMENT_ONLINE:
         sortides = sortides.filter(tipus_de_pagament="ON")
 
-    mes_de_10 = sortides.count() > 1
+    mes_de_10 = sortides.count() > 10
     filter = (
         PagamentFilter(request.GET, queryset=sortides)
         if tipus == "P"
