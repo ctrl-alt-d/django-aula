@@ -202,6 +202,12 @@ class PagamentFilter(django_filters.FilterSet):
 
     titol = django_filters.CharFilter(lookup_expr="icontains", label="Títol")
     ambit = django_filters.CharFilter(lookup_expr="icontains", label="Àmbit")
+    
+    subtipus = django_filters.ChoiceFilter(
+        choices=[(f"P{k}", v) for k, v in Sortida.SUBTIPUS_ACTIVITAT['P']],
+        label="Tipus"
+    )
+        
 
     termini_pagament_desde = django_filters.DateFilter(
         field_name="termini_pagament",
@@ -243,7 +249,7 @@ class PagamentFilter(django_filters.FilterSet):
                 ),
                 Div(
                     Field(
-                        "tipus_de_pagament", css_class="form-control form-control-sm"
+                        "subtipus", css_class="form-control form-control-sm"
                     ),
                     css_class="col-lg-4 small",
                 ),
@@ -301,7 +307,7 @@ class PagamentFilter(django_filters.FilterSet):
         model = Sortida
         fields = [
             "estat",
-            "tipus_de_pagament",
+            "subtipus",
             "titol",
             "ambit",
             "departament_que_organitza",
