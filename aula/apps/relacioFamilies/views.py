@@ -566,27 +566,37 @@ def dadesRelacioFamilies( request ):
 
             familia_pendent_de_mirar = {}
             for codi, model in familia_pendent_de_mirar_models:
+                familia_pendent_de_mirar[codi]= ( model
+                                                    .objects
+                                                    .filter( alumne__in = alumnes )
+                                                    .filter( notificacions_familia__tipus = 'N' )
+                                                    .exclude( notificacions_familia__tipus = 'R' )
+                                                    .values_list( 'alumne__pk', flat=True )
+                                                  )
                 #DEPRECATED vvv
                 # Per compatibilitat amb dades existents
                 try:
-                    familia_pendent_de_mirar[codi]= ( model
-                                                       .objects
-                                                       .filter( alumne__in = alumnes )
-                                                       .filter( relacio_familia_revisada__isnull = True )
-                                                       .filter( relacio_familia_notificada__isnull = False )
-                                                       .values_list( 'alumne__pk', flat=True )
-                                                     )
+                    if codi==u'pagament(s)':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .filter( data_hora_pagament__isnull = True )
+                                                   .exclude( pagament_realitzat = True )
+                                                   .values_list( 'alumne__pk', flat=True )
+                                                 )
+                    else:
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .values_list( 'alumne__pk', flat=True )
+                                                 )
                 except:
-                    pass
+                    comp_pendent_de_mirar=model.objects.none()
+
+                familia_pendent_de_mirar[codi] = familia_pendent_de_mirar[codi].union(comp_pendent_de_mirar)
                 #DEPRECATED ^^^
-                if not familia_pendent_de_mirar.get(codi, None) or not familia_pendent_de_mirar[codi].exists():
-                    familia_pendent_de_mirar[codi]= ( model
-                                                        .objects
-                                                        .filter( alumne__in = alumnes )
-                                                        .filter( notificacions_familia__tipus = 'N' )
-                                                        .exclude( notificacions_familia__tipus = 'R' )
-                                                        .values_list( 'alumne__pk', flat=True )
-                                                      )
 
             for alumne in alumnes:
                 
@@ -673,17 +683,23 @@ def canviParametres( request ):
     except:
         pass
     
-    resps = alumne.get_dades_responsables()
+    dades1 = dades2 = ''
+    if responsable:
+        dades1 = responsable.get_dades()
+    elif alumne:
+        resp1, resp2 = alumne.get_responsables(compatible=True)
+        dades1 = resp1.get_nom() if resp1 else ''
+        dades2 = resp2.get_nom() if resp2 else ''
     
     infoForm = [
         ('Alumne', unicode(alumne)),
         ('Edat alumne', str(edatAlumne) + ' (' + formats.date_format(alumne.data_neixement, "SHORT_DATE_FORMAT") + ')' ),
         ('RALC', alumne.ralc),
-        ('Responsable preferent', resps['respPre']),
-        ('Responsable (altre)', resps['respAlt']),
-        ('Altres telèfons', alumne.get_telefons()),
-        ('Correu alumne', alumne.get_correu()),
-    ]
+        ('Responsable', dades1),
+        ]
+    if not responsable: infoForm.append(('Responsable', dades2))
+    infoForm.append(('Altres telèfons', alumne.get_telefons()))
+    #if responsable: infoForm.append(('Correu alumne', alumne.get_correu()))
         
     
     AlumneFormSet = modelform_factory(Alumne,
@@ -789,7 +805,7 @@ def comunicatAbsencia( request ):
     diesantelacio = 6
 
     _, responsable, alumne = getRol( user, request )
-    if not alumne:
+    if not alumne or (not responsable and alumne.edat()<18):
         messages.info( request, u"No és possible fer comunicats." )
         return HttpResponseRedirect('/')
     
@@ -1460,10 +1476,18 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-
-        resps = alumne.get_dades_responsables()
-        camp.multipleContingut = [(resps['respPre'], None,),
-                                  (resps['respAlt'], None,)]
+        
+        if professor:
+            resps = alumne.get_dades_responsables()
+            camp.multipleContingut = [(resps['respPre'], None,),
+                                      (resps['respAlt'], None,)]
+        elif responsable:
+            camp.multipleContingut = [(responsable.get_dades(), None,),]
+        elif alumne:
+            resp1, resp2 = alumne.get_responsables(compatible=True)
+            camp.multipleContingut = [(resp1.get_nom() if resp1 else '', None,),
+                                      (resp2.get_nom() if resp2 else '', None,)]
+            
         filera.append(camp)
     
         taula.fileres.append( filera )

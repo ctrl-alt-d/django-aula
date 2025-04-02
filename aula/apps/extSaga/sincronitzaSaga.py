@@ -72,6 +72,7 @@ def sincronitza(f, user = None):
     info_nAlumnesModificats=0
     info_nMissatgesEnviats = 0
     info_nResponsablesCreats = 0
+    info_nRespSenseDni = 0
 
     AlumnesCanviatsDeGrup = []
     AlumnesInsertats = []
@@ -297,6 +298,8 @@ def sincronitza(f, user = None):
 
         a.save()
         # Crea usuaris Responsable
+        if (resp1.get("cognoms",None) or resp1.get("nom",None)) and not resp1.get("dni",None): info_nRespSenseDni += 1
+        if (resp2.get("cognoms",None) or resp2.get("nom",None)) and not resp2.get("dni",None): info_nRespSenseDni += 1
         info_nResponsablesCreats += creaResponsables(a, [resp1, resp2])
         cursos.add(a.grup.curs)
         #DEPRECATED vvv
@@ -439,6 +442,7 @@ def sincronitza(f, user = None):
         len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
     infos.append(u'{0} responsables creats'.format(info_nResponsablesCreats ) )
+    if info_nRespSenseDni>0: infos.append(u'{0} responsables sense identificació'.format(info_nRespSenseDni ) )
     missatge = IMPORTACIO_SAGA_FINALITZADA
     tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(

@@ -266,10 +266,9 @@ class AbstractAlumne(models.Model):
         
     def esta_relacio_familia_actiu(self):
         # Si és major d'edat, no fa falta correus_relacio_familia
-        TeCorreuPare_o_Mare = bool(self.get_correus_relacio_familia()) or self.edat()>=18
-        usuariActiu = self.get_user_associat() is not None and self.user_associat.is_active
-        usuariActiu = usuariActiu or any(self.responsablesActius())
-        return TeCorreuPare_o_Mare and usuariActiu
+        TeCorreuResponsable = bool(self.get_correus_relacio_familia()) and any(self.responsablesActius())
+        TeCorreuAlumne = self.edat()>=18 and self.get_correu() and self.get_user_associat() is not None and self.user_associat.is_active
+        return TeCorreuResponsable or TeCorreuAlumne
     
     def responsablesActius(self):
         return [ x.get_user_associat() is not None and x.user_associat.is_active for x in self.get_responsables() if x ]
@@ -278,7 +277,7 @@ class AbstractAlumne(models.Model):
         return self.correu
     
     def get_correus_relacio_familia(self):
-        return [ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if x and x.correu_relacio_familia ]
+        return [ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if (x and x.correu_relacio_familia) ]
 
     def get_correus_tots(self):
         tots=self.get_correus_relacio_familia()

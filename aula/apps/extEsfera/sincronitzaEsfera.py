@@ -53,6 +53,7 @@ def sincronitza(f, user = None):
     info_nAlumnesModificats=0
     info_nMissatgesEnviats = 0
     info_nResponsablesCreats = 0
+    info_nRespSenseDni = 0
 
     AlumnesCanviatsDeGrup = []
     AlumnesInsertats = []
@@ -136,19 +137,19 @@ def sincronitza(f, user = None):
                 if col_indexs[index].endswith(u"Contacte 1er tutor alumne - Valor"):
                     dades_tutor1 = dades_responsable(unicode(cell.value) if cell.value else "")
                     if dades_tutor1["mobils"]:
-                        r1["telefon"] = dades_tutor1["mobils"];
+                        r1["telefon"] = ', '.join(dades_tutor1["mobils"])
                         a.altres_telefons = posarDada(dades_tutor1["fixes"], a.altres_telefons)
                     elif dades_tutor1["fixes"]:
-                        r1["telefon"] = dades_tutor1["fixes"];
-                    r1["correu"] = ', '.join(dades_tutor1["mails"]);
+                        r1["telefon"] = ', '.join(dades_tutor1["fixes"])
+                    r1["correu"] = ', '.join(dades_tutor1["mails"])
                 if col_indexs[index].endswith(u"Contacte 2on tutor alumne - Valor"):
                     dades_tutor2 = dades_responsable(unicode(cell.value) if cell.value else "")
                     if dades_tutor2["mobils"]:
-                        r2["telefon"] = dades_tutor2["mobils"];
+                        r2["telefon"] = ', '.join(dades_tutor2["mobils"])
                         a.altres_telefons = posarDada(dades_tutor2["fixes"], a.altres_telefons)
                     elif dades_tutor2["fixes"]:
-                        r2["telefon"] = dades_tutor2["fixes"];
-                    r2["correu"] = ', '.join(dades_tutor2["mails"]);
+                        r2["telefon"] = ', '.join(dades_tutor2["fixes"])
+                    r2["correu"] = ', '.join(dades_tutor2["mails"])
                 if col_indexs[index].endswith(u"Contacte altres alumne - Valor"):
                     telefons_alumne = dades_responsable(unicode(cell.value) if cell.value else "")
                     a.altres_telefons = posarDada(telefons_alumne["fixes"], a.altres_telefons)
@@ -182,21 +183,23 @@ def sincronitza(f, user = None):
                     a.adreca += " " +   unicode(cell.value) if cell.value else ""
 
                 if col_indexs[index].endswith('Tutor 1 - doc. identitat'):
+                    if cell.value and " - " in cell.value:
+                        cell.value = cell.value.split(" - ")[0]
                     r1["dni"] = unicode(cell.value)[-10:] if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - tipus via'):
-                    r1["adreca"] = unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = unicode(cell.value) if cell.value else "" + r1.get("adreca","")
                 if col_indexs[index].endswith('Tutor 1 - nom via'):
-                    r1["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - número'):
-                    r1["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - bloc'):
-                    r1["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - escala'):
-                    r1["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - planta'):
-                    r1["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - porta'):
-                    r1["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - CP'):
                     r1["cp"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - localitat'):
@@ -204,21 +207,23 @@ def sincronitza(f, user = None):
                 if col_indexs[index].endswith('Tutor 1 - municipi'):
                     r1["municipi"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - doc. identitat'):
+                    if cell.value and " - " in cell.value:
+                        cell.value = cell.value.split(" - ")[0]
                     r2["dni"] = unicode(cell.value)[-10:] if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - tipus via'):
-                    r2["adreca"] = unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = unicode(cell.value) if cell.value else "" + r2.get("adreca","")
                 if col_indexs[index].endswith('Tutor 2 - nom via'):
-                    r2["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - número'):
-                    r2["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - bloc'):
-                    r2["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - escala'):
-                    r2["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - planta'):
-                    r2["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - porta'):
-                    r2["adreca"] += " " + unicode(cell.value) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - CP'):
                     r2["cp"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - localitat'):
@@ -290,6 +295,8 @@ def sincronitza(f, user = None):
                 
         a.save()
         # Crea usuaris Responsable
+        if (r1.get("cognoms",None) or r1.get("nom",None)) and not r1.get("dni",None): info_nRespSenseDni += 1
+        if (r2.get("cognoms",None) or r2.get("nom",None)) and not r2.get("dni",None): info_nRespSenseDni += 1
         info_nResponsablesCreats += creaResponsables(a, [r1, r2])
         cursos.add(a.grup.curs)
         #DEPRECATED vvv
@@ -411,6 +418,7 @@ def sincronitza(f, user = None):
         len(Alumne.objects.filter(estat_sincronitzacio__exact = 'MAN'))))
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
     infos.append(u'{0} responsables creats'.format(info_nResponsablesCreats ) )
+    if info_nRespSenseDni>0: infos.append(u'{0} responsables sense identificació'.format(info_nRespSenseDni ) )
     missatge = IMPORTACIO_ESFERA_FINALITZADA
     tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(

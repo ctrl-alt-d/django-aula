@@ -86,7 +86,6 @@ def notifica():
     from django.core.mail import send_mail, EmailMessage
     from aula.apps.usuaris.models import Accio
     num_correus_no_enviats=0
-    enviats=0
     urlDjangoAula = settings.URL_DJANGO_AULA
     textTutorial = settings.CUSTOM_PORTAL_FAMILIES_TUTORIAL
     
@@ -135,25 +134,22 @@ def notifica():
             alumne = Alumne.objects.get( pk = alumne_id )
             # Bucle dels responsables i alumne
             # La configuració de notificació és diferent per cada responsable o alumne.
-            destinataris = [(r.get_user_associat(), 'resp') for r in alumne.get_responsables() if r] + [(alumne.get_user_associat(), 'almn')]
+            destinataris = [(r, 'resp') for r in alumne.get_responsables() if r] + [(alumne, 'almn')]
 
             for usuari, tipus in destinataris:
-                # TODO usuariResponsable distingir cas Responsable de cas Alumne o related_name
+                # TODO usuariResponsable distingir cas Responsable de cas Alumne
                 if tipus=='almn' and usuari:
-                    relacio_familia_darrera_notificacio = ultimaNotificacio(usuari, alumne)
-                    periodicitat_faltes = usuari.alumne.periodicitat_faltes
-                    periodicitat_incidencies = usuari.alumne.periodicitat_incidencies
-                    correu = usuari.alumne.get_correu()
-                    adreca_mail_informada = bool( correu )
-                    app_instalada = alumne.qr_portal_set.exists()
+                    correu = usuari.get_correu()
                 elif tipus=='resp' and usuari:
-                    relacio_familia_darrera_notificacio = ultimaNotificacio(usuari, alumne)
-                    periodicitat_faltes = usuari.responsable.periodicitat_faltes
-                    periodicitat_incidencies = usuari.responsable.periodicitat_incidencies
-                    correu = usuari.responsable.get_correu_relacio()
-                    adreca_mail_informada = bool( correu )
-                    #app_instalada = alumne.qr_portal_set.exists()
+                    correu = usuari.get_correu_relacio()
                 else: continue
+                relacio_familia_darrera_notificacio = ultimaNotificacio(usuari.get_user_associat(), alumne)
+                periodicitat_faltes = usuari.periodicitat_faltes
+                periodicitat_incidencies = usuari.periodicitat_incidencies
+                adreca_mail_informada = bool( correu )
+                app_instalada = alumne.qr_portal_set.exists()
+                
+                usuari=usuari.get_user_associat()
     
                 fa_n_dies = ara - timedelta(  days = periodicitat_faltes )
                 noves_sortides = getNotifElements(NotificaSortida.objects.filter( alumne = alumne), usuari, alumne)
@@ -167,6 +163,11 @@ def notifica():
                     nous_pagaments = QuotaPagament.objects.filter(
                             Q(notificacions_familia__moment__isnull=True) | (Q(notificacions_familia__moment__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
                             alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False)
+                    #DEPRECATED vvv
+                    nous_pagaments = nous_pagaments.exclude(data_hora_pagament__isnull=False).union(QuotaPagament.objects.filter(
+                            Q(data_hora_pagament__isnull=True) | (Q(data_hora_pagament__lt=fa7dies) & Q(quota__dataLimit__lt=en7dies)),
+                            alumne=alumne, quota__importQuota__gt=0, pagament_realitzat=False).exclude(notificacions_familia__moment__isnull=False))
+                    #DEPRECATED ^^^
                 else:
                     nous_pagaments = QuotaPagament.objects.none()
                 noves_incidencies = getNotifElements(alumne.incidencia_set.all(), usuari, alumne)
@@ -235,7 +236,6 @@ def notifica():
                         )
                         email.send(fail_silently=False)
                         enviatOK = True
-                        enviats += 1
                     except:
                         if settings.DEBUG:
                             print (u'Error enviant missatge a {0}'.format( usuari ))
@@ -271,7 +271,6 @@ def notifica():
         except ObjectDoesNotExist:
             pass
     # si hi ha correus que han fallat informar a l'admin
-    print("Enviats:", enviats)
     if num_correus_no_enviats > 0:
         raise Exception(u"No s'han pogut enviar {} missatges a famílies.".format(num_correus_no_enviats))
 
@@ -398,7 +397,7 @@ def notificaSenseCorreus():
     alumnesMajorsEdat=[]
     if alumnesSenseCorreu.exists():
         for a in alumnesSenseCorreu:
-            if a.edat()>=18 and a.correu:
+            if a.edat()>=18 and a.get_correu():
                 # És major d'edat i té correu propi
                 alumnesMajorsEdat.append(a.id)
                 continue

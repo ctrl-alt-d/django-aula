@@ -225,9 +225,8 @@ def enviamail(subject, message, from_email, to_email, connection=None):
 def comunicaMatricula(tipus, curs, alumne, connection=None):
     '''
     Fa comunicació de missatge de matrícula per alumne i responsables.
-    TODO usuariResponsable Depenent de si major d'edat ? Envia a tots? Només el principal?
     '''
-    if alumne.edat()>=18 or not alumne.responsables.exists():
+    if alumne.edat()>=18 or not alumne.responsables.exists() or not alumne.get_correus_relacio_familia():
         mailMatricula(tipus, curs, alumne.correu, alumne, connection=connection)
     for r in alumne.get_responsables():
         if r:
@@ -610,11 +609,11 @@ def gestionaPag(matricula, importTaxes):
     else:
         creaPagament(matricula, quotatax, fracciona)
 
-def alumne2Mat(alumne, nany=None, p=None):
+def alumne2Mat(alumne, nany=None):
     '''
     Busca la Matricula amb les dades de l'alumne per l'any indicat o l'any actual.
-    Si no existeix, agafa les dades de la preinscripció o de l'alumme si no té preinscripció.
-    Retorna la Matricula trobada o crea una nova.
+    Si no existeix, crea una matrícula amb les seves dades.
+    Retorna la Matricula trobada o creada.
     '''
     if not nany:
         nany=django.utils.timezone.now().year
@@ -628,21 +627,6 @@ def alumne2Mat(alumne, nany=None, p=None):
         mat.any=nany
         mat.estat='A'
         mat.acceptar_condicions=False
-        # if p:
-        #     # TODO usuariResponsable L'alumne ja s'ha creat abans, no fa falta recuperar les dades de la preinscripció, ?
-        #     p=p[0]
-        #     mat.nom=p.nom
-        #     mat.cognoms=p.cognoms
-        #     mat.centre_de_procedencia=p.centreprocedencia
-        #     mat.data_naixement=p.naixement
-        #     mat.alumne_correu=p.correu
-        #     mat.adreca=p.adreça
-        #     mat.localitat=p.localitat if p.localitat else p.municipi
-        #     mat.cp=p.cp
-        #     mat.preinscripcio=p
-        #     curs=p.getCurs()
-        #     mat.curs=curs
-        # else:
         mat.nom=alumne.nom
         mat.cognoms=alumne.cognoms
         mat.centre_de_procedencia=alumne.centre_de_procedencia[0:50]

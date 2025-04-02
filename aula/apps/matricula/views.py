@@ -419,8 +419,7 @@ def OmpleDades(request):
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
             if info=='M':
                 # Matrícula segons preinscripcio o de continuitat
-                p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada')
-                mat=alumne2Mat(alumne, nany, p)
+                mat=alumne2Mat(alumne, nany)
                 if mat.estat=='A':
                     nomAlumne=(mat.nom+" "+mat.cognoms) if mat.nom and mat.cognoms else mat.idAlumne
                     titol="Dades de matrícula de "+nomAlumne+" a "+mat.curs.nivell.nom_nivell+ \
