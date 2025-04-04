@@ -10,7 +10,8 @@ lxml
 six
 django-debug-toolbar
 python-dateutil
-django-tables2
+django-tables2 == 2.7.0 ; python_version <= '3.8'
+django-tables2 > 2.7.0 ; python_version > '3.8'
 icalendar
 django-appconf
 Pillow
@@ -32,3 +33,5 @@ django-filter
 qrcode
 djangorestframework-simplejwt
 djau-gsuite-email
+crispy-bootstrap3==2024.1
+django-crispy-forms==2.3
