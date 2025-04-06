@@ -187,19 +187,19 @@ def sincronitza(f, user = None):
                         cell.value = cell.value.split(" - ")[0]
                     r1["dni"] = unicode(cell.value)[-10:] if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - tipus via'):
-                    r1["adreca"] = unicode(cell.value) if cell.value else "" + r1.get("adreca","")
+                    r1["adreca"] = (unicode(cell.value) if cell.value else "") + r1.get("adreca","")
                 if col_indexs[index].endswith('Tutor 1 - nom via'):
-                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 1 - número'):
-                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 1 - bloc'):
-                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 1 - escala'):
-                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 1 - planta'):
-                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 1 - porta'):
-                    r1["adreca"] = r1.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r1["adreca"] = r1.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 1 - CP'):
                     r1["cp"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 1 - localitat'):
@@ -211,19 +211,19 @@ def sincronitza(f, user = None):
                         cell.value = cell.value.split(" - ")[0]
                     r2["dni"] = unicode(cell.value)[-10:] if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - tipus via'):
-                    r2["adreca"] = unicode(cell.value) if cell.value else "" + r2.get("adreca","")
+                    r2["adreca"] = (unicode(cell.value) if cell.value else "") + r2.get("adreca","")
                 if col_indexs[index].endswith('Tutor 2 - nom via'):
-                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 2 - número'):
-                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 2 - bloc'):
-                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 2 - escala'):
-                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 2 - planta'):
-                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 2 - porta'):
-                    r2["adreca"] = r2.get("adreca","") + ( " " + unicode(cell.value)) if cell.value else ""
+                    r2["adreca"] = r2.get("adreca","") + (( " " + unicode(cell.value)) if cell.value else "")
                 if col_indexs[index].endswith('Tutor 2 - CP'):
                     r2["cp"] = unicode(cell.value) if cell.value else ""
                 if col_indexs[index].endswith('Tutor 2 - localitat'):
