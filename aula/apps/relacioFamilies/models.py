@@ -76,7 +76,7 @@ class Responsable(models.Model):
     def force_delete(self):
         super().delete()
         
-    def get_user_associat(self):       
+    def get_user_associat(self):
         return self.user_associat if self.user_associat_id is not None else None
     
     def get_alumnes_associats(self):

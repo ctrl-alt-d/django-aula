@@ -75,8 +75,7 @@ class ResponsableUser(User):
         return responsable
     
     def __str__(self):
-        nom = self.first_name + u' ' + self.last_name if self.last_name else self.username
-        return nom.title()
+        return self.getResponsable()
 
 def User2Responsable(user):
     from aula.apps.relacioFamilies.models import Responsable

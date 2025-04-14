@@ -5,7 +5,8 @@ from django.contrib import admin
 
 class ResponsableAdmin(admin.ModelAdmin):
     model = Responsable
-    search_fields = ['dni', 'nom', 'cognoms']
+    list_display = ['cognoms', 'nom', 'dni']
+    search_fields = ['cognoms', 'nom', 'dni']
     readonly_fields = ['user_associat', 'alumnes_associats']
 
 admin.site.register(Responsable, ResponsableAdmin)

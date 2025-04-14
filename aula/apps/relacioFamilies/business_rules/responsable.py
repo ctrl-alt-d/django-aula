@@ -7,10 +7,7 @@ def responsable_post_save(sender, instance, created, **kwargs):
         if new:
             from django.contrib.auth.models import Group as G
             ga, _ = G.objects.get_or_create( name='alumne' )
-            # De manera provisional activa l'usuari i assigna contrasenya igual a l'username
-            # Així no fa falta fer la benvinguda i simplifica fer proves
-            user_associat.is_active = False # TODO usuariResponsable False
-            # user_associat.set_password(user_associat.username) # TODO usuariResponsable no s'ha de fer
+            user_associat.is_active = False
             user_associat.groups.add(ga)
             user_associat.save()
         instance.user_associat_id = user_associat.pk      

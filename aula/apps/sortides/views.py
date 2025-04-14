@@ -1769,6 +1769,7 @@ def demo(request):
 @login_required
 def pagoOnline(request, pk):
     from aula.apps.sortides.forms import PagamentForm
+    from aula.apps.usuaris.tools import getRol
 
     """
     Mostra la informació del pagament i el botó per pagar o 
@@ -1777,6 +1778,7 @@ def pagoOnline(request, pk):
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
+    _, _, alumne = getRol( user, request )
 
     pagament = get_object_or_404(Pagament, pk=pk)
     nexturl = request.GET.get("next")
@@ -1796,12 +1798,11 @@ def pagoOnline(request, pk):
             reverse("relacio_families__informe__el_meu_informe")
         )
 
-    alumne = pagament.alumne
     fEsDireccioOrGrupSortides = request.user.groups.filter(
         name__in=["direcció", "sortides"]
     ).exists()
 
-    potEntrar = alumne.user_associat.getUser() == user or fEsDireccioOrGrupSortides
+    potEntrar = alumne==pagament.alumne or fEsDireccioOrGrupSortides
     if not potEntrar:
         return render(
             request,
@@ -1843,7 +1844,6 @@ def pagoOnline(request, pk):
             else:
                 # es considera que ha caducat
                 # prepara el pagament per a reintentar
-                # TODO usuariResponsable
                 if not pagament.ordre_pagament and pagament.alumne:
                     # es genera ordre_pagament si fa falta
                     pagament.ordre_pagament = generaOrdre(pagament)

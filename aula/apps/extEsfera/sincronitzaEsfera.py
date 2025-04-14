@@ -293,6 +293,18 @@ def sincronitza(f, user = None):
                 a.data_alta = alumneDadesAnteriors.data_alta
                 a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
                 
+        #DEPRECATED vvv
+        if alumneDadesAnteriors and alumneDadesAnteriors.correu_relacio_familia_pare:
+            r1["correu_relacio_familia"]=alumneDadesAnteriors.correu_relacio_familia_pare
+            r1["periodicitat_faltes"]=alumneDadesAnteriors.periodicitat_faltes
+            r1["periodicitat_incidencies"]=alumneDadesAnteriors.periodicitat_incidencies
+            a.correu_relacio_familia_pare = ''
+        if alumneDadesAnteriors and alumneDadesAnteriors.correu_relacio_familia_mare:
+            r2["correu_relacio_familia"]=alumneDadesAnteriors.correu_relacio_familia_mare
+            r2["periodicitat_faltes"]=alumneDadesAnteriors.periodicitat_faltes
+            r2["periodicitat_incidencies"]=alumneDadesAnteriors.periodicitat_incidencies
+            a.correu_relacio_familia_mare = ''
+        #DEPRECATED ^^^
         a.save()
         # Crea usuaris Responsable
         if (r1.get("cognoms",None) or r1.get("nom",None)) and not r1.get("dni",None): info_nRespSenseDni += 1

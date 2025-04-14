@@ -561,7 +561,7 @@ def dadesRelacioFamilies( request ):
                 (u'sanció(ns)', Sancio,),
                 (u'expulsió(ns)', Expulsio,),
                 (u'faltes assistència', ControlAssistencia,),
-                (u'pagament(s)', Pagament,),  # TODO usuariResponsable
+                (u'pagament(s)', Pagament,),
             ]
 
             familia_pendent_de_mirar = {}
@@ -683,13 +683,12 @@ def canviParametres( request ):
     except:
         pass
     
-    dades1 = dades2 = ''
     if responsable:
-        dades1 = responsable.get_dades()
+        resps = alumne.get_dades_responsables(responsable=responsable)
     elif alumne:
-        resp1, resp2 = alumne.get_responsables(compatible=True)
-        dades1 = resp1.get_nom() if resp1 else ''
-        dades2 = resp2.get_nom() if resp2 else ''
+        resps = alumne.get_dades_responsables(nomesNoms=True)
+    dades1 = resps['respPre']
+    dades2 = resps['respAlt']
     
     infoForm = [
         ('Alumne', unicode(alumne)),
@@ -697,9 +696,8 @@ def canviParametres( request ):
         ('RALC', alumne.ralc),
         ('Responsable', dades1),
         ]
-    if not responsable: infoForm.append(('Responsable', dades2))
+    if dades2: infoForm.append(('Responsable', dades2))
     infoForm.append(('Altres telèfons', alumne.get_telefons()))
-    #if responsable: infoForm.append(('Correu alumne', alumne.get_correu()))
         
     
     AlumneFormSet = modelform_factory(Alumne,
@@ -1447,7 +1445,7 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.grup )        
+        camp.contingut = u'{0} Tutor(a): {1}'.format( alumne.grup, u", ".join([str(t) for t in alumne.tutorsDelGrupDeLAlumne()] ))        
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -1479,15 +1477,14 @@ def elMeuInforme( request, pk = None ):
         
         if professor:
             resps = alumne.get_dades_responsables()
-            camp.multipleContingut = [(resps['respPre'], None,),
-                                      (resps['respAlt'], None,)]
         elif responsable:
-            camp.multipleContingut = [(responsable.get_dades(), None,),]
+            resps = alumne.get_dades_responsables(responsable=responsable)
         elif alumne:
-            resp1, resp2 = alumne.get_responsables(compatible=True)
-            camp.multipleContingut = [(resp1.get_nom() if resp1 else '', None,),
-                                      (resp2.get_nom() if resp2 else '', None,)]
-            
+            resps = alumne.get_dades_responsables(nomesNoms=True)
+        
+        camp.multipleContingut = [(resps['respPre'], None,),]
+        if bool(resps['respAlt']): camp.multipleContingut.append((resps['respAlt'], None,))
+        
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -1505,7 +1502,7 @@ def elMeuInforme( request, pk = None ):
             else (alumne.municipi if not alumne.localitat
                   else (alumne.localitat + '-' + alumne.municipi if alumne.localitat != alumne.municipi
                         else alumne.localitat))
-        camp.contingut = u'{0} - {1}'.format(alumne.adreca, localitat_i_o_municipi)
+        camp.contingut = u'{0} - ({1} {2})'.format(alumne.adreca, alumne.cp, localitat_i_o_municipi)
         filera.append(camp)
     
         taula.fileres.append( filera )

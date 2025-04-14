@@ -50,16 +50,41 @@ class DadesForm2(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['rp1_dni'].required=True
-        self.fields['rp1_nom'].required=True
-        self.fields['rp1_cognoms'].required=True
-        self.fields['rp1_telefon'].required=True
-        self.fields['rp1_correu'].required=True
+        if kwargs['initial'].get('matricula').alumne.edat()<18:
+            self.fields['rp1_dni'].required=True
+            self.fields['rp1_nom'].required=True
+            self.fields['rp1_cognoms'].required=True
+            self.fields['rp1_telefon'].required=True
+            self.fields['rp1_correu'].required=True
     
     def clean(self):
         from aula.apps.usuaris.tools import testEmail
         
         cleaned_data = super(DadesForm2, self).clean()
+        if cleaned_data.get('rp1_dni') or cleaned_data.get('rp1_nom') or cleaned_data.get('rp1_cognoms') \
+                or cleaned_data.get('rp1_telefon') or cleaned_data.get('rp1_correu'):
+            if not cleaned_data.get('rp1_dni'):
+                self.add_error('rp1_dni','Identificació obligatòria')
+            if not cleaned_data.get('rp1_nom'):
+                self.add_error('rp1_nom','Nom obligatori')
+            if not cleaned_data.get('rp1_cognoms'):
+                self.add_error('rp1_cognoms','Cognoms obligatoris')
+            if not cleaned_data.get('rp1_telefon'):
+                self.add_error('rp1_telefon','Telèfon obligatori')
+            if not cleaned_data.get('rp1_correu'):
+                self.add_error('rp1_correu','Correu obligatori')
+        if cleaned_data.get('rp2_dni') or cleaned_data.get('rp2_nom') or cleaned_data.get('rp2_cognoms') \
+                or cleaned_data.get('rp2_telefon') or cleaned_data.get('rp2_correu'):
+            if not cleaned_data.get('rp2_dni'):
+                self.add_error('rp2_dni','Identificació obligatòria')
+            if not cleaned_data.get('rp2_nom'):
+                self.add_error('rp2_nom','Nom obligatori')
+            if not cleaned_data.get('rp2_cognoms'):
+                self.add_error('rp2_cognoms','Cognoms obligatoris')
+            if not cleaned_data.get('rp2_telefon') and not cleaned_data.get('rp1_telefon'):
+                self.add_error('rp2_telefon','Telèfon obligatori')
+            if not cleaned_data.get('rp2_correu') and not cleaned_data.get('rp1_correu'):
+                self.add_error('rp2_correu','Correu obligatori')
         email=cleaned_data.get('rp1_correu')
         res, email = testEmail(email, False)
         if res<-1:
@@ -195,11 +220,12 @@ class ConfirmaMat(forms.ModelForm):
         self.fields['adreca'].required=True
         self.fields['localitat'].required=True
         self.fields['cp'].required=True
-        self.fields['rp1_dni'].required=True
-        self.fields['rp1_nom'].required=True
-        self.fields['rp1_cognoms'].required=True
-        self.fields['rp1_telefon'].required=True
-        self.fields['rp1_correu'].required=True
+        if self.instance.alumne.edat()<18:
+            self.fields['rp1_dni'].required=True
+            self.fields['rp1_nom'].required=True
+            self.fields['rp1_cognoms'].required=True
+            self.fields['rp1_telefon'].required=True
+            self.fields['rp1_correu'].required=True
         self.fields['nom'].widget.attrs['readonly'] = True
         self.fields['cognoms'].widget.attrs['readonly'] = True
         self.fields['data_naixement'].widget.attrs['readonly'] = True
@@ -213,6 +239,31 @@ class ConfirmaMat(forms.ModelForm):
         if opcions=='C' and not condicions:
             self.add_error('acceptar_condicions', "És obligatori acceptar les condicions de matrícula")
 
+        if cleaned_data.get('rp1_dni') or cleaned_data.get('rp1_nom') or cleaned_data.get('rp1_cognoms') \
+                or cleaned_data.get('rp1_telefon') or cleaned_data.get('rp1_correu'):
+            if not cleaned_data.get('rp1_dni'):
+                self.add_error('rp1_dni','Identificació obligatòria')
+            if not cleaned_data.get('rp1_nom'):
+                self.add_error('rp1_nom','Nom obligatori')
+            if not cleaned_data.get('rp1_cognoms'):
+                self.add_error('rp1_cognoms','Cognoms obligatoris')
+            if not cleaned_data.get('rp1_telefon'):
+                self.add_error('rp1_telefon','Telèfon obligatori')
+            if not cleaned_data.get('rp1_correu'):
+                self.add_error('rp1_correu','Correu obligatori')
+        if cleaned_data.get('rp2_dni') or cleaned_data.get('rp2_nom') or cleaned_data.get('rp2_cognoms') \
+                or cleaned_data.get('rp2_telefon') or cleaned_data.get('rp2_correu'):
+            if not cleaned_data.get('rp2_dni'):
+                self.add_error('rp2_dni','Identificació obligatòria')
+            if not cleaned_data.get('rp2_nom'):
+                self.add_error('rp2_nom','Nom obligatori')
+            if not cleaned_data.get('rp2_cognoms'):
+                self.add_error('rp2_cognoms','Cognoms obligatoris')
+            if not cleaned_data.get('rp2_telefon') and not cleaned_data.get('rp1_telefon'):
+                self.add_error('rp2_telefon','Telèfon obligatori')
+            if not cleaned_data.get('rp2_correu') and not cleaned_data.get('rp1_correu'):
+                self.add_error('rp2_correu','Correu obligatori')
+                
         email=cleaned_data.get('alumne_correu')
         res, email = testEmail(email, False)
         if res<-1:

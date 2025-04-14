@@ -206,9 +206,6 @@ def fesCarrega( ):
         p.get_user_associat().is_active = True
         p.get_user_associat().save()
         
-    # TODO usuariResponsable
-    # Activació de matrícula
-    
     msg += "\nResponsables rang: " + u" - ".join( sorted( set( [ unicode( Responsable.objects.order_by('id').first().get_user_associat().username ),
                                                           unicode( Responsable.objects.order_by('id').last().get_user_associat().username )
                                                           ] ) ) )

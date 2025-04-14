@@ -757,7 +757,7 @@ def llistaGrupsPromocionar(request):
 @login_required
 @group_required(['direcció'])
 def nouAlumnePromocionar(request):
-    # TODO usuariResponsable, esborrar aquesta funció ?
+    # TODO esborrar aquesta funció ?
     #Aqui va el tractament del formulari i tota la polla...
 
     if request.method == 'POST':
@@ -993,7 +993,7 @@ def llistaAlumnescsv( request ):
                e.cognoms,
                e.nom, 
                e.user_associat.username, 
-               e.get_correu(),
+               e.get_correu_relacio(),
                e.get_correus_tots(),
                e.get_correus_relacio_familia(),
                e.user_associat.last_login,

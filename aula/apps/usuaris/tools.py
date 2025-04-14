@@ -893,7 +893,6 @@ def get_notif_revisio(element, usuari, fmt_data=None):
                 #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
                 if element.pagament_realitzat:
                     revisc=element.data_hora_pagament.strftime(fmt_data)
-                    notifc=revisc
                 else:
                     notifc=element.data_hora_pagament.strftime(fmt_data)
         else:

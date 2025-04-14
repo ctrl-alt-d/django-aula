@@ -99,8 +99,8 @@ def sincronitza(f, user = None):
         a.altres_telefons = ''
         dni = ''
         # Guarda usuaris Responsable
-        resp1 = {}
-        resp2 = {}
+        r1 = {}
+        r2 = {}
         #a.tutors = ''
 
         for columnName, value in iter(row.items()):
@@ -135,29 +135,29 @@ def sincronitza(f, user = None):
             if columnName.endswith( u"MUNICIPI"):
                 a.municipi = uvalue
             if columnName.endswith(u"_TELÈFON RESP. 1" ):
-                if "telefon" not in resp1: resp1["telefon"] = uvalue
+                if "telefon" not in r1: r1["telefon"] = uvalue
                 else:
                     a.altres_telefons = posarDada(uvalue, a.altres_telefons)
             if columnName.endswith(u"_MÒBIL RESP. 1" ):
-                if "telefon" not in resp1: resp1["telefon"] = uvalue
+                if "telefon" not in r1: r1["telefon"] = uvalue
                 else:
-                    anterior = resp1["telefon"]
-                    resp1["telefon"] = uvalue
+                    anterior = r1["telefon"]
+                    r1["telefon"] = uvalue
                     a.altres_telefons = posarDada(anterior, a.altres_telefons)
             if columnName.endswith(u"_TELÈFON RESP. 2" ):
-                if "telefon" not in resp2: resp2["telefon"] = uvalue
+                if "telefon" not in r2: r2["telefon"] = uvalue
                 else:
                     a.altres_telefons = posarDada(uvalue, a.altres_telefons)
             if columnName.endswith(u"_MÒBIL RESP. 2" ):
-                if "telefon" not in resp2: resp2["telefon"] = uvalue
+                if "telefon" not in r2: r2["telefon"] = uvalue
                 else:
-                    anterior = resp2["telefon"]
-                    resp2["telefon"] = uvalue
+                    anterior = r2["telefon"]
+                    r2["telefon"] = uvalue
                     a.altres_telefons = posarDada(anterior, a.altres_telefons)
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 1" ):
-                resp1["correu"] = uvalue
+                r1["correu"] = uvalue
             if columnName.endswith(u"_ADREÇA ELECTR. RESP. 2" ):
-                resp2["correu"] = uvalue
+                r2["correu"] = uvalue
             if columnName.endswith(u"_ALTRES TELÈFONS"):
                 a.altres_telefons = posarDada(uvalue, a.altres_telefons)
 
@@ -168,43 +168,43 @@ def sincronitza(f, user = None):
             if columnName.endswith( u"_DOC. IDENTITAT"):
                 dni = uvalue
             if columnName.endswith( u"_DOC. IDENTITAT RESP. 1"):
-                resp1["dni"] = uvalue[-10:]
+                r1["dni"] = uvalue[-10:]
             if columnName.endswith(u"_RESPONSABLE 1" ):
                 if len(uvalue.split(','))>1:
-                    resp1["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
-                    resp1["cognoms"] = uvalue.split(',')[0]
+                    r1["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
+                    r1["cognoms"] = uvalue.split(',')[0]
                 else:
-                    resp1["nom"] = uvalue.split(',')[0].lstrip().rstrip()                #nomes fins a la coma
-                    resp1["cognoms"] = ''
+                    r1["nom"] = uvalue.split(',')[0].lstrip().rstrip()                #nomes fins a la coma
+                    r1["cognoms"] = ''
             if columnName.endswith( u"_PARENTIU RESP. 1"):
-                resp1["parentiu"]=uvalue
+                r1["parentiu"]=uvalue
             if columnName.endswith( u"_ADREÇA RESP. 1" ):
-                resp1["adreca"]=uvalue
+                r1["adreca"]=uvalue
             if columnName.endswith( u"_LOCALITAT RESP. 1"):
-                resp1["localitat"]=uvalue
+                r1["localitat"]=uvalue
             if columnName.endswith( u"_MUNICIPI RESP. 1"):
-                resp1["municipi"]=uvalue
+                r1["municipi"]=uvalue
             if columnName.endswith( u"_CP RESP. 1"):
-                resp1["cp"]=uvalue
+                r1["cp"]=uvalue
             if columnName.endswith( u"_DOC. IDENTITAT RESP. 2"):
-                resp2["dni"] = uvalue[-10:]
+                r2["dni"] = uvalue[-10:]
             if columnName.endswith(u"_RESPONSABLE 2" ):
                 if len(uvalue.split(','))>1:
-                    resp2["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
-                    resp2["cognoms"] = uvalue.split(',')[0]
+                    r2["nom"] = uvalue.split(',')[1].lstrip().rstrip()                #nomes fins a la coma
+                    r2["cognoms"] = uvalue.split(',')[0]
                 else:
-                    resp2["nom"] = uvalue.split(',')[0].lstrip().rstrip()                #nomes fins a la coma
-                    resp2["cognoms"] = ''
+                    r2["nom"] = uvalue.split(',')[0].lstrip().rstrip()                #nomes fins a la coma
+                    r2["cognoms"] = ''
             if columnName.endswith( u"_PARENTIU RESP. 2"):
-                resp2["parentiu"]=uvalue
+                r2["parentiu"]=uvalue
             if columnName.endswith( u"_ADREÇA RESP. 2" ):
-                resp2["adreca"]=uvalue
+                r2["adreca"]=uvalue
             if columnName.endswith( u"_LOCALITAT RESP. 2"):
-                resp2["localitat"]=uvalue
+                r2["localitat"]=uvalue
             if columnName.endswith( u"_MUNICIPI RESP. 2"):
-                resp2["municipi"]=uvalue
+                r2["municipi"]=uvalue
             if columnName.endswith( u"_CP RESP. 2"):
-                resp2["cp"]=uvalue
+                r2["cp"]=uvalue
 
         if not (trobatGrupClasse and trobatNom and trobatDataNeixement and trobatRalc):
             return { 'errors': [ u'Falten camps al fitxer' ], 'warnings': [], 'infos': [] }
@@ -296,17 +296,29 @@ def sincronitza(f, user = None):
                 a.data_alta = alumneDadesAnteriors.data_alta
                 a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
 
+        #DEPRECATED vvv
+        if alumneDadesAnteriors and alumneDadesAnteriors.correu_relacio_familia_pare:
+            r1["correu_relacio_familia"]=alumneDadesAnteriors.correu_relacio_familia_pare
+            r1["periodicitat_faltes"]=alumneDadesAnteriors.periodicitat_faltes
+            r1["periodicitat_incidencies"]=alumneDadesAnteriors.periodicitat_incidencies
+            a.correu_relacio_familia_pare = ''
+        if alumneDadesAnteriors and alumneDadesAnteriors.correu_relacio_familia_mare:
+            r2["correu_relacio_familia"]=alumneDadesAnteriors.correu_relacio_familia_mare
+            r2["periodicitat_faltes"]=alumneDadesAnteriors.periodicitat_faltes
+            r2["periodicitat_incidencies"]=alumneDadesAnteriors.periodicitat_incidencies
+            a.correu_relacio_familia_mare = ''
+        #DEPRECATED ^^^
         a.save()
         # Crea usuaris Responsable
-        if (resp1.get("cognoms",None) or resp1.get("nom",None)) and not resp1.get("dni",None): info_nRespSenseDni += 1
-        if (resp2.get("cognoms",None) or resp2.get("nom",None)) and not resp2.get("dni",None): info_nRespSenseDni += 1
-        info_nResponsablesCreats += creaResponsables(a, [resp1, resp2])
+        if (r1.get("cognoms",None) or r1.get("nom",None)) and not r1.get("dni",None): info_nRespSenseDni += 1
+        if (r2.get("cognoms",None) or r2.get("nom",None)) and not r2.get("dni",None): info_nRespSenseDni += 1
+        info_nResponsablesCreats += creaResponsables(a, [r1, r2])
         cursos.add(a.grup.curs)
         #DEPRECATED vvv
         if alumneDadesAnteriors and not alumneDadesAnteriors.responsable_preferent and alumneDadesAnteriors.responsables.exists():
-            resp1, resp2 = a.get_responsables()
-            if alumneDadesAnteriors.primer_responsable==1 and resp2: a.responsable_preferent = resp2
-            else: a.responsable_preferent = resp1
+            r1, r2 = a.get_responsables()
+            if alumneDadesAnteriors.primer_responsable==1 and r2: a.responsable_preferent = r2
+            else: a.responsable_preferent = r1
             a.save()
         #DEPRECATED ^^^
         

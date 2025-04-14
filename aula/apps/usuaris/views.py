@@ -339,7 +339,6 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
-                        # TODO usuariResponsable afegir related_name
                         if User2Responsable(user):
                             user.responsable.motiu_bloqueig = ''
                             user.responsable.save()

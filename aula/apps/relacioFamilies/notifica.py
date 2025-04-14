@@ -137,12 +137,8 @@ def notifica():
             destinataris = [(r, 'resp') for r in alumne.get_responsables() if r] + [(alumne, 'almn')]
 
             for usuari, tipus in destinataris:
-                # TODO usuariResponsable distingir cas Responsable de cas Alumne
-                if tipus=='almn' and usuari:
-                    correu = usuari.get_correu()
-                elif tipus=='resp' and usuari:
-                    correu = usuari.get_correu_relacio()
-                else: continue
+                if not usuari: continue
+                correu = usuari.get_correu_relacio()
                 relacio_familia_darrera_notificacio = ultimaNotificacio(usuari.get_user_associat(), alumne)
                 periodicitat_faltes = usuari.periodicitat_faltes
                 periodicitat_incidencies = usuari.periodicitat_incidencies
@@ -397,7 +393,7 @@ def notificaSenseCorreus():
     alumnesMajorsEdat=[]
     if alumnesSenseCorreu.exists():
         for a in alumnesSenseCorreu:
-            if a.edat()>=18 and a.get_correu():
+            if a.edat()>=18 and a.get_correu_relacio():
                 # És major d'edat i té correu propi
                 alumnesMajorsEdat.append(a.id)
                 continue

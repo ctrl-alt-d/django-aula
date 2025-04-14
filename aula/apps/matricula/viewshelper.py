@@ -435,20 +435,20 @@ def activaResponsables(al, preinscripcio=None):
             dades1= {'dni':preinscripcio.doctut1,
                      'nom':preinscripcio.nomtut1,
                      'cognoms':preinscripcio.cognomstut1,
-                     'adreca':preinscripcio.adreça,
-                     'localitat':preinscripcio.localitat,
-                     'municipi':preinscripcio.municipi,
-                     'cp':preinscripcio.cp,
+                     'adreca':preinscripcio.adreça or '',
+                     'localitat':preinscripcio.localitat or '',
+                     'municipi':preinscripcio.municipi or '',
+                     'cp':preinscripcio.cp or '',
                      'telefon':preinscripcio.telefon,
                      'correu':preinscripcio.correu}
         if preinscripcio.doctut2:
             dades2= {'dni':preinscripcio.doctut2,
                      'nom':preinscripcio.nomtut2,
                      'cognoms':preinscripcio.cognomstut2,
-                     'adreca':preinscripcio.adreça,
-                     'localitat':preinscripcio.localitat,
-                     'municipi':preinscripcio.municipi,
-                     'cp':preinscripcio.cp}
+                     'adreca':preinscripcio.adreça or '',
+                     'localitat':preinscripcio.localitat or '',
+                     'municipi':preinscripcio.municipi or '',
+                     'cp':preinscripcio.cp or ''}
             if not preinscripcio.doctut1:
                 dades2['telefon']=preinscripcio.telefon
                 dades2['correu']=preinscripcio.correu
@@ -612,7 +612,8 @@ def gestionaPag(matricula, importTaxes):
 def alumne2Mat(alumne, nany=None):
     '''
     Busca la Matricula amb les dades de l'alumne per l'any indicat o l'any actual.
-    Si no existeix, crea una matrícula amb les seves dades.
+    Si no existeix, crea una matrícula amb les seves dades segons la preinscripció o les
+    dades actuals de l'alumne.
     Retorna la Matricula trobada o creada.
     '''
     if not nany:
@@ -627,15 +628,6 @@ def alumne2Mat(alumne, nany=None):
         mat.any=nany
         mat.estat='A'
         mat.acceptar_condicions=False
-        mat.nom=alumne.nom
-        mat.cognoms=alumne.cognoms
-        mat.centre_de_procedencia=alumne.centre_de_procedencia[0:50]
-        mat.data_naixement=alumne.data_neixement
-        mat.alumne_correu=alumne.correu
-        mat.adreca=alumne.adreca
-        mat.localitat=alumne.localitat if alumne.localitat else alumne.municipi
-        mat.cp=alumne.cp
-        mat.curs=alumne.grup.curs  # Curs actual
         resp1, resp2=alumne.get_responsables(compatible=True)
         if resp1:
             mat.rp1_dni=resp1.dni
@@ -657,6 +649,43 @@ def alumne2Mat(alumne, nany=None):
             mat.rp2_localitat=resp2.localitat if resp2.localitat else resp2.municipi
             mat.rp2_cp=resp2.cp
             mat.rp2_adreca=resp2.adreca
+        p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada')
+        if p:
+            p=p[0]
+            mat.nom=p.nom
+            mat.cognoms=p.cognoms
+            mat.centre_de_procedencia=p.centreprocedencia[0:50] if p.centreprocedencia else ''
+            mat.data_naixement=p.naixement
+            mat.alumne_correu=p.correu
+            mat.adreca=p.adreça or ''
+            mat.localitat=(p.localitat if p.localitat else p.municipi) or ''
+            mat.cp=p.cp or ''
+            
+            mat.rp1_dni=p.doctut1 or ''
+            mat.rp1_nom=p.nomtut1 or ''
+            mat.rp1_cognoms=p.cognomstut1 or ''
+            mat.rp1_telefon=p.telefon or ''
+            mat.rp1_correu=p.correu or ''
+            mat.rp1_localitat=(p.localitat if p.localitat else p.municipi) or ''
+            mat.rp1_cp=p.cp or ''
+            mat.rp1_adreca=p.adreça or ''
+            mat.rp2_dni=p.doctut2 or ''
+            mat.rp2_nom=p.nomtut2 or ''
+            mat.rp2_cognoms=p.cognomstut2 or ''
+            
+            mat.preinscripcio=p
+            curs=p.getCurs()
+            mat.curs=curs
+        else:
+            mat.nom=alumne.nom
+            mat.cognoms=alumne.cognoms
+            mat.centre_de_procedencia=alumne.centre_de_procedencia[0:50] if alumne.centre_de_procedencia else ''
+            mat.data_naixement=alumne.data_neixement
+            mat.alumne_correu=alumne.correu
+            mat.adreca=alumne.adreca
+            mat.localitat=alumne.localitat if alumne.localitat else alumne.municipi
+            mat.cp=alumne.cp
+            mat.curs=alumne.grup.curs  # Curs actual
         mat.save()
     return mat
 
@@ -679,10 +708,10 @@ def updateAlumne(alumne, mat):
     dades_resp1={}
     dades_resp2={}
     for k in dades_mat:
-        if k.startswith('rp1_'): dades_resp1[k[4:]]=dades_mat[k]
-        if k.startswith('rp2_'): dades_resp2[k[4:]]=dades_mat[k] if dades_mat[k] else ''
-    dades_resp1['correu_relacio_familia']=mat.rp1_correu
-    dades_resp2['correu_relacio_familia']=mat.rp2_correu
+        if k.startswith('rp1_'): dades_resp1[k[4:]]=dades_mat[k] or ''
+        if k.startswith('rp2_'): dades_resp2[k[4:]]=dades_mat[k] or ''
+    dades_resp1['correu_relacio_familia']=mat.rp1_correu or ''
+    dades_resp2['correu_relacio_familia']=mat.rp2_correu or ''
     
     creaResponsables(alumne, [dades_resp1, dades_resp2])
 
@@ -809,7 +838,7 @@ def enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail=False, senseEmails=False
                                               naixement__isnull=False):
             alumne=creaAlumne(p)
             curs=p.getCurs()
-            if not senseEmails: mailMatricula(tipus, curs, p.correu, alumne, connection)
+            if not senseEmails: comunicaMatricula(tipus, curs, alumne, connection)
             p.estat='Enviada'
             p.save()
     if tipus=='A' or tipus=='C':

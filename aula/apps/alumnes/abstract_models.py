@@ -267,13 +267,13 @@ class AbstractAlumne(models.Model):
     def esta_relacio_familia_actiu(self):
         # Si és major d'edat, no fa falta correus_relacio_familia
         TeCorreuResponsable = bool(self.get_correus_relacio_familia()) and any(self.responsablesActius())
-        TeCorreuAlumne = self.edat()>=18 and self.get_correu() and self.get_user_associat() is not None and self.user_associat.is_active
+        TeCorreuAlumne = self.edat()>=18 and self.get_correu_relacio() and self.get_user_associat() is not None and self.user_associat.is_active
         return TeCorreuResponsable or TeCorreuAlumne
     
     def responsablesActius(self):
         return [ x.get_user_associat() is not None and x.user_associat.is_active for x in self.get_responsables() if x ]
     
-    def get_correu(self):
+    def get_correu_relacio(self):
         return self.correu
     
     def get_correus_relacio_familia(self):
@@ -282,7 +282,7 @@ class AbstractAlumne(models.Model):
     def get_correus_tots(self):
         tots=self.get_correus_relacio_familia()
         tots=tots+[ x.correu for x in self.get_responsables(compatible=True) if x and x.correu ]
-        tots=tots+[ self.get_correu() ]
+        tots=tots+[ self.get_correu_relacio() ]
         return tots
     
     def get_telefons(self):
@@ -371,7 +371,6 @@ class AbstractAlumne(models.Model):
             responsables=list(self.responsables.all())
             #DEPRECATED vvv
             if not responsables and compatible:
-                # TODO usuariResponsable cas compatibilitat
                 Responsable=apps.get_model('relacioFamilies', 'Responsable')
                 resp1=resp2=None
                 if self.rp1_nom or self.rp1_correu or self.rp1_mobil or self.rp1_telefon or self.correu_relacio_familia_pare:
@@ -417,11 +416,23 @@ class AbstractAlumne(models.Model):
     def get_telefons_responsables(self):
         return [ x.get_telefon() for x in self.get_responsables(compatible=True) if x and x.get_telefon() ]
     
-    def get_dades_responsables(self):
+    def get_dades_responsables(self, responsable=None, nomesNoms=False):
         dades={}
         resp1, resp2 = self.get_responsables(compatible=True)
-        dades['respPre']=resp1.get_dades() if resp1 else ''
-        dades['respAlt']=resp2.get_dades() if resp2 else ''
+        if not bool(responsable):
+            if nomesNoms:
+                dades['respPre']=resp1.get_nom() if resp1 else ''
+                dades['respAlt']=resp2.get_nom() if resp2 else ''
+            else:
+                dades['respPre']=resp1.get_dades() if resp1 else ''
+                dades['respAlt']=resp2.get_dades() if resp2 else ''
+        else:
+            if responsable==resp1:
+                dades['respPre']=resp1.get_dades() if resp1 else ''
+                dades['respAlt']=resp2.get_nom() if resp2 else ''
+            else:
+                dades['respPre']=resp2.get_dades() if resp2 else ''
+                dades['respAlt']=resp1.get_nom() if resp1 else ''
         return dades
     
     def esborraAntics_responsables(self, dnis):

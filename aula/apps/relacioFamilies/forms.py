@@ -43,7 +43,6 @@ class AlumneModelForm(forms.ModelForm):
     def __init__(self, tutor, *args, **kwargs):
         super(AlumneModelForm, self).__init__(*args, **kwargs)
         if tutor:
-            # TODO usuariResponsable compatibilitat
             responsables = self.instance.get_responsables()
             if not any(responsables):
                 self.fields.pop('responsable_preferent')
