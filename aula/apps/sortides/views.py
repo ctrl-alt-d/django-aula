@@ -1751,6 +1751,7 @@ def logPagaments(txt, tipus="ADMINISTRACIO"):
     msg.envia_a_grup(administradors, importancia=importancia)
 
 def demoAllIn(request, pagament):
+    if not demo(request): return
     if pagament.estat=="E" or not pagament.alumne: return
     version = request.GET.get("Ds_SignatureVersion", "")
     parameters = request.GET.get("Ds_MerchantParameters", "")

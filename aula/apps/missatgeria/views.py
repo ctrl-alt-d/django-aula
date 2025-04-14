@@ -57,7 +57,7 @@ def elMeuMur( request, pg ,tipus = 'all'):
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 25}).configure(table)
 
     missatges = dict()
-    for key,value in iter(MISSATGES.items()):
+    for key,value in MISSATGES.items():
         missatges [key] = list(value.keys())[0]
         
     #Afegeix tipus TOT per opció de veure tots els missatges
