@@ -571,7 +571,7 @@ def dadesRelacioFamilies( request ):
                                                     .filter( alumne__in = alumnes )
                                                     .filter( notificacions_familia__tipus = 'N' )
                                                     .exclude( notificacions_familia__tipus = 'R' )
-                                                    .values_list( 'alumne__pk', flat=True )
+                                                    #.values_list( 'alumne__pk', flat=True )
                                                   )
                 #DEPRECATED vvv
                 # Per compatibilitat amb dades existents
@@ -582,7 +582,7 @@ def dadesRelacioFamilies( request ):
                                                    .filter( alumne__in = alumnes )
                                                    .filter( data_hora_pagament__isnull = True )
                                                    .exclude( pagament_realitzat = True )
-                                                   .values_list( 'alumne__pk', flat=True )
+                                                   #.values_list( 'alumne__pk', flat=True )
                                                  )
                     else:
                         comp_pendent_de_mirar= ( model
@@ -590,12 +590,12 @@ def dadesRelacioFamilies( request ):
                                                    .filter( alumne__in = alumnes )
                                                    .filter( relacio_familia_revisada__isnull = True )
                                                    .filter( relacio_familia_notificada__isnull = False )
-                                                   .values_list( 'alumne__pk', flat=True )
+                                                   #.values_list( 'alumne__pk', flat=True )
                                                  )
                 except:
                     comp_pendent_de_mirar=model.objects.none()
 
-                familia_pendent_de_mirar[codi] = familia_pendent_de_mirar[codi].union(comp_pendent_de_mirar)
+                familia_pendent_de_mirar[codi] = model.objects.filter(Q(pk__in=familia_pendent_de_mirar[codi]) | Q(pk__in=comp_pendent_de_mirar)).values_list( 'alumne__pk', flat=True )
                 #DEPRECATED ^^^
 
             for alumne in alumnes:
@@ -804,18 +804,18 @@ def comunicatAbsencia( request ):
 
     _, responsable, alumne = getRol( user, request )
     if not alumne or (not responsable and alumne.edat()<18):
-        messages.info( request, u"No és possible fer comunicats." )
+        messages.info( request, u"Els comunicats d'alumnes menors d'edat els ha de fer un responsable." )
         return HttpResponseRedirect('/')
     
     ara=datetime.now()
     primerdia=properdiaclasse(alumne, ara)
     if not primerdia:
-        messages.info( request, u"No és possible fer comunicats." )
+        messages.info( request, u"No és possible fer comunicats. No té programada cap classe." )
         return HttpResponseRedirect('/')
 
     if primerdia > (ara+timedelta(days=diesantelacio)).date():
         messages.info( request, 
-                u"Només es poden fer comunicats amb antelació màxima d'una setmana. La propera classe serà el dia {0}."\
+                u"Només es poden fer comunicats amb antelació màxima d'una setmana. La següent classe serà el dia {0}."\
                 .format(primerdia.strftime( '%d/%m' )))
         return HttpResponseRedirect('/')
     
