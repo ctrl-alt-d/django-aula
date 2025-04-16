@@ -294,7 +294,7 @@ def sortidesAllList(request, tipus=None):
     if tipus:
         sortides = sortides.filter(tipus=tipus)
 
-    mes_de_10 = sortides.count() > 10
+    mes_de_10 = sortides.count() > 1
     filter = (
         PagamentFilter(request.GET, queryset=sortides)
         if tipus == "P"
@@ -321,8 +321,6 @@ def sortidesAllList(request, tipus=None):
         settings.URL_DJANGO_AULA, reverse("sortides__sortides__ical")
     )
     
-    print(filter.qs.query)
-
     return render(
         request,
         "table2.html",
