@@ -184,7 +184,7 @@ class SortidaFilter(django_filters.FilterSet):
         ).distinct()
 
     def filter_calendari_desde(self, queryset, name, value):
-        return queryset.filter(calendari_desde__gte=value)
+        return queryset.filter(calendari_desde__date__gte=value)
 
     def filter_calendari_fins(self, queryset, name, value):
         return queryset.filter(calendari_desde__date__lte=value)
