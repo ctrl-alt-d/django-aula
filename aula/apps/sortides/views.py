@@ -294,7 +294,7 @@ def sortidesAllList(request, tipus=None):
     if tipus:
         sortides = sortides.filter(tipus=tipus)
 
-    mes_de_10 = sortides.count() > 1
+    mes_de_10 = sortides.count() > 10
     filter = (
         PagamentFilter(request.GET, queryset=sortides)
         if tipus == "P"
