@@ -321,8 +321,6 @@ def sortidesAllList(request, tipus=None):
         settings.URL_DJANGO_AULA, reverse("sortides__sortides__ical")
     )
     
-    print(filter.qs.query)
-
     return render(
         request,
         "table2.html",
