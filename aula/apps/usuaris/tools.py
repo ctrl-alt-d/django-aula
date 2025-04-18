@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import random
-from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser, User2Professor, User2Alumne, User2Responsable, NotifUsuari
+from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser, User2Professor, User2Alumne, ResponsableUser, User2Responsable, NotifUsuari
 from datetime import datetime
 from datetime import timedelta
 from django.db.models import Q
@@ -14,7 +14,7 @@ import imaplib
 import email
 from django.contrib.auth.models import User, Group
 from aula.apps.missatgeria.models import Missatge
-from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, MAIL_REBUTJAT, ALUMNE_SENSE_EMAILS
+from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, MAIL_REBUTJAT
 
 def connectIMAP():
     '''
@@ -243,54 +243,31 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     for d in destinataris:
         msg.envia_a_usuari( d , 'VI')
 
-def informaNoCorreus(destinataris,usuari,url):
-    '''
-    Envia missatges Djau per cada destinatari. Informa d'usuari sense correus.
-    destinataris  query d'usuaris (User)
-    usuari  a qui fa referència el missatge (Alumne)
-    url string, enllaç per a fer el canvi de la configuració de l'usuari afectat
-
-    '''
-
-    if usuari is None: return
-    missatge = ALUMNE_SENSE_EMAILS
-    tipus_de_missatge = tipusMissatge(missatge)
-    missatge = missatge.format(str(usuari))
-    usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
-    if new:
-        usuari_notificacions.is_active = False
-        usuari_notificacions.first_name = u"Usuari Tasques Programades"
-        usuari_notificacions.save()
-    if not destinataris or not destinataris.exists():
-        destinataris= Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
-        url=geturlconf('ADM',usuari)
-    msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
-                tipus_de_missatge = tipus_de_missatge, enllac=url )
-    for d in destinataris:
-        msg.envia_a_usuari( d , 'VI')
-
-def geturlconf(tipus,usuari):
+def geturlconf(tipus, usuari, responsable=None):
     '''
     Retorna la url per a poder fer el canvi de la configuració de l'usuari
     tipus: Qui ha d'accedir a la configuració, pot ser 'ADM' administrador,  'TUT' tutor, 'USU'  usuari
     usuari: A quin usuari s'ha de modificar la configuració (User o Alumne)
+    responsable: És el responsable a qui s'ha de modificar la configuració o None.  
     Retorna string amb la url o '' si no existeix l'usuari o és el cas 'USU' per alumne.
     '''
 
     if usuari is None: return ''
     al=AlumneUser(pk=usuari.pk).getAlumne()
-    if al:
+    if al or responsable:
         codi=al.pk
     else:
         codi=usuari.pk
     if tipus=='ADM':
-        if al:
-            url='/admin/alumnes/alumne/{0}/change/'.format(codi) if codi else '' # administrador per alumne pk
+        if responsable:
+            url='/admin/relacioFamilies/responsable/{0}/change/'.format(responsable.pk) if responsable.pk else '' # administrador per responsable
+        elif al:
+            url='/admin/alumnes/alumne/{0}/change/'.format(codi) if codi else '' # administrador per alumne
         else:
             url='/admin/auth/user/{0}/change/'.format(codi) if codi else ''     # administrador per usuari no alumne
     else:
-        if tipus=='TUT' and al:
-            url='/open/configuraConnexio/{0}/'.format(codi) if codi else '' # tutor per modificar alumne pk
+        if tipus=='TUT' and (al or responsable):
+            url='/open/configuraConnexio/{0}/'.format(codi) if codi else '' # tutor per modificar alumne o responsable
         else:
             if tipus=='USU' and not al:
                 url='/usuaris/canviDadesUsuari/'   # usuari no alumne
@@ -320,10 +297,20 @@ def informa(emailRetornat, status, action, data, diagnostic, text):
     for almn in alumnes:
         # És un correu d'alumne o responsable
         tutors=almn.tutorsDelGrupDeLAlumne()
-        informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
-                geturlconf('TUT',almn.get_user_associat()))
-        informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                   geturlconf('ADM',almn.get_user_associat()))
+        usuari_almn=almn.get_user_associat()
+        if almn.correu==emailRetornat:
+            #Alumne
+            informaDSN(tutors,usuari_almn,emailRetornat,motiu,data,
+                       geturlconf('TUT', usuari_almn))
+            informaDSN(administradors,usuari_almn,emailRetornat,motiu,data,
+                       geturlconf('ADM', usuari_almn))
+        for r in almn.get_responsables():
+            #Responsables
+            if r.correu_relacio_familia==emailRetornat:
+                informaDSN(tutors,usuari_almn,emailRetornat,motiu,data,
+                           geturlconf('TUT', usuari_almn, responsable=r))
+                informaDSN(administradors,usuari_almn,emailRetornat,motiu,data,
+                           geturlconf('ADM', usuari_almn, responsable=r))
     
     altres=User.objects.filter(email = emailRetornat)
     if altres.exists():

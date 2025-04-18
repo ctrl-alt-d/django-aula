@@ -10,7 +10,7 @@ from aula.apps.sortides.utils_sortides import notifica_sortides
 from django.core import mail
 from django.core.mail import EmailMessage
 from django.db import transaction
-from aula.apps.usuaris.tools import informaNoCorreus, geturlconf, creaNotifUsuari, ultimaNotificacio
+from aula.apps.usuaris.tools import creaNotifUsuari, ultimaNotificacio
 from aula.apps.relacioFamilies.models import EmailPendent, DocAttach
 
 def llista_pendents():
@@ -103,9 +103,6 @@ def notifica():
     #Missatges pendents
     notifica_pendents()
 
-    # Notifica als tutors els casos d'alumnes sense correu informat
-    notificaSenseCorreus()
-    
     #Notificacions        
     ara = datetime.now()
     
@@ -372,7 +369,7 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
 
 def notificaSenseCorreus():
     '''
-    Notifica als tutors els alumnes que no tenen cap email informat.
+    Selecciona els alumnes que no tenen cap email informat.
     Cada alumne ha de tenir correu_relacio_familia d'un dels responsables o correu propi si és major d'edat.
     Retorna Query amb els alumnes sense correu.
     '''
@@ -384,7 +381,6 @@ def notificaSenseCorreus():
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte = ara ) | Q(data_baixa__isnull = True )
     
-    # Notifica als tutors els alumnes que no tenen cap email
     #DEPRECATED vvv
     if not Alumne.objects.filter(responsables__correu_relacio_familia__isnull = False).exists():
         return Alumne.objects.none()
@@ -396,9 +392,7 @@ def notificaSenseCorreus():
             if a.edat()>=18 and a.get_correu_relacio():
                 # És major d'edat i té correu propi
                 alumnesMajorsEdat.append(a.id)
-                continue
-            tutors=a.tutorsDelGrupDeLAlumne()
-            informaNoCorreus(tutors,a.get_user_associat(),geturlconf('TUT',a.get_user_associat()))
+    # Retorna alumnes majors sense correu o menors sense correu dels responsables
     return alumnesSenseCorreu.exclude(id__in=alumnesMajorsEdat)
 
 def enviaEmailFamilies(assumpte, missatge, fitxers=None):

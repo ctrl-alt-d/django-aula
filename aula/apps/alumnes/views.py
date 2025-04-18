@@ -994,8 +994,8 @@ def llistaAlumnescsv( request ):
                e.nom, 
                e.user_associat.username, 
                e.get_correu_relacio(),
-               e.get_correus_tots(),
-               e.get_correus_relacio_familia(),
+               ','.join(e.get_correus_tots()),
+               ','.join(e.get_correus_relacio_familia()),
                e.user_associat.last_login,
                e.user_associat.is_active,
                bool(e.get_correus_relacio_familia()) ] for e in llistaAlumnes]

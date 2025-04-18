@@ -169,14 +169,17 @@ def fesCarrega( ):
     print("preparant configuració de matrícula")
     tpv=TPV(None, "centre", settings.CUSTOM_CODI_COMERÇ, settings.CUSTOM_KEY_COMERÇ, "Pagaments al centre", False)
     tpv.save()
-    for tipus in ["material", "taxes", "taxcurs", "uf"]:
+    for tipus in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
         tq=TipusQuota(None, tipus)
         tq.save()
-    q=Quota(None, 10, date.today() + relativedelta( days = 30 ), inici_curs.year, "Material escolar", None, tpv.id, TipusQuota.objects.get(nom="material").id)
+    q=Quota(None, 10, date.today() + relativedelta( days = 30 ), inici_curs.year, "Material escolar", 
+            None, tpv.id, TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA).id)
     q.save()
-    q=Quota(None, 360, None, inici_curs.year, "Taxes cicles FP", None, tpv.id, TipusQuota.objects.get(nom="taxcurs").id)
+    q=Quota(None, 360, None, inici_curs.year, "Taxes cicles FP", 
+            None, tpv.id, TipusQuota.objects.get(nom="taxcurs").id)
     q.save()
-    q=Quota(None, 25, None, inici_curs.year, "Taxa UF", None, tpv.id, TipusQuota.objects.get(nom="uf").id)
+    q=Quota(None, 25, None, inici_curs.year, "Taxa UF", 
+            None, tpv.id, TipusQuota.objects.get(nom="uf").id)
     q.save()
 
     print (u"canviant dades dels professors")

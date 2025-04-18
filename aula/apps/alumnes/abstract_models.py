@@ -277,13 +277,13 @@ class AbstractAlumne(models.Model):
         return self.correu
     
     def get_correus_relacio_familia(self):
-        return [ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if (x and x.correu_relacio_familia) ]
+        return list(set([ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if (x and x.correu_relacio_familia) ]))
 
     def get_correus_tots(self):
         tots=self.get_correus_relacio_familia()
         tots=tots+[ x.correu for x in self.get_responsables(compatible=True) if x and x.correu ]
         tots=tots+[ self.get_correu_relacio() ]
-        return tots
+        return list(set(tots))
     
     def get_telefons(self):
         return u", ".join([ t for t in [self.telefons, self.altres_telefons] if t ])

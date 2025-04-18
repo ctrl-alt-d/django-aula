@@ -99,8 +99,6 @@ ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE =u"Redsys: Intent de reportar transac
 
 MAIL_REBUTJAT=u"Mail rebutjat per l'usuari: \"{0}\"  adreça: \"{1}\".\nData d'enviament: {2}\nMotiu: {3}"
 
-ALUMNE_SENSE_EMAILS=u"L'usuari: \"{0}\" no té adreça d'email informada"
-
 FI_INITDB=u"Inicialització de la base de dades completada"
 
 ERROR_INITDB=u"Inicialització incompleta de la base de dades"
@@ -133,7 +131,6 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
                                 ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
                                 MAIL_REBUTJAT,
-                                ALUMNE_SENSE_EMAILS,
                                 FI_INITDB,
                                 ERROR_INITDB,
                                 IMPORTACIO_PREINSCRIPCIO_FINALITZADA,
