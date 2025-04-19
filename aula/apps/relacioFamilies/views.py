@@ -571,7 +571,6 @@ def dadesRelacioFamilies( request ):
                                                     .filter( alumne__in = alumnes )
                                                     .filter( notificacions_familia__tipus = 'N' )
                                                     .exclude( notificacions_familia__tipus = 'R' )
-                                                    #.values_list( 'alumne__pk', flat=True )
                                                   )
                 #DEPRECATED vvv
                 # Per compatibilitat amb dades existents
@@ -582,7 +581,14 @@ def dadesRelacioFamilies( request ):
                                                    .filter( alumne__in = alumnes )
                                                    .filter( data_hora_pagament__isnull = True )
                                                    .exclude( pagament_realitzat = True )
-                                                   #.values_list( 'alumne__pk', flat=True )
+                                                 )
+                    elif codi==u'faltes assistència':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .exclude(estat__codi_estat__in = ['P','O'])
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
                                                  )
                     else:
                         comp_pendent_de_mirar= ( model
@@ -590,12 +596,11 @@ def dadesRelacioFamilies( request ):
                                                    .filter( alumne__in = alumnes )
                                                    .filter( relacio_familia_revisada__isnull = True )
                                                    .filter( relacio_familia_notificada__isnull = False )
-                                                   #.values_list( 'alumne__pk', flat=True )
                                                  )
                 except:
                     comp_pendent_de_mirar=model.objects.none()
 
-                familia_pendent_de_mirar[codi] = model.objects.filter(Q(pk__in=familia_pendent_de_mirar[codi]) | Q(pk__in=comp_pendent_de_mirar)).values_list( 'alumne__pk', flat=True )
+                familia_pendent_de_mirar[codi] = model.objects.filter(Q(pk__in=familia_pendent_de_mirar[codi]) | Q(pk__in=comp_pendent_de_mirar))
                 #DEPRECATED ^^^
 
             for alumne in alumnes:
@@ -637,7 +642,7 @@ def dadesRelacioFamilies( request ):
                 if nConnexions > 0:
                     camp.multipleContingut.append( ( u'Darrera Connx: {0}'.format(  max(dataDarreraConnexio).strftime( '%d/%m/%Y' ) ), None, ) )
                 for ambit in familia_pendent_de_mirar:
-                    if alumne.pk in familia_pendent_de_mirar[ambit]:
+                    if familia_pendent_de_mirar[ambit].filter(pk=alumne.pk).exists():
                         camp.multipleContingut.append( (u"{} x revisar".format(ambit), None,) )
                 filera.append(camp)
                 
