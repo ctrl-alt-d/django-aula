@@ -3,6 +3,7 @@
 from django.apps import apps
 from django.db.models import Q
 import django_filters
+from django.db.models.functions import TruncDate
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Field, Submit, Fieldset, HTML
@@ -32,30 +33,32 @@ class SortidaFilter(django_filters.FilterSet):
     )
 
     data_inici_desde = django_filters.DateFilter(
-        field_name="calendari_desde",
-        lookup_expr="gte",
-        label="Inici posterior a",
+        method="filter_calendari_desde",
+        label="Rang data inici des de",
+        help_text="Inici igual o posterior a data",
         widget=DateTextImput(),
     )
 
     data_inici_fins = django_filters.DateFilter(
-        field_name="calendari_desde",
-        lookup_expr="lte",
-        label="Inici anterior a",
+        method="filter_calendari_fins",
+        label="Rang data inici fins a",
+        help_text="Inici igual o anterior a data",
         widget=DateTextImput(),
     )
 
     termini_pagament_desde = django_filters.DateFilter(
         field_name="termini_pagament",
-        lookup_expr="gte",
-        label="Termini pagament posterior a",
+        lookup_expr="date__gte",
+        label="Rang termini pagament des de",
+        help_text="Termini pagament igual o posterior a data",
         widget=DateTextImput(),
     )
 
     termini_pagament_fins = django_filters.DateFilter(
         field_name="termini_pagament",
-        lookup_expr="lte",
-        label="Termini pagament anterior a",
+        lookup_expr="date__lte",
+        label="Rang termini pagament fins a",
+        help_text="Termini pagament igual o anterior a data",
         widget=DateTextImput(),
     )
 
@@ -156,8 +159,6 @@ class SortidaFilter(django_filters.FilterSet):
             "ciutat",
             "mitja_de_transport",
             "empresa_de_transport",
-            "data_inici_desde",
-            "data_inici_fins",
             "termini_pagament_desde",
             "termini_pagament_fins",
         ]
@@ -182,6 +183,11 @@ class SortidaFilter(django_filters.FilterSet):
             Q(professor_que_proposa=value) | Q(professors_responsables=value)
         ).distinct()
 
+    def filter_calendari_desde(self, queryset, name, value):
+        return queryset.filter(calendari_desde__date__gte=value)
+
+    def filter_calendari_fins(self, queryset, name, value):
+        return queryset.filter(calendari_desde__date__lte=value)
 
 class PagamentFilter(django_filters.FilterSet):
     """
@@ -211,14 +217,14 @@ class PagamentFilter(django_filters.FilterSet):
 
     termini_pagament_desde = django_filters.DateFilter(
         field_name="termini_pagament",
-        lookup_expr="gte",
+        lookup_expr="date__gte",
         label="Termini pagament posterior a",
         widget=DateTextImput(),
     )
 
     termini_pagament_fins = django_filters.DateFilter(
         field_name="termini_pagament",
-        lookup_expr="lte",
+        lookup_expr="date__lte",
         label="Termini pagament anterior a",
         widget=DateTextImput(),
     )
