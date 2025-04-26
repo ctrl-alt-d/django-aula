@@ -370,8 +370,8 @@ class AbstractAlumne(models.Model):
         if not bool(rp1_dni) and not bool(rp2_dni):
             responsables=list(self.responsables.all())
             #DEPRECATED vvv
-            if not responsables and compatible:
-                Responsable=apps.get_model('relacioFamilies', 'Responsable')
+            Responsable=apps.get_model('relacioFamilies', 'Responsable')
+            if not responsables and compatible and not Responsable.objects.exists():
                 resp1=resp2=None
                 if self.rp1_nom or self.rp1_correu or self.rp1_mobil or self.rp1_telefon or self.correu_relacio_familia_pare:
                     if "," in self.rp1_nom:

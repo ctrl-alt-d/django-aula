@@ -556,12 +556,12 @@ def dadesRelacioFamilies( request ):
 
             familia_pendent_de_mirar_models = [
                 (u'qualitativa', RespostaAvaluacioQualitativa,),
-                (u'sortida(es)', NotificaSortida,),
+                (u'activitats o pagaments', NotificaSortida,),
                 (u'incidencies o observacions', Incidencia,),
                 (u'sanció(ns)', Sancio,),
                 (u'expulsió(ns)', Expulsio,),
                 (u'faltes assistència', ControlAssistencia,),
-                (u'pagament(s)', Pagament,),
+                (u'pagament(s)', QuotaPagament,),
             ]
 
             familia_pendent_de_mirar = {}
@@ -576,12 +576,34 @@ def dadesRelacioFamilies( request ):
                 #DEPRECATED vvv
                 # Per compatibilitat amb dades existents
                 try:
+                    avui = datetime.now().date()
                     if codi==u'pagament(s)':
                         comp_pendent_de_mirar= ( model
                                                    .objects
                                                    .filter( alumne__in = alumnes )
                                                    .filter( data_hora_pagament__isnull = True )
                                                    .exclude( pagament_realitzat = True )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                    elif codi==u'activitats o pagaments':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .exclude( sortida__data_fi__lt = avui )
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                    elif codi==u'qualitativa':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .exclude( qualitativa__data_tancar_tancar_portal_families__lt = avui )
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
                                                    .distinct()
                                                  )
                     elif codi==u'faltes assistència':
@@ -591,6 +613,7 @@ def dadesRelacioFamilies( request ):
                                                    .exclude(estat__codi_estat__in = ['P','O'])
                                                    .filter( relacio_familia_revisada__isnull = True )
                                                    .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
                                                    .distinct()
                                                  )
                     else:
@@ -599,6 +622,7 @@ def dadesRelacioFamilies( request ):
                                                    .filter( alumne__in = alumnes )
                                                    .filter( relacio_familia_revisada__isnull = True )
                                                    .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
                                                    .distinct()
                                                  )
                 except:
@@ -1974,8 +1998,10 @@ def elMeuInforme( request, pk = None ):
             #--
             taula.fileres.append( filera )
             if not semiImpersonat:
-                if not notificacio: respostes[0].set_notificacio(notifAlumne)
-                if not revisio: respostes[0].set_revisio(revisAlumne)
+                for resposta in respostes:
+                    notificacio, revisio = resposta.get_notif_revisio(user)
+                    if not notificacio: resposta.set_notificacio(notifAlumne)
+                    if not revisio: resposta.set_revisio(revisAlumne)
                 
         report.append(taula)
 
