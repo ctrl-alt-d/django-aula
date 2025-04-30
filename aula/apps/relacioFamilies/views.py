@@ -273,10 +273,8 @@ def qrTokens( request , pk=None ):
 
     if True:  # not excepcio:
         response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
-        if pk:
-            response['Content-Disposition'] = u'attachment; filename="{0}-{1}-{2}.odt"'.format("QR", alumne.cognoms, alumne.nom)
-        else:
-            response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format("QR", "Tot l'alumnat")
+        filename = "QR-{0}.odt".format("{0}-{1}".format(alumne.cognoms, alumne.nom) if pk else "Tot l'alumnat")
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
 
