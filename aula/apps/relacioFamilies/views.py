@@ -178,22 +178,21 @@ def qrTokens( request , pk=None ):
     (user, l4) = credentials
 
     professor = User2Professor(user)
-
+    seg_tutor_de_lalumne = seg_es_tutor = False
     if pk:
         alumne = get_object_or_404(Alumne, pk=pk) if pk else None
         alumnes = [alumne, ]
+        seg_tutor_de_lalumne = pk and professor in alumne.tutorsDeLAlumne()
     else:
         els_meus_alumnes_de_grups_tutorats = [a for t in professor.tutor_set.all()
                                               for a in t.grup.alumne_set.all()]
         els_meus_tutorats_individualitzats = [t.alumne for t in professor.tutorindividualitzat_set.all()]
         alumnes = els_meus_alumnes_de_grups_tutorats + els_meus_tutorats_individualitzats
-
-        # seg-------------------
-        seg_tutor_de_lalumne = pk and professor in alumne.tutorsDeLAlumne()
-        seg_es_tutor = professor.tutor_set.exists() or professor.i.tutorindividualitzat_set.exists()
-        te_permis = l4 or seg_tutor_de_lalumne or seg_es_tutor
-        if not te_permis:
-            raise Http404()
+        seg_es_tutor = professor.tutor_set.exists() or professor.tutorindividualitzat_set.exists()
+    # seg-------------------
+    te_permis = l4 or seg_tutor_de_lalumne or seg_es_tutor
+    if not te_permis:
+        raise Http404()
 
     report = []
 
@@ -274,8 +273,10 @@ def qrTokens( request , pk=None ):
 
     if True:  # not excepcio:
         response = http.HttpResponse(contingut, content_type='application/vnd.oasis.opendocument.text')
-        response['Content-Disposition'] = u'attachment; filename="{0}-{1}-{2}.odt"'.format("QR", alumne.cognoms, alumne.nom)
-
+        if pk:
+            response['Content-Disposition'] = u'attachment; filename="{0}-{1}-{2}.odt"'.format("QR", alumne.cognoms, alumne.nom)
+        else:
+            response['Content-Disposition'] = u'attachment; filename="{0}-{1}.odt"'.format("QR", "Tot l'alumnat")
     else:
         response = http.HttpResponse('''Als Gremlin no els ha agradat aquest fitxer! %s''' % html.escape(excepcio))
 
@@ -348,12 +349,13 @@ def qrs( request):
                 # --
                 taula.fileres.append(filera)
             report.append(taula)
-
+        menuCTX = list({"/open/qrTokens/": "Genera nous codis QR per a tot el grup"}.items())
         return render(
             request,
             'report.html',
             {'report': report,
              'head': "QR's dels meus tutorats",
+             'menuCTX' : menuCTX,
              },
         )
 
