@@ -226,7 +226,7 @@ def comunicaMatricula(tipus, curs, alumne, connection=None):
     '''
     Fa comunicació de missatge de matrícula per alumne i responsables.
     '''
-    if alumne.edat()>=18 or not alumne.responsables.exists() or not alumne.get_correus_relacio_familia():
+    if alumne.edat()>=18 or not alumne.responsables.exists() or not alumne.get_correus_relacio_familia(checkMajorEdat=False):
         mailMatricula(tipus, curs, alumne.correu, alumne, connection=connection)
     for r in alumne.get_responsables():
         if r:

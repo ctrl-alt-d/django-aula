@@ -994,15 +994,15 @@ def llistaAlumnescsv( request ):
                e.nom, 
                e.user_associat.username, 
                e.get_correu_relacio(),
+               e.get_responsables(compatible=True)[0].get_correu_relacio() if e.get_responsables(compatible=True)[0] else '',
+               e.get_responsables(compatible=True)[1].get_correu_relacio() if e.get_responsables(compatible=True)[1] else '',
                ','.join(e.get_correus_tots()),
-               ','.join(e.get_correus_relacio_familia()),
-               e.user_associat.last_login,
-               e.user_associat.is_active,
+               e.esta_relacio_familia_actiu(),
                bool(e.get_correus_relacio_familia()) ] for e in llistaAlumnes]
     
     capcelera = [ 'ralc', 'alumne', 'grup', 'cognoms', 'nom', 'username', 'correu',
-                 'tots els correus', 'correus relació família',
-                 'last_login', 'usuari actiu', 'correus OK' ]
+                 'correu relació família 1', 'correu relació família 2', 'tots els correus',
+                 'usuari actiu', 'correus OK' ]
 
     template = loader.get_template("export.csv")
     context = {

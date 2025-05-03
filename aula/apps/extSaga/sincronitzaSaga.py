@@ -12,7 +12,7 @@ from aula.apps.relacioFamilies.tools import creaResponsables
 
 from django.db.models import Q
 
-from datetime import date
+from datetime import datetime, date
 from django.contrib.auth.models import Group
 
 import csv, time
@@ -73,6 +73,7 @@ def sincronitza(f, user = None):
     info_nMissatgesEnviats = 0
     info_nResponsablesCreats = 0
     info_nRespSenseDni = 0
+    info_nMenorsSenseResp = 0
 
     AlumnesCanviatsDeGrup = []
     AlumnesInsertats = []
@@ -126,7 +127,7 @@ def sincronitza(f, user = None):
                 a.correu = uvalue
             if columnName.endswith( u"_DATA NAIXEMENT"):
                 dia=time.strptime( uvalue,'%d/%m/%Y')
-                a.data_neixement = time.strftime('%Y-%m-%d', dia)
+                a.data_neixement = datetime.fromtimestamp(time.mktime(dia)).date()
                 trobatDataNeixement = True
             if columnName.endswith( u"_CENTRE PROCEDÈNCIA"):
                 a.centre_de_procedencia = uvalue
@@ -310,8 +311,14 @@ def sincronitza(f, user = None):
         #DEPRECATED ^^^
         a.save()
         # Crea usuaris Responsable
-        if (r1.get("cognoms",None) or r1.get("nom",None)) and not r1.get("dni",None): info_nRespSenseDni += 1
-        if (r2.get("cognoms",None) or r2.get("nom",None)) and not r2.get("dni",None): info_nRespSenseDni += 1
+        err_resp_menors = 0
+        if (r1.get("cognoms",None) or r1.get("nom",None)) and not r1.get("dni",None):
+            info_nRespSenseDni += 1
+            if a.edat()<18: err_resp_menors += 1
+        if (r2.get("cognoms",None) or r2.get("nom",None)) and not r2.get("dni",None):
+            info_nRespSenseDni += 1
+            if a.edat()<18: err_resp_menors += 1
+        if err_resp_menors==2: info_nMenorsSenseResp += 1
         info_nResponsablesCreats += creaResponsables(a, [r1, r2])
         cursos.add(a.grup.curs)
         #DEPRECATED vvv
@@ -455,6 +462,7 @@ def sincronitza(f, user = None):
     infos.append(u'{0} missatges enviats'.format(info_nMissatgesEnviats ) )
     infos.append(u'{0} responsables creats'.format(info_nResponsablesCreats ) )
     if info_nRespSenseDni>0: infos.append(u'{0} responsables sense identificació'.format(info_nRespSenseDni ) )
+    if info_nMenorsSenseResp>0: infos.append(u'{0} alumnes menors d\'edat sense responsable'.format(info_nMenorsSenseResp ) )
     missatge = IMPORTACIO_SAGA_FINALITZADA
     tipus_de_missatge = tipusMissatge(missatge)
     msg = Missatge(

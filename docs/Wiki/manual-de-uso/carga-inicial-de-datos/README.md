@@ -24,6 +24,8 @@ Tutorial exportación de SAGA [aquí](../../anexos/exportacion-saga.md).
 
 Básicamente el CSV  necesita una primera linea con las cabeceras de los campos y después lineas de Alumnos y sus datos.
 
+Se creará un usuario de acceso individual para cada alumno y responsable. Es necesario informar del DNI de los responsables para poder crear su usuario correspondiente.
+
 Ahora bien, con lo explicado tenemos cubiertos a los alumnos, pero que pasa con los demás activos de un centro \(Profesores, Grupos, Asignaturas, Horarios..\).
 
 En resumen la segunda parte critica de la carga de datos es importar el horario escolar de tu centro, a grandes rasgos un horario es una tabla con franjas horarias divididas por los días de la semana, donde en cada día de sus diferentes **franjas** toca una **asignatura** que la imparte un **profesor** en un **aula** a un **grupo** determinado.

@@ -266,7 +266,7 @@ class AbstractAlumne(models.Model):
         
     def esta_relacio_familia_actiu(self):
         # Si és major d'edat, no fa falta correus_relacio_familia
-        TeCorreuResponsable = bool(self.get_correus_relacio_familia()) and any(self.responsablesActius())
+        TeCorreuResponsable = bool(self.get_correus_relacio_familia(checkMajorEdat=False)) and any(self.responsablesActius())
         TeCorreuAlumne = self.edat()>=18 and self.get_correu_relacio() and self.get_user_associat() is not None and self.user_associat.is_active
         return TeCorreuResponsable or TeCorreuAlumne
     
@@ -276,17 +276,19 @@ class AbstractAlumne(models.Model):
     def get_correu_relacio(self):
         return self.correu
     
-    def get_correus_relacio_familia(self):
-        return list(set([ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if (x and x.correu_relacio_familia) ]))
+    def get_correus_relacio_familia(self, checkMajorEdat=True):
+        emails = [ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if (x and x.correu_relacio_familia) ]
+        if checkMajorEdat and self.edat()>=18: emails.append(self.get_correu_relacio())
+        return list(set(emails))
 
     def get_correus_tots(self):
-        tots=self.get_correus_relacio_familia()
+        tots=self.get_correus_relacio_familia(checkMajorEdat=False)
         tots=tots+[ x.correu for x in self.get_responsables(compatible=True) if x and x.correu ]
         tots=tots+[ self.get_correu_relacio() ]
         return list(set(tots))
     
     def get_telefons(self):
-        return u", ".join([ t for t in [self.telefons, self.altres_telefons] if t ])
+        return self.altres_telefons
     
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None

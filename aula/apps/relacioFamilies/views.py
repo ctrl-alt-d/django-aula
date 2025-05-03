@@ -141,6 +141,8 @@ def enviaBenvinguda( request , pk ):
 @login_required
 @group_required(['professors'])
 def bloquejaDesbloqueja( request , pk ):
+    # TODO fa falta aquesta view ?
+    # Si fa falta, s'hauria de replantejar afegint els responsables.
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
 

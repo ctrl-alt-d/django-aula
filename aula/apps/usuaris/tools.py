@@ -717,7 +717,10 @@ def enviaBenvingudaAlumne( alumne, force = False ):
     errors = []
 
     if not correusFamilia:
-        warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels pares estigui informada")
+        if alumne.edat()<18:
+            warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels responsables estigui informada")
+        else:
+            warnings.append( u"Comprova que l'adreça electrònica de l'alumne o un dels responsables estigui informada")
         errors.append( u"Error enviant correu de benvinguda" )
     elif alumne.esBaixa():
         warnings.append( u"Aquest alumne és baixa. No se li pot enviar codi d'accés.")

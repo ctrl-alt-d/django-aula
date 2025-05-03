@@ -29,7 +29,7 @@ def fusiona_alumnes_by_pk( pk , credentials = None):
                         )
     q_mateixa_altres = Q(
                     adreca = a.adreca,
-                    telefons = a.telefons,
+                    #telefons = a.telefons,
                     localitat = a.localitat,
                     centre_de_procedencia = a.centre_de_procedencia,
                     adreca__gte= u""                             
