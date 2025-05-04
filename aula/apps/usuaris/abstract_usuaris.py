@@ -58,6 +58,21 @@ class AbstractAccio(models.Model):
     
 #----------------------------------------------------------------------------------------------
 
+class AbstractNotifUsuari(models.Model):
+    usuari = models.ForeignKey( User, db_index = True, related_name = 'NotifUsuari', on_delete=models.CASCADE )
+    alumne = models.ForeignKey( "alumnes.Alumne", db_index = True, related_name = 'NotifUsuari', on_delete=models.CASCADE )
+    moment = models.DateTimeField( auto_now_add = True,  db_index = True )
+    tipus = models.CharField( max_length = 1, blank = True )  #  'N' Notificació o 'R' Revisió
+    
+    class Meta:
+        abstract = True
+        ordering = ['usuari', '-moment']
+        verbose_name = u"Notificació a usuari"
+        verbose_name_plural = u"Notificacions als usuaris"
+        indexes = [
+            models.Index(fields=['usuari','alumne','tipus']),
+            ]
+
 class AbstractLoginUsuari(models.Model):   
     exitos = models.BooleanField()
     usuari = models.ForeignKey( User, db_index = True, related_name = 'LoginUsuari', on_delete=models.CASCADE )

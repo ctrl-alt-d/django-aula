@@ -465,7 +465,6 @@ def posaIncidenciaPrimeraHora( request ):
                 'formset.html',
                     {'formset': formset,
                      'titol_formulari': 'Incidència per retard entrada al centre', 
-                     'head': 'Incidència primera hora' ,
                      'missatge': missatge
                     },
                 )
@@ -645,26 +644,17 @@ def editaExpulsio( request, pk ):
         edatAlumne = expulsio.alumne.edat()
     except:
         pass
-
-    nomResponsable1 = expulsio.alumne.rp1_nom if expulsio.alumne.rp1_nom else ''
-    nomResponsable2 = expulsio.alumne.rp2_nom if expulsio.alumne.rp2_nom else ''
-    telefonResponsable1 = expulsio.alumne.rp1_telefon if expulsio.alumne.rp1_telefon else ''
-    telefonResponsable2 = expulsio.alumne.rp2_telefon if expulsio.alumne.rp2_telefon else ''
-    mobilResponsable1 = expulsio.alumne.rp1_mobil if expulsio.alumne.rp1_mobil else ''
-    mobilResponsable2 = expulsio.alumne.rp2_mobil if expulsio.alumne.rp2_mobil else ''
-    infoResponsable1 = nomResponsable1 + (u' (' + u' , '.join(filter(None, [telefonResponsable1, mobilResponsable1])) + u')')
-    infoResponsable2 = nomResponsable2 + (u' (' + u' , '.join(filter(None, [telefonResponsable2, mobilResponsable2])) + u')')
-    responsable1 = infoResponsable1 if expulsio.alumne.primer_responsable == 0 else infoResponsable2
-    responsable2 = infoResponsable2 if expulsio.alumne.primer_responsable == 0 else infoResponsable1
-
+    
+    resps = expulsio.alumne.get_dades_responsables()
+    
     infoForm = [
         ('Alumne', unicode(expulsio.alumne)),
+        ('Edat alumne', edatAlumne),
         ('Dia', expulsio.dia_expulsio),
         ('Hora', expulsio.franja_expulsio),
-        ('Responsable preferent', responsable1),
-        ('Responsable (altre)', responsable2),
-        ('Altres telèfons', expulsio.alumne.altres_telefons),
-        ('Edat alumne', edatAlumne),
+        ('Responsable preferent', resps['respPre']),
+        ('Responsable (altre)', resps['respAlt']),
+        ('Altres telèfons', expulsio.alumne.get_telefons()),
         ('Professor que expulsa', expulsio.professor if expulsio.professor else 'N/A'),
         ('Professor que recull expulsió', expulsio.professor_recull if expulsio.professor_recull else 'N/A'),
     ]
@@ -1498,11 +1488,14 @@ def editaSancio( request, pk ):
     except:
         pass
     
+    resps = sancio.alumne.get_dades_responsables()
+    
     infoForm = [
           ('Alumne',unicode( sancio.alumne) ),
-          ( 'Telèfon Alumne', sancio.alumne.telefons),                     
-          ( 'Nom tutors', sancio.alumne.tutors),                     
           ( 'Edat alumne', edatAlumne ),                     
+          ('Responsable preferent', resps['respPre']),
+          ('Responsable (altre)', resps['respAlt']),
+          ( 'Altres telèfons', sancio.alumne.get_telefons()),
           ( 'Carta impresa (sanció bloquejada)', sancio.impres ),                     
                 ]
     
@@ -1569,6 +1562,7 @@ def editaSancio( request, pk ):
         formSelectIncidencies = incidenciesRelacionadesForm( querysetIncidencies = sancio.incidencia_set.order_by('dia_incidencia').all(),
                                                              querysetExpulsions  = sancio.expulsio_set.order_by('dia_expulsio').all() )
 
+    formSancio.infoForm=infoForm
     formset = [ formSancio, formSelectIncidencies ]
     formset.extend ( [  can_delete ] if l4 else []  )
     

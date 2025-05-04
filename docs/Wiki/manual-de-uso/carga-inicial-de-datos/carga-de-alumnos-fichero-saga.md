@@ -4,6 +4,8 @@ Hasta ahora tenemos cargados los grupos de nuestro centro ahora es el momento de
 
 Recuerda que Django-Aula solo permite la importación de alumnos desde una exportación hecha desde SAGA, el proceso de obtención de esta exportación esta explicado en [TutorialALUMNES_SAGA-ESFER@_a_DJAU.pdf](../../../installacio/TutorialALUMNES_SAGA-ESFER@_a_DJAU.pdf)
 
+Se creará un usuario de acceso individual para cada alumno y responsable. Es necesario informar del DNI de los responsables para poder crear su usuario correspondiente.
+
 Si desde SAGA no esta especificado el grupo al que pertenece el Alumno consultar [IMPORTAR_A_DJAUsense_curs_actualitzat.pdf](../../../installacio/IMPORTAR_A_DJAUsense_curs_actualitzat.pdf)
 
 Vale llego el momento de la verdad, nos dirigimos a esta URL: \[URL\_DJAU\]/extSaga/sincronitzaSaga/ 

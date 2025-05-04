@@ -4,7 +4,7 @@ from django.db import models
 #from django.db.models import get_model
 from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.abstract_usuaris import AbstractDepartament,\
-    AbstractAccio, AbstractLoginUsuari, AbstractOneTimePasswd, AbstractQRPortal
+    AbstractAccio, AbstractLoginUsuari, AbstractOneTimePasswd, AbstractQRPortal, AbstractNotifUsuari
 from aula.utils.tools import unicode
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 from private_storage.fields import PrivateFileField
@@ -18,7 +18,7 @@ class Departament(AbstractDepartament):
 class AlumneUserManager(models.Manager):
     def get_queryset(self):
         grupAlumnes, _ = Group.objects.get_or_create( name = 'alumne' )
-        return super(AlumneUserManager, self).get_queryset().filter( groups = grupAlumnes   )
+        return super(AlumneUserManager, self).get_queryset().filter( groups = grupAlumnes, username__startswith='almn' )
 
 
 class AlumneUser(User):
@@ -40,6 +40,51 @@ class AlumneUser(User):
                         
     def __str__(self):
         return unicode( self.getAlumne() )
+
+def User2Alumne(user):
+    from aula.apps.alumnes.models import Alumne
+    alumne = None
+    try:
+        alumne = Alumne.objects.get(user_associat=user)
+    except:
+        pass
+    return alumne
+
+# ----------------------------------------------------------------------------------------------
+
+class ResponsableUserManager(models.Manager):
+    def get_queryset(self):
+        grupAlumnes, _ = Group.objects.get_or_create( name = 'alumne' )
+        return super().get_queryset().filter( groups = grupAlumnes, username__startswith='resp' )
+
+class ResponsableUser(User):
+    objects = ResponsableUserManager()
+    class Meta:
+        proxy = True
+        ordering = ['last_name','first_name','username']
+    
+    def getUser(self):
+        return User.objects.get( pk = self.pk )
+    
+    def getResponsable(self):
+        responsable = None
+        try:
+            responsable = self.responsable
+        except:
+            pass
+        return responsable
+    
+    def __str__(self):
+        return self.getResponsable()
+
+def User2Responsable(user):
+    from aula.apps.relacioFamilies.models import Responsable
+    responsable = None
+    try:
+        responsable = Responsable.objects.get(user_associat=user)
+    except:
+        pass
+    return responsable
 
     # ----------------------------------------------------------------------------------------------
 
@@ -171,6 +216,9 @@ class Accio(AbstractAccio):
     pass
     
 #----------------------------------------------------------------------------------------------
+
+class NotifUsuari(AbstractNotifUsuari):
+    pass
 
 class LoginUsuari(AbstractLoginUsuari):
     pass   

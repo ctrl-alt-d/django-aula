@@ -33,10 +33,10 @@ def report_cartaAbsentisme( request, carta ):
         # amorilla@xtec.cat  
         try:
             datafmt = settings.CUSTOM_DATE_FORMAT
-            carta_data=carta.data_carta.strftime( datafmt )
+            carta_data=carta.data_carta.strftime( datafmt ) if carta.data_carta else ''
         except:
             datafmt = "%-d %B de %Y"
-            carta_data=carta.data_carta.strftime( datafmt )
+            carta_data=carta.data_carta.strftime( datafmt ) if carta.data_carta else ''
 
         try:
             des_de_data = carta.faltes_des_de_data.strftime( '%d/%m/%Y' )
@@ -47,8 +47,8 @@ def report_cartaAbsentisme( request, carta ):
                         'alumne': unicode(carta.alumne),
                         'grup':unicode(carta.alumne.grup),
                         'nfaltes':carta.nfaltes,
-                        'year':carta.data_carta.year,
-                        'fins_a_data': carta.faltes_fins_a_data.strftime( '%d/%m/%Y' ),
+                        'year':carta.data_carta.year if carta.data_carta else '',
+                        'fins_a_data': carta.faltes_fins_a_data.strftime( '%d/%m/%Y' ) if carta.faltes_fins_a_data else '',
                         'tipus1': carta.tipus_carta == 'tipus1',
                         'tipus2': carta.tipus_carta == 'tipus2',
                         'tipus3A': carta.tipus_carta == 'tipus3A',
@@ -65,7 +65,7 @@ def report_cartaAbsentisme( request, carta ):
                         'municipi': carta.alumne.municipi,
                         'cognoms': carta.alumne.cognoms,
                         'nivell': carta.alumne.getNivellCustom(),  # nivell de CUSTOM_NIVELLS
-                        'edat': carta.alumne.edat(carta.data_carta),
+                        'edat': carta.alumne.edat(carta.data_carta) if carta.data_carta else '',
                         'numcarta': carta.carta_numero,
                         }
         
