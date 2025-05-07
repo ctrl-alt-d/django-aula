@@ -1380,7 +1380,7 @@ def elMeuInforme( request, pk = None ):
 
         report.append(taula)
 
-    infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
+    infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU and not settings.CUSTOM_SORTIDES_OCULTES_A_FAMILIES
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
     pagquotesNoves = pagquotes.filter(pagament_realitzat=False)
     infQuota=detall in ['all', 'sortides'] and (pagquotes or settings.CUSTOM_QUOTES_ACTIVES)

@@ -239,6 +239,11 @@ CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [ u"Aquest missatge ha estat enviat per un 
                      u"{0}".format( CUSTOM_PORTAL_FAMILIES_TUTORIAL ),
                      ]
 
+# Si True deixa ocultes les sortides a les famílies.
+# Només s'ha de fer servir si el centre educatiu té un sistema de notificacions i pagaments propi i no vol fer servir el Djau,
+però igualment vol definir les sortides i gestionar l'alumnat i professorat afectat.
+CUSTOM_SORTIDES_OCULTES_A_FAMILIES = False
+
 
 A la base de dades
 ------------------
