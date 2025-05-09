@@ -146,6 +146,9 @@ def clean_sortida(instance):
         errors.append(
             u"Preu mínim per poder fer el pagament online: {0} €".format(settings.CUSTOM_PREU_MINIM_SORTIDES_PAGAMENT_ONLINE))
 
+    if instance.tipus_de_pagament == 'ON' and settings.CUSTOM_SORTIDES_OCULTES_A_FAMILIES:
+        errors.append(u"Amb activitats ocultes no es pot fer pagament online")
+
 
 
     dades_presencia = [bool(instance.data_inici),
