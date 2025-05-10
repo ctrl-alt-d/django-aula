@@ -188,7 +188,7 @@ def notifica():
                 hiHaNovetats =  (
                                  hiHaNovetatsQualitativa or
                                  hiHaNovetatsPresencia or
-                                 hiHaNovetatsSortides or
+                                 hiHaNovetatsSortides and not settings.CUSTOM_SORTIDES_OCULTES_A_FAMILIES or
                                  hiHaNovetatsPagaments or
                                  hiHaNovetatsIncidencies
                                  )                  

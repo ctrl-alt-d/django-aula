@@ -1565,7 +1565,7 @@ def elMeuInforme( request, pk = None ):
 
         report.append(taula)
 
-    infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU
+    infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU and not settings.CUSTOM_SORTIDES_OCULTES_A_FAMILIES
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
     pagquotesNoves, creaNotif = getNousElements(pagquotes.filter(pagament_realitzat=False), user)
     if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
