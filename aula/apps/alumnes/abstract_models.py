@@ -360,83 +360,92 @@ class AbstractAlumne(models.Model):
         return foto
     
     def get_responsables(self, rp1_dni=None, rp2_dni=None, compatible=False):
-        '''
-        Selecciona els responsables de l'alumne que corresponen
-        als dnis indicats.
-        Si no s'aporten els dnis, selecciona els responsables
-        existents de l'alumne, en aquest cas el primer és el preferent.
-        retorna els 2 responsables, poden ser None si no existeixen.
-        '''
+        """
+        Retorna una tupla amb els dos responsables associats a l'alumne.
+        - Si es passen DNIs, selecciona els responsables corresponents.
+        - Si no es passen DNIs:
+            - Retorna els responsables existents de l'alumne.
+            #DEPRECATED vvv
+            - Si no n'hi ha i 'compatible' és True, crea responsables 
+            temporals, per compatibilitat, segons les dades antigues del model alumne.
+            #DEPRECATED ^^^
+        """
         from django.apps import apps
         
-        if not bool(rp1_dni) and not bool(rp2_dni):
-            responsables=list(self.responsables.all())
+        def crear_responsable_antic(nom_complet, correu, telefon1, telefon2, correu_familia):
+            if not (nom_complet or correu or telefon1 or telefon2 or correu_familia):
+                return None
+            nom, cognoms = ('', '')
+            if "," in nom_complet:
+                cognoms, nom = map(str.strip, nom_complet.split(",", 1))
+            else:
+                nom = nom_complet
+            Responsable = apps.get_model('relacioFamilies', 'Responsable')
+            return Responsable(
+                nom=nom,
+                cognoms=cognoms,
+                correu=correu,
+                telefon=telefon1 or telefon2,
+                correu_relacio_familia=correu_familia,
+                periodicitat_faltes=self.periodicitat_faltes,
+                periodicitat_incidencies=self.periodicitat_incidencies
+            )
+        # Si no es passen DNIs
+        if not rp1_dni and not rp2_dni:
+            responsables = list(self.responsables.all())
             #DEPRECATED vvv
-            Responsable=apps.get_model('relacioFamilies', 'Responsable')
+            # Compatibilitat antiga: crear responsables ficticis si no n'hi ha
+            Responsable = apps.get_model('relacioFamilies', 'Responsable')
             if not responsables and compatible and not Responsable.objects.exists():
-                resp1=resp2=None
-                if self.rp1_nom or self.rp1_correu or self.rp1_mobil or self.rp1_telefon or self.correu_relacio_familia_pare:
-                    if "," in self.rp1_nom:
-                        cognoms, nom = self.rp1_nom.split(",")
-                        nom = nom.strip()
-                        cognoms = cognoms.strip()
-                    else:
-                        nom = self.rp1_nom
-                        cognoms = ''
-                    resp1=Responsable(nom=nom, cognoms=cognoms, correu=self.rp1_correu, 
-                                      telefon=self.rp1_mobil or self.rp1_telefon,
-                                      correu_relacio_familia = self.correu_relacio_familia_pare,
-                                      periodicitat_faltes = self.periodicitat_faltes,
-                                      periodicitat_incidencies = self.periodicitat_incidencies)
-                if self.rp2_nom or self.rp2_correu or self.rp2_mobil or self.rp2_telefon or self.correu_relacio_familia_mare:
-                    if "," in self.rp2_nom:
-                        cognoms, nom = self.rp2_nom.split(",")
-                        nom = nom.strip()
-                        cognoms = cognoms.strip()
-                    else:
-                        nom = self.rp2_nom
-                        cognoms = ''
-                    resp2=Responsable(nom=nom, cognoms=cognoms, correu=self.rp2_correu, 
-                                      telefon=self.rp2_mobil or self.rp2_telefon,
-                                      correu_relacio_familia = self.correu_relacio_familia_mare,
-                                      periodicitat_faltes = self.periodicitat_faltes,
-                                      periodicitat_incidencies = self.periodicitat_incidencies)
-                if self.primer_responsable==1:
+                # Només crea uns responsables temporals si encara no s'ha fet la nova càrrega de 
+                # dades d'alumnes amb els responsables diferenciats (not Responsable.objects.exists())
+                # Si ja s'ha fet la càrrega, i encara no té responsables associats, s'assumeix que es tracta
+                # d'un alumne sense responsables.
+                resp1 = crear_responsable_antic(
+                    self.rp1_nom, self.rp1_correu, self.rp1_mobil,
+                    self.rp1_telefon, self.correu_relacio_familia_pare
+                )
+                resp2 = crear_responsable_antic(
+                    self.rp2_nom, self.rp2_correu, self.rp2_mobil,
+                    self.rp2_telefon, self.correu_relacio_familia_mare
+                )
+                if self.primer_responsable == 1:
                     resp1, resp2 = resp2, resp1
                 return resp1, resp2
             #DEPRECATED ^^^
-            # Ha de retornar 2 elements, afegeix None
-            for i in range(len(responsables),2):
+            # Omple amb Nones si no s'arriba a 2 responsables
+            while len(responsables) < 2:
                 responsables.append(None)
-            if self.responsable_preferent and responsables[0]!=self.responsable_preferent and responsables[1]:
+            # Si hi ha un preferent i no està en primera posició, invertir l'ordre
+            if self.responsable_preferent and responsables[0] != self.responsable_preferent and responsables[1]:
                 responsables.reverse()
-            return responsables
-        resp1=self.responsables.filter(dni=rp1_dni).first()
-        resp2=self.responsables.filter(dni=rp2_dni).first()
+            return tuple(responsables)
+        # Si es passen DNIs
+        resp1 = self.responsables.filter(dni=rp1_dni).first()
+        resp2 = self.responsables.filter(dni=rp2_dni).first()
         return resp1, resp2
 
     def get_telefons_responsables(self):
         return [ x.get_telefon() for x in self.get_responsables(compatible=True) if x and x.get_telefon() ]
     
     def get_dades_responsables(self, responsable=None, nomesNoms=False):
-        dades={}
+        def dades_o_nom(resp, nomesNoms):
+            if not resp:
+                return ''
+            return resp.get_nom() if nomesNoms else resp.get_dades()
         resp1, resp2 = self.get_responsables(compatible=True)
-        if not bool(responsable):
-            if nomesNoms:
-                dades['respPre']=resp1.get_nom() if resp1 else ''
-                dades['respAlt']=resp2.get_nom() if resp2 else ''
-            else:
-                dades['respPre']=resp1.get_dades() if resp1 else ''
-                dades['respAlt']=resp2.get_dades() if resp2 else ''
-        else:
-            if responsable==resp1:
-                dades['respPre']=resp1.get_dades() if resp1 else ''
-                dades['respAlt']=resp2.get_nom() if resp2 else ''
-            else:
-                dades['respPre']=resp2.get_dades() if resp2 else ''
-                dades['respAlt']=resp1.get_nom() if resp1 else ''
-        return dades
-    
+        if responsable is None:
+            respPre = dades_o_nom(resp1, nomesNoms)
+            respAlt = dades_o_nom(resp2, nomesNoms)
+            return {'respPre': respPre, 'respAlt': respAlt}
+        # Amb responsable indicat
+        respPre = dades_o_nom(resp1, False)
+        respAlt = dades_o_nom(resp2, True)
+        if responsable == resp2:
+            respPre = dades_o_nom(resp2, False)
+            respAlt = dades_o_nom(resp1, True)
+        return {'respPre': respPre, 'respAlt': respAlt}
+
     def esborraAntics_responsables(self, dnis):
         '''
         Elimina altres responsables anteriors, només
