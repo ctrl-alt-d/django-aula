@@ -15,6 +15,7 @@ aula/db.sqlite
 .pydevproject
 .settings
 static/*
+storage/*
 aula/apps/demo/tmp/export*
 demo/tmp
 aula/settings_local.py

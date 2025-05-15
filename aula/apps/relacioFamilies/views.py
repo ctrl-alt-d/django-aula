@@ -23,8 +23,9 @@ from aula.apps.usuaris.models import QRPortal
 from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.incidencies.models import Incidencia, Sancio, Expulsio
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
-from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament
-from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm
+from aula.apps.sortides.models import Sortida, NotificaSortida, SortidaPagament, QuotaPagament, Pagament
+from aula.apps.relacioFamilies.forms import AlumneModelForm, comunicatForm, escollirAlumneForm, ResponsableModelForm
+from aula.apps.relacioFamilies.models import Responsable
 from aula.mblapp.table2_models import Table2_QRPortalAlumne
 from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE, CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES
 from aula.utils import tools
@@ -39,7 +40,7 @@ from aula.utils.tools import classebuida
 
 #exceptions
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from aula.apps.usuaris.models import User2Professor, AlumneUser
+from aula.apps.usuaris.models import User2Professor, AlumneUser, User2Responsable, User2Alumne
 from aula.apps.tutoria.models import Tutor
 from aula.utils.decorators import group_required
 
@@ -47,7 +48,7 @@ from django.db.models import Q
 from django.forms.models import modelform_factory, modelformset_factory
 from datetime import datetime, timedelta
 
-from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail
+from aula.apps.usuaris.tools import enviaBenvingudaAlumne, bloqueja, desbloqueja, testEmail, getRol, creaNotifUsuari
 
 import random
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -140,6 +141,8 @@ def enviaBenvinguda( request , pk ):
 @login_required
 @group_required(['professors'])
 def bloquejaDesbloqueja( request , pk ):
+    # TODO fa falta aquesta view ?
+    # Si fa falta, s'hauria de replantejar afegint els responsables.
     credentials = tools.getImpersonateUser(request) 
     (user, l4 ) = credentials
 
@@ -408,18 +411,16 @@ def configuraConnexio( request , pk ):
 
     imageUrl = alumne.get_foto_or_default
 
-    dades_resp1 = [alumne.rp1_nom, alumne.rp1_mobil if alumne.rp1_mobil else alumne.rp1_telefon, alumne.rp1_correu]
-    dades_resp2 = [alumne.rp2_nom, alumne.rp2_mobil if alumne.rp2_mobil else alumne.rp2_telefon, alumne.rp2_correu]
-
+    resps = alumne.get_dades_responsables()
+    
     infoForm = [
           ('Alumne',unicode( alumne) ),
           ('Edat alumne', edatAlumne),
-          ('Dades responsable 1', ' - '.join(filter(None,dades_resp1))),
-          ('Dades responsable 2', ' - '.join(filter(None,dades_resp2))),
-          ('Altres telèfons alumne', alumne.altres_telefons),
+          ('Responsable preferent', resps['respPre']),
+          ('Responsable (altre)', resps['respAlt']),
+          ('Altres telèfons', alumne.get_telefons()),
     ]
-
-
+    
     if alumne.dadesaddicionalsalumne_set.exists():
         for element in CUSTOM_DADES_ADDICIONALS_ALUMNE:
             if 'Tutor' in element['visibilitat']:
@@ -428,43 +429,76 @@ def configuraConnexio( request , pk ):
                 except:
                     valor = '-'
                 infoForm.append((element['label'] + u'(Esfer@/Saga)', valor))
-
+    
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
                                       widgets={
                                           'foto': FileInput,}
                                          )
-
+    ResponsableFormSet = modelform_factory(Responsable,
+                                          form=ResponsableModelForm
+                                        )
+    
+    resp1, resp2 = alumne.get_responsables(compatible=True)
+    
     if request.method == 'POST':
-        form = AlumneFormSet(  request.POST , request.FILES, instance=alumne )
-        if form.is_valid(  ):
+        formAlmn = AlumneFormSet(True, request.POST, request.FILES, instance=alumne)
+        if resp1: formResp1 = ResponsableFormSet('resp1', request.POST, request.FILES, instance=resp1)
+        if resp2: formResp2 = ResponsableFormSet('resp2', request.POST, request.FILES, instance=resp2)
+        hihaerrors=False
+        if formAlmn.is_valid() and (not resp1 or formResp1.is_valid()) and (not resp2 or formResp2.is_valid()):
             #Comprova els dominis de correu
             errors = {}
-            email=form.cleaned_data['correu_relacio_familia_pare']
+            email=formAlmn.cleaned_data['correu']
             res, email = testEmail(email, False)
             if res<-1:
-                errors.setdefault('correu_relacio_familia_pare', []).append(u'''Adreça no vàlida''')
-            email=form.cleaned_data['correu_relacio_familia_mare']
-            res, email = testEmail(email, False)
-            if res<-1:
-                errors.setdefault('correu_relacio_familia_mare', []).append(u'''Adreça no vàlida''')
-
+                errors.setdefault('correu', []).append(u'''Adreça no vàlida''')
             if len(errors)>0:
-                form._errors.update(errors)
+                formAlmn._errors.update(errors)
+                hihaerrors=True
             else:
-                form.save()
-                url_next = '/open/dadesRelacioFamilies#{0}'.format(alumne.pk  ) 
-                return HttpResponseRedirect( url_next )
+                formAlmn.save()
+            if resp1:
+                errors = {}
+                email=formResp1.cleaned_data['correu_relacio_familia']
+                res, email = testEmail(email, False)
+                if res<-1:
+                    errors.setdefault('correu_relacio_familia', []).append(u'''Adreça no vàlida''')
+                if len(errors)>0:
+                    formResp1._errors.update(errors)
+                    hihaerrors=True
+                else:
+                    if resp1.dni: formResp1.save()
+            if resp2:
+                errors = {}
+                email=formResp2.cleaned_data['correu_relacio_familia']
+                res, email = testEmail(email, False)
+                if res<-1:
+                    errors.setdefault('correu_relacio_familia', []).append(u'''Adreça no vàlida''')
+                if len(errors)>0:
+                    formResp2._errors.update(errors)
+                    hihaerrors=True
+                else:
+                    if resp2.dni: formResp2.save()
+            url_next = '/open/dadesRelacioFamilies#{0}'.format(alumne.pk  ) 
+            if not hihaerrors: return HttpResponseRedirect( url_next )
 
     else:
-        form = AlumneFormSet(instance=alumne)                
+        formAlmn = AlumneFormSet(True, instance=alumne)
+        if resp1: formResp1 = ResponsableFormSet('resp1', instance=resp1)
+        if resp2: formResp2 = ResponsableFormSet('resp2', instance=resp2)
         
+    formset=[]
+    formAlmn.infoForm=infoForm
+    formset.append( formAlmn )
+    if resp1: formset.append( formResp1 )
+    if resp2: formset.append( formResp2 )
+    
     return render(
                 request,
                 'configuraConnexio.html',
-                    {'form': form,
+                    {'formset': formset,
                      'image': imageUrl,
-                     'infoForm': infoForm,
                      'head': u'Gestió relació família' ,
                      'formSetDelimited':True},
                 )
@@ -524,23 +558,80 @@ def dadesRelacioFamilies( request ):
 
             familia_pendent_de_mirar_models = [
                 (u'qualitativa', RespostaAvaluacioQualitativa,),
-                (u'sortida(es)', NotificaSortida,),
+                (u'activitats o pagaments', NotificaSortida,),
                 (u'incidencies o observacions', Incidencia,),
                 (u'sanció(ns)', Sancio,),
                 (u'expulsió(ns)', Expulsio,),
                 (u'faltes assistència', ControlAssistencia,),
+                (u'pagament(s)', QuotaPagament,),
             ]
 
             familia_pendent_de_mirar = {}
-
             for codi, model in familia_pendent_de_mirar_models:
                 familia_pendent_de_mirar[codi]= ( model
                                                     .objects
                                                     .filter( alumne__in = alumnes )
-                                                    .filter( relacio_familia_revisada__isnull = True )
-                                                    .filter( relacio_familia_notificada__isnull = False )
-                                                    .values_list( 'alumne__pk', flat=True )
+                                                    .filter( notificacions_familia__tipus = 'N' )
+                                                    .exclude( notificacions_familia__tipus = 'R' )
+                                                    .distinct()
                                                   )
+                #DEPRECATED vvv
+                # Per compatibilitat amb dades existents
+                try:
+                    avui = datetime.now().date()
+                    if codi==u'pagament(s)':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .filter( data_hora_pagament__isnull = True )
+                                                   .exclude( pagament_realitzat = True )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                    elif codi==u'activitats o pagaments':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .exclude( sortida__data_fi__lt = avui )
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                    elif codi==u'qualitativa':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .exclude( qualitativa__data_tancar_tancar_portal_families__lt = avui )
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                    elif codi==u'faltes assistència':
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .exclude(estat__codi_estat__in = ['P','O'])
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                    else:
+                        comp_pendent_de_mirar= ( model
+                                                   .objects
+                                                   .filter( alumne__in = alumnes )
+                                                   .filter( relacio_familia_revisada__isnull = True )
+                                                   .filter( relacio_familia_notificada__isnull = False )
+                                                   .exclude( notificacions_familia__tipus = 'R' )
+                                                   .distinct()
+                                                 )
+                except:
+                    comp_pendent_de_mirar=model.objects.none()
+
+                familia_pendent_de_mirar[codi] = model.objects.filter(Q(pk__in=familia_pendent_de_mirar[codi]) | Q(pk__in=comp_pendent_de_mirar)).distinct()
+                #DEPRECATED ^^^
 
             for alumne in alumnes:
                 
@@ -564,14 +655,24 @@ def dadesRelacioFamilies( request ):
                 camp = tools.classebuida()
                 camp.codi = alumne.pk
                 camp.enllac = None
+                dataDarreraConnexio = []
                 bloquejat_text =  [ ( alumne.motiu_bloqueig, None ), ] if  alumne.motiu_bloqueig else []
                 nConnexions = alumne.user_associat.LoginUsuari.filter(exitos=True).count()
+                if nConnexions > 0:
+                    dataDarreraConnexio.append(alumne.user_associat.LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment)
+                for r in alumne.get_responsables():
+                    if not r: continue
+                    if not bool(r.motiu_bloqueig): bloquejat_text = []
+                    if r.get_user_associat(): count = r.get_user_associat().LoginUsuari.filter(exitos=True).count()
+                    else: count=0
+                    nConnexions = nConnexions + count
+                    if count > 0:
+                        dataDarreraConnexio.append(r.get_user_associat().LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment)
                 camp.multipleContingut = bloquejat_text + [ ( u'( {0} connexs. )'.format(nConnexions) , None, ), ]
                 if nConnexions > 0:
-                    dataDarreraConnexio = alumne.user_associat.LoginUsuari.filter(exitos=True).order_by( '-moment' )[0].moment
-                    camp.multipleContingut.append( ( u'Darrera Connx: {0}'.format(  dataDarreraConnexio.strftime( '%d/%m/%Y' ) ), None, ) )
+                    camp.multipleContingut.append( ( u'Darrera Connx: {0}'.format(  max(dataDarreraConnexio).strftime( '%d/%m/%Y' ) ), None, ) )
                 for ambit in familia_pendent_de_mirar:
-                    if alumne.pk in familia_pendent_de_mirar[ambit]:
+                    if familia_pendent_de_mirar[ambit].filter(alumne=alumne.pk).exists():
                         camp.multipleContingut.append( (u"{} x revisar".format(ambit), None,) )
                 filera.append(camp)
                 
@@ -609,61 +710,85 @@ def canviParametres( request ):
     if  not CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES:
         raise Http404()
 
-    alumne = Alumne.objects.get( user_associat = user )
-
+    _, responsable, alumne = getRol( user, request )
+    if not alumne: return HttpResponseRedirect('/')
     edatAlumne = None
     try:
-        edatAlumne = alumne.edat()
+        if alumne: edatAlumne = alumne.edat()
     except:
         pass
-
+    
+    if responsable:
+        resps = alumne.get_dades_responsables(responsable=responsable)
+    elif alumne:
+        resps = alumne.get_dades_responsables(nomesNoms=True)
+    dades1 = resps['respPre']
+    dades2 = resps['respAlt']
+    
     infoForm = [
         ('Alumne', unicode(alumne)),
-        # ( 'Telèfon Alumne', alumne.telefons),
-        ('Telèfon Alumne', alumne.rp1_telefon + u', ' + alumne.rp2_telefon + u', ' + alumne.altres_telefons),
-        # ( 'Nom tutors', alumne.tutors),
-        ('Nom tutors', alumne.rp1_nom + u', ' + alumne.rp2_nom),
-        # ('Correu tutors (Saga)', alumne.correu_tutors),
-        ('Correu tutors (Saga)', alumne.rp1_correu + u', ' + alumne.rp2_correu),
-        ('Edat alumne', edatAlumne),
-    ]
+        ('Edat alumne', str(edatAlumne) + ' (' + formats.date_format(alumne.data_neixement, "SHORT_DATE_FORMAT") + ')' ),
+        ('RALC', alumne.ralc),
+        ('Responsable', dades1),
+        ]
+    if dades2: infoForm.append(('Responsable', dades2))
+    infoForm.append(('Altres telèfons', alumne.get_telefons()))
+        
     
     AlumneFormSet = modelform_factory(Alumne,
                                       form=AlumneModelForm,
                                       widgets={
                                           'foto': FileInput,}
                                          )
+    if responsable:
+        ResponsableFormSet = modelform_factory(Responsable,
+                                          form=ResponsableModelForm
+                                        )
     
     if request.method == 'POST':
-        form = AlumneFormSet(  request.POST , request.FILES, instance=alumne )
-        if form.is_valid(  ):
+        formAlmn = AlumneFormSet(False, request.POST, request.FILES, instance=alumne)
+        if responsable: formResp = ResponsableFormSet('resp', request.POST, request.FILES, instance=responsable)
+        hihaerrors=False
+        if formAlmn.is_valid() and (not responsable or formResp.is_valid()):
             #Comprova els dominis de correu
             errors = {}
-            email=form.cleaned_data['correu_relacio_familia_pare']
+            email=formAlmn.cleaned_data['correu']
             res, email = testEmail(email, False)
             if res<-1:
-                errors.setdefault('correu_relacio_familia_pare', []).append(u'''Adreça no vàlida''')
-            email=form.cleaned_data['correu_relacio_familia_mare']
-            res, email = testEmail(email, False)
-            if res<-1:
-                errors.setdefault('correu_relacio_familia_mare', []).append(u'''Adreça no vàlida''')
-
+                errors.setdefault('correu', []).append(u'''Adreça no vàlida''')
             if len(errors)>0:
-                form._errors.update(errors)
+                formAlmn._errors.update(errors)
+                hihaerrors=True
             else:
-                form.save()
-                url_next = '/open/elMeuInforme/'
-                return HttpResponseRedirect( url_next )
+                formAlmn.save()
+            if responsable: 
+                errors = {}
+                email=formResp.cleaned_data['correu_relacio_familia']
+                res, email = testEmail(email, False)
+                if res<-1:
+                    errors.setdefault('correu_relacio_familia', []).append(u'''Adreça no vàlida''')
+                if len(errors)>0:
+                    formResp._errors.update(errors)
+                    hihaherrors=True
+                else:
+                    formResp.save()
+            if not hihaerrors:
+                return HttpResponseRedirect( '/open/elMeuInforme/' )
 
     else:
-        form = AlumneFormSet(instance=alumne)
+        formAlmn = AlumneFormSet(False, instance=alumne)
+        if responsable: formResp = ResponsableFormSet('resp', instance=responsable)
+
+    formset=[]
+    formAlmn.infoForm=infoForm
+    formset.append( formAlmn )
+    if responsable: formset.append( formResp )
 
     return render(
                 request,
                 'configuraConnexio.html',
-                    {'form': form,
+                    {'formset': formset,
                      'image': alumne.get_foto_or_default,
-                     'infoForm': infoForm,
                      'head': u'Canvi de paràmetres' ,
                      'formSetDelimited':True,
                      'rgpd': inforgpd()},
@@ -712,23 +837,20 @@ def comunicatAbsencia( request ):
     
     diesantelacio = 6
 
-    alumne = Alumne.objects.filter( user_associat = user )
-    
-    if alumne:
-        alumne=alumne[0]
-    else:
-        messages.info( request, u"No és possible fer comunicats." )
+    _, responsable, alumne = getRol( user, request )
+    if not alumne or (not responsable and alumne.edat()<18):
+        messages.info( request, u"Els comunicats d'alumnes menors d'edat els ha de fer un responsable." )
         return HttpResponseRedirect('/')
     
     ara=datetime.now()
     primerdia=properdiaclasse(alumne, ara)
     if not primerdia:
-        messages.info( request, u"No és possible fer comunicats." )
+        messages.info( request, u"No és possible fer comunicats. No té programada cap classe." )
         return HttpResponseRedirect('/')
 
     if primerdia > (ara+timedelta(days=diesantelacio)).date():
         messages.info( request, 
-                u"Només es poden fer comunicats amb antelació màxima d'una setmana. La propera classe serà el dia {0}."\
+                u"Només es poden fer comunicats amb antelació màxima d'una setmana. La següent classe serà el dia {0}."\
                 .format(primerdia.strftime( '%d/%m' )))
         return HttpResponseRedirect('/')
     
@@ -753,7 +875,7 @@ def comunicatAbsencia( request ):
                 horaf=hores[-1][0] if hores and hores[-1] else FranjaHoraria.objects.last().id
             horai=FranjaHoraria.objects.get(id=horai).hora_inici
             horaf=FranjaHoraria.objects.get(id=horaf).hora_fi
-            enviaMsg(user, credentials, alumne, datai, horai, dataf, horaf, motiu, observ)
+            enviaMsg(alumne.get_user_associat(), credentials, alumne, datai, horai, dataf, horaf, motiu, observ)
             url_next = reverse_lazy('relacio_families__informe__el_meu_informe')
             messages.info( request, u"Comunicat d'absència per {}, enviat correctament".format(unicode(alumne.nom)) )
             return HttpResponseRedirect( url_next )
@@ -800,7 +922,9 @@ def comunicatsAnteriors(request):
     (user, l4) = credentials
     tipus = tipusMissatge(AVIS_ABSENCIA)
     
-    q = user.missatge_set.filter(tipus_de_missatge=tipus)
+    _, responsable, alumne = getRol( user, request )
+    if not alumne: return HttpResponseRedirect('/')
+    q = alumne.get_user_associat().missatge_set.filter(tipus_de_missatge=tipus)
 
     table = ComunicatsTable(q)
     RequestConfig(request, paginate={"paginator_class":DiggPaginator , "per_page": 25}).configure(table)
@@ -812,6 +936,30 @@ def comunicatsAnteriors(request):
                     },
                  )
 
+def getNousElements(elements, user):
+    '''
+    Busca elements no revisats a "elements", comprova també si tenen pendent la notificació.
+    elements  Query amb els elements a comprovar si n'hi ha de nous, es a dir, no revisats.
+    user      Usuari, pot ser: professor, responsable o alumne.
+    Retorna   Query amb els elements no revisats nous trobats i un boolean indicant si tenen pendent la notificació (True o False).
+    '''
+    #DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if elements.filter( relacio_familia_notificada__isnull = False ):
+            elements = elements.exclude( relacio_familia_revisada__isnull = False )
+    except:
+        pass
+    #DEPRECATED ^^^
+    if User2Professor( user ):
+        Nous = elements.exclude( notificacions_familia__tipus = 'R' )
+        return Nous, False
+    else:
+        useralum = Q(notificacions_familia__usuari = user)
+        Nous = elements.exclude( useralum & Q(notificacions_familia__tipus = 'R') )
+        Notificats = Nous.filter( useralum & Q(notificacions_familia__tipus = 'N') )
+        return Nous, (Nous.count()-Notificats.count())>0
+    
 @login_required
 def elMeuInforme( request, pk = None ):
     """Dades que veurà l'alumne"""
@@ -825,23 +973,26 @@ def elMeuInforme( request, pk = None ):
     
     tePermis = True
     semiImpersonat = False
-    if pk:
-        professor = User2Professor( user )
-        alumne =  Alumne.objects.get( pk = pk )   
-        tePermis = professor in alumne.tutorsDeLAlumne() 
-        semiImpersonat = True
-    else:
+    professor, responsable, alumne = getRol(user, request )
+    if pk and professor:
         try:
-            alumne = Alumne.objects.get( user_associat = user )
+            alumne =  Alumne.objects.get( pk = pk )   
+            tePermis = professor in alumne.tutorsDeLAlumne()
+            semiImpersonat = True
         except Exception as e:
-            alumne = None
+            tePermis = False 
     
     if not alumne or not tePermis:
+        if responsable:
+            # Selecciona l'alumne del responsable
+            return HttpResponseRedirect('/open/escollirAlumne/')
         raise Http404 
     
     head = u'{0} ({1})'.format(alumne , unicode( alumne.grup ) )
     
     ara = datetime.now()
+    notifAlumne=None
+    revisAlumne=None
     
     report = []
 
@@ -851,8 +1002,10 @@ def elMeuInforme( request, pk = None ):
                                                               ).filter(  
                                                         estat__isnull=False                                                          
                                                             )
-        controlsNous = controls.filter( relacio_familia_revisada__isnull = True )
-        
+        controlsNous, creaNotif = getNousElements(controls, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if controlsNous and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+            
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Faltes i retards {0}'.format( pintaNoves( controlsNous.count() ) )
@@ -908,13 +1061,16 @@ def elMeuInforme( request, pk = None ):
         
         for control in tots_els_controls:
             
+            notificacio, revisio = control.get_notif_revisio(user)
+            negreta = False if revisio else True
+            
             filera = []
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = unicode(control.impartir.dia_impartir.strftime( '%d/%m/%Y' ))  
-            camp.negreta = False if control.relacio_familia_revisada else True      
+            camp.negreta = negreta
             filera.append(camp)
     
             #----------------------------------------------
@@ -925,40 +1081,35 @@ def elMeuInforme( request, pk = None ):
                                                  control.impartir.horari.assignatura.nom_assignatura,
                                                  control.impartir.horari.hora 
                                     )        
-            camp.negreta = False if control.relacio_familia_revisada else True      
+            camp.negreta = negreta
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(control.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if control.relacio_familia_notificada else ''
-            camp.negreta = False if control.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(control.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if control.relacio_familia_revisada else ''
-            camp.negreta = False if control.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
 
-#             assistencia_calendari.append(  { 'date': control.impartir.dia_impartir.strftime( '%Y-%m-%d' ) , 
-#                                              'badge': control.estat.codi_estat == 'F', 
-#                                              'title': escapejs( camp.contingut )
-#                                             } )
-    
             #--
             taula.fileres.append( filera )
-    
+            if not semiImpersonat:
+                if not notificacio: control.set_notificacio(notifAlumne)
+                if not revisio: control.set_revisio(revisAlumne)
+                
         report.append(taula)    
-        if not semiImpersonat:
-            controlsNous.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            controlsNous.update( relacio_familia_revisada = ara )           
-    
-
         
     #----observacions --------------------------------------------------------------------
         observacions = alumne.incidencia_set.filter( tipus__es_informativa = True)
-        observacionsNoves = observacions.filter(  relacio_familia_revisada__isnull = True)
-        
+        observacionsNoves, creaNotif = getNousElements(observacions, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if observacionsNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+            
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Observacions {0}'.format( pintaNoves( observacionsNoves.count() ) )
@@ -993,45 +1144,48 @@ def elMeuInforme( request, pk = None ):
         taula.fileres = []
     
         for incidencia in observacions.order_by( '-dia_incidencia', '-franja_incidencia' ):
+            notificacio, revisio = incidencia.get_notif_revisio(user)
+            negreta = False if revisio else True
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0}'.format( incidencia.dia_incidencia.strftime( '%d/%m/%Y' ))  
-            camp.negreta = False if incidencia.relacio_familia_notificada else True
+            camp.negreta = negreta
             filera.append(camp)
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.negreta = False if incidencia.relacio_familia_revisada else True
             camp.contingut = u'Sr(a): {0} - {1}'.format(incidencia.professional , 
                                                         incidencia.descripcio_incidencia )
-            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(incidencia.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_notificada else ''
-            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(incidencia.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_revisada else ''
-            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             taula.fileres.append( filera )
+            if not semiImpersonat:
+                if not notificacio: incidencia.set_notificacio(notifAlumne)
+                if not revisio: incidencia.set_revisio(revisAlumne)
+            
+        report.append(taula)      
         
-        report.append(taula)
-        if not semiImpersonat:
-            observacionsNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            observacionsNoves.update( relacio_familia_revisada = ara )           
-                    
     #----incidències --------------------------------------------------------------------
         incidencies = alumne.incidencia_set.filter( tipus__es_informativa = False )
-        incidenciesNoves = incidencies.filter( relacio_familia_revisada__isnull = True )
-    
+        incidenciesNoves, creaNotif = getNousElements(incidencies, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if incidenciesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+            
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Incidències {0}'.format( pintaNoves(  incidenciesNoves.count() ) )
@@ -1067,49 +1221,53 @@ def elMeuInforme( request, pk = None ):
         taula.fileres = []
     
         for incidencia in incidencies.order_by( '-dia_incidencia', '-franja_incidencia' ):
+            notificacio, revisio = incidencia.get_notif_revisio(user)
+            negreta = False if revisio else True
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0} {1}'.format( incidencia.dia_incidencia.strftime( '%d/%m/%Y' ), 
                                                 'Vigent' if incidencia.es_vigent else '')   
-            camp.negreta = False if incidencia.relacio_familia_revisada else True      
+            camp.negreta = negreta
             filera.append(camp)
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'Sr(a): {0} - {1}'.format(incidencia.professional , 
                                                         incidencia.descripcio_incidencia )        
-            camp.negreta = False if incidencia.relacio_familia_revisada else True      
+            camp.negreta = negreta
             filera.append(camp)
 
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(incidencia.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_notificada else ''
-            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
 
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(incidencia.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if incidencia.relacio_familia_revisada else ''
-            camp.negreta = False if incidencia.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
 
         #--
             taula.fileres.append( filera )            
-    
+            if not semiImpersonat:
+                if not notificacio: incidencia.set_notificacio(notifAlumne)
+                if not revisio: incidencia.set_revisio(revisAlumne)
+                    
         report.append(taula)
-        if not semiImpersonat:
-            incidenciesNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            incidenciesNoves.update( relacio_familia_revisada = ara )           
         
 
     #----Expulsions --------------------------------------------------------------------
         expulsions = alumne.expulsio_set.exclude( estat = 'ES' )
-        expulsionsNoves = expulsions.filter( relacio_familia_revisada__isnull = True )
-        
+        expulsionsNoves, creaNotif = getNousElements(expulsions, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if expulsionsNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+            
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Expulsions {0}'.format( pintaNoves( expulsionsNoves.count() ) )
@@ -1149,13 +1307,15 @@ def elMeuInforme( request, pk = None ):
         taula.fileres = []
         
         for expulsio in expulsions.order_by( '-dia_expulsio', '-franja_expulsio' ):
+            notificacio, revisio = expulsio.get_notif_revisio(user)
+            negreta = False if revisio else True
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0} {1}'.format( expulsio.dia_expulsio.strftime( '%d/%m/%Y' ),
                                                 u'''(per acumulació d'incidències)''' if expulsio.es_expulsio_per_acumulacio_incidencies else '')
-            camp.negreta = False if expulsio.relacio_familia_revisada else True                      
+            camp.negreta = negreta
             filera.append(camp)
             #----------------------------------------------
             camp = tools.classebuida()
@@ -1163,7 +1323,7 @@ def elMeuInforme( request, pk = None ):
             camp.contingut = u'{0}'.format( expulsio.moment_comunicacio_a_tutors.strftime( '%d/%m/%Y' ) 
                                                      if expulsio.moment_comunicacio_a_tutors 
                                                      else u'Pendent de comunicar.')         
-            camp.negreta = False if expulsio.relacio_familia_revisada else True                      
+            camp.negreta = negreta
             filera.append(camp)            
             #----------------------------------------------
             camp = tools.classebuida()
@@ -1171,36 +1331,38 @@ def elMeuInforme( request, pk = None ):
             camp.contingut = u'Sr(a): {0} - {1}'.format(                                                
                                                expulsio.professor , 
                                                expulsio.motiu if expulsio.motiu else u'Pendent redactar motiu.')        
-            camp.negreta = False if expulsio.relacio_familia_revisada else True                      
+            camp.negreta = negreta
             filera.append(camp)
 
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(expulsio.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if expulsio.relacio_familia_notificada else ''
-            camp.negreta = False if expulsio.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
 
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(expulsio.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if expulsio.relacio_familia_revisada else ''
-            camp.negreta = False if expulsio.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
 
             #--
             taula.fileres.append( filera )
-            
+            if not semiImpersonat:
+                if not notificacio: expulsio.set_notificacio(notifAlumne)
+                if not revisio: expulsio.set_revisio(revisAlumne)
+                    
         report.append(taula)        
-        if not semiImpersonat:
-            expulsionsNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            expulsionsNoves.update( relacio_familia_revisada = ara )           
 
     #----Sancions -----------------------------------------------------------------------------   
     if detall in ['all', 'incidencies']:
         sancions = alumne.sancio_set.filter( impres = True )
-        sancionsNoves = sancions.filter(  relacio_familia_revisada__isnull = True )
-        
+        sancionsNoves, creaNotif = getNousElements(sancions, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if sancionsNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+            
         taula = tools.classebuida()
         taula.codi = nTaula; nTaula+=1
         taula.tabTitle = 'Sancions {0}'.format( pintaNoves( sancionsNoves.count() ) )
@@ -1235,38 +1397,40 @@ def elMeuInforme( request, pk = None ):
         taula.fileres = []
             
         for sancio in sancions.order_by( '-data_inici' ):
+            notificacio, revisio = sancio.get_notif_revisio(user)
+            negreta = False if revisio else True
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0} a {1}'.format( sancio.data_inici.strftime( '%d/%m/%Y' ) ,  sancio.data_fi.strftime( '%d/%m/%Y' ))       
-            camp.negreta = False if sancio.relacio_familia_revisada else True                
+            camp.negreta = negreta
             filera.append(camp)
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0} {1} {2}'.format( sancio.tipus , ' - ' if sancio.motiu else '', sancio.motiu )        
-            camp.negreta = False if sancio.relacio_familia_revisada else True
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(sancio.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if sancio.relacio_familia_notificada else ''
-            camp.negreta = False if sancio.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(sancio.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if sancio.relacio_familia_revisada else ''
-            camp.negreta = False if sancio.relacio_familia_revisada else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
             #--
             taula.fileres.append( filera )
-    
+            if not semiImpersonat:
+                if not notificacio: sancio.set_notificacio(notifAlumne)
+                if not revisio: sancio.set_revisio(revisAlumne)
+                    
         report.append(taula)
-        if not semiImpersonat:
-            sancionsNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            sancionsNoves.update( relacio_familia_revisada = ara )           
 
     #---dades alumne---------------------------------------------------------------------
     if detall in ['all','dades']:
@@ -1293,6 +1457,20 @@ def elMeuInforme( request, pk = None ):
         
         taula.fileres = []
     
+            #----nom------------------------------------------
+        filera = []
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'Nom'
+        filera.append(camp)
+        
+        camp = tools.classebuida()
+        camp.enllac = None
+        camp.contingut = u'{0}'.format( str(alumne) if responsable else alumne.get_nom_sentit() )        
+        filera.append(camp)
+        
+        taula.fileres.append( filera )
+        
             #----grup------------------------------------------
         filera = []
         camp = tools.classebuida()
@@ -1302,7 +1480,7 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-        camp.contingut = u'{0}'.format( alumne.grup )        
+        camp.contingut = u'{0} Tutor(a): {1}'.format( alumne.grup, u", ".join([str(t) for t in alumne.tutorsDelGrupDeLAlumne()] ))        
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -1331,10 +1509,17 @@ def elMeuInforme( request, pk = None ):
     
         camp = tools.classebuida()
         camp.enllac = None
-
-        camp.multipleContingut = [(alumne.rp1_nom, None),
-                                  (alumne.rp2_nom,None),
-                                  ]
+        
+        if professor:
+            resps = alumne.get_dades_responsables()
+        elif responsable:
+            resps = alumne.get_dades_responsables(responsable=responsable)
+        elif alumne:
+            resps = alumne.get_dades_responsables(nomesNoms=True)
+        
+        camp.multipleContingut = [(resps['respPre'], None,),]
+        if bool(resps['respAlt']): camp.multipleContingut.append((resps['respAlt'], None,))
+        
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -1352,7 +1537,7 @@ def elMeuInforme( request, pk = None ):
             else (alumne.municipi if not alumne.localitat
                   else (alumne.localitat + '-' + alumne.municipi if alumne.localitat != alumne.municipi
                         else alumne.localitat))
-        camp.contingut = u'{0} - {1}'.format(alumne.adreca, localitat_i_o_municipi)
+        camp.contingut = u'{0} - ({1} {2})'.format(alumne.adreca, alumne.cp, localitat_i_o_municipi)
         filera.append(camp)
     
         taula.fileres.append( filera )
@@ -1382,7 +1567,10 @@ def elMeuInforme( request, pk = None ):
 
     infSortida=detall in ['all', 'sortides'] and settings.CUSTOM_MODUL_SORTIDES_ACTIU and not settings.CUSTOM_SORTIDES_OCULTES_A_FAMILIES
     pagquotes = QuotaPagament.objects.filter(alumne=alumne, quota__importQuota__gt=0)
-    pagquotesNoves = pagquotes.filter(pagament_realitzat=False)
+    pagquotesNoves, creaNotif = getNousElements(pagquotes.filter(pagament_realitzat=False), user)
+    if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+    if pagquotesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+
     infQuota=detall in ['all', 'sortides'] and (pagquotes or settings.CUSTOM_QUOTES_ACTIVES)
 
     titol_sortides = 'Activitats/Pagaments'
@@ -1400,7 +1588,9 @@ def elMeuInforme( request, pk = None ):
         # totes les sortides relacionades amb l'alumne
         activitats=sortidesnotificat.union(sortidespagadesnonotificades)
         
-        sortidesNoves = sortides.filter(  relacio_familia_revisada__isnull = True )
+        sortidesNoves, creaNotif = getNousElements(sortides, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if sortidesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
         sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list( 'id', flat=True ).distinct()           
         sortides_justificades = alumne.sortides_falta_justificat.values_list( 'id', flat=True ).distinct()           
         
@@ -1452,13 +1642,13 @@ def elMeuInforme( request, pk = None ):
             # notifica és la notificació a l'alumne
             notifica=act.notificasortida_set.filter(alumne=alumne)
             if notifica:
-                notifica=notifica[0]
+                notificacio, revisio = notifica.first().get_notif_revisio(user)
+                negreta = False if revisio else True
             else:
-                notifica=None
+                notificacio, revisio = '', ''
+                negreta = True                
             
             filera = []
-            revisada_per_la_familia = not notifica or bool( notifica.relacio_familia_revisada )
-            negreta = not revisada_per_la_familia
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
@@ -1492,13 +1682,13 @@ def elMeuInforme( request, pk = None ):
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(notifica.relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if notifica and notifica.relacio_familia_notificada else ''
+            camp.contingut = u'{0}'.format(notificacio)
             camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(notifica.relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if notifica and notifica.relacio_familia_revisada else ''
+            camp.contingut = u'{0}'.format(revisio)
             camp.negreta = negreta
             filera.append(camp)
             
@@ -1534,9 +1724,9 @@ def elMeuInforme( request, pk = None ):
 
             # ----------------------------------------------
             if act.tipus_de_pagament == 'ON':
-                alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
-                    act.alumnes_justificacio.all())
-                alumne_tret_de_lactivitat = alumne in alumnat_tret_de_lactivitat
+                #alumnat_tret_de_lactivitat = act.alumnes_que_no_vindran.all().union(
+                #    act.alumnes_justificacio.all())
+                alumne_tret_de_lactivitat = alumne in act.alumnes_que_no_vindran.all() or alumne in act.alumnes_justificacio.all() 
                 camp = tools.classebuida()
                 camp.nexturl = reverse_lazy('relacio_families__informe__el_meu_informe')
                 #pagament corresponent a una sortida i un alumne
@@ -1559,12 +1749,11 @@ def elMeuInforme( request, pk = None ):
 
             #--
             taula.fileres.append( filera )
-
+            if not semiImpersonat:
+                if not notificacio and notifica: notifica.first().set_notificacio(notifAlumne)
+                if not revisio and notifica: notifica.first().set_revisio(revisAlumne)
+                
         if not infQuota: report.append(taula)
-
-        if not semiImpersonat:
-            sortidesNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            sortidesNoves.update( relacio_familia_revisada = ara )           
 
     #----Quotes -----------------------------------------------------------------------------   
     if infQuota:
@@ -1615,38 +1804,40 @@ def elMeuInforme( request, pk = None ):
             taula.fileres = []
 
         for pagquota in pagquotes.order_by( '-quota__any', '-quota__dataLimit', 'dataLimit' ):
+            notificacio, revisio = pagquota.get_notif_revisio(user)
+            negreta = not bool( pagquota.pagamentFet )
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = naturalday(pagquota.getdataLimit)
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = ''       
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = u'{0}'.format( pagquota.quota.descripcio )        
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = pagquota.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagquota.data_hora_pagament and not pagquota.pagamentFet else ''
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.contingut = u'{0}'.format( notificacio )
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = pagquota.data_hora_pagament.strftime('%d/%m/%Y %H:%M') if pagquota.data_hora_pagament and pagquota.pagamentFet else ''
-            camp.negreta = not bool( pagquota.pagamentFet )
+            camp.contingut = u'{0}'.format( revisio )
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
@@ -1688,6 +1879,9 @@ def elMeuInforme( request, pk = None ):
 
             #--
             taula.fileres.append( filera )
+            if not semiImpersonat:
+                if not notificacio and not revisio: pagquota.set_notificacio(notifAlumne)
+                if not revisio: pagquota.set_revisio(revisAlumne)
     
         report.append(taula)
 
@@ -1704,8 +1898,10 @@ def elMeuInforme( request, pk = None ):
     if detall in ['all', 'qualitativa'] and qualitatives_en_curs:
         
         respostes = alumne.respostaavaluacioqualitativa_set.filter( qualitativa__in = qualitatives_en_curs )
-        respostesNoves = respostes.filter( relacio_familia_revisada__isnull = True )
-
+        respostesNoves, creaNotif = getNousElements(respostes, user)
+        if creaNotif and not notifAlumne: notifAlumne=creaNotifUsuari(user, alumne, 'N')
+        if respostesNoves and not revisAlumne: revisAlumne=creaNotifUsuari(user, alumne, 'R')
+            
         assignatures = list(set( [r.assignatura for r in respostes] ))
         hi_ha_tipus_assignatura = ( bool(assignatures)
                                     and assignatures[0]
@@ -1763,18 +1959,21 @@ def elMeuInforme( request, pk = None ):
              
         for _ , respostes in groupby( respostes_sort, keyf ):
             respostes=list(respostes)
+            notificacio, revisio = respostes[0].get_notif_revisio(user)
+            negreta = False if revisio else True
+            
             filera = []
             #----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = respostes[0].qualitativa.nom_avaluacio       
-            camp.negreta = False if bool( respostes[0].relacio_familia_revisada ) else True                
+            camp.negreta = negreta
             filera.append(camp)
 
             camp = tools.classebuida()
             camp.enllac = None
             camp.contingut = respostes[0].assignatura.nom_assignatura or respostes[0].assignatura
-            camp.negreta = False if bool( respostes[0].relacio_familia_revisada ) else True                
+            camp.negreta = negreta
             filera.append(camp)
             
             #----------------------------------------------
@@ -1783,28 +1982,30 @@ def elMeuInforme( request, pk = None ):
             camp.multipleContingut = []
             for resposta in respostes:
                 camp.multipleContingut.append( ( u'{0}'.format( resposta.get_resposta_display() ), None, ) )        
-            camp.negreta = False if respostes[0].relacio_familia_revisada else True                
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(respostes[0].relacio_familia_notificada.strftime('%d/%m/%Y %H:%M')) if respostes[0].relacio_familia_notificada else ''
-            camp.negreta = False if bool(respostes[0].relacio_familia_revisada) else True
+            camp.contingut = u'{0}'.format(notificacio)
+            camp.negreta = negreta
             filera.append(camp)
             # ----------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.contingut = u'{0}'.format(respostes[0].relacio_familia_revisada.strftime('%d/%m/%Y %H:%M')) if respostes[0].relacio_familia_revisada else ''
-            camp.negreta = False if bool(respostes[0].relacio_familia_revisada) else True
+            camp.contingut = u'{0}'.format(revisio)
+            camp.negreta = negreta
             filera.append(camp)
 
             #--
             taula.fileres.append( filera )
-    
+            if not semiImpersonat:
+                for resposta in respostes:
+                    notificacio, revisio = resposta.get_notif_revisio(user)
+                    if not notificacio: resposta.set_notificacio(notifAlumne)
+                    if not revisio: resposta.set_revisio(revisAlumne)
+                
         report.append(taula)
-        if not semiImpersonat:
-            respostesNoves.filter( relacio_familia_notificada__isnull = True ).update( relacio_familia_notificada = ara )
-            respostesNoves.update( relacio_familia_revisada = ara )           
 
     return render(
                 request,
@@ -1827,3 +2028,52 @@ def pintaNoves( numero ):
 
 def blanc(request):
     return render(request, 'blanc.html', {},)
+
+@login_required
+def canviaAlumne( request, idalumne ):
+    '''
+    idalumne és l'id del model Alumne que es vol gestionar
+    Si és tracta d'un usuari responsable i l'id d'alumne correspon
+    a un dels seus alumnes associats, passa a gestionar aquest alumne.
+    '''
+    credentials = tools.getImpersonateUser(request) 
+    (user, l4 ) = credentials
+    
+    responsable = User2Responsable( user )
+    alum = None
+    if responsable:
+        a=Alumne.objects.filter( pk = int(idalumne) )
+        if a.exists() and a.first() in responsable.get_alumnes_associats():
+            alum=a.first()
+    else:
+        alum = User2Alumne( user )
+    if alum:
+        request.session["alumne_actual"]=alum.id
+    return HttpResponseRedirect('/')
+
+@login_required
+def escollirAlumne(request):
+    _, responsable, alumne = getRol( request.user, request )
+    if responsable:
+        if responsable.get_alumnes_associats().count()>1:
+            if request.method == 'POST':
+                form = escollirAlumneForm(request.user, responsable, request.POST)
+                if form.is_valid():
+                    alumneid=form.cleaned_data['alumne']
+                    return HttpResponseRedirect(reverse_lazy('relacio_families__canviaAlumne',
+                                                kwargs={"idalumne": alumneid},))
+            else:
+                form = escollirAlumneForm(request.user, responsable)
+            return render(request, 'form.html', {'form': form, 'head': u'Selecciona l\'alumne' ,})
+        else:
+            if responsable.get_alumnes_associats().count()==1:
+                return HttpResponseRedirect(reverse_lazy('relacio_families__canviaAlumne',
+                                                    kwargs={"idalumne": responsable.get_alumnes_associats().first().id},))
+            else:
+                # No té alumnes
+                return HttpResponseRedirect('/logout/')
+    if alumne:
+        alumneid=alumne.id
+        return HttpResponseRedirect(reverse_lazy('relacio_families__canviaAlumne',
+                                                kwargs={"idalumne": alumneid},))
+    return HttpResponseRedirect('/')

@@ -31,6 +31,15 @@
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
+                  {% for a in menu.alumnes_tots %}
+                      <li><a href="{% url 'relacio_families__canviaAlumne' a.id %}">
+                      {% if request.session.alumne_actual == a.id %}
+                          <b>{{a.nom}} {{a.cognoms}}</b>
+                      {% else %}
+                          {{a.nom}} {{a.cognoms}}
+                      {% endif %}
+                      </a></li>
+                  {% endfor %}
 	              {%if not menu.esalumne %}<li><a href="/usuaris/canviDadesUsuari/">El meu nom i correu.</a></li>{% endif %}
 	              <li><a href="{% url 'usuari__dades__canvi_passwd' %}">Canvi de paraula de pas (password)</a></li>
                 {% if sessioImpersonada %}

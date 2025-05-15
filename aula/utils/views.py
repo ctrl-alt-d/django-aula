@@ -33,6 +33,7 @@ from aula.utils.forms import initDBForm
 
 from django.views.decorators.csrf import ensure_csrf_cookie
 from aula.apps.alumnes.models import Curs
+from aula.apps.usuaris.tools import getRol
 
 
 def keepalive(request):
@@ -47,6 +48,7 @@ def keepalive(request):
 def logout_page(request):
     try:
         del request.session['impersonacio']
+        del request.session['alumne_actual']
     except KeyError:
         pass
     
@@ -57,6 +59,7 @@ def logout_page(request):
 def menu(request):
     #How do I make a variable available to all my templates?
     #http://readthedocs.org/docs/django/1.2.4/faq/usage.html#how-do-i-make-a-variable-available-to-all-my-templates
+    from aula.apps.matricula.viewshelper import get_url_alumne
     
     if request.user.is_anonymous:      
         return HttpResponseRedirect( settings.LOGIN_URL )         
@@ -64,6 +67,15 @@ def menu(request):
         #si és un alumne l'envio a mirar el seu informe
         try:
             if Group.objects.get(name='alumne') in request.user.groups.all():
+                if "alumne_actual" not in request.session:
+                    _, responsable, alumne = getRol(request.user, request)
+                    if responsable or alumne:
+                        return HttpResponseRedirect( '/open/escollirAlumne/')
+                
+                url_mat=get_url_alumne(request.user, request)
+                if url_mat:
+                    return HttpResponseRedirect( url_mat )
+                
                 return HttpResponseRedirect( '/open/elMeuInforme/')
             
             #comprova que no té passwd per defecte:
@@ -522,14 +534,17 @@ def allow_private_files(private_file):
 
     if not request.user.is_authenticated: return False
     
+    professor, responsable, alumne = getRol( user, request )
+    
     if private_file.relative_name.startswith('matricula'):
-        data=Document.objects.filter(matricula__alumne__user_associat=user, fitxer=private_file.relative_name)
+        data=Document.objects.filter(matricula__alumne=alumne, fitxer=private_file.relative_name)
         if data:
             return request.user.is_authenticated
     
-    prop=Alumne.objects.filter(user_associat=user, foto=private_file.relative_name)
-    if prop:
-        return request.user.is_authenticated
+    if alumne:
+        prop=Alumne.objects.filter(id=alumne.id, foto=private_file.relative_name)
+        if prop:
+            return request.user.is_authenticated
 
     pertany_al_grup_permes = (user
                               .groups

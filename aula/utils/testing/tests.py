@@ -47,7 +47,6 @@ class TestUtils():
             alumne = Alumne.objects.create(ralc=100, grup=grupAlumnes, 
                 nom=noms[nNom], 
                 cognoms=cognoms[nCognom], 
-                tutors_volen_rebre_correu=False,
                 data_neixement=date(1990,7,7) #english date.
                 ) 
             alumnesGenerats.append(alumne)

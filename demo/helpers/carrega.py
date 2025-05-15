@@ -19,10 +19,14 @@ from aula.apps.usuaris.models import Professor
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.alumnes.gestioGrups import grupsPotencials
 from aula.apps.presencia.regeneraImpartir import regeneraThread
-from aula.apps.presencia.models import Impartir, EstatControlAssistencia
+from aula.apps.presencia.models import Impartir, EstatControlAssistencia, ControlAssistencia
 
 from aula.apps.presencia.afegeixTreuAlumnesLlista import afegeixThread
 from aula.utils.tools import unicode
+from aula.apps.relacioFamilies.models import Responsable
+from aula.apps.sortides.models import TPV, Quota, TipusQuota, Pagament
+from django.conf import settings
+from django.db.models import F, Value
 
 def fesCarrega( ):
     msg = u""
@@ -69,8 +73,8 @@ def fesCarrega( ):
     sincronitzaKronowin.creaNivellCursGrupDesDeKronowin( handlerKronowin, inici_curs, fi_curs )
     
     print (u"#Creem correspondències amb horaris")
-    frangesAula = FranjaHoraria.objects.filter( hora_inici__in = ['09:15', '10:30', '11:30' ,'12:45',
-                                                                  '15:45', '16:45', '18:05', '19:00'] ).order_by ( 'hora_inici' )
+    frangesAula = FranjaHoraria.objects.filter( pk__in = list(range(2,7))+list(range(10,15)) )\
+                                                            .exclude(nom_franja__icontains='pati').order_by ( 'hora_inici' )
     frangesKronowin = list(frangesMatins) + list(frangesTardes)
     for frangaAula, franjaKronowin in zip(frangesAula, frangesKronowin  ):
         Franja2Aula.objects.get_or_create( franja_kronowin= franjaKronowin,  franja_aula = frangaAula )
@@ -87,12 +91,12 @@ def fesCarrega( ):
     print (u"#Importem Kronowin 1 ( Per crear professors )")
     handlerKronowin=open( fitxerKronowin, 'r' )
     result = sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
-    print (u"Resultat importació kroniwin 1: ", result["errors"], result["warnings"], sep=" ")  
+    print (u"Resultat importació kronowin 1: ", result["errors"], result["warnings"], sep=" ")  
     
     print (u"#Importem Kronowin 2 ( Per importar horaris )")
     handlerKronowin=open( fitxerKronowin, 'r' )
     result = sincronitzaKronowin.sincronitza( handlerKronowin, userDemo  )
-    print (u"Resultat importació kroniwin 2: ", result["errors"], result["warnings"], sep=" ")  
+    print (u"Resultat importació kronowin 2: ", result["errors"], result["warnings"], sep=" ")  
 
     print (u"#Importem saga")
     handlerSaga=open( fitxerSaga, 'r' )
@@ -140,6 +144,16 @@ def fesCarrega( ):
                 afegeix.start()
                 afegeix.join()
     
+    # Passa llista a tothom
+    present = EstatControlAssistencia.objects.get( codi_estat = "P" )
+    for ca in ControlAssistencia.objects.filter( impartir__dia_impartir__lt = date.today() ):
+        ca.estat = present
+        ca.professor = ca.impartir.horari.professor
+        ca.save()
+        ca.impartir.professor_passa_llista = ca.impartir.horari.professor
+        ca.impartir.dia_passa_llista = ca.impartir.dia_impartir
+        ca.impartir.save()
+    
     print ("posem unes quantes faltes d'assistència")
     alumnes_faltons = random.sample( list(Alumne.objects.all()), 20 )
     falta = EstatControlAssistencia.objects.get( codi_estat = "F" )
@@ -152,6 +166,21 @@ def fesCarrega( ):
             ca.impartir.dia_passa_llista = date.today()
             ca.impartir.save()
 
+    print("preparant configuració de matrícula")
+    tpv=TPV(None, "centre", settings.CUSTOM_CODI_COMERÇ, settings.CUSTOM_KEY_COMERÇ, "Pagaments al centre", False)
+    tpv.save()
+    for tipus in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
+        tq=TipusQuota(None, tipus)
+        tq.save()
+    q=Quota(None, 10, date.today() + relativedelta( days = 30 ), inici_curs.year, "Material escolar", 
+            None, tpv.id, TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA).id)
+    q.save()
+    q=Quota(None, 360, None, inici_curs.year, "Taxes cicles FP", 
+            None, tpv.id, TipusQuota.objects.get(nom="taxcurs").id)
+    q.save()
+    q=Quota(None, 25, None, inici_curs.year, "Taxa UF", 
+            None, tpv.id, TipusQuota.objects.get(nom="uf").id)
+    q.save()
 
     print (u"canviant dades dels professors")
     for p in Professor.objects.all():
@@ -159,7 +188,50 @@ def fesCarrega( ):
         p.set_password( 'djAu' )
         p.save()
         
-    msg += u"\nTots els passwords de professors: 'djAu' "
+    print (u"canviant dades dels responsables")
+    varisAlumnes=[]
+    for p in Responsable.objects.all():
+        p.get_user_associat().set_password( 'djAu' )
+        p.get_user_associat().is_active = True
+        p.get_user_associat().save()
+        if p.get_alumnes_associats().count()>1:
+            varisAlumnes.append(p.get_user_associat().username)
+            
+    print (u"canviant dades dels alumnes")
+    for p in Alumne.objects.all():
+        nomfitxer=os.path.join(settings.PROJECT_DIR, settings.STATIC_ROOT, 'demo/al'+str(p.id%12+1)+'.jpg')
+        nomnou='foto_almn_'+str(p.ralc)+'.jpg'
+        f=obrirFoto(nomfitxer, nomnou)
+        p.foto=f
+        p.save()
+        f.close()
+        p.get_user_associat().set_password( 'djAu' )
+        p.get_user_associat().is_active = True
+        p.get_user_associat().save()
+        
+    msg += "\nResponsables rang: " + u" - ".join( sorted( set( [ unicode( Responsable.objects.order_by('id').first().get_user_associat().username ),
+                                                          unicode( Responsable.objects.order_by('id').last().get_user_associat().username )
+                                                          ] ) ) )
+    msg += "\nAlguns responsables amb varis alumnes: " + u" ,".join( sorted( set( varisAlumnes ) )[:10] )
+    msg += "\nAlumnes rang: " + u" - ".join( sorted( set( [ unicode( Alumne.objects.order_by('id').first().get_user_associat().username ),
+                                                          unicode( Alumne.objects.order_by('id').last().get_user_associat().username )
+                                                          ] ) ) )
+    msg += u"\nTots els passwords d'usuari: 'djAu' "
         
     return msg
 
+def obrirFoto(fitxer, new_file_name):
+    from PIL import Image
+    import io
+    from django.core.files.uploadedfile import InMemoryUploadedFile
+    
+    img = Image.open(fitxer)
+    thumb_io = io.BytesIO()
+    img.save(thumb_io, 'jpeg')
+    file = InMemoryUploadedFile(thumb_io,
+                                u"foto",
+                                new_file_name,
+                                'image/jpeg',
+                                thumb_io.getbuffer().nbytes,
+                                None)
+    return file

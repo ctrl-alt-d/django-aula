@@ -58,9 +58,10 @@ class AlumneNomSentitGrup(Alumne):
 
 
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
-from django.db.models.signals import post_save  #, pre_save, pre_delete
+from django.db.models.signals import post_save, pre_save #, pre_delete
 
-from aula.apps.alumnes.business_rules.alumne import alumne_post_save
+from aula.apps.alumnes.business_rules.alumne import alumne_post_save, alumne_pre_save
+pre_save.connect(alumne_pre_save, sender = Alumne )
 post_save.connect(alumne_post_save, sender = Alumne )
 #for customising replace by:
 #from customising.business_rules.alumne import alumne_post_save

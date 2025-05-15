@@ -160,11 +160,12 @@ def initComplet():
     from aula.apps.aules.models import ReservaAula
     from aula.apps.tutoria.models import SeguimentTutorial, ResumAnualAlumne, SeguimentTutorialRespostes, Actuacio, Tutor, \
                                         TutorIndividualitzat, CartaAbsentisme
-    from aula.apps.usuaris.models import LoginUsuari
+    from aula.apps.usuaris.models import LoginUsuari, ResponsableUser, AlumneUser
     from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
     from aula.apps.extPreinscripcio.models import Preinscripcio
     from aula.apps.sortides.models import Pagament, NotificaSortida
     from aula.apps.matricula.models import Matricula, Document
+    from aula.apps.relacioFamilies.models import Responsable
     
     try:
         avui=datetime.now()
@@ -220,6 +221,9 @@ def initComplet():
         #Esborra les baixes
         esborrar.delete()
         
+        #Esborra Responsables sense alumnes
+        Responsable.objects.filter(alumnes_associats__isnull=True).delete()
+        
 
     except Exception as e:
         return ["Error:"+str(e)]
@@ -228,12 +232,18 @@ def initComplet():
     Pagament.objects.filter(quota__any__lt=avui.date().year, pagament_realitzat=False, quota__tpv__nom='centre').delete()
 
     # Esborra usuaris alumne sense alumne associat
-    User.objects.filter(username__startswith='almn',alumne__isnull=True).delete()
+    AlumneUser.objects.filter(alumne__isnull=True).delete()
+    # Esborra usuaris responsable sense responsable associat
+    ResponsableUser.objects.filter(responsable__isnull=True).delete()
 
     # Activa usuaris alumne no donats de baixa
-    User.objects.filter(username__startswith='almn', alumne__data_baixa__isnull=True).update(is_active=True)
+    AlumneUser.objects.filter(alumne__data_baixa__isnull=True).update(is_active=True)
     # Desactiva usuaris alumne donats de baixa
-    User.objects.filter(username__startswith='almn', alumne__data_baixa__isnull=False).update(is_active=False)
+    AlumneUser.objects.filter( alumne__data_baixa__isnull=False).update(is_active=False)
+    # Activa usuaris responsable no donats de baixa
+    ResponsableUser.objects.filter(responsable__data_baixa__isnull=True).update(is_active=True)
+    # Desactiva usuaris responsable donats de baixa
+    ResponsableUser.objects.filter(responsable__data_baixa__isnull=False).update(is_active=False)
     
     # Elimina dates d'inici i final de curs
     Curs.objects.all().update(data_inici_curs=None, data_fi_curs=None)
