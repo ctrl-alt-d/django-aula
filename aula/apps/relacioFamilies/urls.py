@@ -41,4 +41,8 @@ urlpatterns = [
     
     path('horesAlumneAjax/<idalumne>/<dia>/', relacioFamilies_views.horesAlumneAjax,
         name="relacio_families__horesAlumneAjax"),
+    
+    path('canviaAlumne/<idalumne>/', relacioFamilies_views.canviaAlumne, name="relacio_families__canviaAlumne"),
+    
+    path('escollirAlumne/', relacioFamilies_views.escollirAlumne, name="relacio_families__escollirAlumne"),
 ]

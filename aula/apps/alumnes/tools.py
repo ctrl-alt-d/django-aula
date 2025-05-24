@@ -29,7 +29,7 @@ def fusiona_alumnes_by_pk( pk , credentials = None):
                         )
     q_mateixa_altres = Q(
                     adreca = a.adreca,
-                    telefons = a.telefons,
+                    #telefons = a.telefons,
                     localitat = a.localitat,
                     centre_de_procedencia = a.centre_de_procedencia,
                     adreca__gte= u""                             
@@ -156,6 +156,7 @@ def fusiona_alumnes( a_desti, a_fusionar , credentials = None ):
         
         
 def crea_alumne(nom, cognoms, dataNaixement, grup):
+    # TODO fa falta aquesta funció?
     # Exemple d'ús:
     #    from aula.apps.alumnes.tools import crea_alumne
     #    crea_alumne("Cynthia", "Martínez Camps", "4-10-1996", "2CTX")
@@ -172,7 +173,6 @@ def crea_alumne(nom, cognoms, dataNaixement, grup):
     a.estat_sincronitzacio = 'MAN'
     a.data_alta = date.today()
     a.motiu_bloqueig = u'No sol·licitat'
-    a.tutors_volen_rebre_correu = False
     a.save()
 
 def controlsRang(alumne, datai, horai, dataf, horaf):

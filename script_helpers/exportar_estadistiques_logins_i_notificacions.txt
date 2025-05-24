@@ -45,11 +45,12 @@ w.writerow(row)
 
 for a in Alumne.objects.all():
     n_logins=LoginUsuari.objects.filter(usuari__id=a.get_user_associat().id).filter(exitos=True).count()
+    emailsResp=a.get_correus_relacio_familia()
     row = [a.grup.curs.nivell,
            a.grup.curs, a.grup,
            a.nom, a.cognoms,
-           a.correu_relacio_familia_pare,
-           a.correu_relacio_familia_mare,
+           emailsResp[0] if len(emailsResp)>0 else '',
+           emailsResp[1] if len(emailsResp)>1 else '',
            n_logins ]
     w.writerow(row)
 

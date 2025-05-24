@@ -10,8 +10,9 @@ from datetime import timedelta, datetime, date
 from django.template.defaultfilters import safe
 from django.conf import settings
 from aula.apps.sortides.models import Sortida
+from aula.apps.usuaris.tools import getRol
 
-def calcula_menu( user , path, sessioImpersonada ):
+def calcula_menu( user , path, sessioImpersonada, request ):
 
     if not user.is_authenticated:
         return
@@ -80,12 +81,19 @@ def calcula_menu( user , path, sessioImpersonada ):
     
     menu["esalumne"]=al
     if al:
-        alumneuser = AlumneUser.objects.get( id = user.id )
-        alumne = alumneuser.getAlumne()
-        if alumne:
+        _, responsable, alumne = getRol(user, request )
+        menu["alumnes_tots"]=[]
+        if responsable and alumne:
+            menu["alumnes_tots"]=list(responsable.get_alumnes_associats())
             menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom if alumne.nom else alumne.ralc)
+            if len(menu["alumnes_tots"])==1:
+                menu["alumnes_tots"]=[]
+        elif alumne:
+            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom if alumne.nom else alumne.ralc)
+        elif responsable:
+            menu["nomusuari"]= u"{nom} {cognoms}".format( nom=responsable.nom if responsable.nom else user.username, cognoms=responsable.cognoms )
         else:
-            menu["nomusuari"]= user.first_name or user.username 
+            menu["nomusuari"]= user.first_name or user.username
     else:
         menu["nomusuari"]= user.first_name or user.username 
     

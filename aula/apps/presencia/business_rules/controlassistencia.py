@@ -20,6 +20,10 @@ def controlAssistencia_clean( instance ):
     instance.instanceDB = None if not isUpdate else instance.__class__.objects.get( pk = instance.pk )
     
     errors = {}
+     
+    if instance.instanceDB and instance.instanceDB.estat == instance.estat and instance.instanceDB.comunicat != instance.comunicat:
+        # Es tracta d'una família afegint un comunicat
+        return
     
     tutors = [ tutor for tutor in instance.alumne.tutorsDeLAlumne() ]
     if user: instance.professor = User2Professor( user )
@@ -113,6 +117,10 @@ def controlAssistencia_pre_delete( sender, instance, **kwargs):
     
 def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
+    if instance.instanceDB and instance.instanceDB.estat!=instance.estat and instance.estat.codi_estat in ['F','R','J']:
+            # Elimina notificacions i revisions si s'ha fet 
+            # un canvi d'estat i el nou estat és diferent de 'P'(present)
+            instance.notificacions_familia.clear()
 
 def controlAssistencia_post_save(sender, instance, created, **kwargs):
   

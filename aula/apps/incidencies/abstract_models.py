@@ -6,6 +6,7 @@ from django.conf import settings
 from django.apps import apps
 from django.db.models import Q
 from aula.utils.tools import unicode
+from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
 
 class AbstractFrassesIncidenciaAula(models.Model):
     tipus = models.ForeignKey('incidencies.TipusIncidencia', on_delete = models.PROTECT )
@@ -44,8 +45,13 @@ class AbstractSancio(models.Model):
     comentaris_cap_d_estudis = models.TextField(blank=True, help_text=u"Comentaris interns del cap d'estudis")
     signat = models.CharField(max_length=250)
     impres = models.BooleanField(help_text=u"Un cop imprès el document ja no pot modificar-se la sanció", default=False)
+
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
+    #DEPRECATED ^^^
+    
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
 
     class Meta:
         abstract = True        
@@ -83,7 +89,18 @@ class AbstractSancio(models.Model):
                 )
         
         return l
-        
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)        
         
 
 
@@ -117,8 +134,12 @@ class AbstractExpulsio(models.Model):
     es_expulsio_per_acumulacio_incidencies = models.BooleanField( default=False )
     es_vigent = models.BooleanField( default=True , db_index=True)
 
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True )    
+    #DEPRECATED ^^^
+    
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
 
     class Meta:
         abstract = True
@@ -163,7 +184,19 @@ class AbstractExpulsio(models.Model):
     
     def totalExpulsionsVigents(self):
         return self.alumne.expulsio_set.exclude( estat = 'ES ').filter(es_vigent = True ).count()
-
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
+    
 class AbstractTipusIncidencia(models.Model):
     tipus = models.CharField("Tipus", max_length=50, unique=True, help_text=u"Tipus d'incidència")
     es_informativa = models.BooleanField( default = False, help_text=u'''Marca aquesta casella si les incidències d'aquest tipus son només informatives i no implicaràn mesures disciplinàries. Per exemple: "Avui s'ha esforçat molt" ó "Ha faltat el dia de l'examen".'''  )
@@ -242,9 +275,13 @@ class AbstractIncidencia(models.Model):
     provoca_sancio = models.ForeignKey('incidencies.Sancio', 
                                        blank=True, null=True, on_delete = models.PROTECT  )
 
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
 
     relacio_familia_notificada = models.DateTimeField( null=True )
+    #DEPRECATED ^^^
+    
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
     
     def es_incidencia_d_aula(self):
         return ( self.control_assistencia is not None) 
@@ -283,4 +320,16 @@ class AbstractIncidencia(models.Model):
         elif settings.CUSTOM_TIPUS_INCIDENCIES:
             tipus = u'''({0})'''.format(self.tipus)
         return u'''{0} {1} {2}'''.format(tipus, self.alumne, self.descripcio_incidencia)    
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
         

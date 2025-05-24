@@ -12,6 +12,9 @@ from aula.apps.extUntis.sincronitzaUntis import creaGrup
 from aula.apps.usuaris.models import OneTimePasswd
 from django.conf import settings
 import random
+from django.forms.models import model_to_dict
+from aula.apps.relacioFamilies.tools import creaResponsables
+from aula.apps.usuaris.tools import getRol
 
 def acceptaCondicions(alumne, nany=None):
     '''
@@ -73,7 +76,7 @@ def MatriculaOberta(alumne, preinscripcio=None):
         return (not curs.nivell.limit_matricula or django.utils.timezone.now().date()<=curs.nivell.limit_matricula)
     return False
 
-def get_url_alumne(usuari):
+def get_url_alumne(usuari, request):
     '''
     Retorna la url inicial per omplir informació de matrícula:
         Confirmació de matrícula si encara no ha omplert el formulari
@@ -82,13 +85,14 @@ def get_url_alumne(usuari):
     '''
     
     try:
-        if usuari.alumne:
+        _, _, alumne = getRol( usuari, request )
+        if alumne:
             nany=django.utils.timezone.now().year
             # situacioMat determina el pas a fer de la matrícula
-            info = situacioMat(usuari.alumne, nany)
-            if info=='M' and not MatContestada(usuari.alumne, nany):
+            info = situacioMat(alumne, nany)
+            if info=='M' and not MatContestada(alumne, nany):
                 return reverse_lazy('matricula:relacio_families__matricula__dades')
-            if info=='C' and not ConfContestada(usuari.alumne, nany):
+            if info=='C' and not ConfContestada(alumne, nany):
                 return reverse_lazy('matricula:relacio_families__matricula__confirma', kwargs={"nany": nany})
         return None
     except Exception:
@@ -218,7 +222,17 @@ def enviamail(subject, message, from_email, to_email, connection=None):
         ep.save()
         return 0
 
-def mailMatricula(tipus, curs, email, alumne, connection=None):
+def comunicaMatricula(tipus, curs, alumne, connection=None):
+    '''
+    Fa comunicació de missatge de matrícula per alumne i responsables.
+    '''
+    if alumne.edat()>=18 or not alumne.responsables.exists() or not alumne.get_correus_relacio_familia(checkMajorEdat=False):
+        mailMatricula(tipus, curs, alumne.correu, alumne, connection=connection)
+    for r in alumne.get_responsables():
+        if r:
+            mailMatricula(tipus, curs, r.correu_relacio_familia, alumne, r, connection)
+    
+def mailMatricula(tipus, curs, email, alumne, responsable=None, connection=None):
     '''
     Envia email segons tipus de matrícula
     tipus de missatge ('P', 'A', 'C', 'F')
@@ -228,18 +242,23 @@ def mailMatricula(tipus, curs, email, alumne, connection=None):
         F  Finalitza matrícula
     curs a on s'ha de fer la matrícula
     email adreces email destinataries, pot ser una llista.
-    alumne objecte Alumne
+    responsable de l'alumne que rep l'email, si no existeix s'envia a l'alumne.
+    alumne objecte Alumne que ha de fer matrícula.
     connection servidor correu
     Retorna True si correcte, False si error.
     '''
     
     if not email: return False
-    username=alumne.get_user_associat().username
+    if responsable:
+        usuari=responsable.get_user_associat()
+    else:
+        usuari=alumne.get_user_associat()
+    username=usuari.username
     urlDjangoAula = settings.URL_DJANGO_AULA
     if tipus!='F':
         # Prepara recuperació de contrasenya
         clau = str( random.randint( 100000, 999999) ) + str( random.randint( 100000, 999999) )
-        OneTimePasswd.objects.create(usuari = alumne.get_user_associat(), clau = clau)
+        OneTimePasswd.objects.create(usuari = usuari, clau = clau)
         url = "{0}/usuaris/recoverPasswd/{1}/{2}".format( urlDjangoAula, username, clau )
     
     assumpte = {
@@ -325,7 +344,7 @@ def mailMatricula(tipus, curs, email, alumne, connection=None):
                 ]                        
     fromuser = settings.DEFAULT_FROM_EMAIL
     if settings.DEBUG:
-        print (u'Enviant comunicació sobre la matrícula a {0}'.format(alumne.nom+" "+alumne.cognoms))
+        print (u'Enviant comunicació sobre la matrícula a {0}'.format((responsable.nom+" "+responsable.cognoms) if responsable else (alumne.nom + " " + alumne.cognoms)))
     try:
         r=enviamail(assumpte.get(tipus), 
                   u'\n'.join( missatge ), 
@@ -383,6 +402,7 @@ def creaAlumne(preinscripcio):
     Crea l'alumne si no existeix.
     Si crea l'alumne li assigna les dades segons la preinscripció i amb grup sense lletra.
     Activa l'usuari per a poder fer Login.
+    Crea i activa els responsables de l'alumne.
     preinscripcio: amb les dades que s'assignen a l'alumne
     Retorna objecte Alumne
     '''
@@ -396,11 +416,50 @@ def creaAlumne(preinscripcio):
         al.nom = preinscripcio.nom
         al.cognoms = preinscripcio.cognoms
         al.data_neixement = preinscripcio.naixement
-    al.correu_relacio_familia_pare = preinscripcio.correu if al.primer_responsable==0 else al.correu_relacio_familia_pare
-    al.correu_relacio_familia_mare = preinscripcio.correu if al.primer_responsable==1 else al.correu_relacio_familia_mare
     al.correu = preinscripcio.correu
     activaAlumne(al)
+    activaResponsables(al, preinscripcio)
     return al
+
+def activaResponsables(al, preinscripcio=None):
+    '''
+    Crea els responsables de l'alumne amb les dades de preinscripcio, si existeix. Inclou activació dels usuaris.
+    Si els responsables ja existeixen, manté les seves dades. Es podran modificar durant la matrícula.
+    al Alumne
+    preinscripcio Preinscripcio
+    '''
+    dades1={}
+    dades2={}
+    if preinscripcio:
+        if preinscripcio.doctut1:
+            dades1= {'dni':preinscripcio.doctut1,
+                     'nom':preinscripcio.nomtut1,
+                     'cognoms':preinscripcio.cognomstut1,
+                     'adreca':preinscripcio.adreça or '',
+                     'localitat':preinscripcio.localitat or '',
+                     'municipi':preinscripcio.municipi or '',
+                     'cp':preinscripcio.cp or '',
+                     'telefon':preinscripcio.telefon,
+                     'correu':preinscripcio.correu}
+        if preinscripcio.doctut2:
+            dades2= {'dni':preinscripcio.doctut2,
+                     'nom':preinscripcio.nomtut2,
+                     'cognoms':preinscripcio.cognomstut2,
+                     'adreca':preinscripcio.adreça or '',
+                     'localitat':preinscripcio.localitat or '',
+                     'municipi':preinscripcio.municipi or '',
+                     'cp':preinscripcio.cp or ''}
+            if not preinscripcio.doctut1:
+                dades2['telefon']=preinscripcio.telefon
+                dades2['correu']=preinscripcio.correu
+        # Crea els responsables i els activa si fa falta
+        creaResponsables(al, [dades1, dades2], manteDades=True)
+    else:
+        resp1, resp2=al.get_responsables()
+        if resp1 and resp1.dni: dades1={'dni':resp1.dni}
+        if resp2 and resp2.dni: dades2={'dni':resp2.dni}
+        # S'assegura que els responsables siguin actius i no baixa.
+        creaResponsables(al, [dades1, dades2])
 
 def activaAlumne(al):
     '''
@@ -409,11 +468,9 @@ def activaAlumne(al):
     
     al.estat_sincronitzacio = 'MAN'
     al.motiu_bloqueig = ''
-    al.tutors_volen_rebre_correu = True
     if not al.data_alta or al.data_baixa: 
         al.data_alta = django.utils.timezone.now()
         al.data_baixa = None
-    al.relacio_familia_darrera_notificacio = None
     al.periodicitat_faltes = 7
     al.periodicitat_incidencies = True
     al.save()
@@ -552,11 +609,12 @@ def gestionaPag(matricula, importTaxes):
     else:
         creaPagament(matricula, quotatax, fracciona)
 
-def alumne2Mat(alumne, nany=None, p=None):
+def alumne2Mat(alumne, nany=None):
     '''
     Busca la Matricula amb les dades de l'alumne per l'any indicat o l'any actual.
-    Si no existeix, agafa les dades de la preinscripció o de l'alumme si no té preinscripció.
-    Retorna la Matricula trobada o crea una nova.
+    Si no existeix, crea una matrícula amb les seves dades segons la preinscripció o les
+    dades actuals de l'alumne.
+    Retorna la Matricula trobada o creada.
     '''
     if not nany:
         nany=django.utils.timezone.now().year
@@ -570,44 +628,70 @@ def alumne2Mat(alumne, nany=None, p=None):
         mat.any=nany
         mat.estat='A'
         mat.acceptar_condicions=False
+        resp1, resp2=alumne.get_responsables(compatible=True)
+        if resp1:
+            mat.rp1_dni=resp1.dni
+            mat.rp1_nom=resp1.nom
+            mat.rp1_cognoms=resp1.cognoms
+            mat.rp1_telefon=resp1.telefon
+            mat.rp1_correu=resp1.correu
+            mat.rp1_parentiu=resp1.parentiu
+            mat.rp1_localitat=resp1.localitat if resp1.localitat else resp1.municipi
+            mat.rp1_cp=resp1.cp
+            mat.rp1_adreca=resp1.adreca
+        if resp2:
+            mat.rp2_dni=resp2.dni
+            mat.rp2_nom=resp2.nom
+            mat.rp2_cognoms=resp2.cognoms
+            mat.rp2_telefon=resp2.telefon
+            mat.rp2_correu=resp2.correu
+            mat.rp2_parentiu=resp2.parentiu
+            mat.rp2_localitat=resp2.localitat if resp2.localitat else resp2.municipi
+            mat.rp2_cp=resp2.cp
+            mat.rp2_adreca=resp2.adreca
+        p=Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada')
         if p:
             p=p[0]
             mat.nom=p.nom
             mat.cognoms=p.cognoms
-            mat.centre_de_procedencia=p.centreprocedencia
+            mat.centre_de_procedencia=p.centreprocedencia[0:50] if p.centreprocedencia else ''
             mat.data_naixement=p.naixement
             mat.alumne_correu=p.correu
-            mat.adreca=p.adreça
-            mat.localitat=p.localitat if p.localitat else p.municipi
-            mat.cp=p.cp
-            mat.rp1_nom=p.nomtut1+" "+p.cognomstut1 if p.nomtut1 and p.cognomstut1 else ''
-            mat.rp1_telefon=p.telefon
-            mat.rp1_correu=p.correu
-            mat.rp2_nom=p.nomtut2+" "+p.cognomstut2 if p.nomtut2 and p.cognomstut2 else ''
+            mat.adreca=p.adreça or ''
+            mat.localitat=(p.localitat if p.localitat else p.municipi) or ''
+            mat.cp=p.cp or ''
+            
+            mat.rp1_dni=p.doctut1 or ''
+            mat.rp1_nom=p.nomtut1 or ''
+            mat.rp1_cognoms=p.cognomstut1 or ''
+            mat.rp1_telefon=p.telefon or ''
+            mat.rp1_correu=p.correu or ''
+            mat.rp1_localitat=(p.localitat if p.localitat else p.municipi) or ''
+            mat.rp1_cp=p.cp or ''
+            mat.rp1_adreca=p.adreça or ''
+            mat.rp2_dni=p.doctut2 or ''
+            mat.rp2_nom=p.nomtut2 or ''
+            mat.rp2_cognoms=p.cognomstut2 or ''
+            
             mat.preinscripcio=p
             curs=p.getCurs()
             mat.curs=curs
         else:
             mat.nom=alumne.nom
             mat.cognoms=alumne.cognoms
-            mat.centre_de_procedencia=alumne.centre_de_procedencia[0:50]
+            mat.centre_de_procedencia=alumne.centre_de_procedencia[0:50] if alumne.centre_de_procedencia else ''
             mat.data_naixement=alumne.data_neixement
             mat.alumne_correu=alumne.correu
             mat.adreca=alumne.adreca
             mat.localitat=alumne.localitat if alumne.localitat else alumne.municipi
             mat.cp=alumne.cp
-            mat.rp1_nom=alumne.rp1_nom
-            mat.rp1_telefon=alumne.rp1_mobil if alumne.rp1_mobil else alumne.rp1_telefon
-            mat.rp1_correu=alumne.correu_relacio_familia_pare if alumne.primer_responsable==0 else alumne.correu_relacio_familia_mare
-            mat.rp2_nom=alumne.rp2_nom
-            mat.rp2_telefon=alumne.rp2_mobil if alumne.rp2_mobil else alumne.rp2_telefon
-            mat.rp2_correu=alumne.correu_relacio_familia_mare if alumne.primer_responsable==0 else alumne.correu_relacio_familia_pare
             mat.curs=alumne.grup.curs  # Curs actual
+        mat.save()
     return mat
 
 def updateAlumne(alumne, mat):
     '''
-    Actualitza les dades de l'alumne amb les dades de la Matricula mat.
+    Actualitza les dades de l'alumne i els responsables amb les dades de la Matricula mat.
     '''
     alumne.nom=mat.nom
     alumne.cognoms=mat.cognoms
@@ -618,15 +702,18 @@ def updateAlumne(alumne, mat):
     alumne.adreca=mat.adreca
     alumne.localitat=mat.localitat
     alumne.cp=mat.cp
-    alumne.rp1_nom=mat.rp1_nom
-    alumne.rp1_telefon=mat.rp1_telefon
-    alumne.rp1_correu=mat.rp1_correu
-    alumne.rp2_nom=mat.rp2_nom if mat.rp2_nom else ''
-    alumne.rp2_telefon=mat.rp2_telefon if mat.rp2_telefon else ''
-    alumne.rp2_correu=mat.rp2_correu if mat.rp2_correu else ''
-    alumne.correu_relacio_familia_pare = alumne.rp1_correu
-    alumne.correu_relacio_familia_mare = alumne.rp2_correu
     alumne.save()
+
+    dades_mat=model_to_dict(mat)
+    dades_resp1={}
+    dades_resp2={}
+    for k in dades_mat:
+        if k.startswith('rp1_'): dades_resp1[k[4:]]=dades_mat[k] or ''
+        if k.startswith('rp2_'): dades_resp2[k[4:]]=dades_mat[k] or ''
+    dades_resp1['correu_relacio_familia']=mat.rp1_correu or ''
+    dades_resp2['correu_relacio_familia']=mat.rp2_correu or ''
+    
+    creaResponsables(alumne, [dades_resp1, dades_resp2])
 
 def diferents(dada1, dada2):
     '''
@@ -640,23 +727,25 @@ def diferents(dada1, dada2):
 def getCanvis(idMat):
     '''
     Crea una llista amb tots el camps que tenen diferències entre
-    les dades de la matrícula i les de l'alumne corresponent.
+    les dades de la matrícula i les de l'alumne i responsables corresponent.
     Retorna la llista
     '''
     mat=Matricula.objects.get(pk=idMat)
     alumne=mat.alumne
-    
     llista=[]
+    dades_mat=model_to_dict(mat)
+    resp1, resp2=alumne.get_responsables(mat.rp1_dni, mat.rp2_dni)
+    dades_alumne=model_to_dict(alumne)
+    dades_resp1=model_to_dict(resp1) if bool(resp1) else {}
+    dades_resp2=model_to_dict(resp2) if bool(resp2) else {}
+    for k in dades_mat:
+        if k in dades_alumne and diferents(dades_alumne[k], dades_mat[k]):
+            llista.append(k)
+        if not bool(resp1) and bool(dades_mat[k]) or k.startswith('rp1_') and k[4:] in dades_resp1 and diferents(dades_resp1[k[4:]], dades_mat[k]):
+            llista.append(k)
+        if not bool(resp2) and bool(dades_mat[k]) or k.startswith('rp2_') and k[4:] in dades_resp2 and diferents(dades_resp2[k[4:]], dades_mat[k]):
+            llista.append(k)
     if diferents(alumne.correu, mat.alumne_correu): llista.append('alumne_correu')
-    if diferents(alumne.adreca, mat.adreca): llista.append('adreca')
-    if diferents(alumne.localitat, mat.localitat): llista.append('localitat')
-    if diferents(alumne.cp, mat.cp): llista.append('cp')
-    if diferents(alumne.rp1_nom, mat.rp1_nom): llista.append('rp1_nom')
-    if diferents(alumne.rp1_telefon, mat.rp1_telefon): llista.append('rp1_telefon')
-    if diferents(alumne.rp1_correu, mat.rp1_correu): llista.append('rp1_correu')
-    if diferents(alumne.rp2_nom, mat.rp2_nom): llista.append('rp2_nom')
-    if diferents(alumne.rp2_telefon, mat.rp2_telefon): llista.append('rp2_telefon')
-    if diferents(alumne.rp2_correu, mat.rp2_correu): llista.append('rp2_correu')
     return llista
 
 def mat_selecciona(idcurs, nany, tipus):
@@ -749,16 +838,15 @@ def enviaIniciMat(nivell, tipus, nany, ultimCursNoEmail=False, senseEmails=False
                                               naixement__isnull=False):
             alumne=creaAlumne(p)
             curs=p.getCurs()
-            if not senseEmails: mailMatricula(tipus, curs, p.correu, alumne, connection)
+            if not senseEmails: comunicaMatricula(tipus, curs, alumne, connection)
             p.estat='Enviada'
             p.save()
     if tipus=='A' or tipus=='C':
         for a in Alumne.objects.filter(grup__curs__nivell=nivell, data_baixa__isnull=True):
             activaAlumne(a)
-            correus=a.get_correus_relacio_familia()
-            if not correus: correus=a.get_correus_tots()
+            activaResponsables(a)
             if següentCurs(a) or not ultimCursNoEmail:
-                if not senseEmails: mailMatricula(tipus, a.grup.curs, correus, a, connection)
+                if not senseEmails: comunicaMatricula(tipus, a.grup.curs, a, connection)
     # tanca la connexió
     if connection: connection.close()
 

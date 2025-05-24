@@ -61,6 +61,10 @@ class label(Widget):
             value = ''
         return u'--------> %s'%value 
 
+class empty(Widget):
+    def render(self, name, value, attrs=None, renderer=None):
+        return mark_safe('') 
+
 #http://trentrichardson.com/examples/timepicker/
 class JqSplitDateTimeWidget(MultiWidget):
 
