@@ -6,6 +6,7 @@ from django.apps import apps
 #consultes
 from django.db.models import Q
 from aula.utils.tools import unicode
+from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
 
 class AbstractImpartir(models.Model):
     horari = models.ForeignKey('horaris.Horari', db_index=True, on_delete=models.CASCADE)
@@ -182,10 +183,13 @@ class AbstractControlAssistencia(models.Model):
     swaped = models.BooleanField(default=False)
     estat_backup = models.ForeignKey('presencia.EstatControlAssistencia', related_name='controlassistencia_as_bkup', db_index=True, null=True, blank=True, on_delete=models.CASCADE)
     professor_backup = models.ForeignKey('usuaris.Professor', related_name='controlassistencia_as_bkup', null=True, blank=True, on_delete=models.CASCADE)
-    
+
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True ) 
+    #DEPRECATED ^^^
     
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
     comunicat = models.ForeignKey('missatgeria.Missatge', null=True, blank=True, db_index=True, on_delete=models.PROTECT)
     
     class Meta:
@@ -193,8 +197,7 @@ class AbstractControlAssistencia(models.Model):
         verbose_name = u'Entrada al Control d\'Assistencia'
         verbose_name_plural = u'Entrades al Control d\'Assistencia'
         unique_together = (("alumne", "impartir"))
-        # Modificat per compatibilitat amb Django 5.1
-        indexes = [models.Index(fields=["alumne", "estat", "relacio_familia_notificada"]),]
+        indexes = [models.Index(fields=["alumne", "estat"]),]
 
     def __str__(self):
         return unicode(self.alumne) + u' -> '+ unicode(self.estat)
@@ -217,7 +220,19 @@ class AbstractControlAssistencia(models.Model):
         if self.comunicat:
             text=text+". "+self.comunicat.text_missatge
         return text
-
+    
+    def set_notificacio(self, notificacio):
+        # Què passa si canvia estat d'un control d'assistència?
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
 
 class AbstractNoHaDeSerALAula(models.Model):
     #cal recalcular-lo en aquesta casos:

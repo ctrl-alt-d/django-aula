@@ -676,14 +676,9 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-nom--------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.multipleContingut = [(u'{0} ({1}, {2}, {3})'.format( alumne.rp1_nom,
-                                                                        alumne.rp1_telefon,
-                                                                        alumne.rp1_mobil,
-                                                                        alumne.rp1_correu ), None,),
-                                      (u'{0} ({1}, {2}, {3})'.format( alumne.rp2_nom,
-                                                                        alumne.rp2_telefon,
-                                                                        alumne.rp2_mobil,
-                                                                        alumne.rp2_correu ), None,)]
+            resps = alumne.get_dades_responsables()
+            camp.multipleContingut = [(resps['respPre'], None,),
+                                      (resps['respAlt'], None,)]
             filera.append(camp)
 
             labels = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
@@ -762,6 +757,7 @@ def llistaGrupsPromocionar(request):
 @login_required
 @group_required(['direcció'])
 def nouAlumnePromocionar(request):
+    # TODO esborrar aquesta funció ?
     #Aqui va el tractament del formulari i tota la polla...
 
     if request.method == 'POST':
@@ -997,19 +993,16 @@ def llistaAlumnescsv( request ):
                e.cognoms,
                e.nom, 
                e.user_associat.username, 
-               e.correu,
-               e.rp1_correu, 
-               e.rp2_correu,
-               e.correu_relacio_familia_mare,
-               e.correu_relacio_familia_pare,
-               e.correu_tutors,
-               e.user_associat.last_login,
-               e.user_associat.is_active,
-               (bool(e.correu_relacio_familia_pare) or bool(e.correu_relacio_familia_mare)) ] for e in llistaAlumnes]
+               e.get_correu_relacio(),
+               e.get_responsables(compatible=True)[0].get_correu_relacio() if e.get_responsables(compatible=True)[0] else '',
+               e.get_responsables(compatible=True)[1].get_correu_relacio() if e.get_responsables(compatible=True)[1] else '',
+               ','.join(e.get_correus_tots()),
+               e.esta_relacio_familia_actiu(),
+               bool(e.get_correus_relacio_familia()) ] for e in llistaAlumnes]
     
-    capcelera = [ 'ralc', 'alumne', 'grup', 'cognoms', 'nom', 'username', 'correu', 'rp1_correu', 'rp2_correu', 
-                 'correu_relacio_mare', 'correu_relacio_pare', 'correu_tutors',
-                 'last_login', 'usuari actiu', 'correus OK' ]
+    capcelera = [ 'ralc', 'alumne', 'grup', 'cognoms', 'nom', 'username', 'correu',
+                 'correu relació família 1', 'correu relació família 2', 'tots els correus',
+                 'usuari actiu', 'correus OK' ]
 
     template = loader.get_template("export.csv")
     context = {

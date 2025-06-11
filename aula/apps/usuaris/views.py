@@ -29,7 +29,7 @@ from aula.utils import tools
 from aula.utils.tools import unicode
 from aula.utils.forms import ckbxForm
 from aula.apps.usuaris.models import Professor, LoginUsuari, AlumneUser, OneTimePasswd, \
-    Accio, QRPortal
+    Accio, QRPortal, ResponsableUser
 from datetime import datetime
 from django.utils.safestring import SafeText
 from datetime import timedelta
@@ -39,7 +39,7 @@ from django.contrib.auth import authenticate, login
 from django.forms.forms import NON_FIELD_ERRORS
 from django.contrib.auth.models import User, Group
 from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
-from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor
+from aula.apps.usuaris.models import User2Professor, GetDadesAddicionalsProfessor, DadesAddicionalsProfessor, User2Responsable
 from aula.utils.tools import getClientAdress
 
 from django.contrib import messages
@@ -53,7 +53,7 @@ from icalendar import vCalAddress, vText
 from django.templatetags.tz import localtime
 
 @login_required
-@group_required(['professors', 'consergeria'])
+@group_required(['professors', 'consergeria', 'tpvs'])
 def canviDadesUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
@@ -307,7 +307,6 @@ def elsProfessors( request ):
         
 
 def loginUser( request ):
-    from aula.apps.matricula.viewshelper import get_url_alumne
     
     head=u'Login' 
 
@@ -340,9 +339,12 @@ def loginUser( request ):
                     if user.is_active:
                         login(request, user)
                         LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address)   #TODO: truncar IP
-                        url_mat=get_url_alumne(user)
-                        if url_mat:
-                            return HttpResponseRedirect( url_mat )
+                        if User2Responsable(user):
+                            user.responsable.motiu_bloqueig = ''
+                            user.responsable.save()
+                        elif not User2Professor(user):
+                            user.alumne.motiu_bloqueig = ''
+                            user.alumne.save()
                         return HttpResponseRedirect( url_next )
                     else:
                         LoginUsuari.objects.create( usuari = user, exitos = False, ip = client_address)   #TODO: truncar IP
@@ -438,10 +440,15 @@ def recoverPasswd( request , username, oneTimePasswd ):
     return alumneRecoverPasswd( request , username, oneTimePasswd )
 
 def alumneRecoverPasswd( request , username, oneTimePasswd ):     
-    from aula.apps.matricula.viewshelper import get_url_alumne, MatriculaOberta
+    from aula.apps.matricula.viewshelper import MatriculaOberta
     
     # Comprova que correspongui a dades vàlides actuals
-    if not AlumneUser.objects.filter( username = username) or not OneTimePasswd.objects.filter(clau = oneTimePasswd):
+    if not OneTimePasswd.objects.filter(clau = oneTimePasswd):
+        return HttpResponseRedirect( '/' )
+    
+    almn=AlumneUser.objects.filter( username = username)
+    resp=ResponsableUser.objects.filter( username = username)
+    if not almn and not resp:
         return HttpResponseRedirect( '/' )
     
     client_address = getClientAdress( request )
@@ -449,16 +456,18 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
     infoForm = [ ('Usuari',username,),]
     if request.method == 'POST':
         form = recuperacioDePasswdForm(  request.POST  )
+        if resp: del form.fields['data_neixement']
         errors = []
         if form.is_valid(  ):         
             passwd = form.cleaned_data['p1']               
-            data_neixement = form.cleaned_data['data_neixement']
-            
+            if almn: data_neixement = form.cleaned_data['data_neixement']
             alumneOK = True
             try:
-                alumneUser =  AlumneUser.objects.get( username = username)
-                dataOK = data_neixement == alumneUser.getAlumne().data_neixement
-                if MatriculaOberta(alumneUser.getAlumne()):
+                alumneUser = almn or resp
+                alumneUser = alumneUser[0]
+                if almn: dataOK = data_neixement == alumneUser.getAlumne().data_neixement
+                else: dataOK=True
+                if almn and MatriculaOberta(alumneUser.getAlumne()):
                     codiOK = OneTimePasswd.objects.filter( usuari = alumneUser.getUser(), 
                                                                   clau = oneTimePasswd)
                 else:
@@ -467,9 +476,7 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                                                                   clau = oneTimePasswd, 
                                                                   moment_expedicio__gte = a_temps,
                                                                   reintents__lt = 3 )
-            except AlumneUser.DoesNotExist:
-                alumneOK = False
-            except  AttributeError:
+            except AttributeError:
                 alumneOK = False
                 
             if not alumneOK:
@@ -483,9 +490,9 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
             elif not dataOK and not codiOK:
                 errors.append( u"Dades incorrectes. Demaneu un altre codi de recuperació.")                
                 #todoBloquejar oneTimePasswd
-            elif alumneUser.alumne.esBaixa():
+            elif almn and alumneUser.alumne.esBaixa():
                 errors.append( u'Cal parlar amb el tutor per recuperar accés a aquest compte.')
-            elif codiOK and dataOK and not alumneUser.alumne.esBaixa():                
+            elif codiOK and dataOK and almn and not alumneUser.alumne.esBaixa():                
                 alumneUser.set_password( passwd )
                 alumneUser.is_active = True
                 alumneUser.save()
@@ -494,8 +501,18 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                     alumneUser.alumne.save()
                 user = authenticate(username=alumneUser.username, password=passwd)
                 login( request, user )
- 
-
+            elif resp and alumneUser.responsable.esBaixa():
+                errors.append( u'Cal parlar amb el tutor per recuperar accés a aquest compte.')
+            elif codiOK and dataOK and resp and not alumneUser.responsable.esBaixa():                
+                alumneUser.set_password( passwd )
+                alumneUser.is_active = True
+                alumneUser.save()
+                if alumneUser.responsable.motiu_bloqueig:
+                    alumneUser.responsable.motiu_bloqueig = u""
+                    alumneUser.responsable.save()
+                user = authenticate(username=alumneUser.username, password=passwd)
+                login( request, user )
+                
             if not errors:
                 codiOK.update( reintents = 3 )
 
@@ -503,9 +520,6 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
                 LoginUsuari.objects.create( usuari = user, exitos = True, ip = client_address) 
                                 
                 url_next = '/' 
-                url_mat=get_url_alumne(user)
-                if url_mat:
-                    return HttpResponseRedirect( url_mat )
                 return HttpResponseRedirect( url_next )        
             else:
                 try:
@@ -517,6 +531,7 @@ def alumneRecoverPasswd( request , username, oneTimePasswd ):
 
     else:
         form = recuperacioDePasswdForm(   )
+        if resp: del form.fields['data_neixement']
         
     return render(
                 request,
