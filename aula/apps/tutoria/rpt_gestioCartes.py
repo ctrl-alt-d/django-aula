@@ -4,7 +4,7 @@ from aula.apps.tutoria.models import Tutor, SeguimentTutorialRespostes, ResumAnu
 from aula.utils import tools
 from aula.utils.tools import unicode
 from django.db.models import Min, Max, Q
-from datetime import  date
+from datetime import date
 from aula.apps.alumnes.models import Alumne, Grup
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
@@ -40,7 +40,7 @@ def gestioCartesRpt(professor, l4):
     
     taula.fileres = []
 
-    for carta in CartaAbsentisme.objects.filter( professor = professor, impresa = False ):
+    for carta in CartaAbsentisme.objects.filter( professor = professor, impresa = False):
         filera = []
         
         #-carta--------------------------------------------
@@ -167,20 +167,19 @@ def gestioCartesRpt(professor, l4):
 
             #-Faltes x a carta---------------
             camp = tools.classebuida()
-           
             camp.enllac = None
-            
-            carta = CartaAbsentisme( alumne = alumne )
+            carta = CartaAbsentisme(alumne=alumne)
+
             msg = None
             cal_imprimir_carta = False
+
             try:
                 carta.clean()
-                llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta, 
+                llindar = settings.CUSTOM_FALTES_ABSENCIA_PER_TIPUS_CARTA.get( carta.tipus_carta,
                                                                              settings.CUSTOM_FALTES_ABSENCIA_PER_CARTA )
                 cal_imprimir_carta = carta.nfaltes >= llindar
             except ValidationError as e:
-                print (e)
-                msg = e.messages
+                msg = '. '.join([str(v) for v in e.messages])
             
             camp.contingut = msg if bool( msg ) else carta.nfaltes 
 

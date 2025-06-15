@@ -13,14 +13,15 @@ from aula.utils.decorators import group_required
 from aula.apps.matricula.forms import DadesForm1, DadesForm2, DadesForm2b, DadesForm3, \
                                     ConfirmaMat, escollirMat
 from aula.apps.matricula.models import Document, Matricula
-from aula.apps.sortides.models import QuotaPagament, Quota
+from aula.apps.sortides.models import QuotaPagament, QuotaCentre, TPV
 from aula.apps.alumnes.models import Curs
 from aula.apps.extPreinscripcio.models import Preinscripcio
 from aula.apps.extUntis.sincronitzaUntis import creaGrup
 from django.conf import settings
-from aula.apps.matricula.viewshelper import situacioMat, mailMatricula, següentCurs, quotaSegüentCurs, \
+from aula.apps.matricula.viewshelper import situacioMat, comunicaMatricula, següentCurs, quotaSegüentCurs, \
         enviaMissatge, gestionaPag, alumne2Mat, updateAlumne, getCanvis, mat_selecciona, next_mat, inforgpd, \
         enviaIniciMat, ResumLlistat
+from aula.apps.usuaris.tools import getRol
 
 @login_required
 @group_required(['direcció','administradors'])
@@ -47,11 +48,11 @@ def LlistaMatConf(request):
                          )
             if tipus=='C':
                 pk=queryset[0].pk
-                return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
+                return HttpResponseRedirect(reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={"pk": pk, 'curs':idcurs, 'nany':nany, 'tipus':tipus},
                                 ))
             else:
-                return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
+                return HttpResponseRedirect(reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={'curs':idcurs, 'nany':nany, 'tipus':tipus},
                                 ))
     else:
@@ -72,7 +73,8 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
     model = Matricula
     template_name='confirma_detail.html'
     fields = ['nom','cognoms','curs','data_naixement','alumne_correu','adreca','localitat','cp',
-              'rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',
+              'rp1_dni','rp1_nom','rp1_cognoms','rp1_parentiu','rp1_telefon','rp1_correu','rp1_adreca','rp1_localitat','rp1_cp',
+              'rp2_dni','rp2_nom','rp2_cognoms','rp2_parentiu','rp2_telefon','rp2_correu','rp2_adreca','rp2_localitat','rp2_cp',
               'confirma_matricula']
     
     def get_context_data(self, **kwargs):
@@ -87,11 +89,11 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
         tipus=self.kwargs.get('tipus', 'C')
         nextpk=next_mat(pk, idcurs, nany, tipus)
         if nextpk:
-            return reverse_lazy("matricula:gestio__llistat__matricula", 
+            return reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={"pk": nextpk, 'curs':idcurs, 'nany':nany, 'tipus':tipus},
                                 )
         else:
-            return reverse_lazy('matricula:gestio__llistat__matricula')
+            return reverse_lazy('matricula:gestio__matricula__llistat')
     
     def get_initial(self):
         base_initial = super().get_initial()
@@ -118,8 +120,7 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
         self.object.save()
         updateAlumne(self.object.alumne, self.object)
         gestionaPag(self.object, 0)
-        mailMatricula(self.object.estat, self.object.curs, 
-                      self.object.alumne.get_correus_relacio_familia(), self.object.alumne)
+        comunicaMatricula(self.object.estat, self.object.curs, self.object.alumne)
         return HttpResponseRedirect(self.get_success_url())
 
 @login_required
@@ -130,18 +131,18 @@ def VerificaConfirma(request, pk, curs, nany, tipus):
 @login_required
 def Confirma(request, nany):
     user=request.user
+    _, responsable, alumne = getRol( user, request )
     infos=[]
     try:
-        if user.alumne:
+        if alumne:
             nany=django.utils.timezone.now().year
-            info = situacioMat(user.alumne, nany)
+            info = situacioMat(alumne, nany)
             if info=='D':
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__escollir'))
             if info=='M':
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__dades'))
             if info=='C':
-                mat=alumne2Mat(user.alumne, nany)
-                mat.save()
+                mat=alumne2Mat(alumne, nany)
                 if request.method == 'POST':
                     form = ConfirmaMat(request.user, request.POST, instance=mat)
                     if form.is_valid():
@@ -149,7 +150,7 @@ def Confirma(request, nany):
                         item=form.save()
                         item.confirma_matricula=form.cleaned_data['opcions']
                         item.acceptacio_en=django.utils.timezone.now()
-                        item.quota=quotaSegüentCurs(settings.CUSTOM_TIPUS_QUOTA_MATRICULA, nany, user.alumne)
+                        item.quota=quotaSegüentCurs(settings.CUSTOM_TIPUS_QUOTA_MATRICULA, nany, alumne)
                         item.save()
                         if item.confirma_matricula=='C' and item.quota:
                             gestionaPag(item, 0)
@@ -213,8 +214,8 @@ def changeEstat(request, pk, tipus):
     mat.save()
     updateAlumne(mat.alumne, mat)
     if mat.confirma_matricula!='N':
-        mailMatricula(mat.estat, mat.alumne.grup.curs, mat.alumne.get_correus_relacio_familia(), mat.alumne)
-    return HttpResponseRedirect(reverse_lazy("matricula:gestio__llistat__matricula", 
+        comunicaMatricula(mat.estat, mat.alumne.grup.curs, mat.alumne)
+    return HttpResponseRedirect(reverse_lazy("matricula:gestio__matricula__llistat", 
                                 kwargs={'curs':mat.curs.id, 'nany':mat.any, 'tipus':tipus},
                                 ))
 
@@ -317,8 +318,8 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
                     ufs = step2data.get('quantitat_ufs', 0)
                     bonif = step2data.get('bonificacio', '0')
                     taxes=mat.curs.nivell.taxes
-                    tcomplet=Quota.objects.filter(any=mat.any, tipus__nom='taxcurs')
-                    tuf=Quota.objects.filter(any=mat.any, tipus__nom='uf')
+                    tcomplet=QuotaCentre.objects.filter(any=mat.any, tipus__nom='taxcurs')
+                    tuf=QuotaCentre.objects.filter(any=mat.any, tipus__nom='uf')
                     total=0
                     if complet and taxes and tcomplet:
                         total=tcomplet[0].importQuota
@@ -334,7 +335,7 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
             step0data = self.get_cleaned_data_for_step('0')
             if step0data:
                 curs = step0data.get('curs', None)
-                quotamat=Quota.objects.filter(curs=curs, any=mat.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+                quotamat=QuotaCentre.objects.filter(curs=curs, any=mat.any, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
                 if quotamat: quotamat=quotamat[0]
             else:
                 quotamat=None
@@ -406,27 +407,27 @@ def OmpleDades(request):
     Omple la Matrícula de l'alumne
     '''
     user=request.user
+    _, responsable, alumne = getRol( user, request )
     infos=[]
     try:
-        if user.alumne:
+        if alumne:
             nany=django.utils.timezone.now().year
-            info = situacioMat(user.alumne, nany)
+            info = situacioMat(alumne, nany)
             if info=='D':
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__escollir'))
             if info=='C':
                 return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__confirma',kwargs={'nany':nany}))
             if info=='M':
                 # Matrícula segons preinscripcio o de continuitat
-                p=Preinscripcio.objects.filter(ralc=user.alumne.ralc, any=nany, estat='Enviada')
-                mat=alumne2Mat(user.alumne, nany, p)
-                mat.save()
+                mat=alumne2Mat(alumne, nany)
                 if mat.estat=='A':
                     nomAlumne=(mat.nom+" "+mat.cognoms) if mat.nom and mat.cognoms else mat.idAlumne
                     titol="Dades de matrícula de "+nomAlumne+" a "+mat.curs.nivell.nom_nivell+ \
                                                (("("+mat.preinscripcio.torn+")") if mat.preinscripcio else '')
                     #get the initial data to include in the form
                     fields0 = ['curs','nom','cognoms','centre_de_procedencia','data_naixement','alumne_correu','adreca','localitat','cp',]
-                    fields1 = ['rp1_nom','rp1_telefon','rp1_correu','rp2_nom','rp2_telefon','rp2_correu',]
+                    fields1 = ['rp1_dni','rp1_nom','rp1_cognoms','rp1_parentiu','rp1_telefon','rp1_correu','rp1_adreca','rp1_localitat','rp1_cp',
+                               'rp2_dni','rp2_nom','rp2_cognoms','rp2_parentiu','rp2_telefon','rp2_correu','rp2_adreca','rp2_localitat','rp2_cp',]
                     fields2 = ['curs_complet', 'quantitat_ufs', 'bonificacio', 'llistaufs',]
                     fields3 = ['fracciona_taxes', 'acceptar_condicions',]
                     if mat.curs.nivell.nom_nivell in settings.CUSTOM_NIVELLS['CICLES']:
@@ -461,27 +462,28 @@ def OmpleDades(request):
 @login_required
 def matDobleview(request):
     user=request.user
+    _, responsable, alumne = getRol( user, request )
     infos=[]
-    if user.alumne:
+    if alumne:
         nany=django.utils.timezone.now().year
-        info = situacioMat(user.alumne, nany)
+        info = situacioMat(alumne, nany)
         if info=='D':
             if request.method == 'POST':
-                form = escollirMat(request.user, user.alumne, nany, request.POST)
+                form = escollirMat(request.user, alumne, nany, request.POST)
                 if form.is_valid():
                     escollida=form.cleaned_data['escollida']
                     if escollida=='M':
-                        Preinscripcio.objects.filter(ralc=user.alumne.ralc, any=nany, estat='Enviada').update(estat='Caducada')
+                        Preinscripcio.objects.filter(ralc=alumne.ralc, any=nany, estat='Enviada').update(estat='Caducada')
                     else:
-                        p=Preinscripcio.objects.get(ralc=user.alumne.ralc, any=nany, estat='Enviada')
-                        mt=Matricula.objects.get(alumne=user.alumne, any=nany)
+                        p=Preinscripcio.objects.get(ralc=alumne.ralc, any=nany, estat='Enviada')
+                        mt=Matricula.objects.get(alumne=alumne, any=nany)
                         curs=p.getCurs()
-                        QuotaPagament.objects.filter(alumne=user.alumne, quota__any=nany,
+                        QuotaPagament.objects.filter(alumne=alumne, quota__any=nany,
                              quota__tipus__nom__in=[curs.nivell.taxes, settings.CUSTOM_TIPUS_QUOTA_MATRICULA,],
                              pagament_realitzat=False).delete()
                         mt.estat='A'
                         mt.curs=curs
-                        q=Quota.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
+                        q=QuotaCentre.objects.filter(curs=mt.curs, any=nany, tipus__nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
                         mt.quota=q[0] if q else None
                         mt.acceptar_condicions='False'
                         mt.acceptacio_en=None
@@ -490,7 +492,7 @@ def matDobleview(request):
                         mt.save()
                     return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__dades'))
             else:
-                form = escollirMat(request.user, user.alumne, nany)
+                form = escollirMat(request.user, alumne, nany)
             return render(request, 'form.html', {'form': form, 'head': u'Selecciona la matrícula' ,})
         else:
             return HttpResponseRedirect(reverse_lazy('matricula:relacio_families__matricula__dades'))
@@ -582,6 +584,13 @@ def ActivaMatricula(request):
                         {'msgs': {'errors': [], 'warnings': [], 'infos': infos} },
                          )
     else:
+        if not hasattr(settings, 'CUSTOM_TIPUS_QUOTA_MATRICULA') or not bool(settings.CUSTOM_TIPUS_QUOTA_MATRICULA) \
+                or not TPV.objects.filter(nom='centre').exists():
+            return render(
+                        request,
+                        'resultat.html', 
+                        {'msgs': {'errors': ["Falta definir CUSTOM_TIPUS_QUOTA_MATRICULA o el TPV 'centre'",], 'warnings': [], 'infos': infos} },
+                         )
         form = ActivaMatsForm(request.user)
     return render(
                 request,

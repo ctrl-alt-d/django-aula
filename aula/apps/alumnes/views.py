@@ -34,7 +34,6 @@ from aula.apps.alumnes.forms import triaAlumneForm
 #helpers
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.presencia.models import Impartir
 from datetime import date, datetime, timedelta
 from django.db.models import Q
 from django.forms.models import modelformset_factory, modelform_factory
@@ -472,7 +471,8 @@ def triaAlumneAlumneAjax( request, id_grup ):
 @login_required
 @group_required(['professors'])
 def elsMeusAlumnesAndAssignatures( request ):
-
+    from django.db.models import Count, Max
+    
     (user, l4) = tools.getImpersonateUser(request)
     professor = User2Professor( user )     
     
@@ -511,18 +511,51 @@ def elsMeusAlumnesAndAssignatures( request ):
 
         capcelera_nFaltes = tools.classebuida()
         capcelera_nFaltes.amplade = 15
-        nClasses = Impartir.objects.filter( horari__professor = professor ,
+        
+        # nClasses_grup és el total d'hores que el professor fa al grup.
+        # Només té en compte hores amb alumnes.
+        nClasses_grup = Impartir.objects.filter( horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup 
-                                            ).count()
-        nClassesImpartides =   Impartir.objects.filter( 
+                                            ).exclude(
+                                            controlassistencia__alumne__isnull=True,
+                                            ).distinct().count()
+                                            
+        # nClassesImpartides_grup són les hores que ja ha impartit aquest professor al grup.
+        # Només té en compte hores amb alumnes.
+        nClassesImpartides_grup =   Impartir.objects.filter( 
                                             horari__professor = professor ,
                                             horari__assignatura = assignatura, 
                                             horari__grup = grup, 
                                             dia_impartir__lte = date.today() 
-                                            ).count() 
+                                            ).exclude(
+                                            controlassistencia__alumne__isnull=True,
+                                            ).distinct().count()
+        # Obté els alumnes escollits segons grup, assignatura i professor
+        alumnes=Alumne.objects.filter( 
+                            controlassistencia__impartir__horari__grup = grup,
+                            controlassistencia__impartir__horari__assignatura = assignatura, 
+                            controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms')
+                                            
+        # nClasses_materia és el total d'hores que els alumnes fan d'aquesta matèria.
+        # Varia en funció de l'alumne, es selecciona la màxima quantitat obtinguda per algun alumne.
+        nClasses_materia = Impartir.objects.filter(controlassistencia__alumne__in=alumnes, horari__assignatura = assignatura) \
+                                                .values('controlassistencia__alumne') \
+                                                .annotate(hores = Count('id', distinct=True)) \
+                                                .aggregate(maxval=Max('hores')).get('maxval', nClasses_grup)
+        
+        # nClassesImpartides_materia són les hores que ja han impartit aquests alumnes en aquesta matèria.
+        # Varia en funció de l'alumne, es selecciona la màxima quantitat obtinguda per algun alumne.
+        nClassesImpartides_materia = Impartir.objects.filter(controlassistencia__alumne__in=alumnes, horari__assignatura = assignatura, dia_impartir__lte = date.today() ) \
+                                                .values('controlassistencia__alumne') \
+                                                .annotate(hores = Count('id', distinct=True)) \
+                                                .aggregate(maxval=Max('hores')).get('maxval', nClassesImpartides_grup)
 
-        capcelera_nFaltes.contingut = u' ({0}h impartides / {1}h)'.format( nClassesImpartides, nClasses)            
+        if nClasses_grup==nClasses_materia or nClassesImpartides_grup==nClassesImpartides_materia:
+            capcelera_nFaltes.contingut = u' {0}h impartides / {1}h'.format( nClassesImpartides_grup, nClasses_grup )
+        else:
+            # Mostra les hores corresponents al professor i entre parèntesis les totals de la matèria
+            capcelera_nFaltes.contingut = u' {0}h({2}h) impartides / {1}h({3}h)'.format( nClassesImpartides_grup, nClasses_grup, nClassesImpartides_materia, nClasses_materia )            
 
         capcelera_contacte = tools.classebuida()
         capcelera_contacte.amplade = 10
@@ -553,10 +586,9 @@ def elsMeusAlumnesAndAssignatures( request ):
         taula.capceleres.append(capcelera_observacions)
 
         taula.fileres = []
-        for alumne in Alumne.objects.filter( 
-                            controlassistencia__impartir__horari__grup = grup,
-                            controlassistencia__impartir__horari__assignatura = assignatura, 
-                            controlassistencia__impartir__horari__professor = professor  ).distinct().order_by('cognoms'):
+        for alumne in alumnes:
+            # Per cada alumne es mostra la informació corresponent a la matèria, independentment del grup i professor.
+            # Agrupa tot el corresponent a diversos professors o grups de desdoblament.
             
             filera = []
 
@@ -584,15 +616,16 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-incidències--------------------------------------------
             camp_nIncidencies = tools.classebuida()
             camp_nIncidencies.enllac = None
+            #Selecciona totes les dades d'aquest alumne a la matèria.
             nIncidencies = alumne.incidencia_set.filter(
-                                                        control_assistencia__impartir__horari__grup = grup,
-                                                        control_assistencia__impartir__horari__professor = professor, 
+                                                        #control_assistencia__impartir__horari__grup = grup,
+                                                        #control_assistencia__impartir__horari__professor = professor, 
                                                         control_assistencia__impartir__horari__assignatura = assignatura,
                                                         tipus__es_informativa = False 
                                                        ).count()
             nExpulsions = alumne.expulsio_set.filter( 
-                                                        control_assistencia__impartir__horari__grup = grup,
-                                                        control_assistencia__impartir__horari__professor = professor, 
+                                                        #control_assistencia__impartir__horari__grup = grup,
+                                                        #control_assistencia__impartir__horari__professor = professor, 
                                                         control_assistencia__impartir__horari__assignatura = assignatura
                                                     ).exclude(
                                                         estat = 'ES'
@@ -610,11 +643,11 @@ def elsMeusAlumnesAndAssignatures( request ):
 #                                        ausencia = Sum( 'estat__pct_ausencia' ),
 #                                        classes = Count( 'estat' ) 
 #                                                        )
-            
+            # Tots els controls d'aquest alumne a la matèria.
             controls = alumne.controlassistencia_set.filter(   
                                                     impartir__dia_impartir__lte = datetime.today(), 
-                                                    impartir__horari__grup = grup,
-                                                    impartir__horari__professor = professor, 
+                                                    #impartir__horari__grup = grup,
+                                                    #impartir__horari__professor = professor, 
                                                     impartir__horari__assignatura = assignatura 
                                                            )
             
@@ -643,14 +676,9 @@ def elsMeusAlumnesAndAssignatures( request ):
             #-nom--------------------------------------------
             camp = tools.classebuida()
             camp.enllac = None
-            camp.multipleContingut = [(u'{0} ({1}, {2}, {3})'.format( alumne.rp1_nom,
-                                                                        alumne.rp1_telefon,
-                                                                        alumne.rp1_mobil,
-                                                                        alumne.rp1_correu ), None,),
-                                      (u'{0} ({1}, {2}, {3})'.format( alumne.rp2_nom,
-                                                                        alumne.rp2_telefon,
-                                                                        alumne.rp2_mobil,
-                                                                        alumne.rp2_correu ), None,)]
+            resps = alumne.get_dades_responsables()
+            camp.multipleContingut = [(resps['respPre'], None,),
+                                      (resps['respAlt'], None,)]
             filera.append(camp)
 
             labels = [x['label'] for x in CUSTOM_DADES_ADDICIONALS_ALUMNE]
@@ -729,6 +757,7 @@ def llistaGrupsPromocionar(request):
 @login_required
 @group_required(['direcció'])
 def nouAlumnePromocionar(request):
+    # TODO esborrar aquesta funció ?
     #Aqui va el tractament del formulari i tota la polla...
 
     if request.method == 'POST':
@@ -964,19 +993,16 @@ def llistaAlumnescsv( request ):
                e.cognoms,
                e.nom, 
                e.user_associat.username, 
-               e.correu,
-               e.rp1_correu, 
-               e.rp2_correu,
-               e.correu_relacio_familia_mare,
-               e.correu_relacio_familia_pare,
-               e.correu_tutors,
-               e.user_associat.last_login,
-               e.user_associat.is_active,
-               (bool(e.correu_relacio_familia_pare) or bool(e.correu_relacio_familia_mare)) ] for e in llistaAlumnes]
+               e.get_correu_relacio(),
+               e.get_responsables(compatible=True)[0].get_correu_relacio() if e.get_responsables(compatible=True)[0] else '',
+               e.get_responsables(compatible=True)[1].get_correu_relacio() if e.get_responsables(compatible=True)[1] else '',
+               ','.join(e.get_correus_tots()),
+               e.esta_relacio_familia_actiu(),
+               bool(e.get_correus_relacio_familia()) ] for e in llistaAlumnes]
     
-    capcelera = [ 'ralc', 'alumne', 'grup', 'cognoms', 'nom', 'username', 'correu', 'rp1_correu', 'rp2_correu', 
-                 'correu_relacio_mare', 'correu_relacio_pare', 'correu_tutors',
-                 'last_login', 'usuari actiu', 'correus OK' ]
+    capcelera = [ 'ralc', 'alumne', 'grup', 'cognoms', 'nom', 'username', 'correu',
+                 'correu relació família 1', 'correu relació família 2', 'tots els correus',
+                 'usuari actiu', 'correus OK' ]
 
     template = loader.get_template("export.csv")
     context = {

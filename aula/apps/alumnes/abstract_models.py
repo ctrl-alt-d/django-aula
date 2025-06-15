@@ -153,19 +153,31 @@ class AbstractAlumne(models.Model):
     cognoms = models.CharField("Cognoms",max_length=240)
     data_neixement = models.DateField("Data naixement",null=True)
     estat_sincronitzacio = models.CharField(choices=ESTAT_SINCRO_CHOICES ,max_length=3, blank=True)
+
+    #DEPRECATED vvv
     correu_tutors = models.CharField(max_length=240, blank=True)
     correu_relacio_familia_pare =  models.EmailField( u'1r Correu Notifi. Tutors', help_text = u'Correu de notificacions de un tutor', blank=True)
     correu_relacio_familia_mare =  models.EmailField( u'2n Correu Notifi. Tutors', help_text = u"Correu de notificacions de l'altre tutor (opcional)", blank=True)
+    #DEPRECATED ^^^
+
     motiu_bloqueig = models.CharField(max_length=250, blank=True)
-    tutors_volen_rebre_correu = models.BooleanField()
+
+    #DEPRECATED vvv
+    tutors_volen_rebre_correu = models.BooleanField(null=True)
+    #DEPRECATED ^^^
+
     centre_de_procedencia = models.CharField(max_length=250, blank=True)
     localitat = models.CharField(max_length=240, blank=True)
     municipi = models.CharField(max_length=240, blank=True)
     cp = models.CharField(max_length=240, blank=True)
+    #DEPRECATED vvv
     telefons = models.CharField(max_length=250, blank=True, db_index=True)
     tutors = models.CharField(max_length=250, blank=True)
+    #DEPRECATED ^^^
     adreca = models.CharField(max_length=250, blank=True)
     correu = models.CharField(max_length=240, blank=True)
+
+    #DEPRECATED vvv
     rp1_nom = models.CharField(max_length=250, blank=True) #responsable 1
     rp1_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp1_mobil = models.CharField(max_length=250, blank=True, db_index=True)
@@ -174,9 +186,16 @@ class AbstractAlumne(models.Model):
     rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
     rp2_correu = models.CharField(max_length=240, blank=True)
+    #DEPRECATED ^^^
+
+    responsable_preferent = models.ForeignKey("relacioFamilies.Responsable", null=True, on_delete=models.SET_NULL, help_text = u"Responsable preferent de l'alumne/a")
+
+    #DEPRECATED vvv
     primer_responsable = models.IntegerField( choices = PRIMER_RESPONSABLE, blank=False,
                                                default = 0,
                                                help_text = u"Principal responsable de l'alumne/a")
+    #DEPRECATED ^^^
+
     altres_telefons = models.CharField(max_length=250, blank=True)
 
     data_alta = models.DateField( default = timezone.now, null=False )
@@ -187,7 +206,10 @@ class AbstractAlumne(models.Model):
     usuaris_app_associats = models.ManyToManyField(User, through="usuaris.QRPortal",
                                                    related_name="alumne_app_set",
                                                    related_query_name="alumne_app")
+    #DEPRECATED vvv
     relacio_familia_darrera_notificacio = models.DateTimeField( null=True, blank = True )
+    #DEPRECATED ^^^
+
     
     periodicitat_faltes = models.IntegerField( choices = PERIODICITAT_FALTES_CHOICES, blank=False,
                                                default = 1,
@@ -243,20 +265,34 @@ class AbstractAlumne(models.Model):
         super(AbstractAlumne,self).delete()
         
     def esta_relacio_familia_actiu(self):
-        TeCorreuPare_o_Mare = self.correu_relacio_familia_pare  or self.correu_relacio_familia_mare 
-        usuariActiu = self.get_user_associat() is not None and self.user_associat.is_active
-        return True if TeCorreuPare_o_Mare and usuariActiu else False
+        # Si és major d'edat, no fa falta correus_relacio_familia
+        TeCorreuResponsable = bool(self.get_correus_relacio_familia(checkMajorEdat=False)) and any(self.responsablesActius())
+        TeCorreuAlumne = self.edat()>=18 and self.get_correu_relacio() and self.get_user_associat() is not None and self.user_associat.is_active
+        return TeCorreuResponsable or TeCorreuAlumne
     
-    def get_correus_relacio_familia(self):
-        return  [ x for x in [ self.correu_relacio_familia_pare, self.correu_relacio_familia_mare] if x  ]
+    def responsablesActius(self):
+        return [ x.get_user_associat() is not None and x.user_associat.is_active for x in self.get_responsables() if x ]
+    
+    def get_correu_relacio(self):
+        return self.correu
+    
+    def get_correus_relacio_familia(self, checkMajorEdat=True):
+        emails = [ x.correu_relacio_familia for x in self.get_responsables(compatible=True) if (x and x.correu_relacio_familia) ]
+        if checkMajorEdat and self.edat()>=18: emails.append(self.get_correu_relacio())
+        return list(set(emails))
 
     def get_correus_tots(self):
-        return  [ x for x in [ self.correu_relacio_familia_pare, self.correu_relacio_familia_mare, self.correu_tutors, self.rp1_correu, self.rp2_correu, self.correu] if x  ]
-
+        tots=self.get_correus_relacio_familia(checkMajorEdat=False)
+        tots=tots+[ x.correu for x in self.get_responsables(compatible=True) if x and x.correu ]
+        tots=tots+[ self.get_correu_relacio() ]
+        return list(set(tots))
+    
+    def get_telefons(self):
+        return self.altres_telefons
+    
     def get_user_associat(self):       
         return self.user_associat if self.user_associat_id is not None else None
-
-
+    
     def get_seguiment_tutorial(self):       
         if not hasattr(self, 'seguimenttutorial'):
             a=self
@@ -322,7 +358,106 @@ class AbstractAlumne(models.Model):
     def get_foto_or_default(self):
         foto = self.foto.url if self.foto else static('nofoto.png')
         return foto
+    
+    def get_responsables(self, rp1_dni=None, rp2_dni=None, compatible=False):
+        """
+        Retorna una tupla amb els dos responsables associats a l'alumne.
+        - Si es passen DNIs, selecciona els responsables corresponents.
+        - Si no es passen DNIs:
+            - Retorna els responsables existents de l'alumne.
+            #DEPRECATED vvv
+            - Si no n'hi ha i 'compatible' és True, crea responsables 
+            temporals, per compatibilitat, segons les dades antigues del model alumne.
+            #DEPRECATED ^^^
+        """
+        from django.apps import apps
+        
+        def crear_responsable_antic(nom_complet, correu, telefon1, telefon2, correu_familia):
+            if not (nom_complet or correu or telefon1 or telefon2 or correu_familia):
+                return None
+            nom, cognoms = ('', '')
+            if "," in nom_complet:
+                cognoms, nom = map(str.strip, nom_complet.split(",", 1))
+            else:
+                nom = nom_complet
+            Responsable = apps.get_model('relacioFamilies', 'Responsable')
+            return Responsable(
+                nom=nom,
+                cognoms=cognoms,
+                correu=correu,
+                telefon=telefon1 or telefon2,
+                correu_relacio_familia=correu_familia,
+                periodicitat_faltes=self.periodicitat_faltes,
+                periodicitat_incidencies=self.periodicitat_incidencies
+            )
+        # Si no es passen DNIs
+        if not rp1_dni and not rp2_dni:
+            responsables = list(self.responsables.all())
+            #DEPRECATED vvv
+            # Compatibilitat antiga: crear responsables ficticis si no n'hi ha
+            Responsable = apps.get_model('relacioFamilies', 'Responsable')
+            if not responsables and compatible and not Responsable.objects.exists():
+                # Només crea uns responsables temporals si encara no s'ha fet la nova càrrega de 
+                # dades d'alumnes amb els responsables diferenciats (not Responsable.objects.exists())
+                # Si ja s'ha fet la càrrega, i encara no té responsables associats, s'assumeix que es tracta
+                # d'un alumne sense responsables.
+                resp1 = crear_responsable_antic(
+                    self.rp1_nom, self.rp1_correu, self.rp1_mobil,
+                    self.rp1_telefon, self.correu_relacio_familia_pare
+                )
+                resp2 = crear_responsable_antic(
+                    self.rp2_nom, self.rp2_correu, self.rp2_mobil,
+                    self.rp2_telefon, self.correu_relacio_familia_mare
+                )
+                if self.primer_responsable == 1:
+                    resp1, resp2 = resp2, resp1
+                return resp1, resp2
+            #DEPRECATED ^^^
+            # Omple amb Nones si no s'arriba a 2 responsables
+            while len(responsables) < 2:
+                responsables.append(None)
+            # Si hi ha un preferent i no està en primera posició, invertir l'ordre
+            if self.responsable_preferent and responsables[0] != self.responsable_preferent and responsables[1]:
+                responsables.reverse()
+            return tuple(responsables)
+        # Si es passen DNIs
+        resp1 = self.responsables.filter(dni=rp1_dni).first()
+        resp2 = self.responsables.filter(dni=rp2_dni).first()
+        return resp1, resp2
 
+    def get_telefons_responsables(self):
+        return [ x.get_telefon() for x in self.get_responsables(compatible=True) if x and x.get_telefon() ]
+    
+    def get_dades_responsables(self, responsable=None, nomesNoms=False):
+        def dades_o_nom(resp, nomesNoms):
+            if not resp:
+                return ''
+            return resp.get_nom() if nomesNoms else resp.get_dades()
+        resp1, resp2 = self.get_responsables(compatible=True)
+        if responsable is None:
+            respPre = dades_o_nom(resp1, nomesNoms)
+            respAlt = dades_o_nom(resp2, nomesNoms)
+            return {'respPre': respPre, 'respAlt': respAlt}
+        # Amb responsable indicat
+        respPre = dades_o_nom(resp1, False)
+        respAlt = dades_o_nom(resp2, True)
+        if responsable == resp2:
+            respPre = dades_o_nom(resp2, False)
+            respAlt = dades_o_nom(resp1, True)
+        return {'respPre': respPre, 'respAlt': respAlt}
+
+    def esborraAntics_responsables(self, dnis):
+        '''
+        Elimina altres responsables anteriors, només
+        conserva els que corresponen a la llista de dnis.
+        Els responsables sense alumnes queden com a baixa.
+        dnis list amb els dnis vàlids de responsables
+        '''
+        for r in self.responsables.exclude(dni__in=dnis):
+            r.alumnes_associats.remove(self)
+            if not r.alumnes_associats.exists():
+                # Fa baixa si el responsable es queda sense alumnes
+                r.delete()
 
 class AbstractDadesAddicionalsAlumne(models.Model):
 

@@ -39,14 +39,26 @@ class Matricula(models.Model):
     data_naixement = models.DateField("Data de naixement", default=None)
     alumne_correu = models.EmailField("Correu de l'alumne", help_text = u'Correu de notificacions de l\'alumne', null=True)
     adreca = models.CharField("Adreça", max_length=250, default='', blank=True)
-    localitat = models.CharField("Localitat", max_length=250, default='', blank=True)
+    localitat = models.CharField("Localitat", max_length=240, default='', blank=True)
     cp = models.CharField("Codi postal", max_length=10, default='', blank=True)
-    rp1_nom = models.CharField("Nom complet 1r responsable", max_length=250, default='', blank=True) #responsable 1
-    rp1_telefon = models.CharField("Telèfon 1r responsable", max_length=15, default='', blank=True)
-    rp1_correu = models.EmailField( "Correu 1r responsable", default='', blank=True)
-    rp2_nom = models.CharField("Nom complet 2n responsable", max_length=250, null=True, blank=True) #responsable 2
-    rp2_telefon = models.CharField("Telèfon 2n responsable", max_length=15, null=True, blank=True)
-    rp2_correu = models.EmailField( "Correu 2n responsable", null=True, blank=True)
+    rp1_dni = models.CharField("Dni",max_length=10, default='', blank=True)
+    rp1_nom = models.CharField("Nom", max_length=50, default='', blank=True) #responsable 1
+    rp1_cognoms = models.CharField("Cognoms",max_length=100, default='', blank=True)
+    rp1_telefon = models.CharField("Telèfon", max_length=15, default='', blank=True)
+    rp1_correu = models.EmailField( "Correu", default='', blank=True)
+    rp1_parentiu = models.CharField("Parentiu",max_length=20, blank=True)
+    rp1_localitat = models.CharField("Localitat", max_length=240, blank=True)
+    rp1_cp = models.CharField("Codi postal", max_length=10, blank=True)
+    rp1_adreca = models.CharField("Adreça", max_length=250, blank=True)
+    rp2_dni = models.CharField("Dni",max_length=10, null=True, blank=True)
+    rp2_nom = models.CharField("Nom", max_length=50, null=True, blank=True) #responsable 2
+    rp2_cognoms = models.CharField("Cognoms",max_length=100, null=True, blank=True)
+    rp2_telefon = models.CharField("Telèfon", max_length=15, null=True, blank=True)
+    rp2_correu = models.EmailField( "Correu", null=True, blank=True)
+    rp2_parentiu = models.CharField("Parentiu",max_length=20, null=True, blank=True)
+    rp2_localitat = models.CharField("Localitat", max_length=240, null=True, blank=True)
+    rp2_cp = models.CharField("Codi postal", max_length=10, null=True, blank=True)
+    rp2_adreca = models.CharField("Adreça", max_length=250, null=True, blank=True)
 
     class Meta:
         verbose_name = u'Matrícula'

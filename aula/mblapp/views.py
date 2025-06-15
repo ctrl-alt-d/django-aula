@@ -70,6 +70,7 @@ def capture_token_api(request, format=None):
     """
     Rep un token i retorna un usuari de la API (is_active=False)
     """
+    import secrets
 
     # deserialitzem
     data = JSONParser().parse(request)
@@ -107,7 +108,7 @@ def capture_token_api(request, format=None):
 
     # creo un nou usuari per aquest token
     allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789' +  '0Oo^?#!'
-    password_xunga = User.objects.make_random_password(length=12, allowed_chars=allowed_chars)
+    password_xunga = ''.join(secrets.choice(allowed_chars) for i in range(12))
     nou_usuari = User.objects.create_user( username = "API"+token.localitzador ,
                                            email = "",
                                            password = password_xunga )
@@ -275,15 +276,16 @@ def alumnes_dades(request, format=None):
 
     qrtoken = request.user.qrportal
     alumne = qrtoken.alumne_referenciat
+    resp1, resp2 = alumne.get_responsables(compatible=True)
     content = {"grup": unicode(alumne.grup),
                "datanaixement": "/".join([unicode(alumne.data_neixement.day), unicode(alumne.data_neixement.month),unicode(alumne.data_neixement.year)]),
-               "telefon": alumne.telefons,
-               "responsables":[{"nom":unicode(alumne.rp1_nom),
-                                "mail":unicode(alumne.rp1_correu),
-                                "telefon": " , ".join(filter(None,[unicode(alumne.rp1_telefon),unicode(alumne.rp1_mobil)]))},
-                               {"nom":unicode(alumne.rp2_nom),
-                                "mail":unicode(alumne.rp2_correu),
-                                "telefon": " , ".join(filter(None,[unicode(alumne.rp2_telefon),unicode(alumne.rp2_mobil)]))}],
+               "telefon": alumne.get_telefons(),
+               "responsables":[{"nom":unicode(resp1.get_nom() if resp1 else ''),
+                                "mail":unicode(resp1.get_correu_importat() if resp1 else ''),
+                                "telefon":unicode(resp1.get_telefon() if resp1 else '')},
+                               {"nom":unicode(resp2.get_nom() if resp2 else ''),
+                                "mail":unicode(resp2.get_correu_importat() if resp2 else ''),
+                                "telefon":unicode(resp2.get_telefon() if resp2 else '')}],
                "adreca": " , ".join(filter(None,[unicode(alumne.adreca), unicode(alumne.localitat), unicode(alumne.municipi)]))}
     return Response(content)
 

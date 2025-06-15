@@ -122,7 +122,7 @@ class AbstractCartaAbsentisme(models.Model):
     # amorilla@xtec.cat  per a poder mostrar la data 'des de' a les cartes
     faltes_des_de_data = models.DateField( editable = False, verbose_name = 'Faltes des de data', blank=True, null =True )
     professor = models.ForeignKey( to = 'usuaris.Professor', verbose_name = 'Professor que signa la carta', on_delete=models.CASCADE )
-    data_carta = models.DateField( verbose_name = 'Data de la carta' )
+    data_carta = models.DateField( verbose_name = 'Data de la carta', null=True )
     faltes_incloses = models.TextField( editable = False, blank=True, verbose_name = 'Faltes incloses a la carta' )
     carta_esborrada_moment = models.DateTimeField( editable = False, blank=True, null =True  )
     nfaltes = models.IntegerField( editable = False , verbose_name = u"Absències injustificades")

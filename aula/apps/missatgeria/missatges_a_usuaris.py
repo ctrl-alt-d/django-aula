@@ -55,6 +55,8 @@ ALUMNES_DONATS_DALTA = u'''El següents alumnes han estat donats d'alta.'''
 
 ALUME_HA_ESTAT_SANCIONAT = u"L'alumne {0} ha estat sancionat ( del {1} al {2} )."
 
+ALUMNE_GENERAR_CARTA = u"S'ha de generar carta per acumulació de faltes de l'alumne {0}."
+
 ACOMPANYANT_A_ACTIVITAT = u"""Has estat afegit com a professor acompanyant a l'activitat {sortida} 
                     del dia {dia}
                     """
@@ -99,8 +101,6 @@ ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL = u"Pagament realitzat amb el mòbil no s
 
 MAIL_REBUTJAT=u"Mail rebutjat per l'usuari: \"{0}\"  adreça: \"{1}\".\nData d'enviament: {2}\nMotiu: {3}"
 
-ALUMNE_SENSE_EMAILS=u"L'usuari: \"{0}\" no té adreça d'email informada"
-
 FI_INITDB=u"Inicialització de la base de dades completada"
 
 ERROR_INITDB=u"Inicialització incompleta de la base de dades"
@@ -134,7 +134,6 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL,
                                 ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
                                 MAIL_REBUTJAT,
-                                ALUMNE_SENSE_EMAILS,
                                 FI_INITDB,
                                 ERROR_INITDB,
                                 IMPORTACIO_PREINSCRIPCIO_FINALITZADA,
@@ -156,6 +155,7 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                                      ALUME_HA_ESTAT_SANCIONAT,
                                                      HE_POSAT_INCIDENCIA_EN_NOM_TEU,
                                                      HE_POSAT_INCIDENCIA_EN_NOM_DALGU,
+                                                     ALUMNE_GENERAR_CARTA,
                                                      }},}
 
 

@@ -2,6 +2,7 @@
 from django.db import models
 from aula.apps.horaris.models import FranjaHoraria
 from aula.apps.usuaris.models import Departament, Professor
+from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
 from aula.apps.sortides.business_rules.sortida import clean_sortida
 from aula.apps.alumnes.models import Alumne
 from django.apps import apps
@@ -258,7 +259,7 @@ class Quota(models.Model):
     
     importQuota=models.DecimalField(max_digits=7, decimal_places=2, default=0)
     dataLimit=models.DateField(null=True, blank=True)
-    any=models.IntegerField(default=return_any_actual)
+    any=models.IntegerField(help_text="Correspon a l'any on comença el curs. Ex. curs any1/any2, seria any1.", default=return_any_actual)
     descripcio=models.CharField(max_length=200)
     #  Si no s'indica curs, serveix per a tots els alumnes
     curs=models.ForeignKey(Curs, on_delete=models.PROTECT, null=True, blank=True)
@@ -270,6 +271,32 @@ class Quota(models.Model):
         verbose_name = u'Quota'
         verbose_name_plural = u'Quotes'
         
+    def __str__(self):
+        return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio if self.descripcio else self.tipus
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        super().clean()
+        #Comprova que l'any no sigui del futur
+        if self.any>return_any_actual():
+            raise ValidationError(u"No es poden crear quotes del curs indicat fins al {0}.".format(self.any))
+        #Comprova si existeix una quota del mateix tipus, curs i any.
+        if self.tipus.nom in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA,  'taxcurs', 'uf', ]:
+            q=Quota.objects.exclude(id=self.id).filter(tipus=self.tipus, curs=self.curs, any=self.any, tpv=self.tpv)
+            # Si hi ha una altra, error
+            if q: raise ValidationError(u"Ja existeix una Quota de tipus {0} per aquest curs i any.".format(self.tipus.nom))
+
+class QuotaCentreManager(models.Manager):
+    def get_queryset(self):
+        #  Només quotes del TPV 'centre'
+        return super(QuotaCentreManager, self).get_queryset().filter( tpv__nom='centre' )
+
+class QuotaCentre(Quota):
+    objects = QuotaCentreManager()
+    
+    class Meta:
+        proxy = True
+
     def __str__(self):
         return str(self.importQuota)+' '+str(self.curs)+' '+str(self.any)+' '+self.descripcio if self.descripcio else self.tipus
 
@@ -297,6 +324,7 @@ class Pagament(models.Model):
         'F' Finalitzat. Pagament correctament finalitzat.
     '''
     estat = models.CharField(max_length=1, blank=True, null=True, default='')
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
     
     def __str__(self):
         return u"Pagament realitzat per l'alumne {}: {}".format( self.alumne, self.pagament_realitzat if self.pagament_realitzat else 'No indicat' )
@@ -315,6 +343,18 @@ class Pagament(models.Model):
     def getdataLimit(self):
         return self.dataLimit if self.fracciona or self.dataLimit else self.quota.dataLimit if self.quota else \
             self.sortida.termini_pagament if self.sortida else ''
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
     
 class QuotaPagamentManager(models.Manager):
     def get_queryset(self):
@@ -350,12 +390,29 @@ class SortidaPagament(Pagament):
 class NotificaSortida( models.Model):
     alumne = models.ForeignKey( Alumne, on_delete=models.CASCADE )
     sortida = models.ForeignKey(Sortida, on_delete=models.CASCADE )
+    
+    #DEPRECATED vvv
     relacio_familia_revisada = models.DateTimeField( null=True )    
     relacio_familia_notificada = models.DateTimeField( null=True )
-
+    #DEPRECATED ^^^
+    
+    notificacions_familia = models.ManyToManyField('usuaris.NotifUsuari', db_index=True)
+    
     def __str__(self):
         return u"{} {}".format( self.alumne, self.sortida )
-
+    
+    def set_notificacio(self, notificacio):
+        set_notificacio(self, notificacio)
+    
+    def set_revisio(self, revisio):
+        set_revisio(self, revisio)
+    
+    def get_notif_revisio(self, usuari, fmt_data=None):
+        '''
+        Retorna str, str amb notificació, revisió de l'usuari
+        '''
+        return get_notif_revisio(self, usuari, fmt_data)
+    
 # ----------------------------- B U S I N E S S       R U L E S ------------------------------------ #
 from django.db.models.signals import m2m_changed, pre_save #post_save, pre_delete
 

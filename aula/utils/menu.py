@@ -10,8 +10,9 @@ from datetime import timedelta, datetime, date
 from django.template.defaultfilters import safe
 from django.conf import settings
 from aula.apps.sortides.models import Sortida
+from aula.apps.usuaris.tools import getRol
 
-def calcula_menu( user , path, sessioImpersonada ):
+def calcula_menu( user , path, sessioImpersonada, request ):
 
     if not user.is_authenticated:
         return
@@ -23,11 +24,18 @@ def calcula_menu( user , path, sessioImpersonada ):
     pr = not al and Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
     pl = not al and Group.objects.get_or_create(name= 'professional' )[0] in user.groups.all()
     co = not al and Group.objects.get_or_create(name= 'consergeria' )[0] in user.groups.all()
+    am = not al and Group.objects.get_or_create(name='administratius')[0] in user.groups.all()
     pg = not al and Group.objects.get_or_create(name= 'psicopedagog' )[0] in user.groups.all()
     so = not al and Group.objects.get_or_create(name= 'sortides' )[0] in user.groups.all()
     tp = not al and Group.objects.get_or_create(name= 'tpvs' )[0] in user.groups.all()
     tu = not al and pr and ( User2Professor( user).tutor_set.exists() or User2Professor( user).tutorindividualitzat_set.exists() )    
-    tots = al or ad or di or pr or pl or co or pg or so or tp
+    
+    if pr and not pl:
+        grupProfessional, _ = Group.objects.get_or_create(name='professional')
+        user.groups.add(grupProfessional)
+        pl=True
+    
+    tots = al or ad or di or pr or pl or co or pg or so or tp or am
     
     #Comprovar si té missatges sense llegir
     nMissatges = user.destinatari_set.filter( moment_lectura__isnull = True ).count()
@@ -66,17 +74,26 @@ def calcula_menu( user , path, sessioImpersonada ):
 
     try:
         nom_path = resolve( path ).url_name
+        tipus_path=None
+        if bool(path) and len(path)>=3: tipus_path = path[-2] if path[-3]=='/' and path[-1]=='/' else None
     except:
         return menu
     
     menu["esalumne"]=al
     if al:
-        alumneuser = AlumneUser.objects.get( id = user.id )
-        alumne = alumneuser.getAlumne()
-        if alumne:
+        _, responsable, alumne = getRol(user, request )
+        menu["alumnes_tots"]=[]
+        if responsable and alumne:
+            menu["alumnes_tots"]=list(responsable.get_alumnes_associats())
             menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom if alumne.nom else alumne.ralc)
+            if len(menu["alumnes_tots"])==1:
+                menu["alumnes_tots"]=[]
+        elif alumne:
+            menu["nomusuari"]= u"Família de {alumne}".format( alumne=alumne.nom if alumne.nom else alumne.ralc)
+        elif responsable:
+            menu["nomusuari"]= u"{nom} {cognoms}".format( nom=responsable.nom if responsable.nom else user.username, cognoms=responsable.cognoms )
         else:
-            menu["nomusuari"]= user.first_name or user.username 
+            menu["nomusuari"]= user.first_name or user.username
     else:
         menu["nomusuari"]= user.first_name or user.username 
     
@@ -134,7 +151,7 @@ def calcula_menu( user , path, sessioImpersonada ):
 
                    )
                ),
-        
+
                #--Aula--------------------------------------------------------------------------
                #  id,    nom     vista                 seg      label
                ('aula', 'Aula', 'blanc__blanc__blanc', pr, teExpulsionsSenseTramitar or hiHaUnaQualitativaOberta ,
@@ -178,11 +195,11 @@ def calcula_menu( user , path, sessioImpersonada ):
                       ("Cerca Alumne", 'gestio__usuari__cerca', co or pl, None, None),
                       ("Cerca Professor", 'gestio__professor__cerca', co or pl, None, None),  
                       ("iCal", 'gestio__calendari__integra', pl, None, None),  
-                      ("Matrícules", 'matricula:gestio__blanc__matricula', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, 
+                      ("Matrícules", 'matricula:gestio__matricula__blanc', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None, 
                           ( 
-                            ("Verifica", 'matricula:gestio__llistat__matricula', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
-                            ("Descàrrega resum", 'matricula:gestio__resum__matricula', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
-                            ("Activa", 'matricula:gestio__activa__matricula', ad if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
+                            ("Verifica", 'matricula:gestio__matricula__llistat', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
+                            ("Descàrrega resum", 'matricula:gestio__matricula__resum', di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
+                            ("Activa", 'matricula:gestio__matricula__activa', ad if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None, None),
                           )
                       ),  
                       ("Quotes", 'gestio__quotes__blanc', (di or tp) if settings.CUSTOM_QUOTES_ACTIVES else None, None,
@@ -257,8 +274,8 @@ def calcula_menu( user , path, sessioImpersonada ):
                   (
                       ("Sincronitza", 'administracio__sincronitza__blanc', di, None, 
                         (
-                          ("Alumnes ESO/BAT", 'administracio__sincronitza__esfera', di , None  ),
-                          ("Alumnes Cicles", 'administracio__sincronitza__saga', di, None),
+                          ("Alumnes Esfer@", 'administracio__sincronitza__esfera', di , None  ),
+                          ("Alumnes SAGA", 'administracio__sincronitza__saga', di, None),
                           ("Dades addicionals alumnat", 'administracio__sincronitza__dades_addicionals', di, None),
                           ("Preinscripció", 'administracio__sincronitza__preinscripcio', di , None  ),
                           ("HorarisKronowin", 'administracio__sincronitza__kronowin', di , None  ),
@@ -314,7 +331,7 @@ def calcula_menu( user , path, sessioImpersonada ):
              )
     
     arbreSortides = ()
-    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU and ( di or pr ):
+    if hasattr(settings, 'CUSTOM_MODUL_SORTIDES_ACTIU' ) and settings.CUSTOM_MODUL_SORTIDES_ACTIU and ( di or pr or am):
         
         filtre = []
         socEquipDirectiu = User.objects.filter( pk=user.pk, groups__name = 'direcció').exists()
@@ -353,21 +370,21 @@ def calcula_menu( user , path, sessioImpersonada ):
 
         arbreSortides = (
             # --Activitats/pagaments--------------------------------------------------------------------------
-            ('sortides', 'Activitats/Pagaments', 'sortides__meves__list', di or pr, n_avis_tot + n_avis_activitats_meves> 0,
+            ('sortides', 'Activitats/Pagaments', "sortides__gestio__list" if am else 'sortides__meves__list', di or pr or am, n_avis_tot + n_avis_activitats_meves> 0,
              (
-                 ('Activitats', "sortides__meves__list_by_tipus,A", di or pr, None,
+                 ('Activitats', "sortides__gestio__list_by_tipus,A" if am else "sortides__meves__list_by_tipus,A", di or pr or am, None,
                    (
                        (u"Històric", "sortides__all__list,A", di or so, None),
-                       (u"Gestió", "sortides__gestio__list_by_tipus,A", di or so,
+                       (u"Gestió", "sortides__gestio__list_by_tipus,A", di or so or am,
                                     (n_avis_activitats, 'info',) if n_avis_activitats > 0 else None),
-                       (u"Les meves propostes", "sortides__meves__list_by_tipus,A", pr,
+                       (u"Les meves propostes", "sortides__meves__list_by_tipus,A", pr ,
                                     (n_avis_activitats_meves, 'info',) if n_avis_activitats_meves > 0 else None),
                    ),
                    ),
-                 ('Pagaments', "sortides__meves__list_by_tipus,P", di or pr, None,
+                 ('Pagaments', "sortides__gestio__list_by_tipus,P" if am else "sortides__meves__list_by_tipus,P", di or pr or am, None,
                   (
                       (u"Històric", "sortides__all__list,P", di or so, None),
-                      (u"Gestió", "sortides__gestio__list_by_tipus,P", di or so,
+                      (u"Gestió", "sortides__gestio__list_by_tipus,P", di or so or am,
                        (n_avis_activitats, 'info',) if n_avis_activitats > 0 else None),
                       (u"Les meves propostes", "sortides__meves__list_by_tipus,P", pr,
                        (n_avis_activitats_meves, 'info',) if n_avis_activitats_meves > 0 else None),
@@ -404,6 +421,7 @@ def calcula_menu( user , path, sessioImpersonada ):
                 if len(subitem_url_splited)>1:
                     tipus = subitem_url_splited[1]
                     subitem.url = (reverse(url, kwargs={'tipus':tipus}))
+                    actiu = tipus_path and tipus==tipus_path or not bool(tipus_path) and tipus==arbreSortides[0][5][0][1][-1]
                 else:
                     subitem.url = (reverse(url))
                 subitem.active = 'active' if actiu else ''
@@ -539,9 +557,10 @@ tutoria__relacio_families__dades_relacio_families
 tutoria__relacio_families__envia_benvinguda
 tutoria__seguiment_tutorial__formulari
 
-matricula:gestio__llistat__matricula
+matricula:gestio__matricula__llistat
+matricula:gestio__matricula__resum
+matricula:gestio__matricula__activa
 matricula:varis__condicions__matricula
-matricula:gestio__activa__matricula
 
 gestio__quotes__assigna
 gestio__quotes__descarrega

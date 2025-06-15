@@ -1,11 +1,12 @@
 # This Python file uses the following encoding: utf-8
 import random
-from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser
+from aula.apps.usuaris.models import OneTimePasswd, Professor, Accio, AlumneUser, User2Professor, User2Alumne, ResponsableUser, User2Responsable, NotifUsuari
 from datetime import datetime
 from datetime import timedelta
 from django.db.models import Q
 from django.conf import settings
 from aula.apps.alumnes.models import Alumne
+from aula.apps.relacioFamilies.models import Responsable
 import re
 import dns.resolver
 import smtplib
@@ -13,7 +14,7 @@ import imaplib
 import email
 from django.contrib.auth.models import User, Group
 from aula.apps.missatgeria.models import Missatge
-from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, MAIL_REBUTJAT, ALUMNE_SENSE_EMAILS
+from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, MAIL_REBUTJAT
 
 def connectIMAP():
     '''
@@ -28,7 +29,6 @@ def connectIMAP():
         mail = imaplib.IMAP4_SSL(settings.EMAIL_HOST_IMAP)
         if mail:
             mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-            mail.select()
         return mail
     except:
         return None
@@ -172,24 +172,24 @@ def getEmailText(msg):
     return ''
 
 
-def getMailsList(mail, num=None, dies=15):
+def getMailsList(mail, num, dies):
     '''
     Retorna la llista dels identificadors de correus rebuts al
     servidor mail des del número num (no inclós) o els últims dies indicats.
     Es farà servir per al fetch de cada correu.
     mail connexió al servidor imaplib.IMAP4_SSL
-    num en bytes, numeració a partir de la qual volem els correus (num no inclòs)
-    dies enter, si num es None fa servir aquests dies per obtenir els correus
+    num int, numeració a partir de la qual volem els correus (num no inclòs)
+    dies int, si num es None fa servir aquests dies per obtenir els correus
 
-    Retorna la llista (pot ser buida) o None en cas d'error.
+    Retorna la llista i últim identificador o None, None en cas d'error.
 
     '''
 
     if mail:
         # Prepara el command corresponent
-        if num:
+        if num>0:
             #  rang mails  'num:*'  Ex:  2000:*   1:*
-            cmd=str(int(num)+1)+':*'
+            cmd=str(num+1)+':*'
         else:
             #  desde data Ex: '(SENTSINCE "2-Feb-2020")'
             months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -198,19 +198,21 @@ def getMailsList(mail, num=None, dies=15):
             cmd='(SENTSINCE "'+data+'")'
         #print(cmd)
         try:
+            _, response_text = mail.select()
+            ultim = int(response_text[0].decode("utf-8"))
             _ , dades = mail.search(None, cmd )
             mail_ids = dades[0]
             id_list = mail_ids.split()
-            if num and id_list and len(id_list)>0:
-                ultim=id_list[len(id_list)-1]
-                if ultim>num:
+            if id_list and len(id_list)>0:
+                ultim = int(id_list[len(id_list) - 1].decode("utf-8")) #  search retorna bytes
+                if num>=0 and ultim>num:
                     # Comprova que n'hi han nous emails
-                    return id_list
-            else:
-                return id_list
-        except:
-            return None
-    return None
+                    return id_list, ultim
+            return None, ultim
+        except Exception as e:
+            print ("Error getMailsList:", str(e))
+            return None, 0
+    return None, 0
 
 def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     '''
@@ -224,16 +226,7 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
     Si l'usuari (no alumne) s'ha connectat al Djau des de la data aleshores també rep el missatge
 
     '''
-
-    enviaUsuari=False
-    if usuari:
-        #  Si usuari s'ha connectat des de la data aleshores també se li comunica
-        connexions = usuari.LoginUsuari.filter(exitos=True).order_by( '-moment' )
-        if connexions.exists():
-            dataDarreraConnexio = connexions[0].moment
-            if dataDarreraConnexio>data:
-                enviaUsuari=True
-
+    
     missatge = MAIL_REBUTJAT
     tipus_de_missatge = tipusMissatge(missatge)
     missatge = missatge.format(str(usuari) if usuari else "desconegut", emailRetornat, str(data), motiu)
@@ -249,171 +242,98 @@ def informaDSN(destinataris,usuari,emailRetornat,motiu,data,url):
                 tipus_de_missatge = tipus_de_missatge, enllac=url )
     for d in destinataris:
         msg.envia_a_usuari( d , 'VI')
-    if enviaUsuari:
-        try:
-            url=geturlconf('USU',usuari)
-        except:
-            url=''
-        if url!='':
-            msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
-                        tipus_de_missatge = tipus_de_missatge, enllac=url )
-            msg.envia_a_usuari( usuari , 'VI')
 
-def informaNoCorreus(destinataris,usuari,url):
-    '''
-    Envia missatges Djau per cada destinatari. Informa d'usuari sense correus.
-    destinataris  query d'usuaris (User)
-    usuari  a qui fa referència el missatge (Alumne)
-    url string, enllaç per a fer el canvi de la configuració de l'usuari afectat
-
-    '''
-
-    if usuari is None: return
-    missatge = ALUMNE_SENSE_EMAILS
-    tipus_de_missatge = tipusMissatge(missatge)
-    missatge = missatge.format(str(usuari))
-    usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
-    if new:
-        usuari_notificacions.is_active = False
-        usuari_notificacions.first_name = u"Usuari Tasques Programades"
-        usuari_notificacions.save()
-    if not destinataris or not destinataris.exists():
-        destinataris= Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
-        url=geturlconf('ADM',usuari)
-    msg = Missatge( remitent = usuari_notificacions, text_missatge = missatge,
-                tipus_de_missatge = tipus_de_missatge, enllac=url )
-    for d in destinataris:
-        msg.envia_a_usuari( d , 'VI')
-
-def geturlconf(tipus,usuari):
+def geturlconf(tipus, usuari, responsable=None):
     '''
     Retorna la url per a poder fer el canvi de la configuració de l'usuari
     tipus: Qui ha d'accedir a la configuració, pot ser 'ADM' administrador,  'TUT' tutor, 'USU'  usuari
     usuari: A quin usuari s'ha de modificar la configuració (User o Alumne)
+    responsable: És el responsable a qui s'ha de modificar la configuració o None.  
     Retorna string amb la url o '' si no existeix l'usuari o és el cas 'USU' per alumne.
     '''
 
     if usuari is None: return ''
     al=AlumneUser(pk=usuari.pk).getAlumne()
-    if al:
+    if al or responsable:
         codi=al.pk
     else:
         codi=usuari.pk
     if tipus=='ADM':
-        if al:
-            url='/admin/alumnes/alumne/{0}/change/'.format(codi) if codi else '' # administrador per alumne pk
+        if responsable:
+            url='/admin/relacioFamilies/responsable/{0}/change/'.format(responsable.pk) if responsable.pk else '' # administrador per responsable
+        elif al:
+            url='/admin/alumnes/alumne/{0}/change/'.format(codi) if codi else '' # administrador per alumne
         else:
-            url='/admin/auth/user/{0}/change/'.format(codi) if codi else ''     # administrador per no alumne pk
+            url='/admin/auth/user/{0}/change/'.format(codi) if codi else ''     # administrador per usuari no alumne
     else:
-        if tipus=='TUT':
-            url='/open/configuraConnexio/{0}/'.format(codi) if al else '' # tutor per modificar alumne pk
+        if tipus=='TUT' and (al or responsable):
+            url='/open/configuraConnexio/{0}/'.format(codi) if codi else '' # tutor per modificar alumne o responsable
         else:
-            if al:
-                url='' # '/open/canviParametres/'    # usuari alumne
-            else:
+            if tipus=='USU' and not al:
                 url='/usuaris/canviDadesUsuari/'   # usuari no alumne
+            else:
+                url=''
     return url
 
 def informa(emailRetornat, status, action, data, diagnostic, text):
     '''
-    Determina qui ha de rebre les notificacions d'email retornat
+    Envia notificacions per email retornat
     emailRetornat adreça que ha rebutjat el correu
     status codi d'error
     action actuació del servidor de correu
     data en la qual el servidor va rebre el correu
     diagnostic explicació del problema
     text  missatge del correu
-    Si el email retornat correspon a un alumne --> notifica al tutor
-    Si correspon a un altre --> notifica als administradors
+    Si l'email retornat correspon a un alumne o responsable --> notifica al tutor
+    Si correspon a un altre usuari --> notifica a l'usuari
+    En tots els casos, inclosos desconeguts, notifica als administradors
 
     '''
 
     motiu=status+" "+ action +" "+ diagnostic
-    # Fa recerca de l'usuari al text del missatge rebutjat
-    # Podria ser que l'adreça de correu correspongui a varis usuaris
-    pos=text.find("recoverPasswd")
-    if pos!=-1:
-        usuari=text[pos:].split("/")[1].strip()
-    else:
-        pos=text.find("nom d'usuari és")
-        if pos!=-1:
-            pos1=pos+len("nom d'usuari és")
-            pos2=text.find("Per qualsevol dubte que")
-            usuari=text[pos1:pos2].split(":")[1].strip()
-        else:
-            usuari=None
-
-    altre=None
     administradors = Group.objects.get_or_create( name = 'administradors' )[0].user_set.all()
-    if usuari is None:
-        #No s'ha pogut determinar l'usuari per el missatge
-        correus = (Q( correu_relacio_familia_pare = emailRetornat ) |
-            Q( correu_relacio_familia_mare = emailRetornat ) | Q(correu_tutors = emailRetornat) |
-            Q(rp1_correu = emailRetornat) | Q(rp2_correu = emailRetornat) | Q(correu = emailRetornat))
-        alumnes=Alumne.objects.filter(correus).filter(data_baixa__isnull = True).distinct()
-        if alumnes.exists():
-            #És un o varis alumnes
-            #Cada alumne amb el seu tutor
-            #envia a tots els tutors o administradors que corresponguin --> notifica usuari, email, motiu, data
-            for almn in alumnes:
-                if almn.correu_relacio_familia_pare == emailRetornat or almn.correu_relacio_familia_mare == emailRetornat:
-                    # És un correu de tutoria
-                    tutors=almn.tutorsDelGrupDeLAlumne()
-                    informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
-                            geturlconf('TUT',almn.get_user_associat()))
-                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                               geturlconf('ADM',almn.get_user_associat()))
-                else:
-                    # És un altre correu de l'usuari
-                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                            geturlconf('ADM',almn.get_user_associat()))
-            return
-        else:
-            # No és alumne
-            altre=User.objects.filter(email = emailRetornat)
-            altre=altre[0] if altre.exists() else None
-    else:
-        altre=User.objects.filter(username = usuari)
-        if altre.exists():
-            altre=altre[0]
-            almn=AlumneUser(pk=altre.pk).getAlumne()
-            if almn and not almn.esBaixa():
-                #és un alumne
-                if almn.correu_relacio_familia_pare == emailRetornat or almn.correu_relacio_familia_mare == emailRetornat:
-                    # És un correu de tutoria
-                    # determina tutor, notifica al tutor usuari, email, motiu
-                    tutors=almn.tutorsDelGrupDeLAlumne()
-                    informaDSN(tutors,almn.get_user_associat(),emailRetornat,motiu,data,
-                               geturlconf('TUT',almn.get_user_associat()))
-                    informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                               geturlconf('ADM',almn.get_user_associat()))
-                else:
-                    if almn.correu_tutors == emailRetornat or almn.rp1_correu == emailRetornat or \
-                         almn.rp2_correu == emailRetornat or almn.correu == emailRetornat:
-                        # És un altre correu de l'usuari
-                        informaDSN(administradors,almn.get_user_associat(),emailRetornat,motiu,data,
-                                   geturlconf('ADM',almn.get_user_associat()))
-                return
-            else:
-                if altre.email!=emailRetornat:
-                    # El correu ja s'ha corregit
-                    return
-
-        else:
-            # Usuari inexistent
-            altre=None
-            motiu="Desconegut "+usuari+"\n"+motiu
-    #no és un alumne, envia notificació a administradors
-    #notificació usuari, email, motiu, data
-    informaDSN(administradors,altre,emailRetornat,motiu,data,geturlconf('ADM',altre))
-
+    correus = (Q( correu = emailRetornat ) | Q( responsables__correu_relacio_familia = emailRetornat))
+    alumnes=Alumne.objects.filter(correus).filter(data_baixa__isnull = True).distinct()
+    for almn in alumnes:
+        # És un correu d'alumne o responsable
+        tutors=almn.tutorsDelGrupDeLAlumne()
+        usuari_almn=almn.get_user_associat()
+        if almn.correu==emailRetornat:
+            #Alumne
+            informaDSN(tutors,usuari_almn,emailRetornat,motiu,data,
+                       geturlconf('TUT', usuari_almn))
+            informaDSN(administradors,usuari_almn,emailRetornat,motiu,data,
+                       geturlconf('ADM', usuari_almn))
+        for r in almn.get_responsables():
+            #Responsables
+            if r.correu_relacio_familia==emailRetornat:
+                informaDSN(tutors,usuari_almn,emailRetornat,motiu,data,
+                           geturlconf('TUT', usuari_almn, responsable=r))
+                informaDSN(administradors,usuari_almn,emailRetornat,motiu,data,
+                           geturlconf('ADM', usuari_almn, responsable=r))
+    
+    altres=User.objects.filter(email = emailRetornat)
+    if altres.exists():
+        # És un correu d'usuari no alumne ni responsable
+        for usuari in altres:
+            informaDSN(usuari,usuari,emailRetornat,motiu,data,
+                    geturlconf('USU',usuari))
+            informaDSN(administradors,usuari,emailRetornat,motiu,data,
+                       geturlconf('ADM',usuari))
+    if not alumnes.exists() and not altres.exists():
+        # És desconegut, pot correspondre a casos d'alumnes en procés de matrícula
+        informaDSN(administradors,None,emailRetornat,motiu,data, geturlconf('ADM',None))
+    
 def setUltimControl(num):
     '''
     Registra a la base de dades una Accio amb el número de l'últim
     email verificat
-    num número de l'últim email (bytes)
+    num número de l'últim email. string o bytes.
     '''
 
+    if num is None: return 
+    if type(num) is bytes:
+        num=num.decode("utf-8")
     usuari_notificacions, new = User.objects.get_or_create( username = 'TP')
     if new:
         usuari_notificacions.is_active = False
@@ -424,24 +344,71 @@ def setUltimControl(num):
             usuari = usuari_notificacions,
             l4 = False,
             impersonated_from = None,
-            text = u"Comprovació emails rebutjats. ;"+num.decode()
+            text = u"Comprovació emails rebutjats. ;"+str(num)
             )
 
 def getUltimControl():
     '''
     Retorna el número de l'últim email verificat segons els registres d'Accio
     o retorna None si no n'hi ha cap
-    Retorna en bytes, per a poder fer-lo servir al fetch
+    Retorna un int o None
     '''
 
     control=Accio.objects.filter(tipus='DS').order_by( '-moment' )
     if control.exists():
-        ultimFetch=control[0].text.split(";")[1].encode()
+        ultimFetch=int(control[0].text.split(";")[1])
     else:
-        ultimFetch=None
+        ultimFetch=0
     return ultimFetch
 
-def controlDSN(dies=15):
+def checkDSN(msg):
+    '''
+    Comprova si el missatge correspon a un Delivery Status Notification
+    Informa si és el cas i mostra les dades a Ajuda i Avisos
+    '''
+    
+    if (msg.is_multipart() and len(msg.get_payload()) > 1 and
+        msg.get_payload(1).get_content_type() == 'message/delivery-status'):
+        # email is DSN
+        text=''
+        for m in msg.get_payload():
+            if m.get_content_type() == 'message/rfc822':
+                text=getEmailText(m)
+                break
+        for dsn in msg.get_payload(1).get_payload():
+            if dsn.get_content_type() == 'text/plain':
+                fr=dsn.get('Final-Recipient')
+                if fr: emailRetornat=fr.split(';')[1].strip()
+                st=dsn.get('status')
+                if st: status=st
+                act=dsn.get('action')
+                if act: action=act
+                ad=dsn.get('Arrival-Date')
+                if ad: data=datemailTodatetime(ad)
+                dc=dsn.get('diagnostic-code')
+                try:
+                    if dc and type(dc) is str: diagnostic=dc.split(';')[1]
+                    else: diagnostic=str(dc)
+                except:
+                    diagnostic = 'Unknown error'
+        informa(emailRetornat, status, action, data, diagnostic, text)  
+        
+def controlDSN(dies=1):
+    '''
+    Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
+    de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
+    Per cada correu identifica destinatari erroni i informa al tutor o a l'administrador de Django.
+
+    Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
+    '''
+    
+    if settings.EMAIL_BACKEND and (settings.EMAIL_BACKEND == 'django_gsuite_email.GSuiteEmailBackend' \
+        or settings.EMAIL_BACKEND == 'gmailapi_backend.service.GmailApiBackend'):
+        return gmailcontrolDSN(dies)
+    else:
+        return imapcontrolDSN(dies) 
+    
+def imapcontrolDSN(dies):
     '''
     Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
     de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
@@ -453,13 +420,15 @@ def controlDSN(dies=15):
     mail=connectIMAP()
     if mail is None: return False
     ultimFetch=getUltimControl()
-    id_list=getMailsList(mail, ultimFetch, dies)
-    if id_list is None: return False
+    id_list, id_last=getMailsList(mail, ultimFetch, dies)
+    if not bool(id_list):
+        if id_last>=ultimFetch: setUltimControl(id_last)
+        return False
     i=0
     while i<len(id_list):
         try:
             num=id_list[i]
-            status, data = mail.fetch(num, '(RFC822)' )
+            status, data = mail.fetch(num, '(RFC822)')
         except:
             if i>0: setUltimControl(id_list[i-1])
             return False
@@ -474,42 +443,105 @@ def controlDSN(dies=15):
                 # skipping the header at the first and the closing
                 # at the third
                 msg = email.message_from_bytes(response_part[1])
-                if (msg.is_multipart() and len(msg.get_payload()) > 1 and
-                    msg.get_payload(1).get_content_type() == 'message/delivery-status'):
-                    # email is DSN
-                    text=''
-                    for m in msg.get_payload():
-                        if m.get_content_type() == 'message/rfc822':
-                            text=getEmailText(m)
-                            break
-                    for dsn in msg.get_payload(1).get_payload():
-                        if dsn.get_content_type() == 'text/plain':
-                            fr=dsn.get('Final-Recipient')
-                            if fr: emailRetornat=fr.split(';')[1].strip()
-                            st=dsn.get('status')
-                            if st: status=st
-                            act=dsn.get('action')
-                            if act: action=act
-                            ad=dsn.get('Arrival-Date')
-                            if ad: data=datemailTodatetime(ad)
-                            dc=dsn.get('diagnostic-code')
-                            if dc: diagnostic=dc.split(';')[1]
-                    informa(emailRetornat, status, action, data, diagnostic, text)
-
+                checkDSN(msg)
     if len(id_list)>0: setUltimControl(id_list[len(id_list)-1])
     disconnectIMAP(mail)
     return True
 
+def getMessages(service, ultimFetch, dies):
+    '''
+    Retorna la llista dels identificadors de correus rebuts
+    des del número ultimFetch o dels últims dies indicats.
+    service connexió a l'API de Gmail
+    ultimFetch int, numeració a partir de la qual volem els correus (no inclòs)
+    dies int, si ultimFetch es None fa servir aquests dies per obtenir els correus
+
+    Retorna la llista i l'últim identificador.
+
+    '''
+    
+    from datetime import date
+    from operator import itemgetter
+    today = date.today()
+    last = today - timedelta(days=dies)
+    # Dates have to formatted in YYYY/MM/DD format for gmail
+    query = "after: {0}".format(last.strftime('%Y/%m/%d'))
+    result = service.users().messages().list(userId='me', q=query, labelIds = ['INBOX', ]).execute()
+    messages = [ ]
+    if 'messages' in result:
+        messages.extend(result['messages'])
+    while 'nextPageToken' in result:
+        page_token = result['nextPageToken']
+        result = service.users().messages().list(userId='me',q=query, labelIds = ['INBOX', ], pageToken=page_token).execute()
+        if 'messages' in result:
+            messages.extend(result['messages'])
+    lista=[]
+    for m in messages:
+        historyId = service.users().messages().get(userId='me', id=m.get('id')).execute()['historyId']
+        if ultimFetch is None or int(historyId) > ultimFetch:
+            #Selecciona els nous
+            m['historyId']=historyId
+            lista.append(m)
+    #Ordena la llista, quedarà de més antic a més modern
+    lista = sorted(lista, key=itemgetter('historyId'))
+    return lista, int(service.users().getProfile(userId='me').execute()['historyId'])
+    
+def gmailcontrolDSN(dies):
+    '''
+    Verifica si s'han rebut correus d'error delivery status notification (DSN) a partir
+    de l'ultima vegada. Si és el primer control aleshores comprova els últims dies passats per paràmetre.
+    Per cada correu identifica destinatari erroni i informa al tutor o a l'administrador de Django.
+
+    Retorna True si ok o False si no pot accedir al correu o no pot finalitzar totes les verificacions.
+    '''
+    # for encoding/decoding messages in base64
+    from base64 import urlsafe_b64decode    
+    from django.core.mail import get_connection
+    
+    mail = get_connection(fail_silently=True)
+    if mail is None: return False
+    if mail.open() is None: return False
+    ultimFetch = getUltimControl()
+    id_list, id_last = getMessages(mail.connection, ultimFetch, dies)
+    if not bool(id_list):
+        if id_last>ultimFetch: setUltimControl(id_last)
+        return False
+    i=0
+    for msg in id_list:
+        try:
+            data = mail.connection.users().messages().get(userId='me', id=msg['id'], format='raw').execute()
+        except:
+            if i>0:
+                historyId = mail.connection.users().messages().get(userId='me', id=id_list[i-1]['id']).execute()['historyId'] 
+                setUltimControl(historyId)
+            return False
+        i=i+1
+        for response_part,value in data.items():
+            if response_part=='raw':
+                msg_str = str(urlsafe_b64decode(value.encode('ASCII')), 'utf-8')
+                msg = email.message_from_string(msg_str)
+                checkDSN(msg)
+    if len(id_list)>0:
+        historyId = mail.connection.users().messages().get(userId='me', id=id_list[len(id_list)-1]['id']).execute()['historyId'] 
+        setUltimControl(historyId)
+    mail.close()
+    return True
 
 def enviaOneTimePasswd( email ):
-    q_correu_pare = Q( correu_relacio_familia_pare__iexact = email )
-    q_correu_mare = Q( correu_relacio_familia_mare__iexact = email )
     nUsuaris = 0
     nErrors = 0
     errors = []
-    alumnes = Alumne.objects.filter( q_correu_pare | q_correu_mare )
+    responsables = Responsable.objects.filter( correu_relacio_familia__iexact = email )
+    for resp in responsables:
+        resultat = enviaOneTimePasswdAlumne( resp, email )
+        nUsuaris += 1
+        if resultat['errors']:
+            nErrors += 1
+            errors.append( ', '.join( resultat['errors'] ) )
+
+    alumnes = Alumne.objects.filter( correu__iexact = email )
     for alumne in alumnes:
-        resultat = enviaOneTimePasswdAlumne( alumne )
+        resultat = enviaOneTimePasswdAlumne( alumne, email )
         nUsuaris += 1
         if resultat['errors']:
             nErrors += 1
@@ -533,11 +565,10 @@ def enviaOneTimePasswd( email ):
                               u"Contacti amb el tutor o amb el cap d'estudis."  ]
                             if nUsuaris == 0 else [], }
 
-def enviaOneTimePasswdAlumne( alumne, force = False ):
+def enviaOneTimePasswdAlumne( alumne, email, force = False ):
 
     usuari = alumne.get_user_associat().username
-    actiu =  alumne.esta_relacio_familia_actiu()
-    correusFamilia = alumne.get_correus_relacio_familia()
+    actiu = alumne.get_user_associat().is_active
 
     infos = []
     warnings = []
@@ -548,11 +579,8 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
     total_enviats = OneTimePasswd.objects.filter( usuari =alumne.user_associat, moment_expedicio__gte = fa_24h  ).count()
     if total_enviats >= 3:
         errors.append( u'Màxim número de missatges enviats a aquest correu durant les darrers 24h.' )
-    elif not correusFamilia:
-        warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels pares estigui informada")
-        errors.append( u"Error enviant codi de recuperació d'accés" )
     elif alumne.esBaixa():
-        warnings.append( u"Aquest alumne és baixa. No se li pot enviar codi d'accés.")
+        warnings.append( u"Aquest usuari és baixa. No se li pot enviar codi d'accés.")
         errors.append( u"Error enviant codi de recuperació d'accés")
     else:
         #preparo el codi a la bdd:
@@ -562,9 +590,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
         #envio missatge:
         urlDjangoAula = settings.URL_DJANGO_AULA
         url = "{0}/usuaris/recoverPasswd/{1}/{2}".format( urlDjangoAula, usuari, clau )
-        txtCapcelera = u"Enviat missatge a {0} .".format(
-                                u", ".join( correusFamilia )
-                                                                )
+        txtCapcelera = u"Enviat missatge a {0} .".format( email )
         infos.append(txtCapcelera)
         assumpte = u"{0} - Recuperar/Obtenir accés a l'aplicatiu Djau de {1}".format(alumne.nom, settings.NOM_CENTRE )
         missatge = [
@@ -598,7 +624,7 @@ def enviaOneTimePasswdAlumne( alumne, force = False ):
             send_mail(assumpte,
                       u'\n'.join( missatge ),
                       fromuser,
-                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ],
+                      [ email ],
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
@@ -691,7 +717,10 @@ def enviaBenvingudaAlumne( alumne, force = False ):
     errors = []
 
     if not correusFamilia:
-        warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels pares estigui informada")
+        if alumne.edat()<18:
+            warnings.append( u"Comprova que l'adreça electrònica d'almenys un dels responsables estigui informada")
+        else:
+            warnings.append( u"Comprova que l'adreça electrònica de l'alumne o un dels responsables estigui informada")
         errors.append( u"Error enviant correu de benvinguda" )
     elif alumne.esBaixa():
         warnings.append( u"Aquest alumne és baixa. No se li pot enviar codi d'accés.")
@@ -718,7 +747,7 @@ def enviaBenvingudaAlumne( alumne, force = False ):
             send_mail(assumpte,
                       u'\n'.join( missatge ),
                       fromuser,
-                      [ x for x in [ alumne.correu_relacio_familia_pare, alumne.correu_relacio_familia_mare] if x is not None ],
+                      correusFamilia,
                       fail_silently=False)
             infos.append('Missatge enviat correctament.')
         except:
@@ -774,4 +803,107 @@ def desbloqueja( alumne ):
 
     return   {  'errors':  errors, 'infos': infos, 'warnings':warnings, }
 
+def getRol(usuari, request):
+    '''
+    Comprova quin tipus d'usuari correspon.
+    Si es tracta d'un alumne retorna None, None, Alumne
+    Si es tracta d'un responsable retorna None, Responsable, Alumne o None, Responsable, None
+    Si es tracta d'un professor retorna Professor, None, None
+    Si no es tracta de cap cas retorna None, None, None
+    '''
+    if usuari.username.startswith("almn"):
+        alumne = User2Alumne( usuari )
+        return None, None, alumne
+    elif usuari.username.startswith("resp"):
+        responsable = User2Responsable( usuari )
+        if responsable and responsable.get_alumnes_associats():
+            if "alumne_actual" in request.session:
+                pk = request.session["alumne_actual"] 
+                alumne = Alumne.objects.filter( pk = pk )
+                if alumne.exists():
+                    alumne=alumne.first()
+                    return None, responsable, alumne
+        return None, responsable, None
+    professor = User2Professor( usuari )
+    return professor, None, None
 
+def creaNotifUsuari(usuari, alumne, tipus='N'):
+    '''
+    Apunta una notificació a l'usuari-alumne.
+    tipus 'N' Notificació, 'R' Revisió
+    '''
+    notificacio=NotifUsuari()
+    notificacio.usuari=usuari
+    notificacio.alumne=alumne
+    notificacio.tipus=tipus
+    notificacio.save()
+    return notificacio
+
+def ultimaNotificacio(usuari, alumne):
+    '''
+    usuari
+    alumne
+    retorna la data-hora de l'última notificació o
+    retorna None si no existeix
+    '''
+    if usuari: ultima=NotifUsuari.objects.filter(usuari=usuari, alumne=alumne, tipus='N').order_by('-moment').first()
+    else: ultima=NotifUsuari.objects.filter(alumne=alumne, tipus='N').order_by('-moment').first()
+    if ultima: return ultima.moment
+    #DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if alumne.relacio_familia_darrera_notificacio:
+            return alumne.relacio_familia_darrera_notificacio
+    except:
+        pass
+    #DEPRECATED ^^^
+    return None
+
+def set_notificacio(element, notificacio, tipus='N'):
+    if not notificacio: return
+    notifs=element.notificacions_familia.filter(usuari=notificacio.usuari, tipus=tipus)
+    if notifs:
+        for n in notifs: element.notificacions_familia.remove(n)
+    element.notificacions_familia.add(notificacio)
+
+def set_revisio(element, revisio):
+    set_notificacio(element, revisio, tipus='R')
+
+def get_notif_revisio(element, usuari, fmt_data=None):
+    '''
+    Retorna str, str amb notificació, revisió de l'usuari
+    '''
+    if not fmt_data: fmt_data='%d/%m/%Y %H:%M'
+    revisc=notifc=''
+    #DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if hasattr(element, "data_hora_pagament"):
+            if element.data_hora_pagament:
+                #data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                if element.pagament_realitzat:
+                    revisc=element.data_hora_pagament.strftime(fmt_data)
+                else:
+                    notifc=element.data_hora_pagament.strftime(fmt_data)
+        else:
+            if element.relacio_familia_revisada:
+                revisc=element.relacio_familia_revisada.strftime(fmt_data)
+            if element.relacio_familia_notificada:
+                notifc=element.relacio_familia_notificada.strftime(fmt_data)
+            else:
+                notifc=revisc
+    except:
+        pass
+    #DEPRECATED ^^^
+    if User2Professor( usuari ):
+        notif = element.notificacions_familia.filter(tipus='N').order_by('moment').first()
+        revis = element.notificacions_familia.filter(tipus='R').order_by('moment').first()
+    else:
+        notif = element.notificacions_familia.filter(usuari=usuari, tipus='N').order_by('-moment').first()
+        revis = element.notificacions_familia.filter(usuari=usuari, tipus='R').order_by('-moment').first()
+    if notif: notif=notif.moment.strftime(fmt_data)
+    else: notif=notifc
+    if revis: revis=revis.moment.strftime(fmt_data)
+    else: revis=revisc
+    return notif, revis
+    

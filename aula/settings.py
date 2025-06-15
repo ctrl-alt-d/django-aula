@@ -12,6 +12,7 @@ CUSTOM_DIES_PRESCRIU_INCIDENCIA = 30
 CUSTOM_DIES_PRESCRIU_EXPULSIO = 90
 CUSTOM_NOMES_TUTOR_POT_JUSTIFICAR = True
 CUSTOM_MODUL_SORTIDES_ACTIU = True
+CUSTOM_SORTIDES_OCULTES_A_FAMILIES = False
 CUSTOM_MODUL_MATRICULA_ACTIU = False
 CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES = False
 CUSTOM_FAMILIA_POT_COMUNICATS = False
@@ -68,7 +69,11 @@ CUSTOM_SORTIDES_INSTRUCCIONS_PAGAMENT_ONLINE = u"""El pagament s'ha de realitzar
 CUSTOM_REDSYS_ENTORN_REAL = False
 # Si True permet utilitzar les quotes
 CUSTOM_QUOTES_ACTIVES = False
-CUSTOM_TIPUS_QUOTA_MATRICULA = None
+# Nom del tipus de quota per als pagaments de matrícula
+# S'ha de definir a la base de dades, des de les opcions d'administració admin
+CUSTOM_TIPUS_QUOTA_MATRICULA = None  # Exemple: 'material'  'activitats' ...
+# Indica si es permet fer servir una única definició de quota per a tot l'alumnat
+CUSTOM_QUOTA_UNICA_MATRICULA = False  # Si True només es fa servir una definició de quota, si False s'ha de definir una quota per cada curs.
 
 #Fitxer de text amb l'avís sobre el tractament de dades personals, es poden fer servir marques HTML.
 #Es mostra a la part inferior de les pantalles d'entrada de dades com la de "Canvi de paràmetres".

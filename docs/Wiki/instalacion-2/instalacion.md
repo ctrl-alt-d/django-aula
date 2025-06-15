@@ -176,20 +176,40 @@ ADMINS = (
     ('admin', 'ui@mega.cracs.cat'),
 )
 
+#Google elimina l’accés d’aplicacions menys segures a partir de 2024.
+#S'ha de fer servir una contrasenya d'aplicació per a fer servir un EMAIL_BACKEND SMTP:
+#https://support.google.com/mail/answer/185833?hl=ca
+#
+#Una alternativa és fer servir un compte de servei i un EMAIL_BACKEND d'API de Gmail:
+#https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount
+#Scopes a afegir: https://www.googleapis.com/auth/gmail.send, https://www.googleapis.com/auth/gmail.readonly
+#
+#
 #Configuracion del Correo Relay SMTP y IMAP de la Aplicación
 EMAIL_HOST='smtp.gmail.com'
 EMAIL_HOST_IMAP="imap.gmail.com"
-EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
-EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'
-DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
+
+#Backend SMTP
+# S'ha de comentar si no es fa servir
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER='el-meu-centre@el-meu-centre.net'
+EMAIL_HOST_PASSWORD='xxxx xxxx xxxx xxxx'  #Password d'aplicació
 SERVER_EMAIL='el-meu-centre@el-meu-centre.net'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# Per proves, envia a la consola
+#Backend per proves, envia a la consola
+# Treure comentari si es vol fer servir
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
 
+#Backend API de Gmail
+# Treure comentaris si es vol fer servir
+#EMAIL_BACKEND = 'django_gsuite_email.GSuiteEmailBackend'   #https://github.com/slicefox/django-gsuite-email
+#GSUITE_CREDENTIALS_FILE=os.path.join('path_al_fitxer_de_credencials.json')
+#GMAIL_USER = 'el-meu-centre@el-meu-centre.net'
+#GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/gmail.readonly', ]
+
+DEFAULT_FROM_EMAIL = 'El meu centre <no-reply@el-meu-centre.net>'
 EMAIL_SUBJECT_PREFIX = '[DEMO AULA] '
 
 #True si se activa el HTTPS
@@ -547,6 +567,7 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+30 2 * * 2,4,6 su - www-data -c "/opt/djau2022/scripts/avisa_tutor_faltes.sh" >> /opt/django/log/avisa_tutor_faltes_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
 

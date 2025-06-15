@@ -50,10 +50,10 @@ class PresenciaSetmanalTestCase(TestCase):
         primerESO = Curs.objects.create(nom_curs='1er', nivell=ESO) #type: Curs
         self.primerESOA = Grup.objects.create(nom_grup='A', curs=primerESO) #type: Grup
         alumne = Alumne.objects.create(ralc=100, grup=self.primerESOA, 
-            nom='Xevi', cognoms='Petit', tutors_volen_rebre_correu=False) #type: Alumne
+            nom='Xevi', cognoms='Petit') #type: Alumne
         self.alumne = alumne
         alumne2 = Alumne.objects.create(ralc=100, grup=self.primerESOA, 
-            nom='Joan', cognoms='Serra', tutors_volen_rebre_correu=False) #type: Alumne
+            nom='Joan', cognoms='Serra') #type: Alumne
         # Crear un profe.
         grupProfessors, _ = Group.objects.get_or_create(name='professors')
         grupProfessionals, _ = Group.objects.get_or_create(name='professional')

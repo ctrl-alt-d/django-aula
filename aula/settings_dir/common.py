@@ -193,8 +193,13 @@ INSTALLED_APPS_DJANGO = [
     'django.forms',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_gsuite_email',
+    'crispy_forms',
+    'crispy_bootstrap3',
 ]
-    
+
+CRISPY_TEMPLATE_PACK = "bootstrap3"
+
 INSTALLED_APPS_AULA = [
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
@@ -253,6 +258,10 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 INSTALLED_APPS = ['customising',] + INSTALLED_APPS_DJANGO + INSTALLED_APPS_AULA + ['private_storage',]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+#Paràmetres obligatoris per 'django_gsuite_email', encara que no es faci servir.
+GSUITE_CREDENTIALS_FILE=os.path.join(PROJECT_DIR, r'../customising/djau-compte-servei-sample.json')
+GSUITE_USER_FROM_EMAIL = True
 
 SESSION_SERIALIZER='django.contrib.sessions.serializers.JSONSerializer'
 
