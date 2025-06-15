@@ -1,16 +1,21 @@
 # This Python file uses the following encoding: utf-8
 from __future__ import unicode_literals
-from django.shortcuts import render
+
+from django.contrib.humanize.templatetags.humanize import naturalday
+from django.http import HttpResponseServerError
+from django.shortcuts import render, get_object_or_404
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from aula.apps.alumnes.models import Alumne
+from aula.apps.missatgeria.missatges_a_usuaris import tipusMissatge, ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL
+from aula.apps.sortides.views import logPagaments
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
 import uuid
 from rest_framework.parsers import JSONParser
 from aula.apps.usuaris.models import QRPortal
-from aula.mblapp.serializers import QRTokenSerializer, DarreraSincronitzacioSerializer
+from aula.mblapp.serializers import QRTokenSerializer, DarreraSincronitzacioSerializer, PagamentRealitzatSerializer
 from django.contrib.auth.models import User, Group
 from django.utils.crypto import get_random_string
 from django.db import transaction
@@ -21,7 +26,7 @@ from datetime import timedelta
 from aula.apps.presencia.models import EstatControlAssistencia
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
-from aula.apps.sortides.models import NotificaSortida
+from aula.apps.sortides.models import NotificaSortida, Sortida, SortidaPagament, Pagament
 from aula.utils.tools import unicode
 
 # ----------- vistes per a testos --------------------------------
@@ -201,12 +206,18 @@ def notificacions_mes(request, mes, format=None):
          'hora': str(i.franja_expulsio),
          'professor': str(i.professor),
          'text': i.motiu,
-         'tipus': "expulsió"}
+         'tipus': "Expulsió"}
         for i in expulsions]
 
     # "Sancions": [],
-    sancions = alumne.sancio_set.filter(impres=True)
-    #content["Sancions"] = [ ] #TODO
+    sancions = alumne.sancio_set.filter(impres=True, data_carta__month=mes)
+    content = content + [
+        {'dia': "/".join([str(i.data_carta.day), str(i.data_carta.month), str(i.data_carta.year)]),
+         'hora': str(i.franja_inici),
+         'professor': str(i.professor),
+         'text': "Del {0} al {1}. Motiu: {2}".format(str(datetime.strftime(i.data_inici,'%d/%m/%Y')), str(datetime.strftime(i.data_fi,'%d/%m/%Y')), str(i.motiu)),
+         'tipus': "Sanció"}
+        for i in sancions]
 
     # "Activitats": [],
     sortides = NotificaSortida.objects.filter(alumne=alumne)
@@ -279,3 +290,85 @@ def alumnes_dades(request, format=None):
     return Response(content)
 
 
+
+@api_view(['GET'])
+@permission_classes((EsUsuariDeLaAPI,))
+def sortides(request):
+    """
+    Retorna les activitats/pagaments de l'alumne
+    """
+    qrtoken = request.user.qrportal
+    alumne = qrtoken.alumne_referenciat
+
+    content = []
+
+    sortides = alumne.notificasortida_set.all()
+    sortides_on_no_assistira = alumne.sortides_on_ha_faltat.values_list('id', flat=True).distinct()
+    sortides_justificades = alumne.sortides_falta_justificat.values_list('id', flat=True).distinct()
+    # sortides a on s'ha convocat a l'alumne
+    sortidesnotificat = Sortida.objects.filter(notificasortida__alumne=alumne).exclude(id__in=sortides_on_no_assistira).exclude(id__in=sortides_justificades)
+    # sortides pagades a les que ja no s'ha convocat a l'alumne
+    sortidespagadesperalumne = SortidaPagament.objects.filter(alumne=alumne, pagament_realitzat=True).values_list('sortida', flat=True).distinct()
+    sortidespagadesnonotificades = (Sortida.objects.filter(id__in=sortidespagadesperalumne,
+                                                          pagaments__pagament__alumne=alumne,
+                                                          pagaments__pagament__pagament_realitzat=True)
+                                    .exclude(notificasortida__alumne=alumne)
+                                    .exclude(id__in=sortides_on_no_assistira)
+                                    .exclude(id__in=sortides_justificades))
+    # totes les sortides relacionades amb l'alumne
+    activitats = sortidesnotificat.union(sortidespagadesnonotificades)
+    # sortides que s'han de passar a l'app
+    for sortida in activitats.order_by('-calendari_desde'):
+        if sortida.tipus_de_pagament == 'ON':
+            try:
+                pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
+                realitzat = pagament.pagament_realitzat
+            except Pagament.DoesNotExist:
+                pagament = None
+                realitzat = False
+        else:
+            pagament = None
+            realitzat = False
+        content = content + [{"id": sortida.id,
+                              "titol": str(sortida.titol),
+                              "data": str(sortida.calendari_desde),
+                              "pagament": bool(pagament),
+                              "realitzat": realitzat,
+                                  }]
+    return Response(content)
+
+
+
+
+@api_view(['GET'])
+@permission_classes((EsUsuariDeLaAPI,))
+def detallSortida(request, pk):
+    """
+    Rep el pk d'una activitat/pagament i retorna informació de l'activitat/pagament
+    """
+    qrtoken = request.user.qrportal
+    alumne = qrtoken.alumne_referenciat
+    try:
+        int (pk)
+        sortida = Sortida.objects.get(pk=pk)
+    except:
+        raise serializers.ValidationError({'error': ["Sortida inexistent"]})
+
+    try:
+        pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
+        realitzat = pagament.pagament_realitzat
+    except Pagament.DoesNotExist:
+        pagament = None
+        realitzat = False
+
+
+    content = {"titol": str(sortida.titol),
+                              "desde": sortida.calendari_desde.strftime( '%d/%m/%Y %H:%M' ),
+                              "finsa": sortida.calendari_finsa.strftime( '%d/%m/%Y %H:%M' ),
+                              "programa": "\n".join([sortida.programa_de_la_sortida, sortida.condicions_generals,sortida.informacio_pagament ]),
+                              "preu": str(sortida.preu_per_alumne) if sortida.preu_per_alumne else u'0',
+                              "dataLimitPagament": str(sortida.termini_pagament) if sortida.termini_pagament else '',
+                              "realitzat": realitzat,
+                              "idPagament": pagament.id if pagament else None
+                        }
+    return Response(content)
