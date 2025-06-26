@@ -1,4 +1,4 @@
-# Instalación en Ubuntu Server 20.04 LTS / 22.04 LTS
+# Instalación en Ubuntu Server 20.04 LTS / 22.04 LTS / 24.04 LTS
 
 > **Atención:**  Todas las instrucciones de este documento se deben ejecutar con permisos elevados
 
@@ -17,9 +17,9 @@ Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la ins
 Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el repositorio del proyecto.
 
 ```bash
-cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2022 
-sudo chown -R :www-data djau2022  #opcionalmente se puede cambiar el propietario para no utilizar root.
-cd djau2022
+cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2025 
+sudo chown -R :www-data djau2025  #opcionalmente se puede cambiar el propietario para no utilizar root.
+cd djau2025
 ```
 
 
@@ -31,24 +31,24 @@ cd djau2022
 El siguiente paso es montar nuestro **entorno virtual Python** sobre la carpeta del proyecto, este comando creará un entorno virtual en un directorio llamado **venv**.
 
 ```text
-djau@djau:/opt/djau2022#  python3 -m venv venv
+djau@djau:/opt/djau2025#  python3 -m venv venv
 ```
 
 Una vez creado el entorno virtual debemos activarlo, para ello ejecutamos:
 
 ```text
-djau@djau:/opt/djau2022# source venv/bin/activate
+djau@djau:/opt/djau2025# source venv/bin/activate
 ```
 
 Si todo ha ido bien el **[prompt](https://es.wikipedia.org/wiki/Prompt)** debería haber cambiado a algo parecido a:
 
-**(venv) djau@djau:/opt/djau2022$**
+**(venv) djau@djau:/opt/djau2025$**
 
 Ahora que ya tenemos el entorno virtual el siguiente paso es instalar las dependencias del proyecto, para ello utilizaremos el gestor de dependencias **[pip3](https://es.wikipedia.org/wiki/Pip_%28administrador_de_paquetes%29)**.
 
 ```text
-(venv) djau@djau:/opt/djau2022# pip3 install wheel
-(venv) djau@djau:/opt/djau2022# pip3 install --upgrade --no-cache-dir -r requirements.txt
+(venv) djau@djau:/opt/djau2025# pip3 install wheel
+(venv) djau@djau:/opt/djau2025# pip3 install --upgrade --no-cache-dir -r requirements.txt
 ```
 
 ### Instalación de Apache y Base de datos
@@ -72,6 +72,11 @@ Para Ubuntu 22.04:
 ```bash
 apt-get install postgresql-server-dev-14
 ```
+Para Ubuntu 24.04:
+
+```bash
+apt-get install postgresql-server-dev-16
+```
 
 Package:
 
@@ -94,9 +99,10 @@ Una vez elegido el motor de base de datos, hay que crear la base de datos de la 
 ```text
 sudo su postgres
 psql
-CREATE DATABASE djau2022;
-CREATE USER djau2022 WITH PASSWORD 'XXXXXXXXXX';
-GRANT ALL PRIVILEGES ON DATABASE djau2022 TO djau2022;
+CREATE DATABASE djau2025;
+CREATE USER djau2025 WITH PASSWORD 'XXXXXXXXXX';
+GRANT ALL PRIVILEGES ON DATABASE djau2025 TO djau2025;
+ALTER DATABASE djau2025 OWNER TO djau2025;
 \q
 exit
 ```
@@ -106,10 +112,10 @@ exit
 ```
 sudo su
 mysql
-CREATE DATABASE djau2022 CHARACTER SET utf8;
-CREATE USER 'djau2022'@'localhost' IDENTIFIED BY 'XXXXXXXX';
-GRANT ALL PRIVILEGES ON djau2022.* TO 'djau2022'@'localhost';
-USE djau2022;
+CREATE DATABASE djau2025 CHARACTER SET utf8;
+CREATE USER 'djau2025'@'localhost' IDENTIFIED BY 'XXXXXXXX';
+GRANT ALL PRIVILEGES ON djau2025.* TO 'djau2025'@'localhost';
+USE djau2025;
 SET default_storage_engine=INNODB;
 QUIT
 exit
@@ -143,7 +149,7 @@ A continuación dejo una configuración válida para los 2 archivos citados ante
 
 Los archivos están comentados para entenderlos mejor.
 
-**`/opt/djau2022/aula/settings_local.py"`**
+**`/opt/djau2025/aula/settings_local.py"`**
 
 ```python
 # This Python file uses the following encoding: utf-8
@@ -249,8 +255,8 @@ CUSTOM_KEY_COMERÇ = 'xxxxxx'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'djau2022',
-        'USER': 'djau2022',
+        'NAME': 'djau2025',
+        'USER': 'djau2025',
         'PASSWORD': "XXXXXXXXXX",
         'HOST': 'localhost',
         'PORT': '',  # Set to empty string for default.
@@ -281,8 +287,8 @@ DATABASES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'djau2022',
-        'USER': 'djau2022',
+        'NAME': 'djau2025',
+        'USER': 'djau2025',
         'PASSWORD': "XXXXXXXXXX",
         'HOST': 'localhost',
         'PORT': '3306',
@@ -334,7 +340,7 @@ CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [ u"Aquest missatge ha estat enviat per un 
 
 ```
 
-**`/opt/djau2022/aula/wsgi.py`**
+**`/opt/djau2025/aula/wsgi.py`**
 
 ```python
 import os
@@ -349,14 +355,14 @@ application = get_wsgi_application()
 Con los archivos de configuración listos es momento de [mapear](https://docs.djangoproject.com/en/4.0/topics/migrations/) los modelos del proyecto django hacia nuestra base de datos, es decir vamos a crear las tablas de la aplicación, empezaremos a ver cómo se crean todas las tablas, no debe dar ningún error.
 
 ```text
-djau@djau:/opt/djau2022# source venv/bin/activate
-(venv) djau@djau:/opt/djau2022# python manage.py migrate
+djau@djau:/opt/djau2025# source venv/bin/activate
+(venv) djau@djau:/opt/djau2025# python manage.py migrate
 ```
 
 Ahora que tenemos las tablas creadas, hay que llenarlas con algunos datos esenciales para que la app arranque, para ello ejecutamos el siguiente script:
 
 ```text
-(venv) djau@djau:/opt/djau2022# bash scripts/fixtures.sh
+(venv) djau@djau:/opt/djau2025# bash scripts/fixtures.sh
 ```
 
 
@@ -366,8 +372,8 @@ Ahora que tenemos las tablas creadas, hay que llenarlas con algunos datos esenci
 Ahora debemos crear un usuario administrador que pueda gestionar la app, para ello ejecutamos:
 
 ```text
-djau@djau:/opt/djau2022# source venv/bin/activate
-(venv) djau@djau:/opt/djau2022# python manage.py createsuperuser
+djau@djau:/opt/djau2025# source venv/bin/activate
+(venv) djau@djau:/opt/djau2025# python manage.py createsuperuser
 ```
 
 Nos pedirá el nombre del usuario y su contraseña \(en este ejemplo lo he llamado **admin**\).
@@ -375,8 +381,8 @@ Nos pedirá el nombre del usuario y su contraseña \(en este ejemplo lo he llama
 Para que nuestro administrador pueda iniciar sesión en la aplicación, debe de estar en el grupo de **dirección,profesores y profesional** de la base de datos, para ello abrimos una shell de django y escribimos línea a línea lo siguiente:
 
 ```text
-djau@djau:/opt/djau2022# source venv/bin/activate
-(venv) djau@djau:/opt/djau2022# python manage.py shell
+djau@djau:/opt/djau2025# source venv/bin/activate
+(venv) djau@djau:/opt/djau2025# python manage.py shell
 
 from django.contrib.auth.models import User, Group
 g1, _ = Group.objects.get_or_create( name = 'direcció' )
@@ -391,8 +397,8 @@ quit()
 Como paso final de configuración, vamos a juntar todo el contenido estático \(js,css..etc\) del proyecto a un solo directorio, para que la instalación sea mas limpia. Más información sobre el contenido estático en django [aqui](https://docs.djangoproject.com/en/4.0/howto/static-files/).
 
 ```text
-djau@djau:/opt/djau2022# source venv/bin/activate
-(venv) djau@djau:/opt/djau2022# python manage.py collectstatic -c --no-input
+djau@djau:/opt/djau2025# source venv/bin/activate
+(venv) djau@djau:/opt/djau2025# python manage.py collectstatic -c --no-input
 ```
 
 Esto generará un directorio llamado **static** donde se alojarán todos los assets de la aplicación.
@@ -428,32 +434,32 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2022/venv python-path=/opt/djau2022 \
+        WSGIDaemonProcess djau python-home=/opt/djau2025/venv python-path=/opt/djau2025 \
 			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/djau2022/aula/wsgi.py 
+        WSGIScriptAlias / /opt/djau2025/aula/wsgi.py 
         
         #Alias para contenido estatico de la app
         
-        Alias /site-css/admin /opt/djau2022/aula/static/admin/
-        Alias /site-css /opt/djau2022/aula/static/
+        Alias /site-css/admin /opt/djau2025/aula/static/admin/
+        Alias /site-css /opt/djau2025/aula/static/
 
         ErrorLog /var/log/apache2/djau_error.log
 
         #Dando acceso a apache a los directorios de la app
-        <Directory /opt/djau2022/aula>
+        <Directory /opt/djau2025/aula>
                 <Files wsgi.py>
                         Require all granted
                 </Files>
         </Directory>
 
-        <Directory /opt/djau2022/aula/static/>
+        <Directory /opt/djau2025/aula/static/>
                 Require all granted
         </Directory>
 
 
-        <Directory /opt/djau2022/aula/static/admin/>
+        <Directory /opt/djau2025/aula/static/admin/>
                 Require all granted
         </Directory>
 
@@ -480,7 +486,7 @@ El segundo escenario sirve la app por SSL \(https\)
 **Segundo Escenario `/etc/apache2/sites-available/djau_ssl.conf`**
 
 ```apache
-#Recuerda cambiar lo necesario en el archivo /opt/djau2022/aula/settings_local.py
+#Recuerda cambiar lo necesario en el archivo /opt/djau2025/aula/settings_local.py
 #Para que la app pueda ir por SSL (TLS)
 #Tambien activa si no lo esta el modulo ssl:
 # a2enmod ssl
@@ -490,32 +496,32 @@ El segundo escenario sirve la app por SSL \(https\)
         ServerAdmin juan@xtec.cat
         ServerName el_teu_domini.cat
 
-        WSGIDaemonProcess djau python-home=/opt/djau2022/venv python-path=/opt/djau2022 \
+        WSGIDaemonProcess djau python-home=/opt/djau2025/venv python-path=/opt/djau2025 \
 			locale="ca_ES.utf8"
         WSGIProcessGroup djau
         WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/djau2022/aula/wsgi.py 
+        WSGIScriptAlias / /opt/djau2025/aula/wsgi.py 
         
         #Alias para contenido estatico de la app
         
-        Alias /site-css/admin /opt/djau2022/aula/static/admin/
-        Alias /site-css /opt/djau2022/aula/static/
+        Alias /site-css/admin /opt/djau2025/aula/static/admin/
+        Alias /site-css /opt/djau2025/aula/static/
 
         ErrorLog /var/log/apache2/djau_ssl_error.log
 
         #Dando acceso a apache a los directorios de la app
-        <Directory /opt/djau2022/aula>
+        <Directory /opt/djau2025/aula>
                 <Files wsgi.py>
                         Require all granted
                 </Files>
         </Directory>
 
-        <Directory /opt/djau2022/aula/static/>
+        <Directory /opt/djau2025/aula/static/>
                 Require all granted
         </Directory>
 
 
-        <Directory /opt/djau2022/aula/static/admin/>
+        <Directory /opt/djau2025/aula/static/admin/>
                 Require all granted
         </Directory>
 
@@ -563,11 +569,11 @@ Es recomendable programar los siguientes Scripts en **Cron:**
 **CronTab**
 
 ```text
-0,20,40 * * * * su - djau /opt/djau2022/backup-bdd-2019.sh
-42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
-41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
-20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2022/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
-30 2 * * 2,4,6 su - www-data -c "/opt/djau2022/scripts/avisa_tutor_faltes.sh" >> /opt/django/log/avisa_tutor_faltes_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+0,20,40 * * * * su - djau /opt/djau2025/backup-bdd-2019.sh
+42 8,9,10,11,12,13,14,15,16,17,18,19,20,21 * * 1,2,3,4,5 su - www-data -c "/opt/djau2025/scripts/notifica_families.sh" >> /opt/django/log/notifica_families_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+41 00 * * 1,2,3,4,5 su - www-data -c "/opt/djau2025/scripts/preescriu_incidencies.sh" >> /opt/django/log/prescriu_incidencies_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+20,50 * * * 1,2,3,4,5 su - www-data -c "/opt/djau2025/scripts/sortides_sincronitza_presencia.sh" >>  /opt/django/log/sincro_presencia_`/bin/date +\%Y_\%m_\%d`.log 2>&1
+30 2 * * 2,4,6 su - www-data -c "/opt/djau2025/scripts/avisa_tutor_faltes.sh" >> /opt/django/log/avisa_tutor_faltes_`/bin/date +\%Y_\%m_\%d`.log 2>&1
 ```
 
 
@@ -585,7 +591,7 @@ directori="/opt/django/djauBK/"
 copia="${directori}bdd-ara-${ara}.sql"
 extensio=".bz2"
 mkdir $directori
-/usr/bin/pg_dump -U djau2022 djau2022 > $copia
+/usr/bin/pg_dump -U djau2025 djau2025 > $copia
 /bin/bzip2 $copia
 cat "${copia}${extensio}" > "${directori}bdd-hora-${hora}.sql${extensio}" 
 cat "${copia}${extensio}" > "${directori}bdd-dia-${dia}.sql${extensio}" 

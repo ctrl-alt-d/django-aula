@@ -101,8 +101,8 @@ CUSTOM_KEY_COMERÇ = 'xxxxxx'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'djau2022',
-        'USER': 'djau2022',
+        'NAME': 'djau2025',
+        'USER': 'djau2025',
         'PASSWORD': "XXXXXXXXXX",
         'HOST': 'localhost',
         'PORT': '',  # Set to empty string for default.
@@ -133,8 +133,8 @@ DATABASES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'djau2022',
-        'USER': 'djau2022',
+        'NAME': 'djau2025',
+        'USER': 'djau2025',
         'PASSWORD': "XXXXXXXXXX",
         'HOST': 'localhost',
         'PORT': '3306',
