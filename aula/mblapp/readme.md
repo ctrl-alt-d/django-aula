@@ -21,11 +21,6 @@ Nota: El tutor pot imprimir tants i tants QR's com vulgui.
 * La part servidora anota la data en que li ha enviat a la família les dades.
 
 Nota: Sempre s'envien totes les dades, no és incremental.
-### Estat actual:
-
-Falta per programar:
-
-* Envia a l'app assistència, incidències i expulsions. Cal ampliar-ho a la resta ( sancions, qualitativa, sortides,.... )
 
 
 ### Provatures part servidora des de la línia de comandes
@@ -82,6 +77,32 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumn
 {"grup":"SMX2A","datanaixement":"13/5/2004","telefon":"","responsables":
 [{"nom":"Ganchozo Risco, Miriam Graciela","mail":"keylu5810@hotmail.com","tfn":""},
 {"nom":"","mail":"","tfn":""}],"adreça":"CR Pere III 62  ESC. C 1er 1era , Figueres"}
+
+
+#Demanar sortides d'un alumne
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/
+#Resposta: 
+[{"id":62,"titol":"BATALLA DE L'EBRE","data":"2024-11-12 06:00:00","pagament":true,"realitzat":true},
+{"id":111,"titol":"Ciència Sorprenent","data":"2024-11-11 11:00:00","pagament":false,"realitzat":false},
+{"id":136,"titol":"COM COMENÇA TOT  4ESO C i PS","data":"2024-11-06 13:40:00","pagament":false,"realitzat":false},
+{"id":89,"titol":"MATFESTA-PARADES","data":"2024-10-25 08:20:00","pagament":false,"realitzat":false},
+{"id":51,"titol":"English let's go","data":"2024-10-03 08:10:00","pagament":false,"realitzat":false},
+{"id":58,"titol":"VIATGE DE FINAL D'ETAPA","data":"2024-09-25 00:00:00","pagament":true,"realitzat":true},
+{"id":20,"titol":"ESO4 Convivència La Vajol","data":"2024-09-18 08:30:00","pagament":false,"realitzat":false}]
+
+#Demanar detall d'una sortida concreta d'un alumne
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/455/
+# On 455 és l'identificador de la sortida
+#Resposta: 
+[{"titol":"BATALLA DE L'EBRE","desde":"12/11/2024 06:00","finsa":"13/11/2024 21:00",
+"programa":"Sortida per treballar la Guerra Civil Espanyola, en concret en espais on e",
+preu":"53.00", "dataLimitPagament":"2024-10-31 23:59:00","realitzat":true,"idPagament":2144}]
+
+#Enllaç d'entrada a la Webview per a realitzar pagament d'una sortida
+curl -H "Authorization: Bearer ${JWTOKEN}" https://127.0.0.1:8000/sortides/pagoOnlineApi/4297/
+# On 4297 és l'identificador del pagament
+#Retorna la pàgina html amb les dades del pagament per anar al TPV
+
 
 
 $# ------------------- Altres proves ------------------------------

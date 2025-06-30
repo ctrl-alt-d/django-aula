@@ -97,6 +97,8 @@ ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE = u"Redsys: Falta nombre d'ordre ({0})
 
 ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE =u"Redsys: Intent de reportar transacció online desde IP no permesa {0} , {1}"
 
+ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL = u"Pagament realitzat amb el mòbil no s'ha pogut emmagatzemar a la Base de dades"
+
 MAIL_REBUTJAT=u"Mail rebutjat per l'usuari: \"{0}\"  adreça: \"{1}\".\nData d'enviament: {2}\nMotiu: {3}"
 
 FI_INITDB=u"Inicialització de la base de dades completada"
@@ -129,6 +131,7 @@ MISSATGES = {'ADMINISTRACIO' : {'warning': {PASSAR_LLISTA_GRUP_NO_MEU,
                                 IMPORTACIO_ESFERA_FINALITZADA,
                                 ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE,
                                 ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
+                                ERROR_REALITZANT_PAGAMENT_ONLINE_MOBIL,
                                 ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
                                 MAIL_REBUTJAT,
                                 FI_INITDB,

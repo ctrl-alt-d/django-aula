@@ -65,7 +65,8 @@ urlpatterns = [
 
     re_path(r'^imprimir/(?P<pk>\d+)/(?P<din>\d+)$', sortides_views.imprimir, name = 'sortides__sortides__imprimir' ),
 
-    re_path(r'^pagoOnline/(?P<pk>\d+)/$', sortides_views.pagoOnline, name='sortides__sortides__pago_on_line'),
+    re_path(r'^pagoOnline/(?P<pk>\d+)/$', sortides_views.pagoOnlineWeb, name='sortides__sortides__pago_on_line'),
+    re_path(r'^pagoOnlineApi/(?P<pk>\d+)/$', sortides_views.pagoOnlineApi, name='sortides__sortides__pago_on_line_api'),
     re_path(r'^pagoOnlineKO/(?P<pk>\d+)/$', sortides_views.pagoOnlineKO, name='sortides__sortides__pago_on_lineKO'),
     re_path(r'^passarella/(?P<pk>\d+)/$', sortides_views.passarella, name='sortides__sortides__passarella'),
 

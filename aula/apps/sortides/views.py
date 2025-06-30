@@ -8,6 +8,7 @@ import urllib
 
 from Crypto.Cipher import DES3
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from rest_framework.decorators import api_view
 
 from aula.apps.missatgeria.missatges_a_usuaris import (
     ACOMPANYANT_A_ACTIVITAT,
@@ -27,7 +28,7 @@ from aula.utils.decorators import group_required
 # helpers
 from aula.utils import tools
 from aula.utils.tools import unicode
-from aula.apps.usuaris.models import User2Professor, AlumneUser, Professor
+from aula.apps.usuaris.models import User2Professor, AlumneUser, Professor, QRPortal
 from aula.apps.presencia.models import Impartir
 from aula.apps.horaris.models import FranjaHoraria
 from django.shortcuts import render, get_object_or_404
@@ -1748,6 +1749,7 @@ def logPagaments(txt, tipus="ADMINISTRACIO"):
     administradors = get_object_or_404(Group, name="administradors")
     msg.envia_a_grup(administradors, importancia=importancia)
 
+    
 def demoAllIn(request, pagament):
     if not demo(request): return
     if pagament.estat=="E" or not pagament.alumne: return
@@ -1764,12 +1766,25 @@ def demoAllIn(request, pagament):
 def demo(request):
     codi, _, entornReal = TPVsettings(request.user)
     return "127.0.0.1:8000" in settings.URL_DJANGO_AULA and codi=='999008881' and not entornReal
-
+  
+  
 @login_required
-def pagoOnline(request, pk):
-    from aula.apps.sortides.forms import PagamentForm
-    from aula.apps.usuaris.tools import getRol
+def pagoOnlineWeb(request, pk):
+    request.session['origen'] = 'Login'
+    return pagoOnlineBase(request, pk)
 
+@api_view(['GET'])
+def pagoOnlineApi(request, pk):
+    request.session.save()
+    session_key = request.session.session_key
+    request.session['origen']='Api'
+    response=pagoOnlineBase(request, pk)
+    response.set_cookie('sessionid', session_key, httponly=True)
+    return response
+
+
+def pagoOnlineBase(request, pk):
+    from aula.apps.sortides.forms import PagamentForm
     """
     Mostra la informació del pagament i el botó per pagar o 
     el missatge Pagament Realitzat!!!
@@ -1801,7 +1816,15 @@ def pagoOnline(request, pk):
         name__in=["direcció", "sortides"]
     ).exists()
 
-    potEntrar = alumne==pagament.alumne or fEsDireccioOrGrupSortides
+    try:
+        qr_de_lusuari = QRPortal.objects.get(usuari_referenciat=user)
+        alumne_referenciat_al_qr = qr_de_lusuari.alumne_referenciat
+        usuari_associat_al_qr = alumne_referenciat_al_qr.user_associat.getUser()
+    except:
+        usuari_associat_al_qr = None
+    usuari_associat_a_lalumne = alumne.user_associat.getUser()
+    potEntrar = (usuari_associat_a_lalumne == user or fEsDireccioOrGrupSortides or usuari_associat_al_qr == usuari_associat_a_lalumne)
+
     if not potEntrar:
         return render(
             request,
@@ -1888,8 +1911,10 @@ def pagoOnline(request, pk):
             "limit": data_limit_pagament,
             "pagat": pagament.pagament_realitzat,
             "next": nexturl,
+            "origen": request.session['origen'],
         },
     )
+
 
 
 @login_required
