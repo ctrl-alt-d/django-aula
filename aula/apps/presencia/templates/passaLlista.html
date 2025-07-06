@@ -144,6 +144,56 @@
         });
     </script>
 
+  <script src="{{STATIC_URL}}aruco/aruco.js"></script>
+  <script src="{{STATIC_URL}}aruco/cv.js"></script>
+
+  <script>
+    let video, canvas, context, detector, imageData;
+
+    function onLoad() {
+      video = document.getElementById("video");
+      canvas = document.getElementById("canvas");
+      context = canvas.getContext("2d", { willReadFrequently: true });
+
+      // Inicialitza la mida
+      video.width = 320;
+      video.height = 240;
+      canvas.width = 320;
+      canvas.height = 240;
+
+      detector = new AR.Detector();
+
+      // Accés a la càmera
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+          video.srcObject = stream;
+          video.play();
+          requestAnimationFrame(tick);
+        })
+        .catch(function(err) {
+          console.error("Error accedint a la càmera:", err);
+        });
+    }
+
+    function tick() {
+      requestAnimationFrame(tick);
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        
+        const markers = detector.detect(imageData);
+        
+        markers.forEach(marker => {
+          console.log("Marker ID:", marker.id);
+        });
+      }
+    }
+
+    window.onload = onLoad;
+  </script>
+
+
 {% endblock %}
 
 
@@ -161,7 +211,10 @@
           <span class="glyphicon glyphicon-home"> </span> {{ info.nom_aula }}<br />
           <span class="glyphicon glyphicon-list"> </span> {{ info.grup }}<br />
       	</p>
-    	</div>
+        <video id="video" autoplay style="display:none;"></video>
+        <canvas id="canvas"></canvas>
+
+      </div>
     	
     	<div class="col-sm-4 hidden-xs">
 			  <p><a href="/presencia/treuAlumnesLlista/{{id_impartir}}">Treure alumnes de la llista</a></p>
@@ -182,8 +235,7 @@
 			  <p><a href="{{ horariUrl }}" > Horari</a></p>
     	</div>
   	</div>
-  	
-  	
+      	
 	  <div class="row row-padded hidden-xs">
 	    <div class="col-sm-4"></div><!-- no funciona bé el col-offset-6"-->
       <div class="col-sm-8">
@@ -197,7 +249,7 @@
         <!--/div-->
       </div>
     </div>
-  
+
     <div class="row row-padded visible-xs">
       <div class="col-sm-12 visible-xs">
       	<div class="btn-toolbar">
