@@ -2,7 +2,7 @@
 
 #--
 from aula.apps.alumnes.models import Alumne, Grup, Nivell
-from aula.apps.alumnes.tools import markers_disponibles, set_aruco_marker
+from aula.apps.alumnes.tools_aruco import markers_disponibles, set_aruco_marker
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
     ALUMNES_DONATS_DALTA, IMPORTACIO_SAGA_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia

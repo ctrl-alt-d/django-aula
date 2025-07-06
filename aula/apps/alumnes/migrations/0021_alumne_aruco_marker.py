@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-from aula.apps.alumnes.tools import markers_disponibles, set_aruco_marker
+from aula.apps.alumnes.tools_aruco import markers_disponibles, set_aruco_marker
 
 
 def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argument
