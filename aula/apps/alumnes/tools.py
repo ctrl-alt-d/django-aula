@@ -14,7 +14,32 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from ctypes import _endian
+from aula.apps.alumnes.models import Nivell
 
+
+def markers_disponibles():
+    """
+    Retorna un diccionari de nivells i els markers disponibles per assignar a alumnes.
+    """
+    nivells = Nivell.objects.all()
+    markers = {
+        nivell: markers_disponibles_per_nivell(nivell)
+        for nivell in nivells
+    }
+    return markers
+
+
+def markers_disponibles_per_nivell(nivell: Nivell):
+    '''
+    Retorna un conjunt amb els markers disponibles per assignar a alumnes.
+    Els markers són números enters de 0 a 1022.
+    Els 100 primers estan reservats per a l'assignació manual.
+    '''
+    all_markers = set(range(100, 1023))
+    markers_pillats = set(
+        Alumne.objects.filter(grup__curs__nivell=nivell).values_list('aruco_marker', flat=True)
+    )
+    return all_markers - markers_pillats
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
     a = Alumne.objects.get( pk = pk )

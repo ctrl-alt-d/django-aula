@@ -2,6 +2,7 @@
 
 #--
 from aula.apps.alumnes.models import Alumne, Grup, Nivell, DadesAddicionalsAlumne
+from aula.apps.alumnes.tools import markers_disponibles
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
     ALUMNES_DONATS_DALTA, IMPORTACIO_ESFERA_FINALITZADA, IMPORTACIO_DADES_ADDICIONALS_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
@@ -26,6 +27,7 @@ from aula.apps.extSaga.sincronitzaSaga import posarDada
 def sincronitza(f, user = None):
 
     errors = []
+    markers_per_nivell = markers_disponibles()
 
     try:
         # Carregar full de càlcul
@@ -306,6 +308,10 @@ def sincronitza(f, user = None):
             r2["periodicitat_incidencies"]=alumneDadesAnteriors.periodicitat_incidencies
             a.correu_relacio_familia_mare = ''
         #DEPRECATED ^^^
+
+        if not a.aruco_marker:
+            aruco_marker = markers_per_nivell[a.grup.curs.nivell].pop()
+            a.aruco_marker = aruco_marker
         a.save()
         # Crea usuaris Responsable
         err_resp_menors = 0
