@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-from aula.apps.alumnes.tools_aruco import markers_disponibles, set_aruco_marker
+from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
 
 
 def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argument
@@ -14,7 +14,7 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
     alumnemodel = apps.get_model("alumnes", "Alumne")
 
     # Dictionary to store markers for each nivell
-    nivells_markers = markers_disponibles()
+    nivells_markers = dict_markers_disponibles()
 
     alumnes = list(
         alumnemodel.objects.select_related("grup__curs__nivell").order_by(
@@ -23,10 +23,7 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
     )
 
     for alumne in alumnes:
-        nivell_id = alumne.grup.curs.nivell.pk
-        nivell_markers = nivells_markers[nivell_id]
-
-        set_aruco_marker(alumne, nivell_markers)
+        set_aruco_marker(alumne, nivells_markers)
         alumne.save()
 
 
