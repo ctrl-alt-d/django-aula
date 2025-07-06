@@ -20,7 +20,7 @@ from aula.apps.alumnes.models import Nivell
 
 
 def set_aruco_marker(alumne: Alumne, available_markers: Set[int] = None):
-    if alumne.aruco_marker:
+    if alumne.aruco_marker is not None:
         return  # Si ja té un marker assignat, no fem res.
     if not available_markers:
         available_markers = markers_disponibles_per_nivell(alumne.grup.curs.nivell)
@@ -48,13 +48,13 @@ def set_aruco_marker(alumne: Alumne, available_markers: Set[int] = None):
     )
     
 
-def markers_disponibles():
+def markers_disponibles() -> dict[int, Set[int]]:
     """
-    Retorna un diccionari de nivells i els markers disponibles per assignar a alumnes.
+    Retorna un diccionari de pk de nivells i els markers disponibles per assignar a alumnes.
     """
     nivells = Nivell.objects.all()
     markers = {
-        nivell: markers_disponibles_per_nivell(nivell)
+        nivell.pk: markers_disponibles_per_nivell(nivell)
         for nivell in nivells
     }
     return markers

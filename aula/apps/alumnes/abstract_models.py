@@ -343,9 +343,9 @@ class AbstractAlumne(models.Model):
         ordering = ["grup", "cognoms", "nom"]
         verbose_name = "Alumne"
         verbose_name_plural = "Alumnes"
-        unique_together = []
-        # ("aruco_marker", "grup__curs__nivell"),  # l'aruco_marker ha de ser únic per nivell
-        # ("nom", "cognoms",  "data_neixement", "grup__curs__nivell"),("ralc","grup__curs__nivell"))
+        # Constraints unique que no podem definir perquè els camps són d'altres taules:
+        #   ("aruco_marker", "grup__curs__nivell"),  # l'aruco_marker ha de ser únic per nivell
+        #   ("nom", "cognoms",  "data_neixement", "grup__curs__nivell"),("ralc","grup__curs__nivell"))
 
     def __str__(self):
         return ("És baixa: " if self.esBaixa() else "") + self.cognoms + ", " + self.nom

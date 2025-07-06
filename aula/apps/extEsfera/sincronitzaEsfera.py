@@ -309,7 +309,7 @@ def sincronitza(f, user = None):
             a.correu_relacio_familia_mare = ''
         #DEPRECATED ^^^
 
-        set_aruco_marker(a, markers_per_nivell[a.grup.curs.nivell])
+        set_aruco_marker(a, markers_per_nivell[a.grup.curs.nivell.pk])
 
         a.save()
         # Crea usuaris Responsable
