@@ -2,6 +2,7 @@
 
 #--
 from aula.apps.alumnes.models import Alumne, Grup, Nivell
+from aula.apps.alumnes.tools import markers_disponibles, set_aruco_marker
 from aula.apps.missatgeria.missatges_a_usuaris import ALUMNES_DONATS_DE_BAIXA, tipusMissatge, ALUMNES_CANVIATS_DE_GRUP, \
     ALUMNES_DONATS_DALTA, IMPORTACIO_SAGA_FINALITZADA
 from aula.apps.presencia.models import ControlAssistencia
@@ -50,6 +51,7 @@ def posarDada(dada, text):
 def sincronitza(f, user = None):
 
     errors = []
+    markers_per_nivell = markers_disponibles()
 
     try:
         msgs = comprovar_grups( f )
@@ -309,6 +311,8 @@ def sincronitza(f, user = None):
             r2["periodicitat_incidencies"]=alumneDadesAnteriors.periodicitat_incidencies
             a.correu_relacio_familia_mare = ''
         #DEPRECATED ^^^
+
+        set_aruco_marker(a, markers_per_nivell[a.grup.curs.nivell])
         a.save()
         # Crea usuaris Responsable
         err_resp_menors = 0
