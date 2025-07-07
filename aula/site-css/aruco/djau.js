@@ -171,20 +171,14 @@ function calcula_centre_marcador(marker) {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-  const aruco2Button2 = document.getElementById("usaaruco2");
-  if (aruco2Button2) {
-    aruco2Button2.addEventListener("click", onClickAruco2);
-  } else {
-    console.error("Button with ID 'usaaruco2' not found.");
-  }
-
-  const aruco2Button = document.getElementById("usaaruco");
-  if (aruco2Button) {
-    aruco2Button.addEventListener("click", onClickAruco2);
-  } else {
-    console.error("Button with ID 'usaaruco' not found.");
-  }
-
-
+  const buttonIds = ["usaaruco", "usaaruco2"];
+  buttonIds.forEach((id) => {
+    const button = document.getElementById(id);
+    if (button) {
+      button.addEventListener("click", onClickAruco2);
+    } else {
+      console.error(`Button with ID '${id}' not found.`);
+    }
+  });
 });
 
