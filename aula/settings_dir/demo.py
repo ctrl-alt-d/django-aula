@@ -136,3 +136,4 @@ CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [ u"Aquest missatge ha estat enviat per un 
                      ]
                      
 
+ARUCO_ACTIU = ['*']

@@ -16,6 +16,7 @@ from aula.apps.presencia.forms import afegeixGuardiaForm, calculadoraUnitatsForm
 
 #models
 from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.presencia.helpers_aruco import get_aruco_impartir_ctx
 from aula.apps.presencia.models import Impartir, ControlAssistencia
 from aula.apps.alumnes.models import Alumne, AlumneNomSentit, Grup
 from aula.apps.sortides.models import Sortida
@@ -430,6 +431,8 @@ def passaLlista(request, pk):
                                   if el_puc_justificar(i)
                                   )
 
+    aruco_ctx = get_aruco_impartir_ctx(impartir)
+
     return render(
         request,
         "passaLlista.html",
@@ -445,6 +448,7 @@ def passaLlista(request, pk):
          "permetWinwheel": settings.CUSTOM_RULETA_ACTIVADA,         
          "els_meus_tutorats": els_meus_tutorats,
          "oneline": True,
+         "aruco_ctx": aruco_ctx,
          },
         )
 
