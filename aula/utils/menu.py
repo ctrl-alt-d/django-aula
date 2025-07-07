@@ -113,6 +113,7 @@ def calcula_menu( user , path, sessioImpersonada, request ):
                       ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None, None ),
                       ("Mòbil App", 'tutoria__relacio_families_app__qrs', tu, None, None),
                       ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),
+                      ("Codis AruCo", 'tutoria__aruco__imprimir', tu, None, None ),
                     )
     if settings.CUSTOM_TUTORS_INFORME:
         arbre_tutoria += (

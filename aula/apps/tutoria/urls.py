@@ -1,5 +1,7 @@
 from django.urls import re_path
 from aula.apps.tutoria import views as tutoria_views
+from aula.apps.tutoria import views_aruco
+
 
 urlpatterns = [
     re_path(r'^lesMevesActuacions/$', tutoria_views.lesMevesActuacions,
@@ -85,6 +87,10 @@ urlpatterns = [
 
     re_path(r'^tutorsBlanc/$', tutoria_views.blanc,
         name="professorat__tutors__blanc"),
+
+    # AruCo
+    re_path(r'^arucos/$', views_aruco.imprimir,
+        name="tutoria__aruco__imprimir"),
 
 
     #sortides
