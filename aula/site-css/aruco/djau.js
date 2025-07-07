@@ -8,6 +8,7 @@ let aruco_marker2control = null;
 let controls_presents = [];
 
 function onClickAruco2() {
+  controls_presents = []; // Reset the array to avoid stale data from previous runs
   aruco_marker2alumne = JSON.parse(document.getElementById("aruco_marker2alumne").textContent);
   aruco_marker2control = JSON.parse(document.getElementById("aruco_marker2control").textContent);
 
