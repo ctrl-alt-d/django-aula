@@ -117,7 +117,7 @@ def controlAssistencia_pre_delete( sender, instance, **kwargs):
     
 def controlAssistencia_pre_save(sender, instance,  **kwargs):
     instance.clean()
-    if instance.instanceDB and instance.instanceDB.estat!=instance.estat and instance.estat.codi_estat in ['F','R','J']:
+    if instance.instanceDB and instance.estat and instance.instanceDB.estat!=instance.estat and instance.estat.codi_estat in ['F','R','J']:
             # Elimina notificacions i revisions si s'ha fet 
             # un canvi d'estat i el nou estat és diferent de 'P'(present)
             instance.notificacions_familia.clear()
