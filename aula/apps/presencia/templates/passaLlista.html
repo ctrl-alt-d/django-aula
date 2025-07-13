@@ -144,6 +144,15 @@
         });
     </script>
 
+{% if aruco_ctx.aruco_disponible %}
+  {{ aruco_ctx.aruco_marker2alumne|json_script:"aruco_marker2alumne" }}
+  {{ aruco_ctx.aruco_marker2control|json_script:"aruco_marker2control" }}
+
+  <script src="{{STATIC_URL}}aruco/aruco.js"></script>
+  <script src="{{STATIC_URL}}aruco/cv.js"></script>
+  <script src="{{STATIC_URL}}aruco/djau.js"></script>
+{% endif %}  
+
 {% endblock %}
 
 
@@ -153,7 +162,7 @@
 	  
 	  <div class="row">
 		  <div class="col-sm-8 col-xs-12">
-	      <p class="well well-small">
+	      <p id="info-control" class="well well-small">
       	  <span class="glyphicon glyphicon-user"> </span> {{ info.professor }}<br />
           <span class="glyphicon glyphicon-calendar"> </span> {{ info.dia_setmana }} {{ info.dia_complet }}<br />
           <span class="glyphicon glyphicon-time"> </span> {{ info.hora }}<br />
@@ -161,7 +170,22 @@
           <span class="glyphicon glyphicon-home"> </span> {{ info.nom_aula }}<br />
           <span class="glyphicon glyphicon-list"> </span> {{ info.grup }}<br />
       	</p>
-    	</div>
+
+        {% if aruco_ctx.aruco_disponible %}
+        <video id="aruco-video" autoplay style="display:none;"></video>
+        <canvas id="aruco-canvas" style="display:none;"></canvas>
+        <div id="no-camara" class="alert alert-danger" style="display:none;">
+          No s'ha pogut accedir a la càmera. Si us plau, comprova que el navegador té permís per accedir a la càmera.
+        </div>
+        {% endif %}
+
+        {% if aruco_no_disponible_txt %}
+        <div class="alert alert-danger">
+            AruCo no disponible: {{ aruco_no_disponible_txt }}
+        </div>
+        {% endif %}
+        
+      </div>
     	
     	<div class="col-sm-4 hidden-xs">
 			  <p><a href="/presencia/treuAlumnesLlista/{{id_impartir}}">Treure alumnes de la llista</a></p>
@@ -182,8 +206,7 @@
 			  <p><a href="{{ horariUrl }}" > Horari</a></p>
     	</div>
   	</div>
-  	
-  	
+      	
 	  <div class="row row-padded hidden-xs">
 	    <div class="col-sm-4"></div><!-- no funciona bé el col-offset-6"-->
       <div class="col-sm-8">
@@ -194,10 +217,13 @@
             <button type="button" id="feelLucky" class="btn btn-primary">Tinc<br />sort!</button>
           {% endif %}
           <button type="button" id="horaAnterior" class="btn btn-primary">= hora<br />abans</button>
+          {% if aruco_ctx.aruco_disponible %}
+          <button type="button" id="usaaruco" class="btn btn-primary">Marcadors<br>AruCo</button>
+          {% endif %}
         <!--/div-->
       </div>
     </div>
-  
+
     <div class="row row-padded visible-xs">
       <div class="col-sm-12 visible-xs">
       	<div class="btn-toolbar">
@@ -210,6 +236,9 @@
 	            <li><a id="totfalta2">Tot Falta</a></li>
 	            <li><a id="horaAnterior2">Hora Anterior</a></li>
 	            <li><a id="totpresent2">Tot present</a></li>
+              {% if aruco_ctx.aruco_disponible %}
+	            <li><a id="usaaruco2">Marcadors AruCo</a></li>
+              {% endif %}
 	          </ul>
 	        </div>
       

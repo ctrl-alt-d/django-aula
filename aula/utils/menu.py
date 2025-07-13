@@ -11,6 +11,7 @@ from django.template.defaultfilters import safe
 from django.conf import settings
 from aula.apps.sortides.models import Sortida
 from aula.apps.usuaris.tools import getRol
+from aula.utils.tools_aruco import is_aruco_actiu_per_grup
 
 def calcula_menu( user , path, sessioImpersonada, request ):
 
@@ -102,6 +103,8 @@ def calcula_menu( user , path, sessioImpersonada, request ):
     except:
         return menu
     
+    tu_aruco = tu and any( is_aruco_actiu_per_grup(grup) for grup in User2Professor( user ).tutor_set.values_list('grup', flat=True) )
+    
     arbre_tutoria = (
                       ("Actuacions", 'tutoria__actuacions__list', tu, None, None ),
                       ("Incidències de Tutor", 'tutoria__incidencies__list', tu, None, None ),
@@ -113,6 +116,7 @@ def calcula_menu( user , path, sessioImpersonada, request ):
                       ("Portal", 'tutoria__relacio_families__dades_relacio_families', tu, None, None ),
                       ("Mòbil App", 'tutoria__relacio_families_app__qrs', tu, None, None),
                       ("Seguiment", 'tutoria__seguiment_tutorial__formulari', tu, None, None ),
+                      ("Codis AruCo", 'tutoria__aruco__imprimir', tu_aruco, None, None ),
                     )
     if settings.CUSTOM_TUTORS_INFORME:
         arbre_tutoria += (

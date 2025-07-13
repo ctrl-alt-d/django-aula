@@ -4,8 +4,7 @@ from django.db.models import Q
 from aula.apps.incidencies.models import Incidencia, Expulsio, Sancio
 from aula.apps.presencia.models import ControlAssistencia
 from aula.apps.tutoria.models import Actuacio, SeguimentTutorial
-from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa,\
-    RespostaAvaluacioQualitativa
+from aula.apps.avaluacioQualitativa.models import RespostaAvaluacioQualitativa
 from aula.apps.usuaris.models import Accio, LoginUsuari
 from datetime import date 
 import datetime
@@ -13,7 +12,7 @@ from aula.apps.sortides.models import Sortida
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from ctypes import _endian
+
 
 
 def fusiona_alumnes_by_pk( pk , credentials = None):
