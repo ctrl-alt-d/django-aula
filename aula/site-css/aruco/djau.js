@@ -60,6 +60,8 @@ function onClickAruco2() {
       canvas.height = scaledHeight;
       canvas.style.display = "block";
 
+      neteja_prediccions();
+
       requestAnimationFrame(tick);
     };
 
@@ -86,6 +88,8 @@ function tick() {
       marca_present(marker);
 
     });
+
+    pinta_quants_hem_trobat();
   }
 }
 
@@ -109,10 +113,32 @@ function marca_present(marker) {
   marcarPresentById(controlId);
 }
 
+function neteja_prediccions() {
+  // Remove all divs with id starting with 'prediccio'
+  document.querySelectorAll("div[id^='prediccio']").forEach(function (div) {
+    div.remove();
+  });
+}
+
+function neteja_controls_a_capturar(radios) {
+  if (!radios || radios.length === 0) return;
+
+  let first_radio = radios[0];
+  let group = first_radio.closest('.btn-group');
+
+  // Remove 'active' class from all '.btn' inside this group
+  group.querySelectorAll('.btn').forEach(label => label.classList.remove('active'));
+
+  // Uncheck all '.rad' inside this group
+  group.querySelectorAll('.rad').forEach(radio => radio.checked = false);
+}
 
 function marcarPresentById(controlIdBase) {
+
   // Seleccionem tots els inputs que comencen pel mateix idBase
   const radios = document.querySelectorAll(`input[id^="${controlIdBase}"]`);
+
+  neteja_controls_a_capturar(radios);
 
   radios.forEach(radio => {
     const label = radio.closest('label');
@@ -165,6 +191,17 @@ function calcula_centre_marcador(marker) {
   cx /= corners.length;
   cy /= corners.length;
   return { cx, cy };
+}
+
+// PINTAR QUANTS HEM TROBAT
+function pinta_quants_hem_trobat() {
+  // Pinta a la cantonada superior dreta del canvas
+  // quants elements té controls_presents
+  const quants = controls_presents.length;
+  context.fillStyle = "black";
+  context.font = "24px monospace";
+  context.fillText(`Capturats: ${quants}`, canvas.width - 200, 30);
+
 }
 
 // CLICAR EL BOTÓ ARUCO2

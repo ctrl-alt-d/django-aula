@@ -1,59 +1,74 @@
+"""
+Vista per generar un PDF amb els markers AruCo dels alumnes tutorats.
+"""
+
 import io
-from django.http import FileResponse
 
-import matplotlib
-matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib import cm
 import cv2
+import matplotlib
+import matplotlib.pyplot as plt
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse
+from django.template.defaultfilters import slugify
+from matplotlib import cm
+from matplotlib.backends.backend_pdf import PdfPages
 
 from aula.apps.usuaris.models import User2Professor
-from django.template.defaultfilters import slugify
-from django.contrib.auth.decorators import login_required
-from aula.utils.decorators import group_required
 from aula.utils import tools
+from aula.utils.decorators import group_required
+from aula.utils.tools_aruco import is_aruco_actiu_per_grup
+
+matplotlib.use("Agg")
+
+# --- Constants de configuració ---
+FIGSIZE = (8.27, 11.69)  # A4 vertical en polzades
+INSET_LEFT = -0.005  # marge esquerre
+INSET_BOTTOM = 0.10  # marge inferior
+INSET_WIDTH = 1  # amplada del marcador
+INSET_HEIGHT = 1  # alçada del marcador
+TITLE_FONT_SIZE = 16
+TITLE_PAD = 15
 
 
 @login_required
 @group_required(["professors"])
 def imprimir(request):
     """
-    Genera un PDF amb els markers AruCo dels alumnes tutorats (2 per pàgina A4 horitzontal, amb marge equilibrat)
+    Genera un PDF amb els markers AruCo dels alumnes tutorats
+    (1 per pàgina A4 vertical, amb el màxim espai aprofitat)
     """
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
     professor = User2Professor(user)
 
-    alumnes = [a for t in professor.tutor_set.all() for a in t.grup.alumne_set.all()]
-    noms_i_markers = [(f"{a.nom} {a.cognoms}", int(a.aruco_marker)) for a in alumnes]
+    alumnes = [
+        a
+        for t in professor.tutor_set.all()
+        for a in t.grup.alumne_set.all() if is_aruco_actiu_per_grup(t.grup)
+    ]
+    noms_i_markers = [
+        (f"{a.grup} - {a.cognoms}, {a.nom}", int(a.aruco_marker)) for a in alumnes
+    ]
+    
+    noms_i_markers.sort(key=lambda x: x[0])
 
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
 
     buf = io.BytesIO()
     with PdfPages(buf) as pdf:
-        for i in range(0, len(noms_i_markers), 2):
-            fig, axs = plt.subplots(1, 2, figsize=(11.69, 8.27))  # A4 landscape
+        for nom, marker_id in noms_i_markers:
+            fig, ax = plt.subplots(figsize=FIGSIZE)
 
-            # Espai entre subplots i marges de la pàgina
-            fig.subplots_adjust(left=0.07, right=0.93, top=0.88, bottom=0.12, wspace=0.3)
+            ax.axis("off")
 
-            for j in range(2):
-                ax = axs[j]
-                ax.axis("off")
+            marker_img = cv2.aruco.generateImageMarker(aruco_dict, marker_id, 2000)
 
-                if i + j < len(noms_i_markers):
-                    nom, marker_id = noms_i_markers[i + j]
-                    marker_img = cv2.aruco.generateImageMarker(aruco_dict, marker_id, 2000)
+            inset = ax.inset_axes([INSET_LEFT, INSET_BOTTOM, INSET_WIDTH, INSET_HEIGHT])
+            inset.imshow(marker_img, cmap=cm.gray, interpolation="nearest")
+            inset.axis("off")
 
-                    # Inset ajustat (només 5% de marge intern)
-                    inset = ax.inset_axes([0.05, 0.15, 0.9, 0.75])
-                    inset.imshow(marker_img, cmap=cm.gray, interpolation="nearest")
-                    inset.axis("off")
-
-                    ax.set_title(nom, fontsize=14, pad=12)
+            ax.set_title(nom, fontsize=TITLE_FONT_SIZE, pad=TITLE_PAD)
 
             pdf.savefig(fig)
             plt.close(fig)

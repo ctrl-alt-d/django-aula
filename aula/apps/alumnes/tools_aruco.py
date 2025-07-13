@@ -5,6 +5,9 @@ from django.core.exceptions import ValidationError
 
 from aula.apps.alumnes.models import Alumne, Curs, Grup, Nivell
 
+FIRST_MARKER = 100
+LAST_MARKER = 1024
+
 
 def set_aruco_marker(
     alumne: Alumne,
@@ -34,16 +37,30 @@ def set_aruco_marker(
         availables_by_nivell.discard(alumne.aruco_marker)
         return
 
+    # Si no és de la ESO, busquem un marker global exceptuant ESO.
+    # Per evitar que els que fan ICO o altres assignatures
+    # compartides amb FP i BTX col·lisionin.
+    if "ESO" not in alumne.grup.curs.nivell.nom.to_upper():
+        availables_global_except_eso = _global_markers_disponibles_except_eso(
+            markers_cache
+        )
+        if availables_global_except_eso:
+            alumne.aruco_marker = availables_by_nivell.pop()
+            availables_by_nivell.discard(alumne.aruco_marker)
+            return
+
     availables_by_curs = _markers_disponibles_per_curs(alumne.grup.curs)
     if availables_by_curs:
         # Assignem el primer marker disponible del curs.
         alumne.aruco_marker = availables_by_curs.pop()
+        availables_by_nivell.discard(alumne.aruco_marker)
         return
 
     availables_by_grup = _markers_disponibles_per_grup(alumne.grup)
     if availables_by_grup:
         # Assignem el primer marker disponible del grup.
         alumne.aruco_marker = availables_by_grup.pop()
+        availables_by_nivell.discard(alumne.aruco_marker)
         return
 
     # Si no hi ha markers disponibles, validation error.
@@ -76,13 +93,26 @@ def _global_markers_disponibles(dit_makers: Dict[int, Set[int]]) -> Set[int]:
     return set.intersection(*dit_makers.values())
 
 
+def _global_markers_disponibles_except_eso(
+    dit_makers: Dict[int, Set[int]],
+) -> Set[int]:
+    """
+    Intersect of all markers disponibles per nivell exceptuant ESO.
+    """
+    eso_pk = Nivell.objects.filter(nom__icontains="ESO").values_list("pk", flat=True)
+    dit_makers_no_eso = {
+        pk: markers for pk, markers in dit_makers.items() if pk not in eso_pk
+    }
+    return set.intersection(*dit_makers_no_eso.values()) if dit_makers_no_eso else set()
+
+
 def _markers_disponibles_per_nivell(nivell: Nivell):
     """
     Retorna un conjunt amb els markers disponibles per assignar a alumnes.
     Els markers són números enters de 0 a 1022.
     Els 100 primers estan reservats per a l'assignació manual.
     """
-    all_markers = set(range(100, 1023))
+    all_markers = _get_all_markers()
     markers_pillats = set(
         Alumne.objects.filter(grup__curs__nivell=nivell).values_list(
             "aruco_marker", flat=True
@@ -97,7 +127,7 @@ def _markers_disponibles_per_curs(curs: Curs):
     Els markers són números enters de 0 a 1022.
     Els 100 primers estan reservats per a l'assignació manual.
     """
-    all_markers = set(range(100, 1023))
+    all_markers = _get_all_markers()
     markers_pillats = set(
         Alumne.objects.filter(grup__curs=curs).values_list("aruco_marker", flat=True)
     )
@@ -110,8 +140,17 @@ def _markers_disponibles_per_grup(grup: Grup):
     Els markers són números enters de 0 a 1022.
     Els 100 primers estan reservats per a l'assignació manual.
     """
-    all_markers = set(range(100, 1023))
+    all_markers = _get_all_markers()
     markers_pillats = set(
         Alumne.objects.filter(grup=grup).values_list("aruco_marker", flat=True)
     )
     return all_markers - markers_pillats
+
+
+def _get_all_markers() -> Set[int]:
+    """
+    Retorna un conjunt amb tots els markers disponibles.
+    Els markers són números enters de 0 a 1022.
+    Els 100 primers estan reservats per a l'assignació manual.
+    """
+    return set(range(FIRST_MARKER, LAST_MARKER))
