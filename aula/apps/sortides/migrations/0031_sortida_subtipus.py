@@ -4,15 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sortides', '0030_alter_sortida_tipus'),
+        ("sortides", "0030_alter_sortida_tipus"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='sortida',
-            name='subtipus',
-            field=models.CharField(choices=[('AS', 'Sortida'), ('AX', 'Xerrada'), ('AT', 'Taller'), ('AE', 'Examen'), ('PD', 'Dossier'), ('PM', 'Material'), ('PA', 'Matrícula'), ('PP', 'Pagament parcial')], default='AS', help_text="Subtipus d'activitat", max_length=2),
+            model_name="sortida",
+            name="subtipus",
+            field=models.CharField(
+                choices=[
+                    ("AS", "Sortida"),
+                    ("AX", "Xerrada"),
+                    ("AT", "Taller"),
+                    ("AE", "Examen"),
+                    ("PD", "Dossier"),
+                    ("PM", "Material"),
+                    ("PA", "Matrícula"),
+                    ("PP", "Pagament parcial"),
+                ],
+                default="AS",
+                help_text="Subtipus d'activitat",
+                max_length=2,
+            ),
         ),
     ]

@@ -1,12 +1,10 @@
 """Filtre per a la llista de sortides o pagaments."""
 
+import django_filters
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Div, Field, Fieldset, Layout, Submit
 from django.apps import apps
 from django.db.models import Q
-import django_filters
-from django.db.models.functions import TruncDate
-
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Field, Submit, Fieldset, HTML
 
 from aula.apps.sortides.models import Sortida
 from aula.utils.widgets import DateTextImput
@@ -189,6 +187,7 @@ class SortidaFilter(django_filters.FilterSet):
     def filter_calendari_fins(self, queryset, name, value):
         return queryset.filter(calendari_desde__date__lte=value)
 
+
 class PagamentFilter(django_filters.FilterSet):
     """
     Filtre per a la llista de sortides o pagaments.
@@ -208,12 +207,11 @@ class PagamentFilter(django_filters.FilterSet):
 
     titol = django_filters.CharFilter(lookup_expr="icontains", label="Títol")
     ambit = django_filters.CharFilter(lookup_expr="icontains", label="Àmbit")
-    
+
     subtipus = django_filters.ChoiceFilter(
-        choices=[(f"P{k}", v) for k, v in Sortida.SUBTIPUS_ACTIVITAT['P']],
-        label="Tipus"
+        choices=[(f"P{k}", v) for k, v in Sortida.SUBTIPUS_ACTIVITAT["P"]],
+        label="Tipus",
     )
-        
 
     termini_pagament_desde = django_filters.DateFilter(
         field_name="termini_pagament",
@@ -254,9 +252,7 @@ class PagamentFilter(django_filters.FilterSet):
                     css_class="col-lg-4 small",
                 ),
                 Div(
-                    Field(
-                        "subtipus", css_class="form-control form-control-sm"
-                    ),
+                    Field("subtipus", css_class="form-control form-control-sm"),
                     css_class="col-lg-4 small",
                 ),
                 Div(

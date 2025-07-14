@@ -4,22 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alumnes', '0019_alumne_responsable_preferent'),
-        ('missatgeria', '0003_auto_20190331_1541'),
-        ('presencia', '0013_remove_controlassistencia_presencia_c_alumne__6961f9_idx'),
-        ('usuaris', '0013_responsableuser_notifusuari'),
+        ("alumnes", "0019_alumne_responsable_preferent"),
+        ("missatgeria", "0003_auto_20190331_1541"),
+        ("presencia", "0013_remove_controlassistencia_presencia_c_alumne__6961f9_idx"),
+        ("usuaris", "0013_responsableuser_notifusuari"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='controlassistencia',
-            name='notificacions_familia',
-            field=models.ManyToManyField(db_index=True, to='usuaris.notifusuari'),
+            model_name="controlassistencia",
+            name="notificacions_familia",
+            field=models.ManyToManyField(db_index=True, to="usuaris.notifusuari"),
         ),
         migrations.AddIndex(
-            model_name='controlassistencia',
-            index=models.Index(fields=['alumne', 'estat'], name='presencia_c_alumne__d09c34_idx'),
+            model_name="controlassistencia",
+            index=models.Index(
+                fields=["alumne", "estat"], name="presencia_c_alumne__d09c34_idx"
+            ),
         ),
     ]

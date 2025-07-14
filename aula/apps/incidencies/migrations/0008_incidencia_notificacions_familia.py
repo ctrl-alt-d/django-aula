@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('incidencies', '0007_auto_20220210_1035'),
-        ('usuaris', '0013_responsableuser_notifusuari'),
+        ("incidencies", "0007_auto_20220210_1035"),
+        ("usuaris", "0013_responsableuser_notifusuari"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='incidencia',
-            name='notificacions_familia',
-            field=models.ManyToManyField(db_index=True, to='usuaris.notifusuari'),
+            model_name="incidencia",
+            name="notificacions_familia",
+            field=models.ManyToManyField(db_index=True, to="usuaris.notifusuari"),
         ),
     ]

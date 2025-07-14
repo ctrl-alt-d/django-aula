@@ -3,29 +3,29 @@ import django_tables2 as tables
 
 class HorariProfessorTable(tables.Table):
     Ara = tables.TemplateColumn(
-                        verbose_name='#',
-                        template_code=u"""
+        verbose_name="#",
+        template_code="""
                         {% now "H:i" as ara %}
                         {% if ara > record.horari.hora.hora_inici|date:"H:i" and ara < record.horari.hora.hora_fi|date:"H:i" %}
                             <span class="blink_me text-danger"> <strong> -> </strong></span>
                         {% endif %}
                         """,
-                        orderable=False,
-                        )
+        orderable=False,
+    )
     Hora = tables.TemplateColumn(
-                        template_code = u"""
+        template_code="""
                         {{ record.horari.hora }}
                         """,
-                        orderable = False,
-                        )
+        orderable=False,
+    )
     Assignatura = tables.TemplateColumn(
-        template_code=u"""
+        template_code="""
                         {{ record.horari.assignatura.getLongName}}
                         """,
         orderable=False,
     )
     Grup = tables.TemplateColumn(
-        template_code=u"""
+        template_code="""
                         {% if record.horari.grup %}
                             {{ record.horari.grup }}
                         {% else %}
@@ -35,13 +35,13 @@ class HorariProfessorTable(tables.Table):
         orderable=False,
     )
     Aula = tables.TemplateColumn(
-                        template_code = u"""
+        template_code="""
                             {{ record.get_nom_aula }}
                         """,
-                        orderable = False,
-                        )
+        orderable=False,
+    )
+
     class Meta:
         # add class="paleblue" to <table> tag
         attrs = {"class": "paleblue table table-striped"}
-        template = 'bootable2.html'
-
+        template = "bootable2.html"

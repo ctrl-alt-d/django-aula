@@ -1,4 +1,5 @@
 from django.conf import settings
+
 from aula.apps.alumnes.models import Grup
 
 

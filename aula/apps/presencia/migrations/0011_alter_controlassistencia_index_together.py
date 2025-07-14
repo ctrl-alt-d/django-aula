@@ -4,16 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alumnes', '0017_nivell_preexclusiva'),
-        ('presencia', '0010_alter_impartir_professor_guardia_and_more'),
+        ("alumnes", "0017_nivell_preexclusiva"),
+        ("presencia", "0010_alter_impartir_professor_guardia_and_more"),
     ]
 
     operations = [
         # Modificat per compatibilitat amb Django 5.1
         migrations.AddIndex(
-            model_name='controlassistencia',
-            index=models.Index(fields=['alumne', 'estat', 'relacio_familia_notificada'], name='presencia_controlassiste_alumne_id_estat_id_relac_8957bdde_idx',),
+            model_name="controlassistencia",
+            index=models.Index(
+                fields=["alumne", "estat", "relacio_familia_notificada"],
+                name="presencia_controlassiste_alumne_id_estat_id_relac_8957bdde_idx",
+            ),
         ),
     ]

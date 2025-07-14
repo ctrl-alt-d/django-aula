@@ -1,38 +1,34 @@
 # This Python file uses the following encoding: utf-8
 
 # --
-from aula.apps.alumnes.models import Alumne, Grup, Nivell, DadesAddicionalsAlumne
-from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
-from aula.apps.missatgeria.missatges_a_usuaris import (
-    ALUMNES_DONATS_DE_BAIXA,
-    tipusMissatge,
-    ALUMNES_CANVIATS_DE_GRUP,
-    ALUMNES_DONATS_DALTA,
-    IMPORTACIO_ESFERA_FINALITZADA,
-    IMPORTACIO_DADES_ADDICIONALS_FINALITZADA,
-)
-from aula.apps.presencia.models import ControlAssistencia
-from aula.apps.missatgeria.models import Missatge
-from aula.apps.usuaris.models import Professor
-from aula.apps.relacioFamilies.tools import creaResponsables
-from aula.apps.extEsfera.models import ParametreEsfera
+import time
+from datetime import date, datetime
+
+from django.contrib.auth.models import Group
+from django.db.models import Q
 from openpyxl import load_workbook
 
-from django.db.models import Q
-
-from datetime import datetime, date
-from django.contrib.auth.models import Group
-
-import time
-from aula.apps.extEsfera.models import Grup2Aula
-from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
-
-from aula.utils.tools import unicode
+from aula.apps.alumnes.models import Alumne, DadesAddicionalsAlumne
+from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
+from aula.apps.extEsfera.models import Grup2Aula, ParametreEsfera
 from aula.apps.extSaga.sincronitzaSaga import posarDada
+from aula.apps.missatgeria.missatges_a_usuaris import (
+    ALUMNES_CANVIATS_DE_GRUP,
+    ALUMNES_DONATS_DALTA,
+    ALUMNES_DONATS_DE_BAIXA,
+    IMPORTACIO_DADES_ADDICIONALS_FINALITZADA,
+    IMPORTACIO_ESFERA_FINALITZADA,
+    tipusMissatge,
+)
+from aula.apps.missatgeria.models import Missatge
+from aula.apps.presencia.models import ControlAssistencia
+from aula.apps.relacioFamilies.tools import creaResponsables
+from aula.apps.usuaris.models import Professor
+from aula.settings import CUSTOM_DADES_ADDICIONALS_ALUMNE
+from aula.utils.tools import unicode
 
 
 def sincronitza(f, user=None):
-
     errors = []
     markers_per_nivell = dict_markers_disponibles()
 
@@ -46,7 +42,7 @@ def sincronitza(f, user=None):
         msgs = comprovar_grups(f)
         if msgs["errors"]:
             return msgs
-    except:
+    except:  # noqa: E722
         errors.append("Fitxer incorrecte")
         return {"errors": errors, "warnings": [], "infos": []}
 
@@ -166,7 +162,7 @@ def sincronitza(f, user=None):
                             grup_esfera=unicode(cell.value), Grup2Aula__isnull=False
                         )
                         a.grup = unGrup.Grup2Aula
-                    except:
+                    except:  # noqa: E722
                         return {
                             "errors": [
                                 "error carregant {0}".format(unicode(cell.value)),
@@ -188,7 +184,7 @@ def sincronitza(f, user=None):
                             time.mktime(dia)
                         ).date()
                         trobatDataNeixement = True
-                    except Exception as e:
+                    except Exception:
                         a.data_neixement = None
                         errors.append(
                             "Data de naixement incorrecte '{0}' de l'alumne {1} {2} ({3}).".format(
@@ -631,7 +627,6 @@ def comprovar_grups(f):
     wb2 = load_workbook(f)
     full = wb2.active
     max_row = full.max_row
-    max_column = full.max_column
 
     # iterar sobre les files
     colname = ["Grup Classe"]
@@ -687,7 +682,7 @@ def dades_adiccionals(f, user=None):
             # Si té més d'una pestanya --> error
             errors.append("Fitxer incorrecte")
             return {"errors": errors, "warnings": [], "infos": []}
-    except:
+    except:  # noqa: E722
         errors.append("Fitxer incorrecte")
         return {"errors": errors, "warnings": [], "infos": []}
 
@@ -726,7 +721,7 @@ def dades_adiccionals(f, user=None):
                         )  # accedim a la columna on es troba el ralc
                         try:
                             alumne = Alumne.objects.get(ralc=ralc_llegit)
-                        except:
+                        except:  # noqa: E722
                             return {
                                 "errors": [
                                     "error carregant, Ralc {0} no trobat - línia {1} del fitxer de càrrega".format(
@@ -760,7 +755,7 @@ def dades_adiccionals(f, user=None):
                                 dada_addicional.value = valor
                                 dada_addicional.save()
                                 info_nModificacions += 1
-                        except:
+                        except:  # noqa: E722
                             return {
                                 "errors": [
                                     "error carregant, línia {0} del fitxer de càrrega".format(

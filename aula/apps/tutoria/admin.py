@@ -1,5 +1,5 @@
-from aula.apps.tutoria.models import SeguimentTutorialPreguntes
 from django.contrib import admin
 
-admin.site.register(SeguimentTutorialPreguntes)
+from aula.apps.tutoria.models import SeguimentTutorialPreguntes
 
+admin.site.register(SeguimentTutorialPreguntes)

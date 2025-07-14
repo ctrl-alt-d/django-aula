@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("tutoria", "0009_alter_cartaabsentisme_data_carta"),
     ]

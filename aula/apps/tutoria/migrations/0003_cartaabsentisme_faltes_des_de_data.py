@@ -6,15 +6,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tutoria', '0002_auto_20160226_1731'),
+        ("tutoria", "0002_auto_20160226_1731"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='cartaabsentisme',
-            name='faltes_des_de_data',
-            field=models.DateField(blank=True, editable=False, null=True, verbose_name=b'Faltes des de data'),
+            model_name="cartaabsentisme",
+            name="faltes_des_de_data",
+            field=models.DateField(
+                blank=True,
+                editable=False,
+                null=True,
+                verbose_name=b"Faltes des de data",
+            ),
         ),
     ]

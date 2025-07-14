@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class AulesConfig(AppConfig):
-    name = 'aula.apps.aules'
+    name = "aula.apps.aules"

@@ -4,28 +4,33 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('horaris', '0004_auto_20190331_1541'),
+        ("horaris", "0004_auto_20190331_1541"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='franjahoraria',
-            options={'ordering': ['hora_inici', 'hora_fi'], 'verbose_name': 'Franja Horària', 'verbose_name_plural': 'Franges Horàries'},
+            name="franjahoraria",
+            options={
+                "ordering": ["hora_inici", "hora_fi"],
+                "verbose_name": "Franja Horària",
+                "verbose_name_plural": "Franges Horàries",
+            },
         ),
         migrations.AlterField(
-            model_name='franjahoraria',
-            name='hora_fi',
+            model_name="franjahoraria",
+            name="hora_fi",
             field=models.TimeField(),
         ),
         migrations.AlterField(
-            model_name='franjahoraria',
-            name='hora_inici',
+            model_name="franjahoraria",
+            name="hora_inici",
             field=models.TimeField(),
         ),
         migrations.AddConstraint(
-            model_name='franjahoraria',
-            constraint=models.UniqueConstraint(fields=('hora_inici', 'hora_fi'), name='Franjes úniques'),
+            model_name="franjahoraria",
+            constraint=models.UniqueConstraint(
+                fields=("hora_inici", "hora_fi"), name="Franjes úniques"
+            ),
         ),
     ]

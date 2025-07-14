@@ -6,42 +6,67 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alumnes', '0019_alumne_responsable_preferent'),
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('usuaris', '0012_qrportal_numero_de_mobil'),
+        ("alumnes", "0019_alumne_responsable_preferent"),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("usuaris", "0012_qrportal_numero_de_mobil"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ResponsableUser',
-            fields=[
-            ],
+            name="ResponsableUser",
+            fields=[],
             options={
-                'ordering': ['last_name', 'first_name', 'username'],
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "ordering": ["last_name", "first_name", "username"],
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('auth.user',),
+            bases=("auth.user",),
         ),
         migrations.CreateModel(
-            name='NotifUsuari',
+            name="NotifUsuari",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('moment', models.DateTimeField(auto_now_add=True, db_index=True)),
-                ('tipus', models.CharField(blank=True, max_length=1)),
-                ('alumne', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='NotifUsuari', to='alumnes.alumne')),
-                ('usuari', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='NotifUsuari', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("moment", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("tipus", models.CharField(blank=True, max_length=1)),
+                (
+                    "alumne",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="NotifUsuari",
+                        to="alumnes.alumne",
+                    ),
+                ),
+                (
+                    "usuari",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="NotifUsuari",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Notificació a usuari',
-                'verbose_name_plural': 'Notificacions als usuaris',
-                'ordering': ['usuari', '-moment'],
-                'abstract': False,
-                'indexes': [models.Index(fields=['usuari', 'alumne', 'tipus'], name='usuaris_not_usuari__70cc4d_idx')],
+                "verbose_name": "Notificació a usuari",
+                "verbose_name_plural": "Notificacions als usuaris",
+                "ordering": ["usuari", "-moment"],
+                "abstract": False,
+                "indexes": [
+                    models.Index(
+                        fields=["usuari", "alumne", "tipus"],
+                        name="usuaris_not_usuari__70cc4d_idx",
+                    )
+                ],
             },
         ),
     ]

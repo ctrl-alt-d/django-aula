@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assignatures', '0002_tipusdassignatura_capcelera'),
+        ("assignatures", "0002_tipusdassignatura_capcelera"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tipusdassignatura',
-            name='ambit_on_prendre_alumnes',
-            field=models.CharField(choices=[('G', 'Grup'), ('C', 'Curs'), ('N', 'Nivell'), ('I', 'Institut'), ('X', 'No Admet alumnes (Ex: G)')], default='G', max_length=45),
+            model_name="tipusdassignatura",
+            name="ambit_on_prendre_alumnes",
+            field=models.CharField(
+                choices=[
+                    ("G", "Grup"),
+                    ("C", "Curs"),
+                    ("N", "Nivell"),
+                    ("I", "Institut"),
+                    ("X", "No Admet alumnes (Ex: G)"),
+                ],
+                default="G",
+                max_length=45,
+            ),
         ),
     ]

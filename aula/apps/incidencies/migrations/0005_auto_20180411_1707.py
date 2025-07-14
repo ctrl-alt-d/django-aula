@@ -6,15 +6,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('incidencies', '0004_auto_20180409_1724'),
+        ("incidencies", "0004_auto_20180409_1724"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='incidencia',
-            name='gestionada_pel_tutor_motiu',
-            field=models.CharField(choices=[('1AHora', 'Gestionada pel tutor: Retard de 1a hora'), ('ForaAula', "Gestionada pel tutor: Incid\xe8ncia fora d'aula"), ('Guardia', 'Gestionada pel tutor: Incid\xe8ncia en hora de Gu\xe0rdia'), ('N/A', 'Gestionada pel tutor')], default=b'', editable=False, max_length=20),
+            model_name="incidencia",
+            name="gestionada_pel_tutor_motiu",
+            field=models.CharField(
+                choices=[
+                    ("1AHora", "Gestionada pel tutor: Retard de 1a hora"),
+                    ("ForaAula", "Gestionada pel tutor: Incid\xe8ncia fora d'aula"),
+                    (
+                        "Guardia",
+                        "Gestionada pel tutor: Incid\xe8ncia en hora de Gu\xe0rdia",
+                    ),
+                    ("N/A", "Gestionada pel tutor"),
+                ],
+                default=b"",
+                editable=False,
+                max_length=20,
+            ),
         ),
     ]

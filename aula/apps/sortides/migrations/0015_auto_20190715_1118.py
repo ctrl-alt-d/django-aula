@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sortides', '0014_auto_20190715_1117'),
+        ("sortides", "0014_auto_20190715_1117"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sortida',
-            name='tipus_de_pagament',
-            field=models.CharField(choices=[('NO', 'No cal pagament'), ('EF', 'En efectiu'), ('ON', 'Online a través del djAu'), ('EB', "Al caixer de l'entitat bancària")], default='EB', help_text='Quin serà el tipus de pagament predominant', max_length=2),
+            model_name="sortida",
+            name="tipus_de_pagament",
+            field=models.CharField(
+                choices=[
+                    ("NO", "No cal pagament"),
+                    ("EF", "En efectiu"),
+                    ("ON", "Online a través del djAu"),
+                    ("EB", "Al caixer de l'entitat bancària"),
+                ],
+                default="EB",
+                help_text="Quin serà el tipus de pagament predominant",
+                max_length=2,
+            ),
         ),
     ]

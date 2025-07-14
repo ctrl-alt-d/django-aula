@@ -6,18 +6,20 @@ from aula.apps.alumnes.models import Alumne
 
 class Table2_QRPortalAlumne(tables.Table):
     data_expedicio = tables.TemplateColumn(
-        template_code=u"""{{ record.moment_expedicio }}""",
+        template_code="""{{ record.moment_expedicio }}""",
     )
     data_captura = tables.TemplateColumn(
-        template_code=u"""{%if record.moment_captura%} {{ record.moment_captura }} {%else%} ----- {%endif%}""",
+        template_code="""{%if record.moment_captura%} {{ record.moment_captura }} {%else%} ----- {%endif%}""",
     )
     actiu = tables.TemplateColumn(
-        template_code=u"""{%if record.es_el_token_actiu%} Sí {%else%} No {%endif%}""",
+        template_code="""{%if record.es_el_token_actiu%} Sí {%else%} No {%endif%}""",
     )
     data_confirmacio_pel_tutor = tables.TemplateColumn(
-        template_code=u"""{%if record.moment_confirmat_pel_tutor%} {{record.moment_confirmat_pel_tutor}} {%else%} ----- {%endif%}""",    )
+        template_code="""{%if record.moment_confirmat_pel_tutor%} {{record.moment_confirmat_pel_tutor}} {%else%} ----- {%endif%}""",
+    )
 
-    accions = tables.TemplateColumn(template_code=u"""
+    accions = tables.TemplateColumn(
+        template_code="""
                     <div class="btn-group btn-group-xs">
                         <a class="btn dropdown-toggle btn-primary btn-xs" data-toggle="dropdown" href="#">
                           Accions
@@ -48,12 +50,19 @@ class Table2_QRPortalAlumne(tables.Table):
                         </li>
                         </ul>
                       </div>
-            """
-                                    , orderable=True, )
+            """,
+        orderable=True,
+    )
+
     class Meta:
         model = Alumne
         attrs = {"class": "paleblue table table-striped"}
-        sequence = ("data_expedicio", "data_captura", "data_confirmacio_pel_tutor", "actiu", )
+        sequence = (
+            "data_expedicio",
+            "data_captura",
+            "data_confirmacio_pel_tutor",
+            "actiu",
+        )
         fields = sequence
-        order_by = ("-data_expedicio")
-        template = 'bootable2.html'
+        order_by = "-data_expedicio"
+        template = "bootable2.html"
