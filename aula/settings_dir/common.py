@@ -7,6 +7,16 @@ LOCALITAT = u"Localitat"
 URL_DJANGO_AULA = r'https://www.django_aula.sw'
 ACCES_RESTRINGIT_A_GRUPS = None   # exemple per restringir = ['direcció','administradors','psicopedagog']
 
+
+# Passar llista amb marcadors Aruco
+# Estarà actiu:
+# si '*' és a la llista o
+# si impartir.horari.grup.descripcio_grup és a la llista o
+# si impartir.horari.grup.curs.nom_curs_complert és a la llista o
+# si impartir.horari.grup.curs.nivell.descripcio_nivell és a la llista
+# Nota: és un lab. Usar-ho amb prudència i compartir experiències.
+ARUCO_ACTIU = []
+
 # Django settings for aula project.
 PROJECT_DIR = os.path.join( os.path.dirname(__file__), '..')
 location = lambda x: os.path.join(PROJECT_DIR, x)
