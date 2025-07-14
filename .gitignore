@@ -25,3 +25,6 @@ aula/settings_local.py
 aula/static
 .env
 .DS_Store
+
+.ruff_cache
+.pytest_cache
