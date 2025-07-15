@@ -52,9 +52,7 @@ class Migration(migrations.Migration):
             name="aruco_marker",
             field=models.IntegerField(
                 blank=True,
-                help_text=(
-                    "Identificador del marker ARUCO" " associat a " "l'alumne. "
-                ),
+                help_text=("Identificador del marker ARUCO associat a l'alumne. "),
                 null=True,
                 verbose_name="Marker",
             ),

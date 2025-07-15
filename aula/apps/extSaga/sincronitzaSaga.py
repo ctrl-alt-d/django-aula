@@ -1,31 +1,27 @@
 # This Python file uses the following encoding: utf-8
 
 # --
-from aula.apps.alumnes.models import Alumne, Grup, Nivell
-from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
-from aula.apps.missatgeria.missatges_a_usuaris import (
-    ALUMNES_DONATS_DE_BAIXA,
-    tipusMissatge,
-    ALUMNES_CANVIATS_DE_GRUP,
-    ALUMNES_DONATS_DALTA,
-    IMPORTACIO_SAGA_FINALITZADA,
-)
-from aula.apps.presencia.models import ControlAssistencia
-from aula.apps.missatgeria.models import Missatge
-from aula.apps.usuaris.models import Professor
-from aula.apps.extSaga.models import ParametreSaga
-from aula.apps.relacioFamilies.tools import creaResponsables
+import csv
+import time
+from datetime import date, datetime
 
+from django.contrib.auth.models import Group
 from django.db.models import Q
 
-from datetime import datetime, date
-from django.contrib.auth.models import Group
-
-import csv, time
-from aula.apps.extSaga.models import Grup2Aula
-
-from django.conf import settings
-
+from aula.apps.alumnes.models import Alumne
+from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
+from aula.apps.extSaga.models import Grup2Aula, ParametreSaga
+from aula.apps.missatgeria.missatges_a_usuaris import (
+    ALUMNES_CANVIATS_DE_GRUP,
+    ALUMNES_DONATS_DALTA,
+    ALUMNES_DONATS_DE_BAIXA,
+    IMPORTACIO_SAGA_FINALITZADA,
+    tipusMissatge,
+)
+from aula.apps.missatgeria.models import Missatge
+from aula.apps.presencia.models import ControlAssistencia
+from aula.apps.relacioFamilies.tools import creaResponsables
+from aula.apps.usuaris.models import Professor
 from aula.utils.tools import unicode
 
 
@@ -45,7 +41,7 @@ def autoRalc(ident):
 
 
 def posarDada(dada, text):
-    if type(dada) == list:
+    if type(dada) is list:
         for d in dada:
             text = posarDada(d, text)
     elif dada not in text:
@@ -57,7 +53,6 @@ def posarDada(dada, text):
 
 
 def sincronitza(f, user=None):
-
     errors = []
     markers_per_nivell = dict_markers_disponibles()
 
@@ -66,7 +61,7 @@ def sincronitza(f, user=None):
 
         if msgs["errors"]:
             return msgs
-    except:
+    except:  # noqa: E722
         errors.append("Fitxer incorrecte")
         return {"errors": errors, "warnings": [], "infos": []}
 
@@ -133,7 +128,7 @@ def sincronitza(f, user=None):
                         grup_saga=uvalue, Grup2Aula__isnull=False
                     )
                     a.grup = unGrup.Grup2Aula
-                except:
+                except:  # noqa: E722
                     return {
                         "errors": [
                             "error carregant {0}".format(uvalue),
@@ -412,7 +407,7 @@ def sincronitza(f, user=None):
             CursosManuals = eval(CursosManuals.valor_parametre)
             if not isinstance(CursosManuals, list):
                 CursosManuals = list(CursosManuals)
-        except:
+        except:  # noqa: E722
             CursosManuals = []
     else:
         CursosManuals = []
@@ -575,7 +570,6 @@ def sincronitza(f, user=None):
 
 
 def comprovar_grups(f):
-
     dialect = csv.Sniffer().sniff(f.readline())
     f.seek(0)
     f.readline()

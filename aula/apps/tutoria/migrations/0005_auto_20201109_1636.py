@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tutoria', '0004_auto_20190331_1615'),
+        ("tutoria", "0004_auto_20190331_1615"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='actuacio',
-            name='qui_fa_actuacio',
-            field=models.CharField(choices=[('T', 'Tutor/a'), ('O', 'Cotutor/a'), ('C', "Cap d'estudis"), ('E', 'Equip psicop.'), ('A', 'Altres')], help_text="Qui realitza l'actuació", max_length=1),
+            model_name="actuacio",
+            name="qui_fa_actuacio",
+            field=models.CharField(
+                choices=[
+                    ("T", "Tutor/a"),
+                    ("O", "Cotutor/a"),
+                    ("C", "Cap d'estudis"),
+                    ("E", "Equip psicop."),
+                    ("A", "Altres"),
+                ],
+                help_text="Qui realitza l'actuació",
+                max_length=1,
+            ),
         ),
     ]

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('usuaris', '0011_qrportal'),
+        ("usuaris", "0011_qrportal"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='qrportal',
-            name='numero_de_mobil',
+            model_name="qrportal",
+            name="numero_de_mobil",
             field=models.CharField(blank=True, max_length=40),
         ),
     ]

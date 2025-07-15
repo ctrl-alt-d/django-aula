@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alumnes', '0016_merge_20210830_1954'),
+        ("alumnes", "0016_merge_20210830_1954"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nivell',
-            name='preexclusiva',
-            field=models.BooleanField(default=False, verbose_name='Matrícula exclusiva de Preinscripció'),
+            model_name="nivell",
+            name="preexclusiva",
+            field=models.BooleanField(
+                default=False, verbose_name="Matrícula exclusiva de Preinscripció"
+            ),
         ),
     ]

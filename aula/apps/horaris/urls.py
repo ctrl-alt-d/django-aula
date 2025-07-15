@@ -1,6 +1,5 @@
-#from django.conf.urls import *
+# from django.conf.urls import *
 #
-#urlpatterns = patterns('horaris.views',
+# urlpatterns = patterns('horaris.views',
 #   (r'^xxx/$', 'xxx'),
-#)
-
+# )

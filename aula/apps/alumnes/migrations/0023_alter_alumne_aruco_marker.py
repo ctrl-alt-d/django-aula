@@ -5,15 +5,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alumnes', '0022_alter_alumne_aruco_marker'),
+        ("alumnes", "0022_alter_alumne_aruco_marker"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='alumne',
-            name='aruco_marker',
-            field=models.IntegerField(help_text="Identificador del marker ARUCO associat a l'alumne. Ha de ser únic dins el nivell (Eso, Btx, ...) Del 0 al 99 per assignació manual", validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(1022)], verbose_name='Marker'),
+            model_name="alumne",
+            name="aruco_marker",
+            field=models.IntegerField(
+                help_text="Identificador del marker ARUCO associat a l'alumne. Ha de ser únic dins el nivell (Eso, Btx, ...) Del 0 al 99 per assignació manual",
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(1022),
+                ],
+                verbose_name="Marker",
+            ),
         ),
     ]

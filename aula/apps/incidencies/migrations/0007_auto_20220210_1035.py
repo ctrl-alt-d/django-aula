@@ -4,20 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('incidencies', '0006_auto_20190331_1541'),
+        ("incidencies", "0006_auto_20190331_1541"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='frassesincidenciaaula',
-            name='frase',
-            field=models.CharField(help_text="Escriu una frase que podrà ser triada a l'hora de posar una incidència", max_length=350, unique=True, verbose_name='Frase'),
+            model_name="frassesincidenciaaula",
+            name="frase",
+            field=models.CharField(
+                help_text="Escriu una frase que podrà ser triada a l'hora de posar una incidència",
+                max_length=350,
+                unique=True,
+                verbose_name="Frase",
+            ),
         ),
         migrations.AlterField(
-            model_name='incidencia',
-            name='descripcio_incidencia',
-            field=models.CharField(help_text='Frase curta que descriu la incidència. Aquesta informació la veuran els pares.', max_length=350),
+            model_name="incidencia",
+            name="descripcio_incidencia",
+            field=models.CharField(
+                help_text="Frase curta que descriu la incidència. Aquesta informació la veuran els pares.",
+                max_length=350,
+            ),
         ),
     ]

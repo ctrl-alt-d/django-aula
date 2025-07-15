@@ -4,15 +4,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sortides', '0025_pagament_observacions'),
+        ("sortides", "0025_pagament_observacions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sortida',
-            name='mitja_de_transport',
-            field=models.CharField(choices=[('TR', 'Tren'), ('BU', 'Bus'), ('AP', 'A peu'), ('CO', 'Combinat'), ('ND', 'No cal desplaçament'), ('MP', 'Mitjans propis')], help_text='Tria el mitjà de transport', max_length=2),
+            model_name="sortida",
+            name="mitja_de_transport",
+            field=models.CharField(
+                choices=[
+                    ("TR", "Tren"),
+                    ("BU", "Bus"),
+                    ("AP", "A peu"),
+                    ("CO", "Combinat"),
+                    ("ND", "No cal desplaçament"),
+                    ("MP", "Mitjans propis"),
+                ],
+                help_text="Tria el mitjà de transport",
+                max_length=2,
+            ),
         ),
     ]

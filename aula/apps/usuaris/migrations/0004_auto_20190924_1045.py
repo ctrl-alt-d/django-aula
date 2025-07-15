@@ -4,15 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('usuaris', '0003_auto_20190331_1541'),
+        ("usuaris", "0003_auto_20190331_1541"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='accio',
-            name='tipus',
-            field=models.CharField(choices=[('PL', 'Passar llista'), ('LL', 'Posar o treure alumnes a la llista'), ('IN', 'Posar o treur Incidència'), ('EE', 'Editar Expulsió'), ('EC', 'Expulsar del Centre'), ('RE', 'Recullir expulsió'), ('AC', 'Registre Actuació'), ('AG', 'Actualitza alumnes des de Saga'), ('MT', 'Envia missatge a tutors'), ('SK', 'Sincronitza Kronowin'), ('JF', 'Justificar Faltes'), ('NF', 'Notificacio Families'), ('AS', 'Accés a dades sensibles')], max_length=2),
+            model_name="accio",
+            name="tipus",
+            field=models.CharField(
+                choices=[
+                    ("PL", "Passar llista"),
+                    ("LL", "Posar o treure alumnes a la llista"),
+                    ("IN", "Posar o treur Incidència"),
+                    ("EE", "Editar Expulsió"),
+                    ("EC", "Expulsar del Centre"),
+                    ("RE", "Recullir expulsió"),
+                    ("AC", "Registre Actuació"),
+                    ("AG", "Actualitza alumnes des de Saga"),
+                    ("MT", "Envia missatge a tutors"),
+                    ("SK", "Sincronitza Kronowin"),
+                    ("JF", "Justificar Faltes"),
+                    ("NF", "Notificacio Families"),
+                    ("AS", "Accés a dades sensibles"),
+                ],
+                max_length=2,
+            ),
         ),
     ]

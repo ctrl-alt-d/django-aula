@@ -5,16 +5,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('alumnes', '0018_alumne_usuaris_app_associats'),
-        ('relacioFamilies', '0003_responsable'),
+        ("alumnes", "0018_alumne_usuaris_app_associats"),
+        ("relacioFamilies", "0003_responsable"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='alumne',
-            name='responsable_preferent',
-            field=models.ForeignKey(help_text="Responsable preferent de l'alumne/a", null=True, on_delete=django.db.models.deletion.SET_NULL, to='relacioFamilies.responsable'),
+            model_name="alumne",
+            name="responsable_preferent",
+            field=models.ForeignKey(
+                help_text="Responsable preferent de l'alumne/a",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="relacioFamilies.responsable",
+            ),
         ),
     ]

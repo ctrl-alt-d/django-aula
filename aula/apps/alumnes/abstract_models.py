@@ -1,25 +1,23 @@
 # This Python file uses the following encoding: utf-8
 
-from django.db import models
-from datetime import date
+import calendar
+from datetime import date, datetime
 
-from django.templatetags.static import static
-from datetime import datetime
-from private_storage.fields import PrivateFileField
-
-from aula.apps.usuaris.models import Professor, AlumneUser
-from aula.apps.tutoria.models import SeguimentTutorial
-from aula.apps.alumnes.named_instances import Nivells_no_obligatoris, Cursa_nivell
-from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 #  amorilla@xtec.cat
 from django.conf import settings
-import calendar
-from dateutil.relativedelta import relativedelta
-
-from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.templatetags.static import static
+from django.utils import timezone
+from private_storage.fields import PrivateFileField
+
+from aula.apps.alumnes.named_instances import Cursa_nivell, Nivells_no_obligatoris
+from aula.apps.tutoria.models import SeguimentTutorial
+from aula.apps.usuaris.models import AlumneUser, Professor
+from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 
 
 class AbstractNivell(models.Model):
@@ -626,7 +624,6 @@ class AbstractAlumne(models.Model):
 
 
 class AbstractDadesAddicionalsAlumne(models.Model):
-
     alumne = models.ForeignKey("alumnes.Alumne", on_delete=models.CASCADE)
     label = models.CharField(max_length=50, help_text="Nom del camp addicional")
     value = models.CharField(

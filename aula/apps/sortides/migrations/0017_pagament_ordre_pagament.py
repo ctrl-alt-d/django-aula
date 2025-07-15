@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('sortides', '0016_auto_20190722_1359'),
+        ("sortides", "0016_auto_20190722_1359"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pagament',
-            name='ordre_pagament',
+            model_name="pagament",
+            name="ordre_pagament",
             field=models.CharField(max_length=12, null=True, unique=True),
         ),
     ]

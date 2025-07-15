@@ -5,83 +5,74 @@ import hmac
 import json
 import random
 import urllib
+from datetime import datetime
 
+import django.utils.timezone
 from Crypto.Cipher import DES3
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
+from dateutil.relativedelta import relativedelta
+from django import forms
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group, User
+from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist, ValidationError
+from django.db import transaction
+from django.db.models import Q
+from django.db.utils import IntegrityError
+from django.forms.models import modelform_factory
+from django.http import HttpResponseRedirect
+from django.http.response import Http404, HttpResponse, HttpResponseServerError
+from django.shortcuts import get_object_or_404, render
+from django.template import loader
+from django.template.context import Context
+from django.template.defaultfilters import slugify
+from django.templatetags.tz import localtime
+from django.urls import reverse, reverse_lazy
+from django.utils.safestring import SafeText
+from django.views.decorators.csrf import csrf_exempt
+from django_select2.forms import ModelSelect2MultipleWidget
+from django_tables2.config import RequestConfig
+from icalendar import Calendar, Event, vText
 from rest_framework.decorators import api_view
 
+from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs
 from aula.apps.missatgeria.missatges_a_usuaris import (
     ACOMPANYANT_A_ACTIVITAT,
-    tipusMissatge,
-    RESPONSABLE_A_ACTIVITAT,
-    ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE,
     ERROR_FALTEN_DADES_REPORT_PAGAMENT_ONLINE,
     ERROR_IP_NO_PERMESA_REPORT_PAGAMENT_ONLINE,
+    ERROR_SIGNATURES_REPORT_PAGAMENT_ONLINE,
+    RESPONSABLE_A_ACTIVITAT,
+    tipusMissatge,
 )
+from aula.apps.missatgeria.models import Missatge
+from aula.apps.presencia.models import Impartir
 from aula.apps.sortides.filters import PagamentFilter, SortidaFilter
+from aula.apps.sortides.forms import PagamentForm
+from aula.apps.sortides.models import (
+    Pagament,
+    Quota,
+    QuotaPagament,
+    Sortida,
+    SortidaPagament,
+)
+from aula.apps.sortides.table2_models import Table2_Sortides
+from aula.apps.sortides.utils import get_QuotaPagament
+from aula.apps.sortides.utils_sortides import TPVsettings
+from aula.apps.usuaris.models import Professor, QRPortal, User2Professor
+from aula.apps.usuaris.tools import getRol
 from aula.settings import URL_DJANGO_AULA
-from aula.utils.forms import afegeigFormControlClass
-from aula.utils.widgets import DateTextImput, bootStrapButtonSelect, DateTimeTextImput
-from django.contrib.auth.decorators import login_required
-from aula.utils.decorators import group_required
 
 # helpers
 from aula.utils import tools
-from aula.utils.tools import unicode
-from aula.apps.usuaris.models import User2Professor, AlumneUser, Professor, QRPortal
-from aula.apps.presencia.models import Impartir
-from aula.apps.horaris.models import FranjaHoraria
-from django.shortcuts import render, get_object_or_404
-from django.template.context import RequestContext, Context
-from aula.apps.sortides.rpt_sortidesList import sortidesListRpt
-from aula.apps.sortides.models import (
-    Sortida,
-    SortidaPagament,
-    Pagament,
-    QuotaPagament,
-    Quota,
-    TPV,
-)
-from django.forms.models import modelform_factory
-from django.http import HttpResponseRedirect
-from django import forms
-from aula.apps.sortides.table2_models import Table2_Sortides
-from django_tables2.config import RequestConfig
+from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
-from django.shortcuts import render
-
-from icalendar import Calendar, Event
-from icalendar import vCalAddress, vText
-from django.http.response import HttpResponse, Http404, HttpResponseServerError
-from datetime import datetime
-from django.conf import settings
-from django.urls import reverse
-from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs
-from django.contrib import messages
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS, ObjectDoesNotExist
-from django.templatetags.tz import localtime
-from django.utils.safestring import SafeText
-from aula.apps.missatgeria.models import Missatge
-from django.contrib.auth.models import User, Group
-from django.db.models import Q
-from django.template import loader
-from django.template.defaultfilters import slugify
-from aula.utils.tools import classebuida
-import codecs
-from django.db.utils import IntegrityError
-from django.db import transaction
-from aula.apps.sortides.utils_sortides import TPVsettings
-
-import django.utils.timezone
-from dateutil.relativedelta import relativedelta
-from django.urls import reverse_lazy
-from django_select2.forms import ModelSelect2MultipleWidget
+from aula.utils.tools import classebuida, unicode
+from aula.utils.widgets import DateTimeTextImput, bootStrapButtonSelect
 
 
 @login_required
 @group_required(["professors", "administratius"])
 def imprimir(request, pk, din="4"):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -107,9 +98,10 @@ def imprimir(request, pk, din="4"):
 
     # Preparo el codi de barres
     import time
+
     import barcode
-    from PIL import Image
     from barcode.writer import ImageWriter
+    from PIL import Image
 
     CodiBarres = barcode.get_barcode_class("code128")
     codi_barres = CodiBarres(instance.codi_de_barres or "x", writer=ImageWriter())
@@ -125,7 +117,6 @@ def imprimir(request, pk, din="4"):
             50,
         )
     )
-    s = im.size
     # im = im.resize((int(s[0] * 0.8), int(s[1] * 0.8)))
     im.save(barres)
 
@@ -172,9 +163,10 @@ def imprimir(request, pk, din="4"):
         o.te_codi_barres = bool(instance.codi_de_barres)
 
     # from django.template import Context
-    from appy.pod.renderer import Renderer
     import html
     import os
+
+    from appy.pod.renderer import Renderer
     from django import http
 
     excepcio = None
@@ -287,7 +279,6 @@ def sortidesMevesList(request, tipus="A"):
 @login_required
 @group_required(["professors"])
 def sortidesAllList(request, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -321,7 +312,7 @@ def sortidesAllList(request, tipus=None):
     url = r"{0}{1}".format(
         settings.URL_DJANGO_AULA, reverse("sortides__sortides__ical")
     )
-    
+
     return render(
         request,
         "table2.html",
@@ -336,7 +327,6 @@ def sortidesAllList(request, tipus=None):
 @login_required
 @group_required(["professors", "administratius"])
 def sortidesGestioList(request, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -450,8 +440,6 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
-
-    es_post = request.method == "POST"
 
     # am = Group.objects.get_or_create(name='administratius')[0] in user.groups.all()
     # pr = Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
@@ -778,7 +766,6 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
             return HttpResponseRedirect(nexturl)
 
     else:
-
         form = formIncidenciaF(instance=instance)
 
     # form.fields['estat'].widget = forms.RadioSelect( choices = form.fields['estat'].widget.choices )
@@ -847,7 +834,6 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
 @login_required
 @group_required(["professors", "administratius"])
 def alumnesConvocats(request, pk, origen, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
     professor = User2Professor(user)
@@ -874,7 +860,6 @@ def alumnesConvocats(request, pk, origen, tipus=None):
 
         if form.is_valid():
             try:
-
                 nous = set([x.pk for x in form.cleaned_data["alumnes_convocats"]])
                 ante = set([x.pk for x in instance.alumnes_convocats.all()])
                 # afegir
@@ -916,7 +901,6 @@ def alumnesConvocats(request, pk, origen, tipus=None):
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(e.messages)
 
     else:
-
         form = formIncidenciaF(instance=instance)
 
     from itertools import groupby
@@ -972,7 +956,6 @@ def alumnesConvocats(request, pk, origen, tipus=None):
 @login_required
 @group_required(["professors", "administratius"])
 def alumnesFallen(request, pk, origen, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -1063,7 +1046,6 @@ def alumnesFallen(request, pk, origen, tipus=None):
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(e.messages)
 
     else:
-
         form = formIncidenciaF(instance=instance)
 
     ids_alumnes_que_venen = [a.id for a in instance.alumnes_convocats.all()]
@@ -1106,7 +1088,6 @@ def alumnesFallen(request, pk, origen, tipus=None):
 @login_required
 @group_required(["professors", "administratius"])
 def alumnesJustificats(request, pk, origen, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -1136,7 +1117,6 @@ def alumnesJustificats(request, pk, origen, tipus=None):
         form = formIncidenciaF(request.POST, instance=instance)
 
         if form.is_valid():
-
             try:
                 nous = set([x.pk for x in form.cleaned_data["alumnes_justificacio"]])
                 ante = set([x.pk for x in instance.alumnes_justificacio.all()])
@@ -1179,7 +1159,6 @@ def alumnesJustificats(request, pk, origen, tipus=None):
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(e.messages)
 
     else:
-
         form = formIncidenciaF(instance=instance)
 
     # ids_alumnes_no_vindran = [ a.id for a in instance.alumnes_que_no_vindran.all()  ]
@@ -1224,7 +1203,6 @@ def alumnesJustificats(request, pk, origen, tipus=None):
 @login_required
 @group_required(["professors"])
 def professorsAcompanyants(request, pk, origen, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -1238,7 +1216,6 @@ def professorsAcompanyants(request, pk, origen, tipus=None):
 
     professors_acompanyen_abans = set(instance.altres_professors_acompanyants.all())
     professors_organitzen_abans = set(instance.professors_responsables.all())
-    estat_abans = instance.estat
 
     fEsDireccioOrGrupSortides = request.user.groups.filter(
         name__in=["direcció", "sortides"]
@@ -1330,7 +1307,6 @@ def professorsAcompanyants(request, pk, origen, tipus=None):
                 form._errors.setdefault(NON_FIELD_ERRORS, []).extend(e.messages)
 
     else:
-
         form = formIncidenciaF(instance=instance)
 
     for f in form.fields:
@@ -1366,7 +1342,6 @@ def professorsAcompanyants(request, pk, origen, tipus=None):
 @login_required
 @group_required(["professors", "administratius"])  # TODO: i grup sortides
 def esborrar(request, pk, origen):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
 
@@ -1375,7 +1350,7 @@ def esborrar(request, pk, origen):
     instance = get_object_or_404(Sortida, pk=pk)
 
     mortalPotEntrar = (
-        instance.professor_que_proposa == professor and not instance.estat in ["R", "G"]
+        instance.professor_que_proposa == professor and instance.estat not in ["R", "G"]
     )
     direccio = request.user.groups.filter(name__in=["direcció", "sortides"]).exists()
     esAdministratiu = request.user.groups.filter(name__in=["administratius"]).exists()
@@ -1393,7 +1368,7 @@ def esborrar(request, pk, origen):
 
     try:
         instance.delete()
-    except:
+    except:  # noqa: E722
         messages.warning(request, "Error esborrant l'activitat/pagament.")
 
     nexturl = r"/sortides/sortides{origen}/{tipus}".format(
@@ -1406,7 +1381,6 @@ def esborrar(request, pk, origen):
 
 
 def sortidaiCal(request):
-
     cal = Calendar()
     cal.add("method", "PUBLISH")  # IE/Outlook needs this
 
@@ -1580,9 +1554,7 @@ def sortidaExcel(request, pk):
                 ).exists()
                 else ""
             ),
-            ",".join(
-                filter(None, [alumne.get_tots_telefons()])
-            ),
+            ",".join(filter(None, [alumne.get_tots_telefons()])),
             "No assisteix a la sortida" if alumne in no_assisteixen else "",
         ]
         novindran = sortida.alumnes_que_no_vindran.all()
@@ -1615,19 +1587,20 @@ def sortidaExcel(request, pk):
 
     dades_sortida = detall + alumnes
 
-    template = loader.get_template("export.csv")
-    context = Context(
+    loader.get_template("export.csv")
+    Context(
         {
             "capcelera": capcelera,
             "dades": dades_sortida,
         }
     )
 
-    import os
     import html
+    import os
     import time
-    from django import http
+
     import xlsxwriter
+    from django import http
 
     resultat = "/tmp/DjangoAula-temp-{0}-{1}.xlsx".format(
         time.time(), request.session.session_key
@@ -1722,7 +1695,9 @@ def generaOrdre(pagament):
     concatenat amb l'identificador de pagament (7 dígits)
     """
 
-    return ("00000" + str(pagament.alumne.pk) + ("0000000" + str(pagament.pk))[-7:])[-12:]
+    return ("00000" + str(pagament.alumne.pk) + ("0000000" + str(pagament.pk))[-7:])[
+        -12:
+    ]
 
 
 def esRecent(datahora, minuts=3):
@@ -1749,10 +1724,12 @@ def logPagaments(txt, tipus="ADMINISTRACIO"):
     administradors = get_object_or_404(Group, name="administradors")
     msg.envia_a_grup(administradors, importancia=importancia)
 
-    
+
 def demoAllIn(request, pagament):
-    if not demo(request): return
-    if pagament.estat=="E" or not pagament.alumne: return
+    if not demo(request):
+        return
+    if pagament.estat == "E" or not pagament.alumne:
+        return
     version = request.GET.get("Ds_SignatureVersion", "")
     parameters = request.GET.get("Ds_MerchantParameters", "")
     firma_rebuda = request.GET.get("Ds_Signature", "")
@@ -1761,38 +1738,43 @@ def demoAllIn(request, pagament):
         pagament.data_hora_pagament = datetime.now()
         pagament.ordre_pagament = generaOrdre(pagament)
         pagament.estat = "F"
-        pagament.save()    
+        pagament.save()
+
 
 def demo(request):
     codi, _, entornReal = TPVsettings(request.user)
-    return "127.0.0.1:8000" in settings.URL_DJANGO_AULA and codi=='999008881' and not entornReal
-  
-  
+    return (
+        "127.0.0.1:8000" in settings.URL_DJANGO_AULA
+        and codi == "999008881"
+        and not entornReal
+    )
+
+
 @login_required
 def pagoOnlineWeb(request, pk):
-    request.session['origen'] = 'Login'
+    request.session["origen"] = "Login"
     return pagoOnlineBase(request, pk)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def pagoOnlineApi(request, pk):
     request.session.save()
     session_key = request.session.session_key
-    request.session['origen']='Api'
-    response=pagoOnlineBase(request, pk)
-    response.set_cookie('sessionid', session_key, httponly=True)
+    request.session["origen"] = "Api"
+    response = pagoOnlineBase(request, pk)
+    response.set_cookie("sessionid", session_key, httponly=True)
     return response
 
 
 def pagoOnlineBase(request, pk):
-    from aula.apps.sortides.forms import PagamentForm
     """
-    Mostra la informació del pagament i el botó per pagar o 
+    Mostra la informació del pagament i el botó per pagar o
     el missatge Pagament Realitzat!!!
     """
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
-    _, _, alumne = getRol( user, request )
+    _, _, alumne = getRol(user, request)
 
     pagament = get_object_or_404(Pagament, pk=pk)
     nexturl = request.GET.get("next")
@@ -1802,7 +1784,7 @@ def pagoOnlineBase(request, pk):
     # Simula el pagament per al cas DEMO amb runserver 127.0.0.1:8000
     if demo(request):
         demoAllIn(request, pagament)
-    
+
     if pagament.estat == "E":
         """
         Pagament erroni, es pot donar el cas si l'usuari ha obert diverses finestres de pagament
@@ -1820,10 +1802,14 @@ def pagoOnlineBase(request, pk):
         qr_de_lusuari = QRPortal.objects.get(usuari_referenciat=user)
         alumne_referenciat_al_qr = qr_de_lusuari.alumne_referenciat
         usuari_associat_al_qr = alumne_referenciat_al_qr.user_associat.getUser()
-    except:
+    except:  # noqa: E722
         usuari_associat_al_qr = None
     usuari_associat_a_lalumne = alumne.user_associat.getUser()
-    potEntrar = (usuari_associat_a_lalumne == user or fEsDireccioOrGrupSortides or usuari_associat_al_qr == usuari_associat_a_lalumne)
+    potEntrar = (
+        usuari_associat_a_lalumne == user
+        or fEsDireccioOrGrupSortides
+        or usuari_associat_al_qr == usuari_associat_a_lalumne
+    )
 
     if not potEntrar:
         return render(
@@ -1872,7 +1858,7 @@ def pagoOnlineBase(request, pk):
                 pagament.estat = ""
                 pagament.data_hora_pagament = datetime.now()
                 pagament.save()
-                
+
     if pagament.sortida:
         sortida = pagament.sortida
         preu = sortida.preu_per_alumne
@@ -1911,10 +1897,9 @@ def pagoOnlineBase(request, pk):
             "limit": data_limit_pagament,
             "pagat": pagament.pagament_realitzat,
             "next": nexturl,
-            "origen": request.session['origen'],
+            "origen": request.session["origen"],
         },
     )
-
 
 
 @login_required
@@ -1934,7 +1919,7 @@ def pagoOnlineKO(request, pk):
         Crea un pagament clone, com és un pagament diferent tindrà un ordre_pagament nou.
         El pagament cancel·lat es guarda amb alumne NULL
         """
-        noup = clonePagament(pagament)
+        clonePagament(pagament)
         pagament.pagament_realitzat = False
         pagament.data_hora_pagament = datetime.now()
         pagament.alumne = None
@@ -2105,7 +2090,7 @@ def retornTransaccio(request, pk):
     # rebent dades de redsys   --------------------------------------------
     # adaptació del codi existent al següent mòdul https://pypi.org/project/odoo11-addon-payment-redsys/
 
-    version = request.POST.get("Ds_SignatureVersion", "")
+    request.POST.get("Ds_SignatureVersion", "")
     parameters = request.POST.get("Ds_MerchantParameters", "")
     firma_rebuda = request.POST.get("Ds_Signature", "")
 
@@ -2164,7 +2149,7 @@ def retornTransaccio(request, pk):
                 pagament.data_hora_pagament = datetime.strptime(
                     data + " " + hora, "%d/%m/%Y %H:%M"
                 )
-            except Exception as e:
+            except Exception:
                 pagament.data_hora_pagament = datetime.now()
             pagament.ordre_pagament = reference
             pagament.estat = "F"
@@ -2190,7 +2175,7 @@ def retornTransaccio(request, pk):
             El pagament cancel·lat es guarda amb alumne NULL
             """
             if pagament.estat != "E":
-                noup = clonePagament(pagament)
+                clonePagament(pagament)
             pagament.pagament_realitzat = False
 
             try:
@@ -2199,7 +2184,7 @@ def retornTransaccio(request, pk):
                 pagament.data_hora_pagament = datetime.strptime(
                     data + " " + hora, "%d/%m/%Y %H:%M"
                 )
-            except Exception as e:
+            except Exception:
                 pagament.data_hora_pagament = datetime.now()
             pagament.ordre_pagament = reference
             pagament.alumne = None
@@ -2285,7 +2270,6 @@ def pagoEfectiu(request, pk):
 @login_required()
 @group_required(["professors", "administratius"])
 def detallPagament(request, pk, tipus=None):
-
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
     professor = User2Professor(user)
@@ -2440,21 +2424,6 @@ def assignaQuotes(request):
     )
 
 
-def get_QuotaPagament(alumne, tipus, nany=None):
-    """
-    alumne del que volem la quota
-    tipus de quota a escollir
-    nany que correspon a la quota, si None utilitza any actual
-    Retorna queryset amb la quota que correspon a l'alumne, tipus de quota i any indicats.
-    """
-
-    if not nany:
-        nany = django.utils.timezone.now().year
-    return QuotaPagament.objects.filter(
-        alumne=alumne, quota__tipus=tipus, quota__any=nany
-    )
-
-
 @login_required
 @group_required(["direcció", "administradors", "tpvs"])
 def quotesCurs(request, curs, tipus, nany, auto):
@@ -2466,8 +2435,9 @@ def quotesCurs(request, curs, tipus, nany, auto):
     auto indica si s'ha de proposar la quota per a cada alumne de manera automàtica
 
     """
-    from aula.apps.sortides.forms import PagQuotesForm
     from django.forms import formset_factory
+
+    from aula.apps.sortides.forms import PagQuotesForm
 
     auto = str(auto) == "True"
     if request.method == "POST":
@@ -2601,7 +2571,8 @@ def quotesCurs(request, curs, tipus, nany, auto):
             for a in llista:
                 pagaments = get_QuotaPagament(a, tipus, nany)
                 email = a.get_correus_relacio_familia()
-                if email: email=email[0]
+                if email:
+                    email = email[0]
                 if pagaments:
                     for pg in pagaments:
                         llistapag.append(
@@ -2662,14 +2633,14 @@ def quotesCurs(request, curs, tipus, nany, auto):
                 quotacurs = Quota.objects.filter(
                     curs__nivell=c.nivell, curs__nom_curs=ncurs, any=nany, tipus=tipus
                 )
-            except:
+            except:  # noqa: E722
                 quotacurs = None
 
             if not quotacurs:
                 # No troba una quota adequada, comprova si existeixen altres quotes del mateix tipus
                 quotacurs = Quota.objects.filter(any=nany, tipus=tipus)
                 # Interesa trobar una única sense curs específic
-                if quotacurs.count() != 1 or quotacurs[0].curs != None:
+                if quotacurs.count() != 1 or quotacurs[0].curs is not None:
                     # Si troba varies o només una d'un altre curs, no la selecciona
                     quotacurs = None
 
@@ -2699,7 +2670,8 @@ def quotesCurs(request, curs, tipus, nany, auto):
         for a in llista:
             pagaments = get_QuotaPagament(a, tipus, nany)
             email = a.get_correus_relacio_familia()
-            if email: email=email[0]
+            if email:
+                email = email[0]
             if pagaments:
                 for pg in pagaments:
                     llistapag.append(
@@ -2799,14 +2771,14 @@ def acumulatsQuotesCurs(tpv, nany=None):
     for p in list(totfet):
         q, m, t1, t2 = p
         tot = (t1 if t1 else 0) + (t2 if t2 else 0)
-        if not q in calcul:
+        if q not in calcul:
             calcul[q] = {}
         calcul[q][m] = tot
 
     for p in list(totpendent):
         q, t1, t2 = p
         tot = (t1 if t1 else 0) + (t2 if t2 else 0)
-        if not q in calcul:
+        if q not in calcul:
             calcul[q] = {}
         calcul[q]["pendent"] = tot
 
@@ -2866,7 +2838,7 @@ def acumulatsQuotesGen(tpv, nany=None):
             n = "Esborrats"
         n = str(n) + "-" + str(x)
         tot = (t1 if t1 else 0) + (t2 if t2 else 0)
-        if not n in calcul:
+        if n not in calcul:
             calcul[n] = {}
         calcul[n][m] = tot
 
@@ -2874,7 +2846,7 @@ def acumulatsQuotesGen(tpv, nany=None):
         n, x, t1, t2 = p
         n = str(n) + "-" + str(x)
         tot = (t1 if t1 else 0) + (t2 if t2 else 0)
-        if not n in calcul:
+        if n not in calcul:
             calcul[n] = {}
         calcul[n]["pendent"] = tot
 
@@ -2930,14 +2902,14 @@ def acumulatsActivitats(tpv, nany=None):
     for p in list(totfet):
         _, t, m, tot = p
         n = "activitat: " + str(t)
-        if not n in calcul:
+        if n not in calcul:
             calcul[n] = {}
         calcul[n][m] = tot
 
     for p in list(totpendent):
         _, t, tot = p
         n = "activitat: " + str(t)
-        if not n in calcul:
+        if n not in calcul:
             calcul[n] = {}
         calcul[n]["pendent"] = tot
 
@@ -2951,8 +2923,9 @@ def fullcalculQuotes(tpv, nany=None):
     Retorna un full de càlcul xlsx amb els acumulats i pagaments pendents
     """
 
-    import xlsxwriter
     import io
+
+    import xlsxwriter
 
     output = io.BytesIO()
     workbook = xlsxwriter.Workbook(output)

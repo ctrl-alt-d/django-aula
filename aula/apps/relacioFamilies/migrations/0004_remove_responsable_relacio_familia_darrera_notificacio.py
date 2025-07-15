@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('relacioFamilies', '0003_responsable'),
+        ("relacioFamilies", "0003_responsable"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='responsable',
-            name='relacio_familia_darrera_notificacio',
+            model_name="responsable",
+            name="relacio_familia_darrera_notificacio",
         ),
     ]

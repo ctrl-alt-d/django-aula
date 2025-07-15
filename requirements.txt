@@ -40,3 +40,6 @@ django-crispy-forms==2.3 ; python_version > '3.8'
 
 matplotlib
 opencv-contrib-python
+
+black
+ruff

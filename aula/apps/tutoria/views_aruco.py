@@ -45,12 +45,13 @@ def imprimir(request):
     alumnes = [
         a
         for t in professor.tutor_set.all()
-        for a in t.grup.alumne_set.all() if is_aruco_actiu_per_grup(t.grup)
+        for a in t.grup.alumne_set.all()
+        if is_aruco_actiu_per_grup(t.grup)
     ]
     noms_i_markers = [
         (f"{a.grup} - {a.cognoms}, {a.nom}", int(a.aruco_marker)) for a in alumnes
     ]
-    
+
     noms_i_markers.sort(key=lambda x: x[0])
 
     aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
