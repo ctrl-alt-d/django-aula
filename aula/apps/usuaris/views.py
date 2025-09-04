@@ -49,6 +49,7 @@ from aula.apps.usuaris.models import (
     ResponsableUser,
     User2Professor,
     User2Responsable,
+    User2Alumne,
 )
 from aula.apps.usuaris.tables2_models import HorariProfessorTable
 from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
@@ -59,7 +60,7 @@ from aula.utils.tools import getClientAdress, unicode
 
 
 @login_required
-@group_required(["professors", "consergeria", "tpvs"])
+@group_required(["professors", "consergeria", "tpvs", 'administratius', 'secretaria'])
 def canviDadesUsuari(request):
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
@@ -394,7 +395,7 @@ def loginUser(request):
                         if User2Responsable(user):
                             user.responsable.motiu_bloqueig = ""
                             user.responsable.save()
-                        elif not User2Professor(user):
+                        elif User2Alumne(user):
                             user.alumne.motiu_bloqueig = ""
                             user.alumne.save()
                         return HttpResponseRedirect(url_next)
