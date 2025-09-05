@@ -40,7 +40,7 @@ def set_aruco_marker(
     # Si no és de la ESO, busquem un marker global exceptuant ESO.
     # Per evitar que els que fan ICO o altres assignatures
     # compartides amb FP i BTX col·lisionin.
-    if "ESO" not in alumne.grup.curs.nivell.nom.to_upper():
+    if "ESO" not in alumne.grup.curs.nivell.nom_nivell.upper():
         availables_global_except_eso = _global_markers_disponibles_except_eso(
             markers_cache
         )
@@ -99,7 +99,7 @@ def _global_markers_disponibles_except_eso(
     """
     Intersect of all markers disponibles per nivell exceptuant ESO.
     """
-    eso_pk = Nivell.objects.filter(nom__icontains="ESO").values_list("pk", flat=True)
+    eso_pk = Nivell.objects.filter(nom_nivell__icontains="ESO").values_list("pk", flat=True)
     dit_makers_no_eso = {
         pk: markers for pk, markers in dit_makers.items() if pk not in eso_pk
     }
