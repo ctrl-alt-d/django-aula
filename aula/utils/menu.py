@@ -19,6 +19,8 @@ def calcula_menu(user, path, sessioImpersonada, request):
     if not user.is_authenticated:
         return
 
+    professor = User2Professor(user)
+
     # mire a quins grups està aquest usuari:
     al = Group.objects.get_or_create(name="alumne")[0] in user.groups.all()
     ad = (
@@ -52,8 +54,7 @@ def calcula_menu(user, path, sessioImpersonada, request):
         not al
         and pr
         and (
-            User2Professor(user).tutor_set.exists()
-            or User2Professor(user).tutorindividualitzat_set.exists()
+            professor.tutor_set.exists() or professor.tutorindividualitzat_set.exists()
         )
     )
 
@@ -72,7 +73,6 @@ def calcula_menu(user, path, sessioImpersonada, request):
     # Comprovar si té expulsions sense tramitar o cal fer expulsions per acumulació
     teExpulsionsSenseTramitar = False
     if pr:
-        professor = User2Professor(user)
         teExpulsionsSenseTramitar = professor.expulsio_set.exclude(
             tramitacio_finalitzada=True
         ).exists()
@@ -150,10 +150,17 @@ def calcula_menu(user, path, sessioImpersonada, request):
     except:  # noqa: E722
         return menu
 
-    tu_aruco = tu and any(
-        is_aruco_actiu_per_grup(grup)
-        for grup in User2Professor(user).tutor_set.values_list("grup", flat=True)
-    )
+    def tutor_te_aruco_actiu(professor):
+        """
+        Comprova si hi ha AruCo actiu per als grups del tutor
+        """
+        grups_pks = professor.tutor_set.values_list("grup", flat=True)
+        grups = Group.objects.filter(pk__in=grups_pks)
+        tu_aruco = any(is_aruco_actiu_per_grup(grup) for grup in grups)
+        return tu_aruco
+
+    # Comprovar si hi ha AruCo actiu per als grups del tutor
+    tu_aruco = tutor_te_aruco_actiu(professor) if tu else False
 
     arbre_tutoria = (
         ("Actuacions", "tutoria__actuacions__list", tu, None, None),
