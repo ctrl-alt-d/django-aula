@@ -154,8 +154,12 @@ def calcula_menu(user, path, sessioImpersonada, request):
         """
         Comprova si hi ha AruCo actiu per als grups del tutor
         """
-        tutors = professor.tutor_set.select_related('grup').all()
-        tu_aruco = any(is_aruco_actiu_per_grup(tutor.grup) for tutor in tutors if tutor.grup is not None)
+        tutors = professor.tutor_set.select_related("grup").all()
+        tu_aruco = any(
+            is_aruco_actiu_per_grup(tutor.grup)
+            for tutor in tutors
+            if tutor.grup is not None
+        )
         return tu_aruco
 
     # Comprovar si hi ha AruCo actiu per als grups del tutor
