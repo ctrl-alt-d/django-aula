@@ -7,7 +7,7 @@ School Attendance Software
 
 ![Imgur](http://i.imgur.com/YlCRTap.png)
 
-**[Llicència i Crèdits](LICENSE)**
+**[Llicència i Crèdits](LICENSE)** **EL PROGRAMA NO TÉ CAP GARANTIA, UTILITZEU-LO SOTA LA VOSTRA RESPONSABILITAT.**
 
 Using Docker
 ============
@@ -53,12 +53,14 @@ Deployment Docs
 
 [Documentació pas a pas per a fer el desplegament.](docs/Wiki/README.md)
 
-Vols col·laborar-hi?
+Vols col·laborar-hi com a #DEV?
 =============
 
-[FAQs](https://github.com/ctrl-alt-d/django-aula/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+)
+Aquestes són les [issues prioritàries](https://github.com/ctrl-alt-d/django-aula/issues?q=is%3Aissue%20state%3Aopen%20label%3APrioritari)
 
-Si fas una col·laboració aquest més pots participar a la [hacktoberfest](https://hacktoberfest.digitalocean.com) :)
+Hi estàs interessat?
+
+[FAQs](https://github.com/ctrl-alt-d/django-aula/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+)
 
 Necessites ajuda?
 ============

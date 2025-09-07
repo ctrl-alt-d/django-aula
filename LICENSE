@@ -2,13 +2,15 @@ Llicència:
 
     This file is part of django-aula ('djAu').
 
-    Copyright © 2011-TODAY . Daniel Herrera ctrl.alt.d@gmail.com - Institut Cendrassos - Figueres. 
+    Copyright © 2011–TODAY Dani Herrera ctrl.alt.d@gmail.com (Institut Cendrassos - Figueres)
     
-    Aquest copyright forma part del programa, no es pot alterar i 
-    ha d'acompanyar el programa de manera visible. 
-    There is NO WARRANTY, to the extent permitted by law. 
+    Aquest copyright forma part del programa, no es pot alterar, 
+    i ha d'acompanyar el programa de manera visible. 
+
+    There is NO WARRANTY, to the extent permitted by law, use at your own risk. 
     EL PROGRAMA NO TÉ CAP GARANTIA, 
-    MÉS ENLLÀ DE LES EXIGIDES PER LES LLEIS APLICABLES.
+    MÉS ENLLÀ DE LES EXIGIDES PER LES LLEIS APLICABLES, 
+    UTILITZEU-LO SOTA LA VOSTRA RESPONSABILITAT.
     
     El programa es diu django-aula, s'escriu 'djAu' i es pronuncia 'dijau'.
 
@@ -22,20 +24,18 @@ Llicència:
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    EL PROGRAMA NO TÉ CAP GARANTIA, MÉS ENLLÀ DE LES EXIGIDES PER
-    LES LLEIS APLICABLES.
-    
-    El copyright forma part de la llicència i django-aula ('djAu')
-
     You should have received a copy of the GNU General Public License
     along with django-aula ('djAu').  If not, see <http://www.gnu.org/licenses/>.
+
+    El copyright forma part de la llicència de django-aula ('djAu').
+
     
     Crèdits, col·laboradors i special thanks:
     
-       Daniel Herrera ( ctrl.alt.d@gmail.com )
+       Dani Herrera ( ctrl.alt.d@gmail.com )
        'Some time, Some code
 
-       Joan Rodríguez ( jrodr236@gmail.com ) 2013-2015
+       Joan Rodríguez ( jrodr236@gmail.com ) 2013 - 2015
        'Migració UI a Bootstrap3 i Responsive design.
        'Millores en processos i estructures
  
@@ -45,27 +45,26 @@ Llicència:
        JaumeI ( JaumeI@gmail.com ) & David Llop ( d.lloople@gmail.com ) 2014
        'workflow de promoció/canvi manual de grup
 
-       Xevi Terradellas ( xeviterr@gmail.com ) 2014 -
+       Xevi Terradellas ( xeviterr@gmail.com ) 2014 - 2019
        'Millores en gestió d'alumnes i grups
        'Testos
        
-       Juaky Rubio ( juaky73@gmail.com ) 2017-
+       Juaky Rubio ( juaky73@gmail.com ) 2017 -
        'Migració a django 1.11
        'Mòdul reserva d'aules
        'Buscadors de persones ( alumnes, professors )
        'Adaptació a Esfer@
        'Fotos alumnes
-       
+       'Pagaments
+
        Quim Saurina ( jsaurina@xtec.cat ) 2018 -
        'Aportacions a la documentació.
        
        Jordi Subias ( jsubias6@xtec.cat ) 2018
        'Millores parametritzacions
 
-       Toni Morillas (amorilla@xtec.cat) 2019
+       Toni Morillas (amorilla@xtec.cat) 2019 -
        'Migració Python3
        'Extensió Untis
        'Matrícula online
-       
-       
-
+       'Mantenidor principal
