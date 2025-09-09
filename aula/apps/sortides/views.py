@@ -1804,11 +1804,11 @@ def pagoOnlineBase(request, pk):
         usuari_associat_al_qr = alumne_referenciat_al_qr.user_associat.getUser()
     except:  # noqa: E722
         usuari_associat_al_qr = None
-    usuari_associat_a_lalumne = alumne.user_associat.getUser()
+    usuari_associat_a_lalumne = alumne.user_associat.getUser() if alumne else None
     potEntrar = (
-        usuari_associat_a_lalumne == user
+        alumne==pagament.alumne
         or fEsDireccioOrGrupSortides
-        or usuari_associat_al_qr == usuari_associat_a_lalumne
+        or usuari_associat_al_qr and usuari_associat_al_qr == usuari_associat_a_lalumne
     )
 
     if not potEntrar:
@@ -1896,7 +1896,7 @@ def pagoOnlineBase(request, pk):
             "preu": preu,
             "limit": data_limit_pagament,
             "pagat": pagament.pagament_realitzat,
-            "next": nexturl,
+            "next": nexturl if alumne else '/',
             "origen": request.session["origen"],
         },
     )
