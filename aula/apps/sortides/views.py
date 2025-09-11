@@ -1554,7 +1554,7 @@ def sortidaExcel(request, pk):
                 ).exists()
                 else ""
             ),
-            ",".join(filter(None, [alumne.get_tots_telefons()])),
+            ",".join(filter(None, alumne.get_telefons_responsables())),
             "No assisteix a la sortida" if alumne in no_assisteixen else "",
         ]
         novindran = sortida.alumnes_que_no_vindran.all()
