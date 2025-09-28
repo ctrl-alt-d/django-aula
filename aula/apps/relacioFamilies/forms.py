@@ -1,4 +1,3 @@
-import imghdr
 import io
 import os
 
@@ -13,7 +12,7 @@ from aula.utils.widgets import DataHoresAlumneAjax
 
 
 def tipusFotoOK(foto):
-    if foto and "image/{0}".format(imghdr.what(foto)) not in CUSTOM_TIPUS_MIME_FOTOS:
+    if foto and foto.content_type not in CUSTOM_TIPUS_MIME_FOTOS:
         message = "Tipus de fitxer no vàlid. Formats permesos: {0}".format(
             CUSTOM_TIPUS_MIME_FOTOS
         ).replace("image/", "")

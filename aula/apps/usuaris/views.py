@@ -86,7 +86,7 @@ def canviDadesUsuari(request):
             )
             formDadesAddicionals.fields["foto"].label = "Foto"
 
-        if formUsuari.is_valid():
+        if formUsuari.is_valid() and (not professor or formDadesAddicionals.is_valid()):
             # Verifica si domini correcte
             errors = {}
             email = formUsuari.cleaned_data["email"]
