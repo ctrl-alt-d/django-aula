@@ -28,7 +28,7 @@ make start
 Quick demo
 =========
 
-On Ubuntu Server 20.04/22.04 LTS 64 bits:
+On Ubuntu Server 24.04 LTS:
 
 ```bash
 sudo apt-get update
