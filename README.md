@@ -28,12 +28,13 @@ make start
 Quick demo
 =========
 
-On Ubuntu Server 20.04/22.04 LTS 64 bits:
+On Ubuntu Server 24.04 LTS:
 
 ```bash
 sudo apt-get update
 sudo apt-get install python3 python3-venv python3-dev git
 sudo apt-get install python3-lxml python3-libxml2 libxml2-dev libxslt-dev lib32z1-dev
+sudo apt-get install libgl1 libglib2.0-0t64
 mkdir djau
 cd djau
 git clone --single-branch --branch master https://github.com/ctrl-alt-d/django-aula.git django-aula

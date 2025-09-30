@@ -10,8 +10,8 @@ lxml
 six
 django-debug-toolbar
 python-dateutil
-django-tables2 == 2.7.0 ; python_version <= '3.8'
-django-tables2 > 2.7.0 ; python_version > '3.8'
+django-tables2 == 2.7.0 ; python_version < '3.9'
+django-tables2 > 2.7.0 ; python_version >= '3.9'
 icalendar
 django-appconf
 Pillow
@@ -25,7 +25,8 @@ django-private-storage
 dnspython
 django-formtools
 invoke
-psycopg2-binary
+psycopg2-binary ; python_version < '3.8'
+psycopg[binary] ; python_version >= '3.8'
 django_select2
 djangorestframework
 markdown
@@ -34,8 +35,8 @@ qrcode
 djangorestframework-simplejwt
 djau-gsuite-email
 crispy-bootstrap3==2024.1
-django-crispy-forms==2.0 ; python_version <= '3.8'
-django-crispy-forms==2.3 ; python_version > '3.8'
+django-crispy-forms==2.0 ; python_version < '3.9'
+django-crispy-forms==2.3 ; python_version >= '3.9'
 
 
 matplotlib

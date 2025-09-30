@@ -27,6 +27,8 @@ systemctl stop apache2
 cd /opt/djau
 git pull
 source venv/bin/activate
+pip install --upgrade pip
+pip uninstall psycopg2 psycopg2-binary
 pip install --upgrade --no-cache-dir -r requirements.txt
 python manage.py migrate
 python manage.py collectstatic -c --no-input

@@ -1,4 +1,4 @@
-# Instalación en Ubuntu Server 20.04 LTS / 22.04 LTS / 24.04 LTS
+# Instalación en Ubuntu 24.04 LTS o Debian 13
 
 > **Atención:**  Todas las instrucciones de este documento se deben ejecutar con permisos elevados
 
@@ -9,7 +9,7 @@ El primer paso es preparar un entorno de desarrollo **[Python](https://www.pytho
 ```bash
 apt-get update
 apt-get upgrade
-apt-get install python3 python3-venv libxml2-dev libxslt-dev python3-lxml python3-libxml2 python3-dev lib32z1-dev git
+apt-get install python3 python3-venv libxml2-dev libxslt-dev python3-lxml python3-libxml2 python3-dev lib32z1-dev git libgl1 libglib2.0-0t64
 ```
 
 Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
@@ -17,8 +17,8 @@ Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la ins
 Nos colocamos en el directorio donde instalaremos la aplicación y clonamos el repositorio del proyecto.
 
 ```bash
-cd /opt && sudo git clone https://github.com/ctrl-alt-d/django-aula.git djau2025 
-sudo chown -R :www-data djau2025  #opcionalmente se puede cambiar el propietario para no utilizar root.
+cd /opt && git clone https://github.com/ctrl-alt-d/django-aula.git djau2025 
+chown -R :www-data djau2025  #opcionalmente se puede cambiar el propietario para no utilizar root.
 cd djau2025
 ```
 
@@ -57,39 +57,37 @@ Antes de seguir con la aplicación, instalaremos Apache  y el módulo [wsgi](htt
 
 Además instalaremos la base de datos que usará django-aula y su conector python correspondiente, se recomienda instalar la aplicación sobre postgresql pero también es posible hacerlo sobre Mysql.
 
+
 **Postgresql  (recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-psycopg2 postgresql
-```
-Para Ubuntu 20.04:
-
-```bash
-apt-get install postgresql-server-dev-12
-```
-Para Ubuntu 22.04:
-
-```bash
-apt-get install postgresql-server-dev-14
-```
-Para Ubuntu 24.04:
-
-```bash
-apt-get install postgresql-server-dev-16
+apt-get install apache2 libapache2-mod-wsgi-py3 postgresql
 ```
 
-Package:
-
-```bash
-pip3 install wheel psycopg2
-```
 
 **Mysql (no recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev pkg-config
-pip3 install wheel mysqlclient
+apt-get install apache2 libapache2-mod-wsgi-py3
 ```
+
+> ###### **Ubuntu**
+>
+>```bash
+>apt-get install mysql-server default-libmysqlclient-dev build-essential pkg-config
+>```
+>
+>###### **Debian**
+>
+>```bash
+>apt-get install mariadb-server default-libmysqlclient-dev build-essential pkg-config
+>```
+>
+>###### **Package**
+>
+>```bash
+>pip install mysqlclient
+>```
 
 Una vez elegido el motor de base de datos, hay que crear la base de datos de la aplicación, y crear un usuario que la pueda administrar.
 
@@ -97,7 +95,7 @@ Una vez elegido el motor de base de datos, hay que crear la base de datos de la 
 **Para Postgresql**
 
 ```text
-sudo su postgres
+su postgres
 psql
 CREATE DATABASE djau2025;
 CREATE USER djau2025 WITH PASSWORD 'XXXXXXXXXX';
@@ -110,7 +108,7 @@ exit
 **Para Mysql**
 
 ```
-sudo su
+su
 mysql
 CREATE DATABASE djau2025 CHARACTER SET utf8;
 CREATE USER 'djau2025'@'localhost' IDENTIFIED BY 'XXXXXXXX';
@@ -129,9 +127,9 @@ Actualmente las fotos de los alumnos.
 Para ello hay que crear una carpeta donde guardar esa información.
 
 ```bash
-mkdir -p /opt/djau-dades-privades-2022
-chmod 770 /opt/djau-dades-privades-2022
-chgrp www-data /opt/djau-dades-privades-2022 
+mkdir -p /opt/djau-dades-privades-2025
+chmod 770 /opt/djau-dades-privades-2025
+chgrp www-data /opt/djau-dades-privades-2025
 ```
 
 En el siguiente apartado se configura la variable `PRIVATE_STORAGE_ROOT` con el path escogido.
@@ -246,7 +244,7 @@ SECRET_KEY = 'j*y^6816ynk5$phos1y*sf$)3o#m(1^u-j63k712keu4fjh$lc'
 CUSTOM_RESERVES_API_KEY = 'sxxxxxxm'
 
 # Path de datos privados
-PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2022/'
+PRIVATE_STORAGE_ROOT ='/opt/djau-dades-privades-2025/'
 CUSTOM_CODI_COMERÇ = 'xxxxxx'
 CUSTOM_KEY_COMERÇ = 'xxxxxx'
 
@@ -417,7 +415,7 @@ locale -a
 Generación del locale adecuado para nuestro caso, por ejemplo:
 
 ```bash
-sudo locale-gen ca_ES.utf8
+/usr/sbin/locale-gen ca_ES.utf8
 ```
 
 El primer escenario es para servir la app por el puerto 80 \(http\),
@@ -552,9 +550,9 @@ El segundo escenario sirve la app por SSL \(https\)
 Una vez creado el VirtualHost,  deshabilitamos el Vhost que trae por defecto Apache para que no nos de problemas y reiniciamos el servidor web
 
 ```text
-djau@djau:# a2dissite 000-default.conf  # podría tener un nombre diferente
-djau@djau:# a2ensite djau.conf
-djau@djau:# a2ensite djau_ssl.conf
+djau@djau:# /usr/sbin/a2dissite 000-default.conf  # podría tener un nombre diferente
+djau@djau:# /usr/sbin/a2ensite djau.conf
+djau@djau:# /usr/sbin/a2ensite djau_ssl.conf
 djau@djau:# systemctl reload apache2
 ```
 
