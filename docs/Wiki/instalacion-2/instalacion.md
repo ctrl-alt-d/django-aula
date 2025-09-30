@@ -9,13 +9,7 @@ El primer paso es preparar un entorno de desarrollo **[Python](https://www.pytho
 ```bash
 apt-get update
 apt-get upgrade
-apt-get install python3 python3-venv libxml2-dev libxslt-dev python3-lxml python3-libxml2 python3-dev lib32z1-dev git
-```
-
-**En Debian 13**
-
-```bash
-apt-get install libgl1 libglib2.0-0t64
+apt-get install python3 python3-venv libxml2-dev libxslt-dev python3-lxml python3-libxml2 python3-dev lib32z1-dev git libgl1 libglib2.0-0t64
 ```
 
 Entre otras cosas se ha instalado el paquete **python-virtualenv** ya que la instalación la haremos sobre un entorno virtual de **Python**, si tienes curiosidad sobre esto, visita este [enlace](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
@@ -67,16 +61,33 @@ Además instalaremos la base de datos que usará django-aula y su conector pytho
 **Postgresql  (recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-psycopg postgresql
+apt-get install apache2 libapache2-mod-wsgi-py3 postgresql
 ```
 
 
 **Mysql (no recomenat):**
 
 ```bash
-apt-get install apache2 libapache2-mod-wsgi-py3 python3-mysqldb mysql-server libmysqlclient-dev pkg-config
-pip3 install wheel mysqlclient
+apt-get install apache2 libapache2-mod-wsgi-py3
 ```
+
+> ###### **Ubuntu**
+>
+>```bash
+>apt-get install mysql-server default-libmysqlclient-dev build-essential pkg-config
+>```
+>
+>###### **Debian**
+>
+>```bash
+>apt-get install mariadb-server default-libmysqlclient-dev build-essential pkg-config
+>```
+>
+>###### **Package**
+>
+>```bash
+>pip install mysqlclient
+>```
 
 Una vez elegido el motor de base de datos, hay que crear la base de datos de la aplicación, y crear un usuario que la pueda administrar.
 
@@ -84,7 +95,7 @@ Una vez elegido el motor de base de datos, hay que crear la base de datos de la 
 **Para Postgresql**
 
 ```text
-sudo su postgres
+su postgres
 psql
 CREATE DATABASE djau2025;
 CREATE USER djau2025 WITH PASSWORD 'XXXXXXXXXX';
@@ -97,7 +108,7 @@ exit
 **Para Mysql**
 
 ```
-sudo su
+su
 mysql
 CREATE DATABASE djau2025 CHARACTER SET utf8;
 CREATE USER 'djau2025'@'localhost' IDENTIFIED BY 'XXXXXXXX';
