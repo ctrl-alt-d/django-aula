@@ -100,7 +100,11 @@ class Table2_Sortides(tables.Table):
                             Esborrar<br>
                             </a>
                           </li>
-                        
+                          <li>
+                            <a href="/sortides/sortidaClonar/{{record.id}}/{{record.tipus}}">
+                            Clonar<br>
+                            </a>
+                          </li>
                         </ul>
                       </div>
             """
@@ -261,7 +265,11 @@ class Table2_Sortides(tables.Table):
                             Esborrar<br>
                             </a>
                           </li>
-                        
+                          <li>
+                            <a href="/sortides/sortidaClonar/{{record.id}}/{{record.tipus}}">
+                            Clonar<br>
+                            </a>
+                          </li>
                         </ul>
                       </div>
             """
