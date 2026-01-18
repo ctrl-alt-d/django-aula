@@ -12,7 +12,7 @@ Segons es descriu a les instruccions principals del repositori, hi ha dues maner
 
 | Nom de l'Arxiu | Descripció | Ús Principal |
 | :--- | :--- | :--- |
-| `install_docker.sh` | **Script d'instal·lació automatitzada de Docker.** Descarrega i configura tot alló que cal per instal·lar l'entorn Docker i docker-compose en el sistema. | Instal·lar Docker en el sistema operatiu. |
+| `install_docker.sh` | **Script d'instal·lació automatitzada de Docker.** Descarrega i configura tot allò que cal per instal·lar l'entorn Docker i docker-compose en el sistema. | Instal·lar Docker en el sistema operatiu. |
 
 
 ## 2. Arxius de Configuració de Desplegament Ràpid
