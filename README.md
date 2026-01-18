@@ -50,14 +50,14 @@ Es pot consultar un índex complet amb tota la informació sobre Django-Aula:
 
 Django-Aula s'instal·la en un servidor amb sistema operatiu Linux i està adaptat per Debian 13, Ubuntu Server 24.04 LTS o superior, o derivats de la mateixa base.
 
-Per qualsevol tipus d'instal·lació, ja sigui per un ús real o per l'entorn de demostració, ès altament recomanable haver creat un usuari amb permisos de *SUDO*. [El procés està documentat.](docs/USER_MANUAL/ajuda-install/usuari_sudo.md)
+Per qualsevol tipus d'instal·lació, ja sigui per un ús real o per l'entorn de demostració, és altament recomanable haver creat un usuari amb permisos de *SUDO*. [El procés està documentat.](docs/USER_MANUAL/ajuda-install/usuari_sudo.md)
 
 ---
 
 <a name="quickdemo"></a>
 ## Desplegament d'una Demostració de Django-Aula (Quick Demo) amb Docker 🐳 
 
-L'entorn de demostració, conegut com Demo, és una versió funcional del sistema i que es pot posar en funcionament en molts pocs minuts. Disposa de dades ficiticies (usuaris, professors, alumnat i un horari mínim) que faciliten observar l'aspecte visual i interaccionar, des de diferents rols, amb les funcionalitats de l'aplicatiu real Django-Aula.
+L'entorn de demostració, conegut com Demo, és una versió funcional del sistema i que es pot posar en funcionament en molt pocs minuts. Disposa de dades fictícies (usuaris, professors, alumnat i un horari mínim) que faciliten observar l'aspecte visual i interaccionar, des de diferents rols, amb les funcionalitats de l'aplicatiu real Django-Aula.
 
 El desplegament de la Demo s'ha automatitzat amb l'execució de dues comandes i consta de dues passes consecutives:
 
@@ -83,7 +83,7 @@ chmod +x install_quick_demo_docker.sh && \
 bash ./install_quick_demo_docker.sh
 ```
 
-Tot i que el procés anterior és autònom i interactívament configurable, es recomana llegir la informació, molt més detallada del procés, segons el tipus de màquina (no virtualitzada, virtualitzada o servidor d'accés públic) on s'instal·larà la Demo. També hi haurà qui estarà interessat en dur a terme la instal·lació manual, tant de l'entorn de docker com de la Demo. Per tots aquests casos es recomana consultar els següents detallats documents:
+Tot i que el procés anterior és autònom i interactivament configurable, es recomana llegir la informació, molt més detallada del procés, segons el tipus de màquina (no virtualitzada, virtualitzada o servidor d'accés públic) on s'instal·larà la Demo. També hi haurà qui estarà interessat en dur a terme la instal·lació manual, tant de l'entorn de docker com de la Demo. Per tots aquests casos es recomana consultar els següents detallats documents:
 
 
 ➡️ **[Instal·lació de l'entorn de Docker i Docker Compose](docs/USER_MANUAL/demo/install_entorn_docker.md)**.
