@@ -3,7 +3,6 @@
 
 from .dev import *  # noqa: E402, F403, F401
 import os
-from distutils.util import strtobool
 
 def location(x):
     return os.path.join(PROJECT_DIR, x)  # noqa: F405
