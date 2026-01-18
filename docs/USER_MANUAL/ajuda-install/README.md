@@ -10,7 +10,7 @@ En aquest document es recullen aspectes interessants tant per dur a terme abans 
 
 **Si Django-Aula s'instal·la en un servidor connectat a internet**
 
-[Com es configuren els registers DNS del proveïdor del domini que apuntarà a Django-Aula](registres_dns.md)
+[Com es configuren els registres DNS del proveïdor del domini que apuntarà a Django-Aula](registres_dns.md)
 
 **Després de la instal·lació**
  
