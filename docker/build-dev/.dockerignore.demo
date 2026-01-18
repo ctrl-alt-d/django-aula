@@ -1,0 +1,47 @@
+# Control de versions
+.git
+.github
+.gitignore
+
+# Entorns virtuals
+venv/
+.venv/
+
+# Fitxers temporals i compilats
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Fitxers de configuració locals
+.env
+*.env
+.env.*
+
+# Fitxers de logs
+*.log
+
+# Fitxers de desenvolupament
+*.sqlite3
+*.db
+
+# Entorns d'IDE
+.vscode/
+.idea/
+*.swp
+
+# Fitxers de sistema
+.DS_Store
+Thumbs.db
+
+# Altres fitxers grans o no necessaris
+node_modules/
+dist/
+build/
+
+# Altres fitxers
+apache
+canviDeCurs.txt
+docker-compose.old
+enDesenvolupament.txt
+TODO.txt

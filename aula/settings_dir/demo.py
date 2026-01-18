@@ -2,7 +2,7 @@
 # Django settings for aula project.
 
 from .dev import *  # noqa: E402, F403, F401
-
+import os
 
 def location(x):
     return os.path.join(PROJECT_DIR, x)  # noqa: F405
@@ -20,6 +20,15 @@ INSTALLED_APPS = [
 NOM_CENTRE = "Centre de Demo"
 LOCALITAT = "L'Escala"
 URL_DJANGO_AULA = r"http://127.0.0.1:8000"
+
+# Possibilita la instal·lació de la Demo en qualsevol entorn
+# Llista base (sempre localhost)
+ALLOWED_HOSTS = ['127.0.0.1']
+# Si existeix la variable d'entorn amb altres hosts, la processa
+DEMO_HOSTS_STR = os.environ.get('DEMO_ALLOWED_HOSTS', '')
+if DEMO_HOSTS_STR:
+    # Afegeix els hosts llegits de la variable d'entorn (separats per coma)
+    ALLOWED_HOSTS += DEMO_HOSTS_STR.split(',')
 
 EMAIL_SUBJECT_PREFIX = "[DEMO AULA] "
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
