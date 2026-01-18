@@ -80,9 +80,9 @@ fi
 # --- 5. Pregunta pel domini o IP ---
 
 echo
-echo "🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública y del domini o subdomini, si n'hi ha."
+echo "🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha."
 echo -e "\n"
-read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poer accedir-hi externament a la Demo? (y/n): " REPLY
+read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (y/n): " REPLY
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     read -p "👉 Introdueix els dominis o IPs separats per comes (ex: demo.elteudomini.cat,192.168.1.46): " HOSTS
