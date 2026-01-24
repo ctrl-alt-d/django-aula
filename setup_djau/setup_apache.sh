@@ -430,21 +430,14 @@ echo -e "${C_CAPITULO}--- 4. AJUST DE PERMISOS DE www-data (WSGI) ---"
 echo -e "${C_CAPITULO}===============================================${RESET}"
 echo -e "\n"
 
-# 1. www-data ha de poder llegir i executar tots els directoris (X) i arxius (r) dins del VENV ($VENV_PATH) i el projecte ($FULL_PATH).
-#    Aquest pas és molt important perquè el VENV el va crear l'usuari '$APP_USER'.
-chmod -R a+rX "$VENV_PATH"
-chmod -R a+rX "$FULL_PATH"
-echo -e "${C_EXITO}✅ Permisos de lectura/execució assignats al Venv i codi font.${RESET}"
-
-# 2. Permisos del DIRECTORI DE DADES PRIVADES (Cal Lectura/Escriptura)
+# 1. Permisos del DIRECTORI DE DADES PRIVADES (Cal Lectura/Escriptura)
 #    S'assigna el grup 'www-data' amb permisos de lectura/escriptura (770) al grup.
 chown -R "$APP_USER":www-data "$PATH_DADES_PRIVADES"
 chmod 770 "$PATH_DADES_PRIVADES"
 echo -e "${C_EXITO}✅ Permisos per a dades privades assignats a '$APP_USER':www-data (chmod 770).${RESET}"
 
-# 3. Assignar el grup www-data al projecte
+# 2. Assignar el grup www-data al projecte
 chown -R "$APP_USER":www-data "$FULL_PATH"
-chmod -R g+rx "$FULL_PATH"
 echo -e "${C_EXITO}✅️ Grup 'www-data' assignat al directori del projecte.${RESET}"
 echo -e "\n\n"
 

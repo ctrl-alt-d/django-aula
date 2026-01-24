@@ -41,7 +41,7 @@ cd demo-djau-docker
 Un cop creat el directori on s'instal·larà la Demo només caldrà descarregar el script automatitzat d'instal·lació. Amb la comanda següent no només es descarrega l'arxiu sinó que començarà a executar-se automàticament:
 
 ```bash
-wget -q -O install_quick_demo_docker.sh https://raw.githubusercontent.com/rafatecno1/django-aula/refs/heads/master/docker/install_quick_demo_docker.sh && chmod +x install_quick_demo_docker.sh && bash ./install_quick_demo_docker.sh
+wget -q -O install_quick_demo_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_quick_demo_docker.sh && chmod +x install_quick_demo_docker.sh && bash ./install_quick_demo_docker.sh
 ```
 
 <a name="id2"></a>

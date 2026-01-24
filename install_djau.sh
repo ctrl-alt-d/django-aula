@@ -13,13 +13,11 @@ clear
 
 # 1. Definició de variables
 # Repositori i branca per la clonació
-REPO_URL="https://github.com/rafatecno1/django-aula.git"
-GIT_BRANCH="master"
-#REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
-#GIT_BRANCH="master"						@ Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
+GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 
-# Definició de sistema d'inicialització de processos del Sistema Operatiiu (SysVinit vs Systemd)
-IS_SYSTEMD=0 # Per defecte, assumim que no és systemd (Devuan, etc.)
+# Definició de sistema d'inicialització de processos del Sistema Operatiu (SysVinit vs Systemd)
+IS_SYSTEMD=0 # Per defecte, assumim que no és systemd (Debian, etc.)
 
 if command -v systemctl >/dev/null 2>&1; then
     # La comanda systemctl s'ha trobat: és un sistema amb systemd (Debian, Ubuntu o derivats)
@@ -68,7 +66,7 @@ rm "$FUNCTIONS_FILE"
 if [ $? -ne 0 ]; then
     echo -e "${C_ERROR}❌ ADVERTÈNCIA:Per alguna raó desconeguda no s'ha pogut eliminar l'arxiu temporal de funcions${RESET} ${C_INFO} '$FUNCTIONS_FILE'${RESET} ${${C_ERROR}}. Caldria fer-ho manualment.${RESET}"
 else
-echo -e "${C_EXITO}❌ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha proceit a la seva automàtica eliminació.${RESET}"
+echo -e "${C_EXITO}❌ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha procedit a la seva automàtica eliminació.${RESET}"
 fi
 
 echo -e "\n\n"
@@ -548,7 +546,7 @@ sleep 3
 
 
 # -------------------------------------------------------------------------------------------------
-# CREACIÓ DE L'ARxiu config_vars.sh AMB LES VARIABLES COMUNS PER LA INSTAL·LACIÓ DE L'APLICACIÓ
+# CREACIÓ DE L'ARXIU config_vars.sh AMB LES VARIABLES COMUNS PER LA INSTAL·LACIÓ DE L'APLICACIÓ
 # -------------------------------------------------------------------------------------------------
 
 SETUP_DIR="$FULL_PATH/setup_djau"
@@ -579,17 +577,17 @@ echo -e "${C_CAPITULO}--- 5. INICI DE LA CONFIGURACIÓ ESPECÍFICA DE DJANGO-AUL
 echo -e "${C_CAPITULO}=============================================================${RESET}"
 echo -e "\n"
 
-echo -e "--- A partir d'ara, l'usuari ${C_INFO}'$APP_USER'${RESET} executarà autmáticamente l'script ${C_INFO}setup_djau.sh${RESET}."
+echo -e "--- A partir d'ara, l'usuari ${C_INFO}'$APP_USER'${RESET} executarà automàticament l'script ${C_INFO}setup_djau.sh${RESET}."
 echo -e "    Aquest script es troba a ${C_INFO}'$SETUP_DIR'${RESET}."
 echo -e "\n"
 
 # Transferint l'execució a l'script de configuració de Django-Aula DINS el repositori i branca clonats
 cd "$SETUP_DIR"
-chmod +x setup_djau.sh
-chmod +x setup_apache.sh
-chmod +x setup_cron.sh
-chmod +x functions.sh
-chown "$APP_USER":"$APP_USER" functions.sh
+#chmod +x setup_djau.sh
+#chmod +x setup_apache.sh
+#chmod +x setup_cron.sh
+#chmod +x functions.sh
+#chown "$APP_USER":"$APP_USER" functions.sh
 
 echo -e "${C_INFO}ℹ️  **ATENCIÓ:**${RESET} La instal·lació no serà desatesa. Haurà de respondre preguntes per configurar la base de dades i l'aplicatiu."
 echo -e "\n"

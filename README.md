@@ -67,7 +67,7 @@ El desplegament de la Demo s'ha automatitzat amb l'execució de dues comandes i 
 Des del directori de l'usuari instal·lador:
 
 ```bash
-wget -q -O install_docker.sh https://raw.githubusercontent.com/rafatecno1/django-aula/refs/heads/master/docker/install_docker.sh && \
+wget -q -O install_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_docker.sh && \
 chmod +x install_docker.sh && \
 sudo ./install_docker.sh
 ```
@@ -78,7 +78,7 @@ Es recomana crear un subdirectori dins el directori de l'usuari instal·lador pe
 
 ```bash
 mkdir demo-djau-docker && cd demo-djau-docker && \
-wget -q -O install_quick_demo_docker.sh https://raw.githubusercontent.com/rafatecno1/django-aula/refs/heads/master/docker/install_quick_demo_docker.sh && \
+wget -q -O install_quick_demo_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_quick_demo_docker.sh && \
 chmod +x install_quick_demo_docker.sh && \
 bash ./install_quick_demo_docker.sh
 ```

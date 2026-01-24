@@ -6,7 +6,7 @@
 
 # --- 1. Informació del repositori ---
 
-REPO="rafatecno1/django-aula"
+REPO="ctrl-alt-d/django-aula"
 BRANCA="master"
 URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
 

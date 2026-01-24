@@ -353,7 +353,7 @@ echo -e "\n"
 echo -e "${C_SUBTITULO}--- 3.5 Opcions avançades de configuracó (settings_local.py) ---${RESET}"
 echo -e "${C_SUBTITULO}----------------------------------------------------------------${RESET}"
 
-echo -e "${C_INFO}ℹ️ A continuació es poden afegir al fitxer ${NEGRITA}settings_local.py$${RESET}els paràmetres de configuració addicionals (comentats amb el símbol (#).${RESET}"
+echo -e "${C_INFO}ℹ️ A continuació es poden afegir al fitxer ${NEGRITA}settings_local.py els paràmetres de configuració addicionals (comentats amb el símbol (#).${RESET}"
 
 echo -e "${C_INFO}   Aquests paràmetres inclouen ${NEGRITA}funcionalitats que poden ser clau per l'aplicatiu${RESET}${C_INFO} com ara:${RESET}"
 echo -e "${C_INFO}   * ${NEGRITA}Llindars d'alerta automàtica${RESET}${C_INFO} (p. ex., faltes d'assistència que generen avisos).${RESET}"
@@ -364,7 +364,7 @@ echo -e "${C_INFO}   ${NEGRITA}Recomanació:${RESET} Generalment, és millor inc
 echo -e "\n"
 
 # --- OPCIONS AVANÇADES DE CONFIGURACIÓ ---
-read_prompt "⚙️ Voleu afegir les opcions de parametrització avançada , omentades amb el símbol #, a settings_local.py? (per defecte SI) [SI/no]: " ADVANCED_PARAMS_CHOICE "SI"
+read_prompt "⚙️ Voleu afegir les opcions de parametrització avançada, comentades amb el símbol #, a settings_local.py? (per defecte SI) [SI/no]: " ADVANCED_PARAMS_CHOICE "SI"
 ADVANCED_PARAMS_CHOICE_LOWER=$(echo "$ADVANCED_PARAMS_CHOICE" | tr '[:upper:]' '[:lower:]')
 
 if [[ "$ADVANCED_PARAMS_CHOICE_LOWER" == "s" || "$ADVANCED_PARAMS_CHOICE_LOWER" == "si" ]]; then
@@ -594,7 +594,7 @@ echo -e "\n"
 
 # 1. Donar permisos d'execució al nou script
 cd "$SETUP_DIR"
-chmod +x ./test_email.sh
+#chmod +x ./test_email.sh
 
 read_prompt "¿Vol executar l'script de prova de correu (./test_email.sh) ara? Per defecte NO. (sí/NO): " TEST_EMAIL_NOW "no"
 

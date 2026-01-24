@@ -17,7 +17,7 @@ services:
     restart: always
 
   web:
-    image: rafatecno1/django-aula:demo
+    image: django_aula:latest
     container_name: demo_web
     build:
       context: .
