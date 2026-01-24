@@ -53,16 +53,9 @@ El projecte fa servir l'arxiu `Makefile` com a capa d'abstracció. Aixó signifi
 La següent comanda clonarà el repositori i crearà una carpeta anomenada `django-aula`.
 
 ```bash
-git clone https://github.com/rafatecno1/django-aula.git demo-django-aula
-cd demo-django-aula
-```
-
-> En el repositori oficial aniria així:
-```bash
 git clone https://github.com/ctrl-alt-d/django-aula.git django-aula
 cd django-aula
 ```
-
 
 Dins el repositori trobarem el directori `docker` que conté tots els arxius relacionats amb aquest entorn. Haurem de copiar els que necessitem al directori arrel del projecte clonat.
 

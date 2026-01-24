@@ -30,12 +30,12 @@ Cal tenir en commpte que **És un pas obligatori per dur a terme qualsevol opera
 <a name="id2"></a>
 ## 2. Procés automatitzat d'Instal·lació de l'entorn Docker (Recomanat)
 
-Per instal·lar l'entorn de Docker no cal crear cap directori expressament. Podem fer-ho a l'arrel del directori del nostre usuari perqué només caldrà descarregar-se un scriipt que executarà tot el procés d'instal·lació i preparació del sistema.
+Per instal·lar l'entorn de Docker no cal crear cap directori expressament. Podem fer-ho a l'arrel del directori del nostre usuari perquè només caldrà descarregar-se un script que executarà tot el procés d'instal·lació i preparació del sistema.
 
 La instrucció a executar per descarregar i executar el script d'instal·lació automatitzada és:
  
 ```bash
-wget -q -O install_docker.sh https://raw.githubusercontent.com/rafatecno1/django-aula/refs/heads/master/docker/install_docker.sh && chmod +x install_docker.sh && sudo ./install_docker.sh
+wget -q -O install_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_docker.sh && chmod +x install_docker.sh && sudo ./install_docker.sh
 ```
 
 <a name="id3"></a>

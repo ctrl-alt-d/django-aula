@@ -76,7 +76,7 @@ També clona el repositori de Django-Aula i instal·la altres eines administrati
 Des del directori del compte d'usuari creat amb permisos `sudo` cal executar la següent instrucció, que descarregarà i executarà, només, el script `install_djau.sh`.
 
 ```bash
-wget -q -O install_djau.sh https://raw.githubusercontent.com/rafatecno1/django-aula/refs/heads/master/install_djau.sh && chmod +x install_djau.sh && sudo ./install_djau.sh
+wget -q -O install_djau.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/install_djau.sh && chmod +x install_djau.sh && sudo ./install_djau.sh
 ```
 
 #### Execució de `install_djau.sh`
