@@ -1,6 +1,11 @@
-.PHONY: serve stop down logs
+.PHONY: build serve stop down logs
 
 # ----------- DEMO -----------
+
+build:
+	${INFO} "Creating builder image..."
+	@ docker compose -f docker-compose.yml build --no-cache web
+	${INFO} "Build completed"
 
 serve:
 	${INFO} "Running demo services (detached)"
