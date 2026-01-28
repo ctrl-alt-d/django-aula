@@ -17,7 +17,7 @@ REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projec
 GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 
 # Definició de sistema d'inicialització de processos del Sistema Operatiu (SysVinit vs Systemd)
-IS_SYSTEMD=0 # Per defecte, assumim que no és systemd (Debian, etc.)
+IS_SYSTEMD=0 # Per defecte, assumim que no és systemd (Devuan, etc.)
 
 if command -v systemctl >/dev/null 2>&1; then
     # La comanda systemctl s'ha trobat: és un sistema amb systemd (Debian, Ubuntu o derivats)

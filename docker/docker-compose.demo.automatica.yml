@@ -1,7 +1,7 @@
 # docker/docker-compose.demo.automatica.yml
 services:
   db:
-    image: postgres:17.7-alpine
+    image: postgres:16
     container_name: demo_db
     ports:
       - "5432:5432"
@@ -13,15 +13,14 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - ./dades-demo-sql:/docker-entrypoint-initdb.d
     restart: always
 
   web:
     image: django_aula:latest
     container_name: demo_web
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - db
     env_file:
@@ -31,7 +30,11 @@ services:
     restart: always
     ports:
       - "8000:8000"
-    command: bash -c "wait-for-it db:5432 --timeout=30 --strict && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - media_data:/app/storage
+    command: docker/carrega_inicial.sh
 
 volumes:
   pg_data:
+  media_data:
+  

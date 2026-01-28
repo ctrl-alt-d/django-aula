@@ -14,46 +14,87 @@ clear
 echo -e "⚙️  Iniciant instal·lació ràpida de la Demo en Docker...\n"
 echo
 
+# ----------------------------------------------------------------------
+# --- 1.1. CLONACIÓ DEL REPOSITORI
+# ----------------------------------------------------------------------
+
+echo "------- Clonant repositori ----------------------------"
+echo "-------------------------------------------------------"
+echo -e "\n"
+
+# --- Instal·lar git si cal ---
+
+echo "🔧 Comprovant que 'git' estigui instal·lat..."
+if ! command -v git &> /dev/null; then
+    echo "   Instal·lant 'git'..."
+    sudo apt-get update -y >/dev/null 2>&1
+    sudo apt-get install -y git
+    if ! command -v git &> /dev/null; then
+        echo "   ERROR a la instal·lació de 'git'"
+        exit 1
+    fi
+else
+    echo "   ✅ 'git' ja està disponible."
+fi
+
+FULL_PATH="./djau"
+REPO_URL="https://github.com/${REPO}.git"	# repositori del projecte
+GIT_BRANCH=${BRANCA}						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+
+# COMPROVACIÓ: El directori existeix i no està buit?
+if [ -d "$FULL_PATH" ] && [ "$(ls -A "$FULL_PATH")" ]; then
+    rm -Rf $FULL_PATH
+fi
+echo -e "Clonant $REPO_URL, branca '$GIT_BRANCH' en $FULL_PATH."
+
+# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
+git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
+
+if [ $? -ne 0 ]; then
+    echo -e "❌ ERROR: Fallida en clonar la branca '$GIT_BRANCH' del repositori '$REPO_URL'."
+    echo "Comprovi la URL, conexió a internet o permisos de l'usuari."
+    echo -e "\n"
+    exit 1
+fi
+echo -e "✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'."
+
+
+echo -e "\n"
+sleep 3
+
 # --- 2. Fitxers a descarregar ---
 
 FILES_TO_DOWNLOAD=(
+    "Dockerfile"
     "docker-compose.demo.automatica.yml"
     "Makefile.demo.automatica"
     "env.demo.automatica"
-    "dades_demo.sql"
 )
 DEST_FILES=(
+    "Dockerfile"
     "docker-compose.yml"
     "Makefile"
     ".env"
-    "dades-demo-sql/dades_demo.sql"
-)
+ )
 
 
 # --- 3. Descarregar fitxers de configuració i dades ---
 
 echo "📦 Descarregant fitxers necessaris..."
-mkdir -p dades-demo-sql
 
 for i in "${!FILES_TO_DOWNLOAD[@]}"; do
     ORIGIN="${FILES_TO_DOWNLOAD[$i]}"
     DEST="${DEST_FILES[$i]}"
-    URL="${URL_BASE}/${ORIGIN}"
 
     # Crear el directori si no existeix
     mkdir -p "$(dirname "${DEST}")"
 
     echo "  -> Descarregant ${ORIGIN} com a ${DEST}..."
-    if wget -q -O "${DEST}" "${URL}"; then
+    if cp "${FULL_PATH}/docker/${ORIGIN}" "${DEST}"; then
         echo "     ✅ Fitxer ${DEST} descarregat correctament."
     else
         echo "     ❌ Error en descarregar ${ORIGIN}."
         exit 1
-    fi
-
-    # Assignar permisos adequats
-    if [[ "${DEST}" == *.sql ]]; then
-        chmod 644 "${DEST}"
     fi
 
     echo
@@ -62,7 +103,8 @@ done
 echo "✅ Tots els fitxers s'han descarregat correctament."
 echo
 
-ls -lah docker-compose.yml Makefile .env dades-demo-sql/dades_demo.sql
+ls -lah Dockerfile docker-compose.yml Makefile .env
+
 echo
 
 
@@ -71,7 +113,12 @@ echo
 echo "🔧 Comprovant que 'make' estigui instal·lat..."
 if ! command -v make &> /dev/null; then
     echo "   Instal·lant 'make'..."
-    sudo apt-get update -y >/dev/null 2>&1 && sudo apt-get install -y make
+    sudo apt-get update -y >/dev/null 2>&1
+    sudo apt-get install -y make
+    if ! command -v make &> /dev/null; then
+        echo "   ERROR a la instal·lació de 'make'"
+        exit 1
+    fi
 else
     echo "   ✅ 'make' ja està disponible."
 fi
@@ -99,14 +146,6 @@ fi
 
 # --- 6. Posar en marxa els contenidors ---
 
-echo
-echo "🕓 Posant en marxa els contenidors de la Demo i de la Base de Dades PostgreSQL..."
-echo
-make serve
-echo
-
-# --- 7. Esperar que la base de dades estigui llesta ---
-
 # Comprovant que l'arxiu .env existeix
 if [ -f .env ]; then
     set -a
@@ -116,6 +155,15 @@ else
     echo "⚠️  No s'ha trobat el fitxer .env. No es pot comprovar l'estat de la base de dades."
     exit 1
 fi
+
+echo
+echo "🕓 Posant en marxa els contenidors de la Demo i de la Base de Dades PostgreSQL..."
+echo
+make build
+make serve
+echo
+
+# --- 7. Esperar que la base de dades estigui llesta ---
 
 echo
 echo "⌛ Esperant que la base de dades estigui llesta (pot trigar uns segons)..."
@@ -132,22 +180,21 @@ until docker exec demo_db pg_isready -U "$DB_USER" >/dev/null 2>&1; do
 done
 echo "    ✅ PostgreSQL està llest!"
 
-
-# --- 8. Comprovació del fitxer SQL ---
-
 echo
-echo "🔍 Comprovant si s'ha carregat el fitxer SQL de dades de la demo..."
-DB_LOGS=$(docker logs demo_db 2>&1 | grep -E "docker-entrypoint-initdb.d/.*\.sql" | tail -n 1)
+echo "--------------------------------------------"
+echo "📦  Estat final de l'estat dels contenidors"
+echo "--------------------------------------------"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+echo "--------------------------------------------"
+echo
+echo
 
-if [[ "$DB_LOGS" == *".sql"* ]]; then
-        echo "    ✅ Base de dades inicialitzada correctament!"
-        echo "       Fragment del log:"
-        echo "       $DB_LOGS"
-    else
-        echo "⚠️  No s'ha trobat cap evidència que s'hagi executat dades_demo.sql"
-        echo "   -> Revisa amb: docker logs demo_db | less"
-        echo "   -> o torna a reiniciar amb: make down && make serve"
-fi
+# --- 8. Espera a la finalització de la preparació ---
+
+echo "Premi qualsevol tecla per continuar i mostrar el progrés de la preparació de la demo."
+read -p "posteriorment CTRL-C per deixar de mostrar la informació." -n1 -s
+
+docker logs -f demo_web
 
 # --- 9. Missatge final ---
 
@@ -155,12 +202,6 @@ echo
 echo
 echo "Finalització de l'automatització!"
 
-echo
-echo "--------------------------------------------"
-echo "📦  Estat final de l'estat dels contenidors"
-echo "--------------------------------------------"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-echo "--------------------------------------------"
 echo
 echo 
 echo "ℹ️ Informació addicional"
