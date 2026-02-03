@@ -1,24 +1,25 @@
 #!/bin/bash
 # Script d'instal·lació automàtica de Docker CE i Docker Compose a sistemes Debian/Ubuntu.
 
+clear
+
+echo "---------------------------------------------------------"
+echo "--- Instal·lador automàtic de Docker i Docker-Compose ---"
+echo "---------------------------------------------------------"
+
 # ------------------------------------------------------------------------------
 # DEFINICIÓ DE VARIABLES, CÀRREGA DE LLIBRERIA DE FUNCIONS I VARIABLES DE COLORS
 # ------------------------------------------------------------------------------
 
-clear
-
 # 1. Definició de variables
 # Repositori i branca per la clonació
+
 #REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
 REPO_URL="https://github.com/rafatecno1/django-aula.git"	# repositori del projecte
 GIT_BRANCH="millora-docker"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 #GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 
-echo "---------------------------------------------------------------------------------------------------------"
-echo "--- Descàrrega de la llibreria functions.sh. Es farà servir temporalment a l'inici de la instal·lació ---"
-echo "---------------------------------------------------------------------------------------------------------"
-
-# 1. Definició de l'URL remota de la llibreria de funcions
+# 2. Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
 RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
 FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
@@ -27,7 +28,7 @@ FUNCTIONS_FILE="./functions.sh"
 echo -e "\n"
 echo "ℹ️ Descarregant la llibreria t'ús temporal de funcions i variables compartides ($FUNCTIONS_FILE)."
 
-# 2. Descàrrega de la llibreria de funcions amb wget
+# 3. Descàrrega de la llibreria de funcions amb wget
 wget -q -O "$FUNCTIONS_FILE" "$FUNCTIONS_URL"
 
 if [ $? -ne 0 ]; then
@@ -36,17 +37,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-
-# 3. Canvi de propietat: Assignar l'arxiu descarregat a l'usuari original que ha executat 'sudo'
+# 4. Canvi de propietat: Assignar l'arxiu descarregat a l'usuari original que ha executat 'sudo'
 if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
     chown "$SUDO_USER":"$SUDO_USER" "$FUNCTIONS_FILE"
 fi
 
-# 4. Càrrega de la llibreria de funcions
+# 5. Càrrega de la llibreria de funcions
 source "$FUNCTIONS_FILE"
 
 # Variables de color ($C_EXITO, $C_ERROR, etc.) i funcions comunes disponibles.
-echo -e "\n"
 echo -e "${C_EXITO}✅ Llibreria de funcions temporal carregada amb èxit.${RESET}"
 
 rm "$FUNCTIONS_FILE"
@@ -54,7 +53,7 @@ rm "$FUNCTIONS_FILE"
 if [ $? -ne 0 ]; then
     echo -e "${C_ERROR}❌ ADVERTÈNCIA:Per alguna raó desconeguda no s'ha pogut eliminar l'arxiu temporal de funcions${RESET} ${C_INFO} '$FUNCTIONS_FILE'${RESET} ${${C_ERROR}}. Caldria fer-ho manualment.${RESET}"
 else
-echo -e "${C_EXITO}✅ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha procedit a la seva automàtica eliminació.${RESET}"
+echo -e "${C_EXITO}✅ Eliminació de l'arxiu temporal de funcions.${RESET}"
 fi
 
 # Funció per mostrar errors i sortir. Podria ser interessant incorporar-la a functions.sh per fer-la servir als scripts
@@ -83,6 +82,7 @@ CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
 NOM_SISTEMA=${PRETTY_NAME:-$OS_ID} # Si no hi ha PRETTY_NAME, usa l'ID
 
 # Missatge decoratiu de detecció
+echo -e "\n"
 echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
 echo -e "${C_INFO}🔍 DETECCIÓ DEL SISTEMA:${RESET}"
 echo -e "   ${NEGRITA}Distribució:${RESET}  $NOM_SISTEMA"
@@ -115,11 +115,6 @@ apt-get install -y \
    curl
 
 check_install "$APT_DESC"
-
-
-#if ! apt-get install -y ca-certificates curl; then
-#    finalitzar_amb_error "No s'han pogut instal·lar les dependències inicials (ca-certificates i curl)."
-#fi
 
 sleep 2
 
@@ -171,10 +166,6 @@ apt-get install -y \
    docker-compose-plugin
 
 check_install "$APT_DESC"
-
-#if ! apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin; then
-#    finalitzar_amb_error "No s'han pogut instal·lar els paquets de Docker."
-#fi
 
 echo -e "\n"
 echo -e "${C_EXITO}✅ Docker instal·lat correctament a $OS_ID ($CODENAME)!${RESET}"
