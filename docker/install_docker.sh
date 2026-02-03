@@ -96,7 +96,7 @@ fi
 chmod a+r /etc/apt/keyrings/docker.asc
 
 # Configuració del repositori estructurat (DEB822)
-echo "${C_SUBTITULO}-> Configurant repositori oficial de Docker...${RESET}"
+echo -e "${C_SUBTITULO}-> Configurant repositori oficial de Docker...${RESET}"
 cat <<EOF > /etc/apt/sources.list.d/docker.sources
 Types: deb
 URIs: https://download.docker.com/linux/$OS_ID
@@ -110,7 +110,6 @@ EOF
 # 4. Instal·lació dels Paquets de Docker 
 # -------------------------------------------------------------
 
-echo -e "\n"
 echo -e "${C_SUBTITULO}-> Instal·lant Docker CE, CLI i Docker Compose Plugin...${RESET}"
 if ! apt-get update -qq; then
     finalitzar_amb_error "El repositori de Docker no ha respost correctament per a la versió $CODENAME."
@@ -152,8 +151,10 @@ if ! usermod -aG docker "${USUARI_SUDO}"; then
 fi
 
 echo -e "\n"
-echo -e "${C_PRINCIPAL}-------------------------------------------------------------------------------------"
-echo -e "${C_PRINCIPAL}✅ INSTAL·LACIÓ FINALITZADA CORRECTAMENT."
-echo -e "${C_PRINCIPAL}   ⚠️ ACCIÓ REQUERIDA: Perquè els nous permisos de Docker tinguin efecte, heu"
-echo -e "${C_PRINCIPAL}   de tancar la sessió SSH actual i tornar a connectar-vos-hi o reiniciar la màquina."
-echo -e "${C_PRINCIPAL}   Un cop reconnectat, podeu provar amb: docker run hello-world${RESET}"
+echo -e "${C_EXITO}✅ INSTAL·LACIÓ FINALITZADA CORRECTAMENT.${RESET}"
+echo -e "\n"
+echo -e "${C_INFO}-------------------------------------------------------------------------------------"
+echo -e "${C_INFO}⚠️ ACCIÓ REQUERIDA: Perquè els nous permisos de Docker tinguin efecte, heu"
+echo -e "${C_INFO}   de tancar la sessió SSH actual i tornar a connectar-vos-hi o reiniciar la màquina."
+echo -e "${C_INFO}   Un cop reconnectat, podeu provar amb: docker run hello-world"
+echo -e "${C_INFO}-------------------------------------------------------------------------------------${RESET}"
