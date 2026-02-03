@@ -150,9 +150,12 @@ if ! usermod -aG docker "${USUARI_SUDO}"; then
     finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
 fi
 
+sleep 1
+
 echo -e "\n"
 echo -e "${C_EXITO}✅ INSTAL·LACIÓ FINALITZADA CORRECTAMENT.${RESET}"
 echo -e "\n"
+sleep 1
 echo -e "${C_INFO}-------------------------------------------------------------------------------------"
 echo -e "${C_INFO}⚠️ ACCIÓ REQUERIDA: Perquè els nous permisos de Docker tinguin efecte, heu"
 echo -e "${C_INFO}   de tancar la sessió SSH actual i tornar a connectar-vos-hi o reiniciar la màquina."
