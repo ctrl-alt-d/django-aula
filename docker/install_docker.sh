@@ -25,8 +25,7 @@ FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 echo -e "\n"
-echo "ℹ️ Descarregant la llibreria temporal de funcions i variables compartides ($FUNCTIONS_FILE). El contingut de l'arxiu és important pel bon funcionament de tots els scripts que calen per la instal·lació automàtica de Django-Aula."
-echo "  Aquesta descàrrega tindrà un ús temporal, donat que l'arxiu definitiu romandrà permanentment dins un directori de la instal·lació de l'aplicatiu, un cop s'hagi clonat des del repositori oficial."
+echo "ℹ️ Descarregant la llibreria t'ús temporal de funcions i variables compartides ($FUNCTIONS_FILE)."
 
 # 2. Descàrrega de la llibreria de funcions amb wget
 wget -q -O "$FUNCTIONS_FILE" "$FUNCTIONS_URL"
@@ -168,7 +167,7 @@ apt-get install -y \
    docker-ce \
    docker-ce-cli \
    containerd.io \
-   docker-builx-plugin \
+   docker-buildx-plugin \
    docker-compose-plugin
 
 check_install "$APT_DESC"
