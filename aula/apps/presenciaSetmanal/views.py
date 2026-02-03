@@ -56,7 +56,7 @@ class ProfeNoPot(Exception):
 def index(request):
     # Obtenir l'usuari actual.
     credentials = getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
     professor = User2Professor(user)
 
     if request.method == "POST":
@@ -94,7 +94,7 @@ def detallgrup(request, grup_id, dataReferenciaStr="", nomesPropies=None):
     """
     # Obtenir l'usuari actual.
     credentials = getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
     professor = User2Professor(user)
 
     grup = Grup.objects.get(id=grup_id)
@@ -252,7 +252,7 @@ def modificaEstatControlAssistencia(request, codiEstat, idAlumne, idImpartir):
     try:
         profeActual = User2Professor(request.user)
         credentials = getImpersonateUser(request)
-        (user, l4) = credentials
+        user, l4 = credentials
 
         estats = LlistaEstats()
         segEstat = estats.obtenirSeguentEstatAPartirCodi(codiEstat)
@@ -316,7 +316,7 @@ def modificaEstatControlAssistenciaGrup(request, codiEstat, idImpartir):
     try:
         profeActual = User2Professor(request.user)
         credentials = getImpersonateUser(request)
-        (user, l4) = credentials
+        user, l4 = credentials
 
         # Comprovar que sigui el profe assignat a l'hora o error.
         impartir = Impartir.objects.get(id=idImpartir)
@@ -386,7 +386,7 @@ def _modificaEstatControlAssistencia(
 
 
 def _comprovarQueLaHoraPertanyAlProfessorOError(credentials, impartir):
-    (user, l4) = credentials
+    user, l4 = credentials
     pertany_al_professor = user.pk in [
         impartir.horari.professor.pk,
         impartir.professor_guardia.pk if impartir.professor_guardia else -1,

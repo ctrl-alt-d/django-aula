@@ -7,7 +7,7 @@ from aula.utils.tools import calculate_my_time_off
 
 
 def dades_basiques(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     sessioImpersonada = tools.sessioImpersonada(request)
 
     my_timeoff = calculate_my_time_off(request.user)

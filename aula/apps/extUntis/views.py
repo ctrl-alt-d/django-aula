@@ -17,7 +17,7 @@ from . import sincronitzaUntis as s
 @group_required(["direcció"])
 def sincronitzaUntis(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         form = sincronitzaUntisForm(request.POST, request.FILES)

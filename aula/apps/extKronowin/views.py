@@ -110,7 +110,7 @@ def assignaGrups(request):
 @group_required(["direcció"])
 def sincronitzaKronowin(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         form = sincronitzaKronowinForm(request.POST, request.FILES)

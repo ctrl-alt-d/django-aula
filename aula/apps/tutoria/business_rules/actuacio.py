@@ -12,7 +12,7 @@ def actuacio_clean(instance):
     #
     # Només es poden esborrar dels darrers 7 dies
     #
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
@@ -59,7 +59,7 @@ def actuacio_post_save(sender, instance, created, **kwargs):
 def actuacio_pre_delete(sender, instance, **kwargs):
     import datetime as dt
 
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (

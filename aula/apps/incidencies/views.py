@@ -85,7 +85,7 @@ from aula.utils.widgets import DateTextImput, DateTimeTextImput
 @group_required(["professors"])
 def posaIncidenciaAula(request, pk):  # pk = pk_impartir
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     impartir = get_object_or_404(Impartir, pk=pk)
 
@@ -197,7 +197,7 @@ def posaIncidenciaAula(request, pk):  # pk = pk_impartir
 @group_required(["professors"])
 def eliminaIncidenciaAula(request, pk):  # pk = pk_incidencia
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     es_consultable = True
     try:
@@ -260,7 +260,7 @@ def eliminaIncidenciaAula(request, pk):  # pk = pk_incidencia
 @group_required(["professors", "professional"])
 def eliminaIncidencia(request, pk):  # pk = pk_incidencia
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     try:
         incidencia = Incidencia.objects.get(pk=pk)
@@ -329,7 +329,7 @@ def eliminaIncidencia(request, pk):  # pk = pk_incidencia
 @group_required(["professors", "professional"])
 def posaIncidencia(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     missatge = ""
 
@@ -429,7 +429,7 @@ def posaIncidencia(request):
 @group_required(["consergeria"])
 def posaIncidenciaPrimeraHora(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     missatge = ""
 
@@ -542,7 +542,7 @@ def posaIncidenciaPrimeraHora(request):
 @group_required(["professors"])
 def posaExpulsio(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     formset = []
     if request.method == "POST":
@@ -604,7 +604,7 @@ def posaExpulsio(request):
 @group_required(["professors"])
 def posaExpulsioW2(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     expulsio = get_object_or_404(Expulsio, pk=pk)
 
@@ -722,7 +722,7 @@ def editaExpulsio(request, pk):
     # from incidencies.forms import editaExpulsioForm
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     expulsio = get_object_or_404(Expulsio, pk=pk)
 
@@ -873,7 +873,7 @@ def editaExpulsio(request, pk):
 @group_required(["professors"])
 def posaExpulsioPerAcumulacio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     incidencia = get_object_or_404(Incidencia, pk=pk)
 
@@ -1002,7 +1002,7 @@ def posaExpulsioPerAcumulacio(request, pk):
 @group_required(["professors", "professional"])
 def llistaIncidenciesProfessional(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professional = get_object_or_404(Professional, pk=user.pk)
     professor = get_object_or_404(
@@ -1134,7 +1134,7 @@ def llistaIncidenciesProfessional(request):
 @login_required
 @group_required(["direcció"])
 def alertesAcumulacioExpulsions(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     alumnesAmbExpulsions = (
@@ -1291,7 +1291,7 @@ def alertesAcumulacioExpulsions(request):
 @group_required(["direcció"])
 def sancio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     dia_prescriu_incidencia = date.today() - timedelta(
         days=settings.CUSTOM_DIES_PRESCRIU_INCIDENCIA
@@ -1622,7 +1622,7 @@ def sancionsExcel(request):
 @group_required(["direcció"])
 def cartaSancio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     sancio = Sancio.objects.get(pk=pk)
     nom_fitxer = "cartaSancio-" + sancio.tipus.carta_slug
@@ -1757,7 +1757,7 @@ def cartaSancio(request, pk):
 @group_required(["direcció"])
 def editaSancio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     sancio = Sancio.objects.get(pk=pk)
 
@@ -1907,7 +1907,7 @@ login_required
 @group_required(["direcció"])
 def esborrarSancio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     sancio = Sancio.objects.get(pk=pk)
 
@@ -1969,7 +1969,7 @@ def esborrarSancio(request, pk):
 @login_required
 @group_required(["direcció"])
 def controlTramitacioExpulsions(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     expulsions = Expulsio.objects.exclude(estat="ES").exclude(

@@ -139,7 +139,7 @@ def mostraImpartir(request, year=None, month=None, day=None):
     import datetime as t
 
     credentials = getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -336,7 +336,7 @@ def mostraImpartir(request, year=None, month=None, day=None):
 @group_required(["professors"])
 def passaLlista(request, pk):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     apps.get_model("presencia", "NoHaDeSerALAula")
 
     # prefixes:
@@ -653,7 +653,7 @@ def passaLlistaGrupDataTriaGrupDia(request):
 @group_required(["direcció"])
 def passaLlistaGrupData(request, grup, dia, mes, year):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     data = date(year=int(year), month=int(mes), day=int(dia))
     controls = ControlAssistencia.objects.filter(
@@ -714,7 +714,7 @@ def passaLlistaGrupData(request, grup, dia, mes, year):
 @group_required(["professors"])
 def marcarComHoraSenseAlumnes(request, pk):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     head = "Afegir alumnes a la llista"
 
@@ -783,7 +783,7 @@ def marcarComHoraSenseAlumnes(request, pk):
 @group_required(["professors"])
 def afegeixAlumnesLlista(request, pk):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     head = "Afegir alumnes a la llista"
 
@@ -910,7 +910,7 @@ def afegeixAlumnesLlista(request, pk):
 @group_required(["professors"])
 def treuAlumnesLlista(request, pk):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     head = "Treure alumnes de la llista"
 
@@ -1031,7 +1031,7 @@ def treuAlumnesLlista(request, pk):
 @group_required(["professors"])
 def afegeixGuardia(request, dia=None, mes=None, year=None):
     credentials = getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     head = "Fer guardia"
 
@@ -1065,7 +1065,7 @@ def afegeixGuardia(request, dia=None, mes=None, year=None):
 @group_required(["professors"])
 def esborraGuardia(request, pk):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     impartir = get_object_or_404(Impartir, pk=pk)
 
@@ -1094,7 +1094,7 @@ def esborraGuardia(request, pk):
 @group_required(["professors"])
 def calculadoraUnitatsFormatives(request):
     credentials = getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -1171,7 +1171,7 @@ def calculadoraUnitatsFormatives(request):
 @group_required(["direcció"])
 def alertaAssistencia(request):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     head = """Alerta alumnes"""
 
@@ -1209,7 +1209,7 @@ def alertaAssistencia(request):
 @login_required
 @group_required(["direcció", "administradors"])
 def indicadors(request):
-    (report, dades) = indicadorsReport()
+    report, dades = indicadorsReport()
     if dades is None:
         menuCTX = False
     else:
@@ -1225,7 +1225,7 @@ def indicadors(request):
 @login_required
 @group_required(["direcció", "administradors"])
 def indcsv(request):
-    (_, dades) = indicadorsReport()
+    _, dades = indicadorsReport()
     return dades
 
 
@@ -1233,7 +1233,7 @@ def indcsv(request):
 @group_required(["professors"])
 def faltesAssistenciaEntreDates(request):
     credentials = getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -1298,7 +1298,7 @@ def faltesAssistenciaEntreDates(request):
 @group_required(["professors"])
 def copiarAlumnesLlista(request, pk):
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     head = "Copiar alumnes a la llista a partir d'una altra hora"
 
@@ -1478,7 +1478,7 @@ def anularImpartir(request, pk):
     impartir = get_object_or_404(Impartir, pk=pk)
     controls = impartir.controlassistencia_set
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     NoHaDeSerALAula = apps.get_model("presencia", "NoHaDeSerALAula")
     if not controls.exists():
@@ -1609,7 +1609,7 @@ def winwheel(request, pk):
         return HttpResponseRedirect(passa_llista_url)
 
     credentials = getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     impartir = get_object_or_404(Impartir, pk=pk)
 
     ControlAssistencia

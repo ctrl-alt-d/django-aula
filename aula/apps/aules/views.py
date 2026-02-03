@@ -51,7 +51,7 @@ from aula.utils.tools import unicode
 @login_required
 @group_required(["professors", "professional", "consergeria"])
 def reservaAulaList(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     reserves = ReservaAula.objects.filter(es_reserva_manual=True).filter(usuari=user)
@@ -79,7 +79,7 @@ def reservaAulaList(request):
 @group_required(["professors", "professional", "consergeria"])
 def consultaAulaPerAula(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formDisponibilitatAula = disponibilitatAulaPerAulaForm(request.POST)
@@ -112,7 +112,7 @@ def consultaAulaPerAula(request):
 @group_required(["professors", "professional", "consergeria"])
 def detallAulaReserves(request, year, month, day, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     aula = get_object_or_404(Aula, pk=pk)
 
@@ -242,7 +242,7 @@ def detallAulaReserves(request, year, month, day, pk):
 @group_required(["professors", "professional", "consergeria"])
 def consultaAulaPerFranja(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formDisponibilitatAula = disponibilitatAulaPerFranjaForm(
@@ -283,7 +283,7 @@ def consultaAulaPerFranja(request):
 @group_required(["professors", "professional", "consergeria"])
 def detallFranjaReserves(request, year, month, day, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     franja = get_object_or_404(FranjaHoraria, pk=pk)
 
@@ -394,7 +394,7 @@ def tramitarReservaAula(
     request, pk_aula=None, pk_franja=None, year=None, month=None, day=None
 ):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     aula = Aula.objects.filter(pk=pk_aula).first()
     franja = FranjaHoraria.objects.filter(pk=pk_franja).first()
@@ -502,7 +502,7 @@ def tramitarReservaAula(
 @group_required(["professors", "professional", "consergeria"])
 def eliminarReservaAula(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     reserva = get_object_or_404(ReservaAula, pk=pk)
     reserva.credentials = credentials
 
@@ -526,7 +526,7 @@ def eliminarReservaAula(request, pk):
 @login_required
 @group_required(["direcció"])
 def assignaComentarisAAules(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     errors = []

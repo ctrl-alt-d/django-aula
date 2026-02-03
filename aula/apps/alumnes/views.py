@@ -188,7 +188,7 @@ def assignaTutors(request):
 @group_required(["direcció"])
 def llistaTutorsIndividualitzats(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     User2Professor(user)
 
@@ -210,7 +210,7 @@ def llistaTutorsIndividualitzats(request):
 @group_required(["direcció", "psicopedagog"])
 def informePsicopedagoc(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formAlumne = triaAlumneSelect2Form(
@@ -260,7 +260,7 @@ def canviarNomSentitW0(request):
 @group_required(["direcció", "psicopedagog"])
 def canviarNomSentitW1(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formAlumne = triaAlumneSelect2Form(request.POST)
@@ -284,7 +284,7 @@ def canviarNomSentitW1(request):
 @group_required(["direcció", "psicopedagog"])
 def canviarNomSentitW2(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     alumne = get_object_or_404(Alumne, pk=pk)
     formF = modelform_factory(Alumne, fields=["nom_sentit"])
@@ -355,7 +355,7 @@ def canviarNomSentitW2(request, pk):
 @group_required(["direcció"])
 def gestionaAlumnesTutor(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = Professor.objects.get(pk=int(pk))
 
@@ -502,7 +502,7 @@ def triaAlumneAlumneAjax(request, id_grup):
 def elsMeusAlumnesAndAssignatures(request):
     from django.db.models import Count, Max
 
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     professor = User2Professor(user)
 
     report = []
@@ -962,7 +962,7 @@ def detallAlumneHorari(request, pk, detall="all"):
     from aula.apps.matricula.models import Document
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     alumne = get_object_or_404(Alumne, pk=pk)
     professor = User2Professor(user)
@@ -1148,7 +1148,7 @@ def detallAlumneHorari(request, pk, detall="all"):
 )
 def cercaUsuari(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formUsuari = triaAlumneSelect2Form(

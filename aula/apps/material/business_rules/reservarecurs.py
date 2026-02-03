@@ -13,7 +13,7 @@ from ....apps.missatgeria.missatges_a_usuaris import (
 
 
 def reservarecurs_clean(instance):
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
@@ -129,7 +129,7 @@ def reservarecurs_post_save(sender, instance, created, **kwargs):
 
 def reservarecurs_pre_delete(sender, instance, **kwargs):
     errors = {}
-    (user, l4) = (
+    user, l4 = (
         instance.credentials if hasattr(instance, "credentials") else (None, False)
     )
     usuari_informat = bool(user)

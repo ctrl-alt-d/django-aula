@@ -15,7 +15,7 @@ from aula.apps.usuaris.models import User2Professional, User2Professor
 
 
 def controlAssistencia_clean(instance):
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
@@ -130,11 +130,9 @@ def controlAssistencia_clean(instance):
         and not justificadaDB
         and not socTutor
     ):
-        errors.setdefault(NON_FIELD_ERRORS, []).append(
-            """
+        errors.setdefault(NON_FIELD_ERRORS, []).append("""
                                   Només el tutor pot justificar faltes.  
-                                                            """
-        )
+                                                            """)
 
     # No es poden justificar faltes si s'ha enviat una carta.
     if not justificadaDB and justificadaAra:
@@ -145,13 +143,9 @@ def controlAssistencia_clean(instance):
             .exists()
         )
         if dins_ambit_carta:
-            errors.setdefault(NON_FIELD_ERRORS, []).append(
-                """
+            errors.setdefault(NON_FIELD_ERRORS, []).append("""
                                   La falta d'en {0} no es pot modificar. El tutor ha inclòs la falta en una Carta.  
-                                                            """.format(
-                    instance.alumne
-                )
-            )
+                                                            """.format(instance.alumne))
 
     # Només el tutor, el professor de guardia o el professor titular pot modificar un control d'assistència:
     if user:

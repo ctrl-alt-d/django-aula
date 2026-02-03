@@ -121,7 +121,7 @@ def getRealUser(request):
 
 
 def sessioImpersonada(request):
-    (user, _) = getImpersonateUser(request)
+    user, _ = getImpersonateUser(request)
     return request and request.user.is_authenticated and request.user.pk != user.pk
 
 

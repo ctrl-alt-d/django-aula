@@ -25,7 +25,7 @@ def incidencia_clean(instance):
 
     Incidencia = instance.__class__
 
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
@@ -129,7 +129,7 @@ def Incidencia_pre_delete(sender, instance, **kwargs):
     #
     # Només es poden esborrar dels darrers 7 dies
     #
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (

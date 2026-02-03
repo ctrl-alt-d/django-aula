@@ -395,9 +395,7 @@ def alertaAssitenciaReport(data_inici, data_fi, nivell, tpc):
                    1.0 * coalesce ( count( f.id_control_assistencia ), 0 ) /
                     coalesce ( count( ca.id_control_assistencia ), 0 ) 
                    desc   
-                """.format(
-        nivell.pk, data_inici, data_fi, tpc
-    )
+                """.format(nivell.pk, data_inici, data_fi, tpc)
 
     for alumne in Alumne.objects.raw(sql):
         filera = []
