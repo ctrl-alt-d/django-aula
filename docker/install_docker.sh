@@ -1,11 +1,17 @@
 #!/bin/bash
 # Script d'instal·lació automàtica de Docker CE i Docker Compose a sistemes Debian/Ubuntu.
 
+# Funció per mostrar errors i sortir
+finalitzar_amb_error() {
+    echo -e "\n❌ ERROR: $1"
+    echo "La instal·lació s'ha aturat perquè un pas crític ha fallat."
+    exit 1
+}
+
 # -------------------------------------------------------------
-# 1. Comprovacions i Permisos
+# 1. Comprovacions, Permisos i Detecció del SO
 # -------------------------------------------------------------
 
-# Determinar si s'està executant amb privilegis de root (necessari per instal·lar).
 if [[ $EUID -ne 0 ]]; then
    echo "Aquest script s'ha d'executar amb un usuari amb permisos de 'sudo'."
    exit 1
@@ -13,19 +19,29 @@ fi
 
 USUARI_SUDO=$(logname)
 
-clear
+. /etc/os-release
+OS_ID=$ID  # Detectarà 'debian' o 'ubuntu'
+# Utilitzarà el codename d'Ubuntu si existeix, si no, el de Debian
+CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
+
+echo "-> Sistema detectat: $OS_ID ($CODENAME)"
+
 echo -e "\n"
 echo "⚙️ Iniciant instal·lació de Docker i Docker Compose per a l'usuari: ${USUARI_SUDO}"
 echo "------------------------------------------------------------------"
-echo -e "\n"
 
 # -------------------------------------------------------------
 # 2. Preparació del Sistema
 # -------------------------------------------------------------
 
 echo "-> Actualitzant paquets i instal·lant dependències..."
-apt-get update -qq >/dev/null
-apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+if ! apt-get update -qq; then
+    finalitzar_amb_error "No s'ha pogut actualitzar la llista de paquets (apt update)."
+fi
+
+if ! apt-get install -y ca-certificates curl; then
+    finalitzar_amb_error "No s'han pogut instal·lar les dependències inicials (ca-certificates i curl)."
+fi
 
 # -------------------------------------------------------------
 # 3. Afegir Repositori Oficial de Docker
@@ -34,42 +50,65 @@ apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
 echo -e "\n"
 echo "-> Afegint repositori oficial de Docker..."
 install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# Descàrrega de la clau
+if ! curl -fsSL "https://download.docker.com/linux/$OS_ID/gpg" -o /etc/apt/keyrings/docker.asc; then
+    finalitzar_amb_error "No s'ha pogut obtenir la clau per a $OS_ID des de download.docker.com"
+fi
+
 chmod a+r /etc/apt/keyrings/docker.gpg
 
-# Afegim el repositori, ajustant la versió de codi de Debian/Ubuntu.
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Configuració del repositori estructurat (DEB822)
+echo "-> Configurant repositori oficial de Docker..."
+cat <<EOF > /etc/apt/sources.list.d/docker.sources
+Types: deb
+URIs: https://download.docker.com/linux/$OS_ID
+Suites: $CODENAME
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
 
 # -------------------------------------------------------------
-# 4. Instal·lació dels Paquets
+# 4. Instal·lació dels Paquets de Docker 
 # -------------------------------------------------------------
 
 echo -e "\n"
 echo "-> Instal·lant Docker CE, CLI i Docker Compose Plugin..."
-apt-get update -qq >/dev/null
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+if ! apt-get update -qq; then
+    finalitzar_amb_error "El repositori de Docker no ha respost correctament per a la versió $CODENAME."
+fi
+
+if ! apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin; then
+    finalitzar_amb_error "No s'han pogut instal·lar els paquets de Docker."
+fi
+
+echo -e "\n✅ Docker instal·lat correctament a $OS_ID ($CODENAME)!"
 
 # -------------------------------------------------------------
 # 5. Finalització i Permisos
 # -------------------------------------------------------------
 
 echo -e "\n"
-echo "-> Assegurant que el servei Docker estigui actiu i habilitat a l'engegada de la màquina..."
-systemctl start docker
+echo "-> Assegurant que el servei Docker estigui actiu..."
+if ! systemctl start docker; then
+    finalitzar_amb_error "No s'ha pogut arrencar el servei de Docker."
+fi
+
 systemctl enable docker >/dev/null 2>&1
 
-# Mètode per mostrar només les línies Loaded i Active (la comprovació d'èxit)
+# Mostrem estat
 systemctl status docker | grep -E 'Loaded:|Active:'
 
 echo -e "\n"
 echo "-> Afegint l'usuari ${USUARI_SUDO} al grup 'docker'..."
-usermod -aG docker "${USUARI_SUDO}"
+if ! usermod -aG docker "${USUARI_SUDO}"; then
+    finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+fi
 
 echo -e "\n"
 echo "------------------------------------------------------------------"
 echo "✅ INSTAL·LACIÓ FINALITZADA CORRECTAMENT."
-echo "   ⚠️ ACCIÓ REQUERIDA: Perquè els nous permisos de Docker tinguin efecte,"
-echo "   heu, o bé tancar la sessió SSH actual i tornar a connectar-vos-hi, o bé reiniciar la màquina."
+echo "   ⚠️ ACCIÓ REQUERIDA: Perquè els nous permisos de Docker tinguin efecte, heu"
+echo "   de tancar la sessió SSH actual i tornar a connectar-vos-hi o reiniciar la màquina."
 echo "   Un cop reconnectat, podeu provar amb: docker run hello-world"
