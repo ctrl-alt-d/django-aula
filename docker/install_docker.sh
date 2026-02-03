@@ -177,7 +177,7 @@ apt-get install -y \
 check_install "$APT_DESC"
 
 echo -e "\n"
-echo -e "${C_EXITO}✅ Docker instal·lat correctament a $OS_ID ($CODENAME)!${RESET}"
+echo -e "${C_EXITO}✅ Docker instal·lat correctament a $NOM_SISTEMA ($CODENAME)!${RESET}"
 
 sleep 2
 
