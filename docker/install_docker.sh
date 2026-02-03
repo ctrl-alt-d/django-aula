@@ -5,6 +5,8 @@
 # DEFINICIÓ DE VARIABLES, CÀRREGA DE LLIBRERIA DE FUNCIONS I VARIABLES DE COLORS
 # ------------------------------------------------------------------------------
 
+clear
+
 # 1. Definició de variables
 # Repositori i branca per la clonació
 #REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
@@ -53,39 +55,16 @@ rm "$FUNCTIONS_FILE"
 if [ $? -ne 0 ]; then
     echo -e "${C_ERROR}❌ ADVERTÈNCIA:Per alguna raó desconeguda no s'ha pogut eliminar l'arxiu temporal de funcions${RESET} ${C_INFO} '$FUNCTIONS_FILE'${RESET} ${${C_ERROR}}. Caldria fer-ho manualment.${RESET}"
 else
-echo -e "${C_EXITO}❌ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha procedit a la seva automàtica eliminació.${RESET}"
+echo -e "${C_EXITO}✅ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha procedit a la seva automàtica eliminació.${RESET}"
 fi
 
-# Aquestes variables es troben a l'arxiu functions.sh. Caldria fer el mateix que fem amb l'instal·lador install_djau.sh
-# i la funció de missatge d'error podria ser interessant incorporar-la a functions.sh i als scripts
-#RESET='\e[0m'
-#NEGRITA='\e[1m'
-
-# Colors básics
-#AZUL='\e[34m'
-#VERDE='\e[32m'
-#ROJO='\e[31m'
-#CIANO='\e[36m'
-#AMARILLO='\e[33m'
-#MAGENTA='\e[35m'
-
-# Estils compostos
-#C_EXITO="${NEGRITA}${VERDE}"       # Éxit i confirmacions (✅)
-#C_ERROR="${NEGRITA}${ROJO}"        # Errors o fallades (❌)
-#C_PRINCIPAL="${NEGRITA}${AZUL}"    # Fases principals (FASE 1, FASE 2)
-#C_CAPITULO="${NEGRITA}${CIANO}"    # Títuls de Capítul (1. DEFINICIÓ...)
-#C_SUBTITULO="${NEGRITA}${MAGENTA}" # Títuls de Subcapítul (1.1, 1.2)
-#C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓN)
-
-# Funció per mostrar errors i sortir
+# Funció per mostrar errors i sortir. Podria ser interessant incorporar-la a functions.sh per fer-la servir als scripts
 finalitzar_amb_error() {
     echo -e "\n"
     echo -e "${C_ERROR}❌ ERROR: $1${RESET}"
     echo "La instal·lació s'ha aturat perquè un pas crític ha fallat."
     exit 1
 }
-
-clear
 
 # -------------------------------------------------------------
 # 1. Comprovacions, Permisos i Detecció del SO
@@ -130,9 +109,18 @@ fi
 sleep 2
 echo -e "\n"
 
-if ! apt-get install -y ca-certificates curl; then
-    finalitzar_amb_error "No s'han pogut instal·lar les dependències inicials (ca-certificates i curl)."
-fi
+APT_DESC="ca-certificates i Curl"
+echo -e "${C_INFO}ℹ️ $APT_DESC${RESET}"
+apt-get install -y \
+   ca-certificates \
+   curl
+
+check_install "$APT_DESC"
+
+
+#if ! apt-get install -y ca-certificates curl; then
+#    finalitzar_amb_error "No s'han pogut instal·lar les dependències inicials (ca-certificates i curl)."
+#fi
 
 sleep 2
 
@@ -174,9 +162,20 @@ fi
 sleep 2
 echo -e "\n"
 
-if ! apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin; then
-    finalitzar_amb_error "No s'han pogut instal·lar els paquets de Docker."
-fi
+APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+echo -e "${C_INFO}ℹ️ $APT_DESC${RESET}"
+apt-get install -y \
+   docker-ce \
+   docker-ce-cli \
+   containerd.io \
+   docker-builx-plugin \
+   docker-compose-plugin
+
+check_install "$APT_DESC"
+
+#if ! apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin; then
+#    finalitzar_amb_error "No s'han pogut instal·lar els paquets de Docker."
+#fi
 
 echo -e "\n"
 echo -e "${C_EXITO}✅ Docker instal·lat correctament a $OS_ID ($CODENAME)!${RESET}"
