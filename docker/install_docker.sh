@@ -1,30 +1,81 @@
 #!/bin/bash
 # Script d'instal·lació automàtica de Docker CE i Docker Compose a sistemes Debian/Ubuntu.
 
-# --------------------------------------------------
-# VARIABLES DE COLOR I ESTIL ANSI
-# --------------------------------------------------
+# ------------------------------------------------------------------------------
+# DEFINICIÓ DE VARIABLES, CÀRREGA DE LLIBRERIA DE FUNCIONS I VARIABLES DE COLORS
+# ------------------------------------------------------------------------------
+
+# 1. Definició de variables
+# Repositori i branca per la clonació
+#REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
+REPO_URL="https://github.com/rafatecno1/django-aula.git"	# repositori del projecte
+GIT_BRANCH="millora-docker"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+#GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+
+echo "---------------------------------------------------------------------------------------------------------"
+echo "--- Descàrrega de la llibreria functions.sh. Es farà servir temporalment a l'inici de la instal·lació ---"
+echo "---------------------------------------------------------------------------------------------------------"
+
+# 1. Definició de l'URL remota de la llibreria de funcions
+REPO_BASE_CLEAN="${REPO_URL%.git}"
+RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
+FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
+FUNCTIONS_FILE="./functions.sh"
+
+echo -e "\n"
+echo "ℹ️ Descarregant la llibreria temporal de funcions i variables compartides ($FUNCTIONS_FILE). El contingut de l'arxiu és important pel bon funcionament de tots els scripts que calen per la instal·lació automàtica de Django-Aula."
+echo "  Aquesta descàrrega tindrà un ús temporal, donat que l'arxiu definitiu romandrà permanentment dins un directori de la instal·lació de l'aplicatiu, un cop s'hagi clonat des del repositori oficial."
+
+# 2. Descàrrega de la llibreria de funcions amb wget
+wget -q -O "$FUNCTIONS_FILE" "$FUNCTIONS_URL"
+
+if [ $? -ne 0 ]; then
+    echo -e "\n"
+    echo "❌ ERROR: No s'ha pogut descarregar l'arxiu temporal de funcions des de $FUNCTIONS_URL. Sense aquestes funcions el script no pot executar-se. Sortint."
+    exit 1
+fi
+
+
+# 3. Canvi de propietat: Assignar l'arxiu descarregat a l'usuari original que ha executat 'sudo'
+if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
+    chown "$SUDO_USER":"$SUDO_USER" "$FUNCTIONS_FILE"
+fi
+
+# 4. Càrrega de la llibreria de funcions
+source "$FUNCTIONS_FILE"
+
+# Variables de color ($C_EXITO, $C_ERROR, etc.) i funcions comunes disponibles.
+echo -e "\n"
+echo -e "${C_EXITO}✅ Llibreria de funcions temporal carregada amb èxit.${RESET}"
+
+rm "$FUNCTIONS_FILE"
+
+if [ $? -ne 0 ]; then
+    echo -e "${C_ERROR}❌ ADVERTÈNCIA:Per alguna raó desconeguda no s'ha pogut eliminar l'arxiu temporal de funcions${RESET} ${C_INFO} '$FUNCTIONS_FILE'${RESET} ${${C_ERROR}}. Caldria fer-ho manualment.${RESET}"
+else
+echo -e "${C_EXITO}❌ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha procedit a la seva automàtica eliminació.${RESET}"
+fi
 
 # Aquestes variables es troben a l'arxiu functions.sh. Caldria fer el mateix que fem amb l'instal·lador install_djau.sh
 # i la funció de missatge d'error podria ser interessant incorporar-la a functions.sh i als scripts
-RESET='\e[0m'
-NEGRITA='\e[1m'
+#RESET='\e[0m'
+#NEGRITA='\e[1m'
 
 # Colors básics
-AZUL='\e[34m'
-VERDE='\e[32m'
-ROJO='\e[31m'
-CIANO='\e[36m'
-AMARILLO='\e[33m'
-MAGENTA='\e[35m'
+#AZUL='\e[34m'
+#VERDE='\e[32m'
+#ROJO='\e[31m'
+#CIANO='\e[36m'
+#AMARILLO='\e[33m'
+#MAGENTA='\e[35m'
 
 # Estils compostos
-C_EXITO="${NEGRITA}${VERDE}"       # Éxit i confirmacions (✅)
-C_ERROR="${NEGRITA}${ROJO}"        # Errors o fallades (❌)
-C_PRINCIPAL="${NEGRITA}${AZUL}"    # Fases principals (FASE 1, FASE 2)
-C_CAPITULO="${NEGRITA}${CIANO}"    # Títuls de Capítul (1. DEFINICIÓ...)
-C_SUBTITULO="${NEGRITA}${MAGENTA}" # Títuls de Subcapítul (1.1, 1.2)
-C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓN)
+#C_EXITO="${NEGRITA}${VERDE}"       # Éxit i confirmacions (✅)
+#C_ERROR="${NEGRITA}${ROJO}"        # Errors o fallades (❌)
+#C_PRINCIPAL="${NEGRITA}${AZUL}"    # Fases principals (FASE 1, FASE 2)
+#C_CAPITULO="${NEGRITA}${CIANO}"    # Títuls de Capítul (1. DEFINICIÓ...)
+#C_SUBTITULO="${NEGRITA}${MAGENTA}" # Títuls de Subcapítul (1.1, 1.2)
+#C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓN)
 
 # Funció per mostrar errors i sortir
 finalitzar_amb_error() {
@@ -48,12 +99,17 @@ fi
 USUARI_SUDO=$(logname)
 
 . /etc/os-release
-OS_ID=$ID  # Detectarà el sistema operatiu, per exemple 'debian', 'ubuntu', etc
 
-# Utilitzarà el codename d'Ubuntu si existeix, si no, el de Debian
+OS_ID=$ID
 CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
+NOM_SISTEMA=${PRETTY_NAME:-$OS_ID} # Si no hi ha PRETTY_NAME, usa l'ID
 
-echo -e "${C_INFO}-> Sistema detectat: $OS_ID ($CODENAME)${RESET}"
+# Missatge decoratiu de detecció
+echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
+echo -e "${C_INFO}🔍 DETECCIÓ DEL SISTEMA:${RESET}"
+echo -e "   ${NEGRITA}Distribució:${RESET}  $NOM_SISTEMA"
+echo -e "   ${NEGRITA}Codi Versió:${RESET}  $CODENAME"
+echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
 
 sleep 2
 
