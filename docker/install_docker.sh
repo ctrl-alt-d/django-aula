@@ -75,11 +75,20 @@ fi
 
 USUARI_SUDO=$(logname)
 
+# Comprovar si el fitxer d'identificació del sistema existeix
+if [ ! -f /etc/os-release ]; then
+    finalitzar_amb_error "No s'ha trobat l'arxiu /etc/os-release. Aquest sistema no sembla seguir l'estàndard LSB i no es pot identificar la distribució."
+fi
+
 . /etc/os-release
 
 OS_ID=$ID
 CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
 NOM_SISTEMA=${PRETTY_NAME:-$OS_ID} # Si no hi ha PRETTY_NAME, usa l'ID
+
+if [ -z "$CODENAME" ]; then
+    finalitzar_amb_error "No s'ha pogut determinar el 'Codename' del sistema (ex: bookworm, noble). No es pot configurar el repositori de Docker."
+fi
 
 # Missatge decoratiu de detecció
 echo -e "\n"
