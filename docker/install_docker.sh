@@ -43,6 +43,12 @@ if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
 fi
 
 # 5. Càrrega de la llibreria de funcions
+if [ ! -f "$FUNCTIONS_FILE" ]; then
+    echo -e "\n\e[31m\e[1m❌ ERROR CRÍTIC:\e[0m No s'ha trobat l'arxiu $FUNCTIONS_FILE."
+    echo "No es pot continuar sense la llibreria de funcions."
+    exit 1
+fi
+
 source "$FUNCTIONS_FILE"
 
 # Variables de color ($C_EXITO, $C_ERROR, etc.) i funcions comunes disponibles.
@@ -55,14 +61,6 @@ if [ $? -ne 0 ]; then
 else
 echo -e "${C_EXITO}✅ Eliminació de l'arxiu temporal de funcions.${RESET}"
 fi
-
-# Funció per mostrar errors i sortir. Podria ser interessant incorporar-la a functions.sh per fer-la servir als scripts
-finalitzar_amb_error() {
-    echo -e "\n"
-    echo -e "${C_ERROR}❌ ERROR: $1${RESET}"
-    echo "La instal·lació s'ha aturat perquè un pas crític ha fallat."
-    exit 1
-}
 
 # -------------------------------------------------------------
 # 1. Comprovacions, Permisos i Detecció del SO
@@ -200,8 +198,15 @@ sleep 2
 
 echo -e "\n"
 echo -e "${C_SUBTITULO}-> Afegint l'usuari ${USUARI_SUDO} al grup 'docker'...${RESET}"
-if ! usermod -aG docker "${USUARI_SUDO}"; then
-    finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+
+# Comprovem si l'usuari ja pertany al grup per no repetir l'acció
+if id -nG "$USUARI_SUDO" | grep -qw "docker"; then
+    echo -e "${C_INFO}ℹ️ L'usuari ${USUARI_SUDO} ja forma part del grup 'docker'.${RESET}"
+else
+    if ! usermod -aG docker "${USUARI_SUDO}"; then
+        finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+    fi
+    echo -e "${C_EXITO}✅ Usuari afegit al grup 'docker' correctament.${RESET}"
 fi
 
 sleep 1
