@@ -135,7 +135,7 @@ rm -f /etc/apt/sources.list.d/docker.sources
 rm -f /etc/apt/sources.list.d/docker.list
 
 if ! apt-get update -qq; then
-    finalitzar_amb_error "No s'ha pogut actualitzar la llista de paquets (apt update)."
+    finalitzar_amb_error "No s'ha pogut actualitzar la llista de paquets (apt update). Verifiqui si hi ha altres repositoris trencats al sistema."
 fi
 
 sleep 2
