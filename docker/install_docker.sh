@@ -66,6 +66,20 @@ fi
 # 2. COMPROVACIONS, PERMISOS I DETECCIÓ DEL SO
 # -------------------------------------------------------------
 
+# Avís de Compatibilitat
+
+echo -e "${C_INFO}ℹ️  AVÍS: Aquest instal·lador està dissenyat exclusivament per a sistemes"
+echo -e "    basats en Debian o Ubuntu (utilitza el gestor de paquets APT).${RESET}"
+echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
+echo -e "\n"
+
+# Comprovació tècnica: El sistema té APT?
+if ! command -v apt-get &> /dev/null; then
+    finalitzar_amb_error "Aquest sistema no utilitza 'apt-get'. L'instal·lador no és compatible."
+fi
+
+sleep 1
+
 # Comprovació usuari d'execució amb permisos sudo
 
 if [[ $EUID -ne 0 ]]; then
