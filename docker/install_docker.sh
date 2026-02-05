@@ -152,14 +152,22 @@ echo -e "${C_INFO}ℹ️ Verificant disponibilitat al repositori de Docker per a
 
 CHECK_URL="https://download.docker.com/linux/$OS_ID/dists/$CODENAME/Release"
 
-if ! curl -Is "$CHECK_URL" | grep -q "200 OK"; then
-    echo -e "${C_INFO}⚠️  ATENCIÓ: La versió '$CODENAME' no existeix encara a Docker ($OS_ID).${RESET}"
+# Obtenim només el codi d'estat HTTP (ex: 200, 404, 403)
+HTTP_STATUS=$(curl -o /dev/null -s -w "%{http_code}" "$CHECK_URL")
+
+if [ "$HTTP_STATUS" != "200" ]; then
+    echo -e "${C_INFO}⚠️  ATENCIÓ: La versió '$CODENAME' no s'ha trobat (HTTP $HTTP_STATUS) a Docker ($OS_ID).${RESET}"
+    
+    CODENAME_OLD="$CODENAME"
     if [[ "$OS_ID" == "ubuntu" ]]; then
         CODENAME=$FALLBACK_UBUNTU
     else
         CODENAME=$FALLBACK_DEBIAN
     fi
-    echo -e "${C_EXITO}🔄 S'utilitzarà la versió comptaible (fallback) més propera: ${NEGRITA}$CODENAME${RESET}"
+    
+    echo -e "${C_EXITO}🔄 Es farà servir la versió compatible (fallback) més propera: ${NEGRITA}$CODENAME${RESET}"
+else
+    echo -e "${C_EXITO}✅ Confirmació que la versió '$CODENAME' es troba al repositori de Docker.${RESET}"
 fi
 
 # Missatge informatiu per a l'usuari
