@@ -14,10 +14,8 @@ echo "---------------------------------------------------------"
 # Definició de variables
 # Repositori i branca per la clonació
 
-#REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
-REPO_URL="https://github.com/rafatecno1/django-aula.git"	# repositori del projecte
-GIT_BRANCH="millora-docker"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
-#GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
+GIT_BRANCH="master"											# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 
 # Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
