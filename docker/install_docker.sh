@@ -7,11 +7,11 @@ echo "---------------------------------------------------------"
 echo "--- Instal·lador automàtic de Docker i Docker-Compose ---"
 echo "---------------------------------------------------------"
 
-# ------------------------------------------------------------------------------
-# DEFINICIÓ DE VARIABLES, CÀRREGA DE LLIBRERIA DE FUNCIONS I VARIABLES DE COLORS
-# ------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------
+# 1. DEFINICIÓ DE VARIABLES, CÀRREGA DE LLIBRERIA DE FUNCIONS I VARIABLES DE COLORS
+# ---------------------------------------------------------------------------------
 
-# 1. Definició de variables
+# Definició de variables
 # Repositori i branca per la clonació
 
 #REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
@@ -19,16 +19,16 @@ REPO_URL="https://github.com/rafatecno1/django-aula.git"	# repositori del projec
 GIT_BRANCH="millora-docker"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 #GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 
-# 2. Definició de l'URL remota de la llibreria de funcions
+# Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
 RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
 FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 echo -e "\n"
-echo "ℹ️ Descarregant la llibreria t'ús temporal de funcions i variables compartides ($FUNCTIONS_FILE)."
+echo "ℹ️ Descarregant la llibreria d'ús temporal de funcions i variables compartides ($FUNCTIONS_FILE)."
 
-# 3. Descàrrega de la llibreria de funcions amb wget
+# Descàrrega de la llibreria de funcions amb wget
 wget -q -O "$FUNCTIONS_FILE" "$FUNCTIONS_URL"
 
 if [ $? -ne 0 ]; then
@@ -37,12 +37,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 4. Canvi de propietat: Assignar l'arxiu descarregat a l'usuari original que ha executat 'sudo'
+# Canvi de propietat: Assignar l'arxiu descarregat a l'usuari original que ha executat 'sudo'
 if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != "root" ]; then
     chown "$SUDO_USER":"$SUDO_USER" "$FUNCTIONS_FILE"
 fi
 
-# 5. Càrrega de la llibreria de funcions
+# Càrrega de la llibreria de funcions
 if [ ! -f "$FUNCTIONS_FILE" ]; then
     echo -e "\n\e[31m\e[1m❌ ERROR CRÍTIC:\e[0m No s'ha trobat l'arxiu $FUNCTIONS_FILE."
     echo "No es pot continuar sense la llibreria de funcions."
@@ -63,8 +63,10 @@ echo -e "${C_EXITO}✅ Eliminació de l'arxiu temporal de funcions.${RESET}"
 fi
 
 # -------------------------------------------------------------
-# 1. Comprovacions, Permisos i Detecció del SO
+# 2. COMPROVACIONS, PERMISOS I DETECCIÓ DEL SO
 # -------------------------------------------------------------
+
+# Comprovació usuari d'execució amb permisos sudo
 
 if [[ $EUID -ne 0 ]]; then
    echo "${C_ERROR}Aquest script s'ha d'executar amb un usuari amb permisos de 'sudo'.${RESET}"
@@ -74,25 +76,44 @@ fi
 USUARI_SUDO=$(logname)
 
 # Comprovar si el fitxer d'identificació del sistema existeix
+
 if [ ! -f /etc/os-release ]; then
     finalitzar_amb_error "No s'ha trobat l'arxiu /etc/os-release. Aquest sistema no sembla seguir l'estàndard LSB i no es pot identificar la distribució."
 fi
 
 . /etc/os-release
 
-OS_ID=$ID
+# Importació de les variables de l'arxiu os-release per configurar el repositori de docker
+
 CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
-NOM_SISTEMA=${PRETTY_NAME:-$OS_ID} # Si no hi ha PRETTY_NAME, usa l'ID
 
 if [ -z "$CODENAME" ]; then
     finalitzar_amb_error "No s'ha pogut determinar el 'Codename' del sistema (ex: bookworm, noble). No es pot configurar el repositori de Docker."
 fi
 
-# Missatge decoratiu de detecció
-echo -e "\n"
-echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
+OS_ID=$ID
+case "$OS_ID" in
+    ubuntu|debian|raspbian|centos|fedora|rhel|sles)
+        # És una de les oficials, no toquem res.
+        ;;
+    *)
+        # No és oficial, busquem en la "genealogia" (ID_LIKE)
+        # PRIORITZEM Ubuntu perquè Zorin/Mint/PopOS usen els seus binaris.
+        if [[ "$ID_LIKE" == *"ubuntu"* ]]; then
+            OS_ID="ubuntu"
+        elif [[ "$ID_LIKE" == *"debian"* ]]; then
+            OS_ID="debian"
+        else
+            finalitzar_amb_error "Sistema no suportat ($ID). No s'ha trobat base Ubuntu/Debian a ID_LIKE."
+        fi
+        ;;
+esac
+
+# Missatge informatiu per a l'usuari
+echo -e "\n${C_INFO}------------------------------------------------------------------------------${RESET}"
 echo -e "${C_INFO}🔍 DETECCIÓ DEL SISTEMA:${RESET}"
-echo -e "   ${NEGRITA}Distribució:${RESET}  $NOM_SISTEMA"
+echo -e "   ${NEGRITA}Distribució Real:${RESET}  $PRETTY_NAME ($ID)"
+echo -e "   ${NEGRITA}Repositori Docker:${RESET}  https://download.docker.com/linux/$OS_ID"
 echo -e "   ${NEGRITA}Codi Versió:${RESET}  $CODENAME"
 echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
 
@@ -104,10 +125,15 @@ echo -e "${C_PRINCIPAL}---------------------------------------------------------
 echo -e "\n"
 
 # -------------------------------------------------------------
-# 2. Preparació del Sistema
+# 3. PREPARACIÓ DEL SISTEMA
 # -------------------------------------------------------------
 
 echo -e "${C_SUBTITULO}-> Actualitzant paquets i instal·lant dependències...${RESET}"
+
+# NETEJA CRÍTICA: Eliminem fitxers de repositoris previs de docker que puguin estar malament.
+rm -f /etc/apt/sources.list.d/docker.sources
+rm -f /etc/apt/sources.list.d/docker.list
+
 if ! apt-get update -qq; then
     finalitzar_amb_error "No s'ha pogut actualitzar la llista de paquets (apt update)."
 fi
@@ -126,7 +152,7 @@ check_install "$APT_DESC"
 sleep 2
 
 # -------------------------------------------------------------
-# 3. Afegir Repositori Oficial de Docker
+# 4. AFEGIR REPOSITORI OFICIAL DE DOCKER
 # -------------------------------------------------------------
 
 echo -e "\n"
@@ -152,7 +178,7 @@ EOF
 
 
 # -------------------------------------------------------------
-# 4. Instal·lació dels Paquets de Docker 
+# 4. INSTAL·LACIÓ DELS PAQUETS DE DOCKER 
 # -------------------------------------------------------------
 
 echo -e "${C_SUBTITULO}-> Instal·lant Docker CE, CLI i Docker Compose Plugin...${RESET}"
@@ -180,7 +206,7 @@ echo -e "${C_EXITO}✅ Docker instal·lat correctament a $NOM_SISTEMA ($CODENAME
 sleep 2
 
 # -------------------------------------------------------------
-# 5. Finalització i Permisos
+# 5. COMPROVACIONS FINALS
 # -------------------------------------------------------------
 
 echo -e "\n"
