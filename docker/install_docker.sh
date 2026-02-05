@@ -133,7 +133,6 @@ if ! apt-get update -qq; then
     finalitzar_amb_error "L'actualització de la llista de paquets (apt update) ha informat d'un error. Verifiqui si hi ha altres repositoris trencats al sistema."
 fi
 
-sleep 2
 echo -e "\n"
 
 APT_DESC="ca-certificates i Curl"
@@ -148,7 +147,7 @@ sleep 2
 
 
 # Validació del repositori
-echo -e "${C_INFO}ℹ️ Verificant disponibilitat al repositori de Docker per a '$CODENAME'...${RESET}"
+echo -e "${C_INFO}ℹ️ Sistema $PRETTY_NAME. Verificant disponibilitat al repositori de Docker per a '$CODENAME'...${RESET}"
 
 CHECK_URL="https://download.docker.com/linux/$OS_ID/dists/$CODENAME/Release"
 
