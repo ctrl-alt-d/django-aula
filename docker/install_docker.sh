@@ -99,7 +99,14 @@ fi
 
 # Importació de les variables de l'arxiu os-release per configurar el repositori de docker
 
-CODENAME=${UBUNTU_CODENAME:-$VERSION_CODENAME}
+# Determinar el CODENAME real de la base (Ubuntu o Debian)
+if [ -n "$UBUNTU_CODENAME" ]; then
+    CODENAME=$UBUNTU_CODENAME
+elif [ -n "$DEBIAN_CODENAME" ]; then
+    CODENAME=$DEBIAN_CODENAME
+else
+    CODENAME=$VERSION_CODENAME
+fi
 
 if [ -z "$CODENAME" ]; then
     finalitzar_amb_error "No s'ha pogut determinar el 'Codename' del sistema (ex: bookworm, noble). No es pot configurar el repositori de Docker."
@@ -108,11 +115,8 @@ fi
 OS_ID=$ID
 case "$OS_ID" in
     ubuntu|debian|raspbian|centos|fedora|rhel|sles)
-        # És una de les oficials, no toquem res.
         ;;
     *)
-        # No és oficial, busquem en la "genealogia" (ID_LIKE)
-        # PRIORITZEM Ubuntu perquè Zorin/Mint/PopOS usen els seus binaris.
         if [[ "$ID_LIKE" == *"ubuntu"* ]]; then
             OS_ID="ubuntu"
         elif [[ "$ID_LIKE" == *"debian"* ]]; then
