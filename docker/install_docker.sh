@@ -67,7 +67,7 @@ fi
 # -------------------------------------------------------------
 
 # Avís de Compatibilitat
-
+echo -e "\n"
 echo -e "${C_INFO}ℹ️  AVÍS: Aquest instal·lador està dissenyat exclusivament per a sistemes"
 echo -e "    basats en Debian o Ubuntu (utilitza el gestor de paquets APT).${RESET}"
 echo -e "${C_INFO}------------------------------------------------------------------------------${RESET}"
