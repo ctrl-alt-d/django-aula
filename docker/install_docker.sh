@@ -26,7 +26,7 @@ FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 echo -e "\n"
-echo "ℹ️ Descarregant la llibreria d'ús temporal de funcions i variables compartides ($FUNCTIONS_FILE)."
+echo "Descarrregant la llibreria d'ús temporal de funcions i variables compartides ($FUNCTIONS_FILE)."
 
 # Descàrrega de la llibreria de funcions amb wget
 wget -q -O "$FUNCTIONS_FILE" "$FUNCTIONS_URL"
