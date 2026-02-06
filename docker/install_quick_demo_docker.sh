@@ -1,4 +1,4 @@
-<#!/bin/bash
+#!/bin/bash
 # -------------------------------------------------------------
 # Script per a la instal·lació de la Demo Docker de django-aula.
 # Descarrega els fitxers de configuració i comprova la base de dades.
