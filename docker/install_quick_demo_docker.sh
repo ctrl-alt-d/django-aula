@@ -13,8 +13,11 @@ BRANCA="millora-demo"
 URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
 
 clear
-echo -e "⚙️  Iniciant instal·lació de la Demo en Docker...\n"
+echo "---------------------------------------------------------------"
+echo "--- Instal·lador automàtic de la Demo Docker de django-aula ---"
+echo "---------------------------------------------------------------"
 echo
+sleep 1
 
 # ----------------------------------------------------------------------
 # --- 1.1. CLONACIÓ DEL REPOSITORI
@@ -45,12 +48,8 @@ if [ -d "$FULL_PATH" ] && [ "$(ls -A "$FULL_PATH")" ]; then
     rm -Rf $FULL_PATH
 fi
 
-echo "------- Clonant repositori -------"
-echo "----------------------------------"
-echo -e "\n"
-
 echo -e "Clonant $REPO_URL, branca '$GIT_BRANCH' en $FULL_PATH."
-echo -e "\n"
+echo
 
 # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
 git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
@@ -61,9 +60,8 @@ if [ $? -ne 0 ]; then
     echo -e "\n"
     exit 1
 fi
-echo -e "\n"
+echo
 echo -e "✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'."
-
 
 echo -e "\n"
 sleep 2
@@ -117,9 +115,7 @@ for i in "${!FILES_TO_DOWNLOAD[@]}"; do
     echo
 done
 
-echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament.${RESET}"
-echo
-echo "ls -lah Dockerfile docker-compose.yml Makefile .env"
+echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Llistant el contingut del directori com a comprovació:${RESET}"
 ls -lah Dockerfile docker-compose.yml Makefile .env
 
 echo
