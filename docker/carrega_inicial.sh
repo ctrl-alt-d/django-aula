@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-
+echo "Mostrant 'logs'..."
+echo
 echo "⌛ Esperant que la base de dades estigui operativa..."
 
 TIMEOUT=60
@@ -21,12 +22,16 @@ done
 echo "✅ PostgreSQL està llest! (El procés de preparació ha trigat $COUNT segons)"
 echo
 echo "📦 Aplicant migracions i preparant dades..."
+echo
 
 if [ ! -f /app/storage/.inicialitzat ]; then
   echo "Inicialitzant dades ..."
   python manage.py migrate
+  echo -e "\n"
   python manage.py collectstatic --noinput
+  echo -e "\n"
   ./scripts/fixtures.sh
+  echo -e "\n"
   python manage.py loaddemodata
   touch /app/storage/.inicialitzat
 else

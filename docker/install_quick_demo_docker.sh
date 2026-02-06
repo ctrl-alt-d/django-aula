@@ -20,10 +20,6 @@ echo
 # --- 1.1. CLONACIÓ DEL REPOSITORI
 # ----------------------------------------------------------------------
 
-echo "------- Clonant repositori ----------------------------"
-echo "-------------------------------------------------------"
-echo -e "\n"
-
 # --- Instal·lar git si cal ---
 
 echo "🔧 Comprovant que 'git' estigui instal·lat..."
@@ -38,6 +34,7 @@ if ! command -v git &> /dev/null; then
 else
     echo "   ✅ 'git' ja està disponible."
 fi
+echo -e "\n"
 
 FULL_PATH="./djau"
 REPO_URL="https://github.com/${REPO}.git"	# repositori del projecte
@@ -47,7 +44,13 @@ GIT_BRANCH=${BRANCA}						# Si es vol instal·lar una branca concreta. Exemple: 
 if [ -d "$FULL_PATH" ] && [ "$(ls -A "$FULL_PATH")" ]; then
     rm -Rf $FULL_PATH
 fi
+
+echo "------- Clonant repositori -------"
+echo "----------------------------------"
+echo -e "\n"
+
 echo -e "Clonant $REPO_URL, branca '$GIT_BRANCH' en $FULL_PATH."
+echo -e "\n"
 
 # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
 git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
@@ -58,13 +61,15 @@ if [ $? -ne 0 ]; then
     echo -e "\n"
     exit 1
 fi
+echo -e "\n"
 echo -e "✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'."
 
 
 echo -e "\n"
-sleep 3
+sleep 2
 
 # Carrega de la llibreria de funcions
+echo "Important variables de colors i funcions de la llibreria 'functions.sh'"
 if [ -f "$FULL_PATH/setup_djau/functions.sh" ]; then
     source "$FULL_PATH/setup_djau/functions.sh"
     echo -e "${C_EXITO}✅ Llibreria de funcions carregada amb èxit.${RESET}"
@@ -73,6 +78,7 @@ else
     echo "No es pot continuar sense la llibreria de funcions."
     exit 1
 fi
+echo -e "\n"
 
 # --- 2. Fitxers a descarregar ---
 
@@ -92,7 +98,8 @@ DEST_FILES=(
 
 # --- 3. Descarregar fitxers de configuració i dades ---
 
-echo -e "${C_INFO}📦 Descarregant fitxers necessaris...${RESET}"
+echo -e "${C_INFO}📦 Descarregant arxius necessaris per fer el desplegament amb Docker de la demo...${RESET}"
+echo
 
 for i in "${!FILES_TO_DOWNLOAD[@]}"; do
     ORIGIN="${FILES_TO_DOWNLOAD[$i]}"
@@ -107,13 +114,12 @@ for i in "${!FILES_TO_DOWNLOAD[@]}"; do
     else
         finalitzar_amb_error "     Error en descarregar ${ORIGIN}."
     fi
-
     echo
 done
 
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament.${RESET}"
 echo
-
+echo "ls -lah Dockerfile docker-compose.yml Makefile .env"
 ls -lah Dockerfile docker-compose.yml Makefile .env
 
 echo
@@ -138,7 +144,7 @@ fi
 
 echo
 echo -e "${C_INFO}🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha.${RESET}"
-echo -e "\n"
+echo
 read_prompt "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (Per defecte NO: sí/NO): " REPLY "no"
 RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
 #read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
@@ -205,7 +211,7 @@ docker logs -f demo_web 2>&1 | while read -r line; do
 
     # 3. Condició de sortida: Quan Django ens diu que ja escolta al port 8000
     if [[ "$line" == *"Starting development server at"* ]]; then
-        echo -e "${C_INFO}----------------------------------------------------------------------${RESET}"
+        echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}"
         echo -e "\n"
         echo -e "${C_EXITO}✅ EL SERVIDOR ESTÀ PREPARAT.${RESET}"
         # Matem el procés 'docker logs' per sortir del bucle 'while'
@@ -219,7 +225,7 @@ done
 echo -e "\n"
 sleep 1
 
-echo -e "${C_INFO}-------------------------------------------------------------------------------------"
+echo -e "${C_INFO}----------------------------------------------------------------------------------------"
 echo -e "ℹ️ Informació addicional${RESET}"
 echo -e "\n"
 echo -e "${C_INFO}Instruccions disponibles amb la comanda **make** per la Demo:${RESET}"
