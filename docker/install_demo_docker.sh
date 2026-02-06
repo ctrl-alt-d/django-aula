@@ -4,26 +4,49 @@
 # Descarrega els fitxers de configuració i comprova la base de dades.
 # -------------------------------------------------------------
 
-# --- 1. Informació del repositori ---
+# =============================================================
+# 1. CONFIGURACIÓ DE RUTES I REPOSITORI
+# =============================================================
 
-REPO="rafatecno1/django-aula"
+# Ruta on s'executa el script (Directori arrel de la instal·lació)
+BASE_DIR=$(pwd)
+
+# Dades del repositori
+#REPO_USER="ctrl-alt-d"
+REPO_USER="rafatecno1"
+REPO_NAME="django-aula"
+REPO_BRANCA="millora-demo"
+#REPO_BRANCA="master"
+
+# Rutes locals
+DJAU_PATH="${BASE_DIR}/djau"
+DOCKER_SRC="${DJAU_PATH}/docker"
+FUNCTION_PATH="${DJAU_PATH}/setup_djau"
+
+# URLs
+REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
+
+
+
+
+
+#REPO="rafatecno1/django-aula"
 #REPO="ctrl-alt-d/django-aula"
 #BRANCA="master"
-BRANCA="millora-demo"
-URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
+#BRANCA="millora-demo"
+#URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
 
 clear
 echo "---------------------------------------------------------------"
 echo "--- Instal·lador automàtic de la Demo Docker de django-aula ---"
+echo "--- Branca: $REPO_BRANCA | Arrel: $BASE_DIR ---"
 echo "---------------------------------------------------------------"
 echo
 sleep 1
 
-# ----------------------------------------------------------------------
-# --- 1.1. CLONACIÓ DEL REPOSITORI
-# ----------------------------------------------------------------------
+# --- 1. Clonació del repositori
 
-# --- Instal·lar git si cal ---
+# Instal·lar git, si cal.
 
 echo "🔧 Comprovant que 'git' estigui instal·lat..."
 if ! command -v git &> /dev/null; then
@@ -39,40 +62,41 @@ else
 fi
 echo -e "\n"
 
-FULL_PATH="./djau"
-REPO_URL="https://github.com/${REPO}.git"	# repositori del projecte
-GIT_BRANCH=${BRANCA}						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+#FULL_PATH="./djau"
+#REPO_URL="https://github.com/${REPO}.git"	# repositori del projecte
+#GIT_BRANCH=${BRANCA}						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
 
 # COMPROVACIÓ: El directori existeix i no està buit?
-if [ -d "$FULL_PATH" ] && [ "$(ls -A "$FULL_PATH")" ]; then
-    rm -Rf $FULL_PATH
+if [ -d "$DJAU_PATH" ] && [ "$(ls -A "$DJAU_PATH")" ]; then
+    rm -Rf $DJAU_PATH
 fi
 
-echo -e "Clonant $REPO_URL, branca '$GIT_BRANCH' en $FULL_PATH."
+echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en $DJAU_PATH."
 echo
 
-# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
-git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
+# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada i amb profunditat mínima (no interessa tot l'historial)
+git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$DJAU_PATH"
+#git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
 
 if [ $? -ne 0 ]; then
-    echo -e "❌ ERROR: Fallida en clonar la branca '$GIT_BRANCH' del repositori '$REPO_URL'."
+    echo -e "❌ ERROR: Fallida en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'."
     echo "Comprovi la URL, conexió a internet o permisos de l'usuari."
     echo -e "\n"
     exit 1
 fi
 echo
-echo -e "✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'."
+echo -e "✅ Repositori clonat (Branca: $REPO_BRANCA) a '$DJAU_PATH'."
 
 echo -e "\n"
 sleep 2
 
 # Carrega de la llibreria de funcions
 echo "Important variables de colors i funcions de la llibreria 'functions.sh'"
-if [ -f "$FULL_PATH/setup_djau/functions.sh" ]; then
-    source "$FULL_PATH/setup_djau/functions.sh"
+if [ -f "$FUNCTION_PATH/functions.sh" ]; then
+    source "$FUNCTION_PATH/functions.sh"
     echo -e "${C_EXITO}✅ Llibreria de funcions carregada amb èxit.${RESET}"
 else
-    echo -e "\n\e[31m\e[1m❌ ERROR:\e[0m No s'ha trobat l'arxiu functions.sh dins el directori $FULL_PATH/setup_djau/."
+    echo -e "\n\e[31m\e[1m❌ ERROR:\e[0m No s'ha trobat l'arxiu functions.sh dins el directori $FUNCTION_PATH."
     echo "No es pot continuar sense la llibreria de funcions."
     exit 1
 fi
@@ -80,46 +104,41 @@ echo -e "\n"
 
 # --- 2. Fitxers a descarregar ---
 
-FILES_TO_DOWNLOAD=(
+FILES_ORIGIN=(
     "Dockerfile"
     "docker-compose.demo.automatica.yml"
     "Makefile.demo.automatica"
     "env.demo.automatica"
 )
-DEST_FILES=(
+FILES_DEST=(
     "Dockerfile"
     "docker-compose.yml"
     "Makefile"
     ".env"
  )
 
-
 # --- 3. Descarregar fitxers de configuració i dades ---
 
-echo -e "${C_INFO}📦 Descarregant arxius necessaris per fer el desplegament amb Docker de la demo...${RESET}"
+echo -e "${C_INFO}📦 Preparant fitxers pel desplegament des de ${DOCKER_SRC}...${RESET}"
 echo
 
-for i in "${!FILES_TO_DOWNLOAD[@]}"; do
-    ORIGIN="${FILES_TO_DOWNLOAD[$i]}"
-    DEST="${DEST_FILES[$i]}"
+for i in "${!FILES_ORIGIN[@]}"; do
+    SRC="${DOCKER_SRC}/${FILES_ORIGIN[$i]}"
+    DST="${BASE_DIR}/${FILES_DEST[$i]}"
 
-    # Crear el directori si no existeix
-    mkdir -p "$(dirname "${DEST}")"
-
-    echo "  -> Descarregant ${ORIGIN} com a ${DEST}..."
-    if cp "${FULL_PATH}/docker/${ORIGIN}" "${DEST}"; then
-        echo -e "${C_EXITO}     ✅ Fitxer ${DEST} descarregat correctament.${RESET}"
+    if [ -f "$SRC" ]; then
+        cp "$SRC" "$DST"
+        echo -e "${C_EXITO}   ✅ ${FILES_DEST[$i]} preparat.${RESET}"
     else
-        finalitzar_amb_error "     Error en descarregar ${ORIGIN}."
+        echo -e "${C_ERROR}   ❌ No s'ha trobat l'origen: ${FILES_ORIGIN[$i]}${RESET}"
+        exit 1
     fi
-    echo
 done
 
-echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Llistant el contingut del directori com a comprovació:${RESET}"
+echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
 ls -lah Dockerfile docker-compose.yml Makefile .env
 
 echo
-
 
 # --- 4. Instal·lar make si cal ---
 
@@ -197,10 +216,10 @@ echo -e "\n"
 # Iniciem el bucle de lectura de logs
 docker logs -f demo_web 2>&1 | while read -r line; do
 
-    # 1. Bloc per ocultar els SyntaxWarning per neteja visual.
-    #if [[ "$line" == *"SyntaxWarning"* ]]; then
-    #    continue
-    #fi
+    # 1. Bloc per ocultar els SyntaxWarning, per neteja visual. Si, per dev, es vol veure tota la sortida cal fer make logs
+    if [[ "$line" == *"SyntaxWarning"* ]]; then
+        continue
+    fi
 
     # 2. Imprimim la línia en gris per diferenciar-la del script
     echo -e "${GRIS}${line}${RESET}"
