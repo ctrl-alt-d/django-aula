@@ -4,9 +4,7 @@
 # Descarrega els fitxers de configuració i comprova la base de dades.
 # -------------------------------------------------------------
 
-# =============================================================
-# 1. CONFIGURACIÓ DE RUTES I REPOSITORI
-# =============================================================
+# --- 0. Configuració de rutes i repositori
 
 # Ruta on s'executa el script (Directori arrel de la instal·lació)
 BASE_DIR=$(pwd)
@@ -25,16 +23,6 @@ FUNCTION_PATH="${DJAU_PATH}/setup_djau"
 
 # URLs
 REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
-
-
-
-
-
-#REPO="rafatecno1/django-aula"
-#REPO="ctrl-alt-d/django-aula"
-#BRANCA="master"
-#BRANCA="millora-demo"
-#URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
 
 clear
 echo "---------------------------------------------------------------"
@@ -62,10 +50,6 @@ else
 fi
 echo -e "\n"
 
-#FULL_PATH="./djau"
-#REPO_URL="https://github.com/${REPO}.git"	# repositori del projecte
-#GIT_BRANCH=${BRANCA}						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
-
 # COMPROVACIÓ: El directori existeix i no està buit?
 if [ -d "$DJAU_PATH" ] && [ "$(ls -A "$DJAU_PATH")" ]; then
     rm -Rf $DJAU_PATH
@@ -76,7 +60,6 @@ echo
 
 # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada i amb profunditat mínima (no interessa tot l'historial)
 git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$DJAU_PATH"
-#git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
 
 if [ $? -ne 0 ]; then
     echo -e "❌ ERROR: Fallida en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'."
@@ -135,6 +118,7 @@ for i in "${!FILES_ORIGIN[@]}"; do
     fi
 done
 
+echo
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
 ls -lah Dockerfile docker-compose.yml Makefile .env
 
@@ -153,7 +137,6 @@ if ! command -v make &> /dev/null; then
 else
     echo -e "${C_EXITO}   ✅ 'make' ja està disponible.${RESET}"
 fi
-
 
 # --- 5. Pregunta pel domini o IP ---
 
@@ -175,7 +158,6 @@ if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RES
 else
     echo -e "${C_INFO}ℹ️ No s'ha modificat DEMO_ALLOWED_HOSTS. Es manté buit.${RESET}"
 fi
-
 
 # --- 6. Posar en marxa els contenidors ---
 
@@ -253,4 +235,3 @@ echo
 echo -e "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
 echo -e "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)${RESET}"
 echo
-
