@@ -1,17 +1,19 @@
-#!/bin/bash
+<65;41;19M#!/bin/bash
 # -------------------------------------------------------------
-# Script per a la instal·lació ràpida de la Demo Docker de django-aula.
-# Descarrega els fitxers de configuració essencials i comprova la base de dades.
+# Script per a la instal·lació de la Demo Docker de django-aula.
+# Descarrega els fitxers de configuració i comprova la base de dades.
 # -------------------------------------------------------------
 
 # --- 1. Informació del repositori ---
 
-REPO="ctrl-alt-d/django-aula"
-BRANCA="master"
+REPO="rafatecno1/django-aula"
+#REPO="ctrl-alt-d/django-aula"
+#BRANCA="master"
+BRANCA)="millora-demo"
 URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
 
 clear
-echo -e "⚙️  Iniciant instal·lació ràpida de la Demo en Docker...\n"
+echo -e "⚙️  Iniciant instal·lació de la Demo en Docker...\n"
 echo
 
 # ----------------------------------------------------------------------
@@ -61,6 +63,14 @@ echo -e "✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'."
 
 echo -e "\n"
 sleep 3
+
+# Carrega de la llibreria de funcions
+if [ -f "{FULL_PATH}/setup_djau/functions.sh" ]; then
+    source "{FULL_PATH}/setup_djau/functions.sh"
+    echo -e "${C_EXITO}✅ Llibreria de funcions carregada amb èxit.${RESET}"
+else
+    echo -e "\n\e[31m\e[1m❌ ERROR:\e[0m No s'ha trobat l'arxiu functions.sh dins el directori {FULL_PATH}/setup_djau/."
+fi
 
 # --- 2. Fitxers a descarregar ---
 
@@ -129,9 +139,9 @@ fi
 echo
 echo "🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha."
 echo -e "\n"
-read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (y/n): " REPLY
+read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if [[ $REPLY =~ ^[Ss]$ ]]; then
     read -p "👉 Introdueix els dominis o IPs separats per comes (ex: demo.elteudomini.cat,192.168.1.46): " HOSTS
     if [ -n "$HOSTS" ]; then
         sed -i "s|^DEMO_ALLOWED_HOSTS=.*|DEMO_ALLOWED_HOSTS=${HOSTS}|" .env
@@ -178,6 +188,7 @@ until docker exec demo_db pg_isready -U "$DB_USER" >/dev/null 2>&1; do
         exit 1
     fi
 done
+echo "       L'espera ha sigut de $COUNT segons."
 echo "    ✅ PostgreSQL està llest!"
 
 echo
@@ -191,10 +202,45 @@ echo
 
 # --- 8. Espera a la finalització de la preparació ---
 
-echo "Premi qualsevol tecla per continuar i mostrar el progrés de la preparació de la demo."
-read -p "posteriorment CTRL-C per deixar de mostrar la informació." -n1 -s
+#echo "Premi qualsevol tecla per continuar i mostrar el progrés de la preparació de la demo."
+#read -p "posteriorment CTRL-C per deixar de mostrar la informació." -n1 -s
 
-docker logs -f demo_web
+#docker logs -f demo_web
+
+echo "AQUÍ CAL POSAR UN BON MISSATGE PER INDICAR QUE MOSTRAREM ELS LOGS"
+echo "Comença la prova"
+
+
+echo -e "\n"
+info "S'està preparant la base de dades i el servidor..."
+echo -e "${C_PRINCIPAL}Aquest procés finalitzarà automàticament quan el servidor estigui llest.${RESET}"
+echo -e "${C_PRINCIPAL}------------------------------------------------------------------------${RESET}"
+
+# Iniciem el bucle de lectura de logs
+# Filtrem els "SyntaxWarning" per no embrutar la sortida si vols
+docker logs -f demo_web 2>&1 | while read -r line; do
+    
+    # 1. Ignorem els SyntaxWarning per netaeja visual. NO VULL IGORNAR-LOS
+    #if [[ "$line" == *"SyntaxWarning"* ]]; then
+    #    continue
+    #fi
+
+    # 2. Imprimim la línia en gris per diferenciar-la del script
+    echo -e "${CIANO}${line}${RESET}"
+
+    # 3. Condició de sortida: Quan Django ens diu que ja escolta al port 8000
+    if [[ "$line" == *"Starting development server at"* ]]; then
+        echo -e "${C_PRINCIPAL}----------------------------------------------------------------------${RESET}"
+        echo -e "\n"
+        success "EL SERVIDOR ESTÀ PREPARAT!"
+        
+        # Matem el procés 'docker logs' per sortir del bucle 'while'
+        # Ho fem d'una manera neta cercant el procés fill
+        pkill -P $$ -f "docker logs"
+        break
+    fi
+done
+
 
 # --- 9. Missatge final ---
 
