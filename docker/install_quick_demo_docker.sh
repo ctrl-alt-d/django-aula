@@ -143,7 +143,7 @@ read_prompt "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedi
 RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
 #read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
 
-if [[ "$RESPONSE_LOWER" = "sí" ]] && [[ "$RESPONSE_LOWER" = "si" ]]; then
+if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
     read -p "👉 Introdueix els dominis o IPs separats per comes (ex: demo.elteudomini.cat,192.168.1.46): " HOSTS
     if [ -n "$HOSTS" ]; then
         sed -i "s|^DEMO_ALLOWED_HOSTS=.*|DEMO_ALLOWED_HOSTS=${HOSTS}|" .env
