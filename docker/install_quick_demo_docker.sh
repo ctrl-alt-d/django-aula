@@ -65,11 +65,11 @@ echo -e "\n"
 sleep 3
 
 # Carrega de la llibreria de funcions
-if [ -f "${FULL_PATH}/setup_djau/functions.sh" ]; then
-    source "${FULL_PATH}/setup_djau/functions.sh"
+if [ -f "$FULL_PATH/setup_djau/functions.sh" ]; then
+    source "$FULL_PATH/setup_djau/functions.sh"
     echo -e "${C_EXITO}✅ Llibreria de funcions carregada amb èxit.${RESET}"
 else
-    echo -e "\n\e[31m\e[1m❌ ERROR:\e[0m No s'ha trobat l'arxiu functions.sh dins el directori ${FULL_PATH}/setup_djau/."
+    echo -e "\n\e[31m\e[1m❌ ERROR:\e[0m No s'ha trobat l'arxiu functions.sh dins el directori $FULL_PATH/setup_djau/."
 fi
 
 # --- 2. Fitxers a descarregar ---
