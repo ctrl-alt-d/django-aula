@@ -70,6 +70,8 @@ if [ -f "$FULL_PATH/setup_djau/functions.sh" ]; then
     echo -e "${C_EXITO}✅ Llibreria de funcions carregada amb èxit.${RESET}"
 else
     echo -e "\n\e[31m\e[1m❌ ERROR:\e[0m No s'ha trobat l'arxiu functions.sh dins el directori $FULL_PATH/setup_djau/."
+    echo "No es pot continuar sense la llibreria de funcions."
+    exit 1
 fi
 
 # --- 2. Fitxers a descarregar ---
@@ -90,7 +92,7 @@ DEST_FILES=(
 
 # --- 3. Descarregar fitxers de configuració i dades ---
 
-echo "📦 Descarregant fitxers necessaris..."
+echo -e "${C_INFO}📦 Descarregant fitxers necessaris...${RESET}"
 
 for i in "${!FILES_TO_DOWNLOAD[@]}"; do
     ORIGIN="${FILES_TO_DOWNLOAD[$i]}"
@@ -101,16 +103,15 @@ for i in "${!FILES_TO_DOWNLOAD[@]}"; do
 
     echo "  -> Descarregant ${ORIGIN} com a ${DEST}..."
     if cp "${FULL_PATH}/docker/${ORIGIN}" "${DEST}"; then
-        echo "     ✅ Fitxer ${DEST} descarregat correctament."
+        echo -e "${C_EXITO}     ✅ Fitxer ${DEST} descarregat correctament.${RESET}"
     else
-        echo "     ❌ Error en descarregar ${ORIGIN}."
-        exit 1
+        finalitzar_amb_error "     Error en descarregar ${ORIGIN}."
     fi
 
     echo
 done
 
-echo "✅ Tots els fitxers s'han descarregat correctament."
+echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament.${RESET}"
 echo
 
 ls -lah Dockerfile docker-compose.yml Makefile .env
@@ -120,37 +121,38 @@ echo
 
 # --- 4. Instal·lar make si cal ---
 
-echo "🔧 Comprovant que 'make' estigui instal·lat..."
+echo -e "${C_INFO}🔧 Comprovant que 'make' estigui instal·lat...${RESET}"
 if ! command -v make &> /dev/null; then
-    echo "   Instal·lant 'make'..."
+    echo -e "${C_INFO}   Instal·lant 'make'...${RESET}"
     sudo apt-get update -y >/dev/null 2>&1
     sudo apt-get install -y make
     if ! command -v make &> /dev/null; then
-        echo "   ERROR a la instal·lació de 'make'"
-        exit 1
+        finalitzar_amb_error "   Error a la instal·lació de 'make'"
     fi
 else
-    echo "   ✅ 'make' ja està disponible."
+    echo -e "${C_EXITO}   ✅ 'make' ja està disponible.${RESET}"
 fi
 
 
 # --- 5. Pregunta pel domini o IP ---
 
 echo
-echo "🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha."
+echo -e "${C_INFO}🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha.${RESET}"
 echo -e "\n"
-read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
+read_prompt "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (Per defecte NO: sí/NO): " REPLY "no"
+RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
+#read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
 
-if [[ $REPLY =~ ^[Ss]$ ]]; then
+if [[ "$RESPONSE_LOWER" = "sí" ]] && [[ "$RESPONSE_LOWER" = "si" ]]; then
     read -p "👉 Introdueix els dominis o IPs separats per comes (ex: demo.elteudomini.cat,192.168.1.46): " HOSTS
     if [ -n "$HOSTS" ]; then
         sed -i "s|^DEMO_ALLOWED_HOSTS=.*|DEMO_ALLOWED_HOSTS=${HOSTS}|" .env
-        echo "✅ Fitxer .env actualitzat amb DEMO_ALLOWED_HOSTS=${HOSTS}"
+        echo -e "${C_EXITO}✅ Fitxer .env actualitzat amb DEMO_ALLOWED_HOSTS=${HOSTS}${RESET}"
     else
-        echo "⚠️ No s'ha introduït cap domini/IP. Es manté buit."
+        echo -e "${C_INFO}⚠️ No s'ha introduït cap domini/IP. Es manté buit.${RESET}"
     fi
 else
-    echo "ℹ️ No s'ha modificat DEMO_ALLOWED_HOSTS. Es manté buit."
+    echo -e "${C_INFO}ℹ️ No s'ha modificat DEMO_ALLOWED_HOSTS. Es manté buit.${RESET}"
 fi
 
 
@@ -162,104 +164,72 @@ if [ -f .env ]; then
     source .env # carregar DB_USER, etc.
     set +a
 else
-    echo "⚠️  No s'ha trobat el fitxer .env. No es pot comprovar l'estat de la base de dades."
-    exit 1
+    finalitzar_amb_error "⚠️  No s'ha trobat el fitxer .env. No es pot comprovar l'estat de la base de dades."
 fi
 
 echo
-echo "🕓 Posant en marxa els contenidors de la Demo i de la Base de Dades PostgreSQL..."
+echo -e "${C_INFO}🕓 Posant en marxa els contenidors de la Demo i de la Base de Dades PostgreSQL...${RESET}"
 echo
 make build
 make serve
 echo
 
-# --- 7. Esperar que la base de dades estigui llesta ---
+# --- 7. Informació sobre els contenidors en marxa ---
 
 echo
-echo "⌛ Esperant que la base de dades estigui llesta (pot trigar uns segons)..."
-TIMEOUT=60
-COUNT=0
-until docker exec demo_db pg_isready -U "$DB_USER" >/dev/null 2>&1; do
-    sleep 2
-    ((COUNT+=2))
-    if [ $COUNT -ge $TIMEOUT ]; then
-        echo "❌ Error: la base de dades no ha respost en $TIMEOUT segons."
-        echo "   Revisa els logs amb: docker logs demo_db"
-        exit 1
-    fi
-done
-echo "       L'espera ha sigut de $COUNT segons."
-echo "    ✅ PostgreSQL està llest!"
-
-echo
-echo "--------------------------------------------"
-echo "📦  Estat final de l'estat dels contenidors"
-echo "--------------------------------------------"
+echo -e "${C_INFO}--------------------------------------------${RESET}"
+echo -e "${C_INFO}📦  Estat final de l'estat dels contenidors ${RESET}"
+echo -e "${C_INFO}--------------------------------------------${RESET}"
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-echo "--------------------------------------------"
+echo -e "${C_INFO}--------------------------------------------${RESET}"
 echo
 echo
 
 # --- 8. Espera a la finalització de la preparació ---
 
-#echo "Premi qualsevol tecla per continuar i mostrar el progrés de la preparació de la demo."
-#read -p "posteriorment CTRL-C per deixar de mostrar la informació." -n1 -s
-
-#docker logs -f demo_web
-
-echo "AQUÍ CAL POSAR UN BON MISSATGE PER INDICAR QUE MOSTRAREM ELS LOGS"
-echo "Comença la prova"
-
-
+echo -e "${C_INFO}Progrès de preparació de la base de dades i del servidor de la demo (logs).${RESET}"
+echo -e "${C_INFO}El procés finalitzarà automàticament quan el servidor estigui llest.${RESET}"
+echo -e "${C_INFO}---------------------------------------------------------------------------${RESET}"
 echo -e "\n"
-info "S'està preparant la base de dades i el servidor..."
-echo -e "${C_PRINCIPAL}Aquest procés finalitzarà automàticament quan el servidor estigui llest.${RESET}"
-echo -e "${C_PRINCIPAL}------------------------------------------------------------------------${RESET}"
 
 # Iniciem el bucle de lectura de logs
-# Filtrem els "SyntaxWarning" per no embrutar la sortida si vols
 docker logs -f demo_web 2>&1 | while read -r line; do
-    
-    # 1. Ignorem els SyntaxWarning per netaeja visual. NO VULL IGORNAR-LOS
+
+    # 1. Bloc per ocultar els SyntaxWarning per neteja visual.
     #if [[ "$line" == *"SyntaxWarning"* ]]; then
     #    continue
     #fi
 
     # 2. Imprimim la línia en gris per diferenciar-la del script
-    echo -e "${CIANO}${line}${RESET}"
+    echo -e "${GRIS}${line}${RESET}"
 
     # 3. Condició de sortida: Quan Django ens diu que ja escolta al port 8000
     if [[ "$line" == *"Starting development server at"* ]]; then
-        echo -e "${C_PRINCIPAL}----------------------------------------------------------------------${RESET}"
+        echo -e "${C_INFO}----------------------------------------------------------------------${RESET}"
         echo -e "\n"
-        success "EL SERVIDOR ESTÀ PREPARAT!"
-        
+        echo -e "${C_EXITO}✅ EL SERVIDOR ESTÀ PREPARAT.${RESET}"
         # Matem el procés 'docker logs' per sortir del bucle 'while'
-        # Ho fem d'una manera neta cercant el procés fill
         pkill -P $$ -f "docker logs"
         break
     fi
 done
 
-
 # --- 9. Missatge final ---
 
-echo
-echo
-echo "Finalització de l'automatització!"
+echo -e "\n"
+sleep 1
+
+echo -e "${C_INFO}-------------------------------------------------------------------------------------"
+echo -e "ℹ️ Informació addicional${RESET}"
+echo -e "\n"
+echo -e "${C_INFO}Instruccions disponibles amb la comanda **make** per la Demo:${RESET}"
+echo -e "${C_INFO}   1. Si no està en marxa, executi: ${RESET}${CIANO}make serve${RESET}"
+echo -e "${C_INFO}   2. Per veure els logs:           ${RESET}${CIANO}make logs${RESET}"
+echo -e "${C_INFO}   3. Per detenir la Demo:          ${RESET}${CIANO}make stop${RESET}"
+echo -e "${C_INFO}   4. Per eliminar els contenidors: ${RESET}${CIANO}make down${RESET}${C_INFO} i després -> docker system prune -a"
 
 echo
-echo 
-echo "ℹ️ Informació addicional"
-echo
-echo "Instruccions disponibles amb la comanda **make** per la Demo:"
-echo "   1. Si no està en marxa, executi: make serve"
-echo "   2. Per veure els logs:           make logs"
-echo "   3. Per detenir la Demo:          make stop"
-echo "   4. Per eliminar els contenidors: make down i després -> docker system prune -a"
-
-echo
-echo "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
-echo "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)"
+echo -e "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
+echo -e "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)${RESET}"
 echo
 
