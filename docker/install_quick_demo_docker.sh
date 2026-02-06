@@ -1,4 +1,4 @@
-<65;41;19M#!/bin/bash
+<#!/bin/bash
 # -------------------------------------------------------------
 # Script per a la instal·lació de la Demo Docker de django-aula.
 # Descarrega els fitxers de configuració i comprova la base de dades.
@@ -9,7 +9,7 @@
 REPO="rafatecno1/django-aula"
 #REPO="ctrl-alt-d/django-aula"
 #BRANCA="master"
-BRANCA)="millora-demo"
+BRANCA="millora-demo"
 URL_BASE="https://raw.githubusercontent.com/${REPO}/refs/heads/${BRANCA}/docker"
 
 clear
