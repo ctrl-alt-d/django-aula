@@ -10,11 +10,9 @@
 BASE_DIR=$(pwd)
 
 # Dades del repositori
-#REPO_USER="ctrl-alt-d"
-REPO_USER="rafatecno1"
+REPO_USER="ctrl-alt-d"
 REPO_NAME="django-aula"
-REPO_BRANCA="millora-demo"
-#REPO_BRANCA="master"
+REPO_BRANCA="master"
 
 # Rutes locals
 DJAU_PATH="${BASE_DIR}/djau"
