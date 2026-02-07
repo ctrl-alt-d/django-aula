@@ -16,6 +16,7 @@ ROJO='\e[31m'
 CIANO='\e[36m'
 AMARILLO='\e[33m'
 MAGENTA='\e[35m'
+GRIS='\033[0;90m'  # Gris clar (ideal per a logs)
 
 # Estils compostos
 C_EXITO="${NEGRITA}${VERDE}"       # Éxit i confirmacions (✅)
@@ -23,7 +24,7 @@ C_ERROR="${NEGRITA}${ROJO}"        # Errors o fallades (❌)
 C_PRINCIPAL="${NEGRITA}${AZUL}"    # Fases principals (FASE 1, FASE 2)
 C_CAPITULO="${NEGRITA}${CIANO}"    # Títuls de Capítul (1. DEFINICIÓ...)
 C_SUBTITULO="${NEGRITA}${MAGENTA}" # Títuls de Subcapítul (1.1, 1.2)
-C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓN)
+C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓ)
 
 
 # ===========================================================================
