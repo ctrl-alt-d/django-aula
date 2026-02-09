@@ -90,12 +90,14 @@ FILES_ORIGIN=(
     "docker-compose.demo.automatica.yml"
     "Makefile.demo.automatica"
     "env.demo.automatica"
+    ".dockerignore"
 )
 FILES_DEST=(
     "Dockerfile"
     "docker-compose.yml"
     "Makefile"
     ".env"
+    ".dockerignore"
  )
 
 # --- 3. Descarregar fitxers de configuració i dades ---

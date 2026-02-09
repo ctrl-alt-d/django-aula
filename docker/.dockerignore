@@ -42,6 +42,7 @@ build/
 # Altres fitxers
 apache
 canviDeCurs.txt
-docker-compose.old
 enDesenvolupament.txt
 TODO.txt
+*.old
+docker/
