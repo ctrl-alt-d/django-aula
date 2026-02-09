@@ -90,7 +90,7 @@ FILES_ORIGIN=(
     "docker-compose.demo.automatica.yml"
     "Makefile.demo.automatica"
     "env.demo.automatica"
-    ".dockerignore"
+    "dockerignore"
 )
 FILES_DEST=(
     "Dockerfile"
