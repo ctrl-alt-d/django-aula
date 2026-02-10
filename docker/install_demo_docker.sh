@@ -66,8 +66,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-cp -a "${BASE_DIR}/temp_repo/." "${BASE_DIR}/"
-rm -rf "${BASE_DIR}/temp_repo"
+mv "${BASE_DIR}/temp_repo/." "${BASE_DIR}/"
+rmdir "${BASE_DIR}/temp_repo"
+#cp -a "${BASE_DIR}/temp_repo/." "${BASE_DIR}/"
+#rm -rf "${BASE_DIR}/temp_repo"
 echo
 echo -e "✅ Repositori clonat de forma definitiva (Branca: $REPO_BRANCA) a '$BASE_DIR'."
 
@@ -92,8 +94,8 @@ FILES_ORIGIN=(
     "Dockerfile"
     "docker-compose.demo.automatica.yml"
     "Makefile.demo.automatica"
-    "env.demo.automatica"
-    "dockerignore"
+    ".env.demo.automatica"
+    ".dockerignore"
 )
 FILES_DEST=(
     "Dockerfile"
