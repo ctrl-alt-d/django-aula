@@ -15,9 +15,9 @@ REPO_NAME="django-aula"
 REPO_BRANCA="neteja-docker" #"master"
 
 # Rutes locals
-DJAU_PATH="${BASE_DIR}/djau"
-DOCKER_SRC="${DJAU_PATH}/docker"
-FUNCTION_PATH="${DJAU_PATH}/setup_djau"
+#DJAU_PATH="${BASE_DIR}/djau"
+DOCKER_SRC="${BASE_DIR}/docker"
+FUNCTION_PATH="${BASE_DIR}/setup_djau"
 
 # URLs
 REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
@@ -49,15 +49,15 @@ fi
 echo -e "\n"
 
 # COMPROVACIÓ: El directori existeix i no està buit?
-if [ -d "$DJAU_PATH" ] && [ "$(ls -A "$DJAU_PATH")" ]; then
-    rm -Rf $DJAU_PATH
-fi
+#if [ -d "$DJAU_PATH" ] && [ "$(ls -A "$DJAU_PATH")" ]; then
+#    rm -Rf $DJAU_PATH
+#fi
 
-echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en $DJAU_PATH."
+echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en $BASE_DIR."
 echo
 
 # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada i amb profunditat mínima (no interessa tot l'historial)
-git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$DJAU_PATH"
+git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$BASE_DIR"
 
 if [ $? -ne 0 ]; then
     echo -e "❌ ERROR: Fallida en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'."
@@ -66,7 +66,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 echo
-echo -e "✅ Repositori clonat (Branca: $REPO_BRANCA) a '$DJAU_PATH'."
+echo -e "✅ Repositori clonat (Branca: $REPO_BRANCA) a '$BASE_DIR'."
 
 echo -e "\n"
 sleep 2
@@ -120,7 +120,7 @@ done
 
 echo
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
-ls -lah Dockerfile docker-compose.yml Makefile .env
+ls -lah Dockerfile docker-compose.yml Makefile .env .dockerignore
 
 echo
 

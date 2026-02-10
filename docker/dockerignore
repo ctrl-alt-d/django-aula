@@ -34,6 +34,10 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Documentació
+docs/
+README.md
+
 # Altres fitxers grans o no necessaris
 node_modules/
 dist/
@@ -45,4 +49,8 @@ canviDeCurs.txt
 enDesenvolupament.txt
 TODO.txt
 *.old
-docker/
+install_djau.sh
+install_demo_docker.sh
+setup_djau/
+docker/*
+!docker/carrega_inicial.sh
