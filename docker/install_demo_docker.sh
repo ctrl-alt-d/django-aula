@@ -15,7 +15,6 @@ REPO_NAME="django-aula"
 REPO_BRANCA="neteja-docker" #"master"
 
 # Rutes locals
-#DJAU_PATH="${BASE_DIR}/djau"
 DOCKER_SRC="${BASE_DIR}/docker"
 FUNCTION_PATH="${BASE_DIR}/setup_djau"
 
@@ -46,13 +45,8 @@ if ! command -v git &> /dev/null; then
 else
     echo "   ✅ 'git' ja està disponible."
 fi
+
 echo -e "\n"
-
-# COMPROVACIÓ: El directori existeix i no està buit?
-#if [ -d "$DJAU_PATH" ] && [ "$(ls -A "$DJAU_PATH")" ]; then
-#    rm -Rf $DJAU_PATH
-#fi
-
 echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en un directori temporal $BASE_DIR/temp_repo"
 echo
 
@@ -66,10 +60,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-mv "${BASE_DIR}/temp_repo/." "${BASE_DIR}/"
+mv "${BASE_DIR}/temp_repo/"* "${BASE_DIR}/"					# Mou arxius no ocults
+mv "${BASE_DIR}/temp_repo/".* "${BASE_DIR}/" 2>/dev/null	# Mou arxius ocults
 rmdir "${BASE_DIR}/temp_repo"
-#cp -a "${BASE_DIR}/temp_repo/." "${BASE_DIR}/"
-#rm -rf "${BASE_DIR}/temp_repo"
 echo
 echo -e "✅ Repositori clonat de forma definitiva (Branca: $REPO_BRANCA) a '$BASE_DIR'."
 
@@ -89,6 +82,15 @@ fi
 echo -e "\n"
 
 # --- 2. Fitxers a descarregar ---
+
+FILES=(
+    "Dockerfile"
+    "docker-compose.yml"
+    "docker-compose.dev.yml"
+    "Makefile"
+    ".env"
+    ".dockerignore"
+)
 
 FILES_ORIGIN=(
     "Dockerfile"
@@ -110,23 +112,34 @@ FILES_DEST=(
 echo -e "${C_INFO}📦 Preparant fitxers pel desplegament des de ${DOCKER_SRC}...${RESET}"
 echo
 
-for i in "${!FILES_ORIGIN[@]}"; do
-    SRC="${DOCKER_SRC}/${FILES_ORIGIN[$i]}"
-    DST="${BASE_DIR}/${FILES_DEST[$i]}"
-
-    if [ -f "$SRC" ]; then
-        cp "$SRC" "$DST"
-        echo -e "${C_EXITO}   ✅ ${FILES_DEST[$i]} preparat.${RESET}"
+for FILE in "${FILES[@]}"; do
+    if [ -f "${DOCKER_SRC}/${FILE}" ]; then
+        cp "${DOCKER_SRC}/${FILE}" "${BASE_DIR}/"
+        echo -e "${C_EXITO}   ✅ $FILE ${RESET}${C_INFO}preparat.${RESET}"
     else
-        echo -e "${C_ERROR}   ❌ No s'ha trobat l'origen: ${FILES_ORIGIN[$i]}${RESET}"
+        echo -e "${C_ERROR}   ❌ No s'ha trobat: $FILE${RESET}"
         exit 1
     fi
 done
 
+
+#for i in "${!FILES_ORIGIN[@]}"; do
+#    SRC="${DOCKER_SRC}/${FILES_ORIGIN[$i]}"
+#    DST="${BASE_DIR}/${FILES_DEST[$i]}"
+
+#    if [ -f "$SRC" ]; then
+#        cp "$SRC" "$DST"
+#        echo -e "${C_EXITO}   ✅ ${FILES_DEST[$i]} preparat.${RESET}"
+#    else
+#        echo -e "${C_ERROR}   ❌ No s'ha trobat l'origen: ${FILES_ORIGIN[$i]}${RESET}"
+#        exit 1
+#    fi
+#done
+
 echo
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
-ls -lah Dockerfile docker-compose.yml Makefile .env .dockerignore
-
+#ls -lah Dockerfile docker-compose.yml Makefile .env .dockerignore
+ls -lah "${FILES[@]}"
 echo
 
 # --- 4. Instal·lar make si cal ---
