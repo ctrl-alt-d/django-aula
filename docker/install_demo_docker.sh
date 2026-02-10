@@ -53,11 +53,13 @@ echo -e "\n"
 #    rm -Rf $DJAU_PATH
 #fi
 
-echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en $BASE_DIR."
+echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en $BASE_DIR/temp_repo."
 echo
 
 # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada i amb profunditat mínima (no interessa tot l'historial)
-git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$BASE_DIR"
+git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$BASE_DIR/temp_repo"
+cp -a "${BASE_DIR}/temp_repo/." "${BASE_DIR}/"
+rm -rf "${BASE_DIR}/temp_repo"
 
 if [ $? -ne 0 ]; then
     echo -e "❌ ERROR: Fallida en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'."
