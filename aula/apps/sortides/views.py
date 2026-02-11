@@ -1001,14 +1001,14 @@ def alumnesFallen(request, pk, origen, tipus=None):
                             pag = SortidaPagament.objects.filter(
                                 alumne=alumne, sortida=instance, pagament_realitzat=True
                             )
+                            instance.alumnes_que_no_vindran.add(alumne)
                             if not pag:
                                 instance.pagaments.remove(alumne)
-                                instance.alumnes_que_no_vindran.add(alumne)
                             else:
                                 alumno = Alumne.objects.get(pk=alumne)
                                 messages.warning(
                                     request,
-                                    "L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
+                                    "Avís: Has tret de l'activitat a l'alumne/a {0} {1}, tot i que ja ha realitzat el pagament.".format(
                                         alumno.nom, alumno.cognoms
                                     ),
                                 )
@@ -1129,14 +1129,14 @@ def alumnesJustificats(request, pk, origen, tipus=None):
                             pag = SortidaPagament.objects.filter(
                                 alumne=alumne, sortida=instance, pagament_realitzat=True
                             )
+                            instance.alumnes_justificacio.add(alumne)
                             if not pag:
                                 instance.pagaments.remove(alumne)
-                                instance.alumnes_justificacio.add(alumne)
                             else:
                                 alumno = Alumne.objects.get(pk=alumne)
                                 messages.warning(
                                     request,
-                                    "L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
+                                    "Avís: Has tret de l'activitat a l'alumne/a {0} {1}, tot i que ja ha realitzat el pagament.".format(
                                         alumno.nom, alumno.cognoms
                                     ),
                                 )
