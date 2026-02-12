@@ -40,7 +40,7 @@ if [ "$IS_DEV" = true ]; then
     MAKE_SERVE="make dev-serve"
     CONTAINER_NAME="dev_web"
 else
-    MODE_LABEL="DEMO (USUARI)"
+    MODE_LABEL="DEMO standard"
     MAKE_BUILD="make build"
     MAKE_SERVE="make serve"
     CONTAINER_NAME="demo_web"
@@ -235,6 +235,17 @@ docker logs -f $CONTAINER_NAME 2>&1 | while read -r line; do
     fi
 done
 
+if [ "$IS_DEV" = true ]; then
+    echo
+    read -p "❓ Vols carregar les dades de la demo ara mateix? (s/n): " resposta
+    if [[ "$resposta" =~ ^[Ss]$ ]]; then
+        echo "📦 Carregant dades..."
+        make dev-load_demo_data
+    else
+        echo "👍 D'acord. Si vols carregar les dades més tard, pots fer-ho amb: 'make dev-load_demo_data'"
+    fi
+fi
+
 # --- 9. Missatge final ---
 
 echo -e "\n"
@@ -246,16 +257,15 @@ echo -e "\n"
 
 if [ "$IS_DEV" = true ]; then
     echo -e "${C_INFO}Comandes **make** disponibles pel desplegament de la demo en mode DESENVOLUPAMENT:${RESET}"
-    echo -e "  ${CIANO}make dev-serve${RESET}         Aixeca l'entorn amb volums en viu"
-    echo -e "  ${CIANO}make dev-build${RESET}         Construeix la imatge de dev"
-    echo -e "  ${CIANO}make dev-stop${RESET}          Atura els contenidors de dev"
-    echo -e "  ${CIANO}make dev-down${RESET}          Elimina contenidors i xarxes de dev"
-    echo -e "  ${CIANO}make dev-logs${RESET}          Mostra logs del contenidor web"
-    echo -e "  ${CIANO}make dev-setup${RESET}         Executa la càrrega inicial (script)"
-    echo -e "  ${CIANO}make dev-load_demo_data${RESET} Carrega fixtures (mètode tradicional)"
-    echo -e "  ${CIANO}make dev-makemigrations${RESET} Comprova models i crea migracions"
-    echo -e "  ${CIANO}make dev-shell${RESET}         Entra a la consola de Django"
-    echo -e "  ${CIANO}make dev-bash${RESET}          Entra al terminal del contenidor"
+    echo -e "  ${CIANO}make dev-serve${RESET}           Aixeca l'entorn amb volums en viu"
+    echo -e "  ${CIANO}make dev-build${RESET}           Construeix la imatge de dev"
+    echo -e "  ${CIANO}make dev-stop${RESET}            Atura els contenidors de dev"
+    echo -e "  ${CIANO}make dev-down${RESET}            Elimina contenidors i xarxes de dev"
+    echo -e "  ${CIANO}make dev-logs${RESET}            Mostra logs del contenidor web"
+    echo -e "  ${CIANO}make dev-load_demo_data${RESET}  Carrega fixtures i dades de la Demo"
+    echo -e "  ${CIANO}make dev-makemigrations${RESET}  Comprova models i crea migracions"
+    echo -e "  ${CIANO}make dev-shell${RESET}           Entra a la consola de Django"
+    echo -e "  ${CIANO}make dev-bash${RESET}            Entra al terminal del contenidor"
 else
     echo -e "${C_INFO}Comandes **make** disponibles per la Demo:${RESET}"
     echo -e "  ${CIANO}make serve${RESET}             Aixeca la demo"

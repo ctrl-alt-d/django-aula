@@ -1,25 +1,32 @@
 .PHONY: build serve stop down logs \
-		dev-build dev-serve dev-stop dev-down dev-logs dev-load_demo_data\
-		dev-setup dev-makemigrations dev-shell dev-bash
+		dev-build dev-serve dev-stop dev-down dev-logs \
+		dev-load_demo_data dev-makemigrations dev-shell dev-bash
 
 # --- VARIABLES ---
 COMPOSE_DEMO = docker-compose.yml
 COMPOSE_DEV  = docker-compose.dev.yml
 
 # ----------- Aesthetics -----------
-YELLOW := "\e[1;33m"
-GREEN  := "\e[1;32m"
-NC     := "\e[0m"
+GROC := "\033[1;33m"
+VERD := "\033[1;32m"
+GRIS := "\033[1;90m"
+NC   := "\033[0m"
 
 # Funció per a missatges informatius (Groc)
 INFO := @bash -c '\
-  printf $(YELLOW); \
+  printf $(GROC); \
   echo "=> $$1"; \
   printf $(NC)' SOME_VALUE
 
 # Funció per a missatges d'èxit (Verd)
 EXITO := @bash -c '\
-  printf $(GREEN); \
+  printf $(VERD); \
+  echo "✅ $$1"; \
+  printf $(NC)' SOME_VALUE
+
+# Funció per a logs (gris)
+LOG_GRIS := @bash -c '\
+  printf $(GRIS); \
   echo "✅ $$1"; \
   printf $(NC)' SOME_VALUE
 
@@ -67,19 +74,16 @@ dev-down:
 dev-logs:
 	docker compose -f $(COMPOSE_DEV) logs -f web
 
-# Carrega dades usant el mètode tradicional de fixtures i comandes Django
-dev-load_demo_data:
-	$(INFO) "Carregant fixtures i dades de demo (mètode tradicional)..."
-	@docker compose -f $(COMPOSE_DEV) exec web python manage.py loaddata aula/apps/*/fixtures/dades.json
-	@docker compose -f $(COMPOSE_DEV) exec web python manage.py loaddemodata
-	$(EXITO) "Dades tradicionals carregades."
-
 # --- GESTIÓ DE DADES I DJANGO (DEV) ---
 
-dev-setup:
-	$(INFO) "Executant script de càrrega inicial de dades..."
-	docker exec -it dev_web docker/carrega_inicial.sh
-
+dev-load_demo_data:
+        $(INFO) "Carrega fixtures i dades de demo..."
+        @echo -e "$(LOG_GRIS)"
+        @docker exec -it dev_web bash -c "python manage.py loaddata aula/apps/*/fixtures/dades.json"
+        @docker exec -it dev_web python manage.py loaddemodata
+        @echo -e "$(NC)"
+        $(EXITO) "Dades de la Demo carregades amb èxit."
+        
 dev-makemigrations:
 	$(INFO) "Comprovant canvis als models i creant migracions..."
 	docker exec -it dev_web python manage.py makemigrations
