@@ -1,7 +1,7 @@
 # docker-compose.dev.yml
 services:
   db:
-    image: postgres:postgres:17.7-alpine
+    image: postgres:16
     container_name: dev_db
     ports:
       - "5432:5432"
@@ -13,40 +13,38 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pg_data:/var/lib/postgresql/data
-    restart: unless-stopped
+    restart: always
 
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    image: django-aula:dev
+    image: django_aula:dev
     container_name: dev_web
-    restart: unless-stopped
     depends_on:
       - db
     env_file:
       - .env
-    volumes:
-      # Muntar tot el projecte per veure els canvis immediatament
-      - ./:/app
-      # Evita que el directori de dependències del contenidor tapi el teu
-      - /app/.venv
-    command: >
-      bash -c "
-      wait-for-it db:5432 --timeout=30 --strict &&
-      echo '🔹 Verificant migracions...' &&
-      python manage.py makemigrations --check --dry-run || python manage.py makemigrations &&
-      python manage.py migrate --noinput &&
-      echo '✅ Migracions aplicades. Iniciant servidor...' &&
-      python manage.py runserver 0.0.0.0:8000
-      "
+    environment:
+      - DEBUG=1
+      - PYTHONUNBUFFERED=1
+      # Opcional: pots forçar els settings de dev aquí
+      - DJANGO_SETTINGS_MODULE=config.settings.dev 
     ports:
       - "8000:8000"
-    environment:
-      # Assegura que Django recarregui automàticament canvis de codi
-      DJANGO_SETTINGS_MODULE: config.settings.dev
-      PYTHONUNBUFFERED: 1
-      DEBUG: 1
+    volumes:
+      - .:/app              # Sincronització de codi font en temps real
+      - media_data:/app/storage
+    # Command optimitzat per a desenvolupament:
+    command: >
+      bash -c "
+      echo '⌛ Esperant que la base de dades estigui operativa...' &&
+      until pg_isready -h db -U $$DB_USER >/dev/null 2>&1; do sleep 1; done &&
+      echo '✅ Base de dades a punt. Aplicant migracions...' &&
+      python manage.py migrate --noinput &&
+      echo '🚀 Iniciant servidor de desenvolupament...' &&
+      python manage.py runserver 0.0.0.0:8000"
 
 volumes:
   pg_data:
+  media_data:

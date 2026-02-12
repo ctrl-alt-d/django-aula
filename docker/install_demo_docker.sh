@@ -21,10 +21,36 @@ FUNCTION_PATH="${BASE_DIR}/setup_djau"
 # URLs
 REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
 
+
+# --- 0.1 Captura d'arguments (Flags)
+IS_DEV=false
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -d|--dev) IS_DEV=true ;;
+        *) echo "Opció desconeguda: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# Definició de noms segons el mode
+if [ "$IS_DEV" = true ]; then
+    MODE_LABEL="DESENVOLUPAMENT (DEV)"
+    MAKE_BUILD="make dev-build"
+    MAKE_SERVE="make dev-serve"
+    CONTAINER_NAME="dev_web"
+else
+    MODE_LABEL="DEMO (USUARI)"
+    MAKE_BUILD="make build"
+    MAKE_SERVE="make serve"
+    CONTAINER_NAME="demo_web"
+fi
+
 clear
 echo "---------------------------------------------------------------"
 echo "--- Instal·lador automàtic de la Demo Docker de django-aula ---"
 echo "--- Branca: $REPO_BRANCA | Arrel: $BASE_DIR ---"
+echo "--- Mode: $MODE_LABEL ---"
 echo "---------------------------------------------------------------"
 echo
 sleep 1
@@ -92,21 +118,6 @@ FILES=(
     ".dockerignore"
 )
 
-FILES_ORIGIN=(
-    "Dockerfile"
-    "docker-compose.demo.automatica.yml"
-    "Makefile.demo.automatica"
-    ".env.demo.automatica"
-    ".dockerignore"
-)
-FILES_DEST=(
-    "Dockerfile"
-    "docker-compose.yml"
-    "Makefile"
-    ".env"
-    ".dockerignore"
- )
-
 # --- 3. Descarregar fitxers de configuració i dades ---
 
 echo -e "${C_INFO}📦 Preparant fitxers pel desplegament des de ${DOCKER_SRC}...${RESET}"
@@ -121,20 +132,6 @@ for FILE in "${FILES[@]}"; do
         exit 1
     fi
 done
-
-
-#for i in "${!FILES_ORIGIN[@]}"; do
-#    SRC="${DOCKER_SRC}/${FILES_ORIGIN[$i]}"
-#    DST="${BASE_DIR}/${FILES_DEST[$i]}"
-
-#    if [ -f "$SRC" ]; then
-#        cp "$SRC" "$DST"
-#        echo -e "${C_EXITO}   ✅ ${FILES_DEST[$i]} preparat.${RESET}"
-#    else
-#        echo -e "${C_ERROR}   ❌ No s'ha trobat l'origen: ${FILES_ORIGIN[$i]}${RESET}"
-#        exit 1
-#    fi
-#done
 
 echo
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
@@ -189,10 +186,12 @@ else
 fi
 
 echo
-echo -e "${C_INFO}🕓 Posant en marxa els contenidors de la Demo i de la Base de Dades PostgreSQL...${RESET}"
+echo -e "${C_INFO}🕓 Posant en marxa els contenidors en mode ${MODE_LABEL}...${RESET}"
 echo
-make build
-make serve
+$MAKE_BUILD
+$MAKE_SERVE
+#make build
+#make serve
 echo
 
 # --- 7. Informació sobre els contenidors en marxa ---
@@ -214,7 +213,8 @@ echo -e "${C_INFO}--------------------------------------------------------------
 echo -e "\n"
 
 # Iniciem el bucle de lectura de logs
-docker logs -f demo_web 2>&1 | while read -r line; do
+#docker logs -f demo_web 2>&1 | while read -r line; do
+docker logs -f $CONTAINER_NAME 2>&1 | while read -r line; do
 
     # 1. Bloc per ocultar els SyntaxWarning, per neteja visual. Si, per dev, es vol veure tota la sortida cal fer make logs
     if [[ "$line" == *"SyntaxWarning"* ]]; then
@@ -243,13 +243,45 @@ sleep 1
 echo -e "${C_INFO}----------------------------------------------------------------------------------------"
 echo -e "ℹ️ Informació addicional${RESET}"
 echo -e "\n"
-echo -e "${C_INFO}Instruccions disponibles amb la comanda **make** per la Demo:${RESET}"
-echo -e "${C_INFO}   1. Si no està en marxa, executi: ${RESET}${CIANO}make serve${RESET}"
-echo -e "${C_INFO}   2. Per veure els logs:           ${RESET}${CIANO}make logs${RESET}"
-echo -e "${C_INFO}   3. Per detenir la Demo:          ${RESET}${CIANO}make stop${RESET}"
-echo -e "${C_INFO}   4. Per eliminar els contenidors: ${RESET}${CIANO}make down${RESET}${C_INFO} i després -> docker system prune -a"
 
+if [ "$IS_DEV" = true ]; then
+    echo -e "${C_INFO}Comandes **make** disponibles pel desplegament de la demo en mode DESENVOLUPAMENT:${RESET}"
+    echo -e "  ${CIANO}make dev-serve${RESET}         Aixeca l'entorn amb volums en viu"
+    echo -e "  ${CIANO}make dev-build${RESET}         Construeix la imatge de dev"
+    echo -e "  ${CIANO}make dev-stop${RESET}          Atura els contenidors de dev"
+    echo -e "  ${CIANO}make dev-down${RESET}          Elimina contenidors i xarxes de dev"
+    echo -e "  ${CIANO}make dev-logs${RESET}          Mostra logs del contenidor web"
+    echo -e "  ${CIANO}make dev-setup${RESET}         Executa la càrrega inicial (script)"
+    echo -e "  ${CIANO}make dev-load_demo_data${RESET} Carrega fixtures (mètode tradicional)"
+    echo -e "  ${CIANO}make dev-makemigrations${RESET} Comprova models i crea migracions"
+    echo -e "  ${CIANO}make dev-shell${RESET}         Entra a la consola de Django"
+    echo -e "  ${CIANO}make dev-bash${RESET}          Entra al terminal del contenidor"
+else
+    echo -e "${C_INFO}Comandes **make** disponibles per la Demo:${RESET}"
+    echo -e "  ${CIANO}make serve${RESET}             Aixeca la demo"
+    echo -e "  ${CIANO}make build${RESET}             Construeix la imatge de la demo"
+    echo -e "  ${CIANO}make stop${RESET}              Atura la demo"
+    echo -e "  ${CIANO}make down${RESET}              Elimina els contenidors de la demo. Per eliminar les imatges 'docker system prune -a'."
+    echo -e "  ${CIANO}make logs${RESET}              Mostra logs de la demo"
+fi
 echo
-echo -e "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
-echo -e "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)${RESET}"
+echo
+#echo -e "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
+#echo -e "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)${RESET}"
+echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}"
+echo -e "🌐 Accés al navegador:${RESET}"
+
+if [ -n "$HOSTS" ]; then
+    # Agafem només el primer host de la llista (per si n'hi ha diversos separats per coma)
+    FIRST_HOST=$(echo $HOSTS | cut -d',' -f1)
+    echo -e "   👉 ${CIANO}http://${FIRST_HOST}:8000${RESET}"
+    echo -e "   (Configurat a DEMO_ALLOWED_HOSTS: $HOSTS)"
+else
+    # Si no han posat res, suggerim localhost o la IP genèrica
+    echo -e "   👉 ${CIANO}http://localhost:8000${RESET}"
+    echo -e "   ${GRIS}Nota: Si estàs en un servidor remot, usa http://IP_DEL_SERVIDOR:8000${RESET}"
+fi
+
+echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}\n"
+
 echo
