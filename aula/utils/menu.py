@@ -636,6 +636,7 @@ def calcula_menu(user, path, sessioImpersonada, request):
                 ),
                 ("Promocions", "administracio__promocions__llista", di, None, None),
                 ("Inicialitza", "administracio__init__inicialitzaDB", ad, None, None),
+                ("Reassigna baixes", "administracio__reassigna__baixes", di, None, None),
                 #                      ("Nou Alumne", 'administracio__alumnes__noualumne', di, None, None),
                 # Aquesta pantalla encara no té implementada la seva funcionalitat.
                 # Queda pendent acabar-la, o eliminar-la de l'aplicació.
