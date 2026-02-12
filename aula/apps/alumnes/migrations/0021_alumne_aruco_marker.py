@@ -2,7 +2,8 @@
 
 from django.db import migrations, models
 
-from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
+FIRST_MARKER = 100
+LAST_MARKER = 1024
 
 
 def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argument
@@ -12,9 +13,48 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
     First 100 numbers are reserved for manual assignement.
     """
     alumnemodel = apps.get_model("alumnes", "Alumne")
+    
+    # Per evitar error al migrate, còpia del codi des de tools_aruco.py
+    Nivell = apps.get_model("alumnes", "Nivell")
+
+    def get_all_markers():
+        return set(range(FIRST_MARKER, LAST_MARKER))
+
+    def markers_per_nivell(nivell):
+        markers_pillats = set(
+            alumnemodel.objects.filter(grup__curs__nivell=nivell)
+            .values_list("aruco_marker", flat=True)
+        )
+        return get_all_markers() - markers_pillats
+    
+    def markers_per_curs(curs):
+        markers_pillats = set(
+            alumnemodel.objects.filter(grup__curs=curs)
+            .values_list("aruco_marker", flat=True)
+        )
+        return get_all_markers() - markers_pillats
+    
+    def markers_per_grup(grup):
+        markers_pillats = set(
+            alumnemodel.objects.filter(grup=grup)
+            .values_list("aruco_marker", flat=True)
+        )
+        return get_all_markers() - markers_pillats
+
+    def global_markers(dit_makers):
+        return set.intersection(*dit_makers.values()) if dit_makers else set()
+
+    def dict_markers_disponibles():
+        """
+        Retorna un diccionari . La clau és el pk de nivell i
+        els valors son els markers encara disponibles en aquell nivell.
+        """
+        nivells = Nivell.objects.all()
+        markers = {nivell.pk: markers_per_nivell(nivell) for nivell in nivells}
+        return markers
 
     # Dictionary to store markers for each nivell
-    nivells_markers = dict_markers_disponibles()
+    markers_cache = dict_markers_disponibles()
 
     alumnes = list(
         alumnemodel.objects.select_related("grup__curs__nivell").order_by(
@@ -23,8 +63,43 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
     )
 
     for alumne in alumnes:
-        set_aruco_marker(alumne, nivells_markers)
-        alumne.save()
+        if alumne.aruco_marker is not None:
+            continue
+
+        nivell_alumne = alumne.grup.curs.nivell.pk
+        availables_by_nivell_alumne = markers_cache[nivell_alumne]
+
+        availables_global = global_markers(markers_cache)
+        marker = None
+        if availables_global:
+            marker = availables_global.pop()
+        else:
+            # Si no és de la ESO, busquem un marker global exceptuant ESO.
+            # Per evitar que els que fan ICO o altres assignatures
+            # compartides amb FP i BTX col·lisionin.
+            availables_global_except_eso = availables_global
+            if "ESO" not in alumne.grup.curs.nivell.nom_nivell.upper():
+                eso_pk = Nivell.objects.filter(nom_nivell__icontains="ESO").values_list("pk", flat=True)
+                dit_makers_no_eso = {
+                    pk: markers for pk, markers in markers_cache.items() if pk not in eso_pk
+                }
+                availables_global_except_eso = global_markers(dit_makers_no_eso)
+            if availables_global_except_eso:
+                marker = availables_by_nivell_alumne.pop()
+            else:
+                availables_by_curs = markers_per_curs(alumne.grup.curs)
+                if availables_by_curs:
+                    # Assignem el primer marker disponible del curs.
+                    marker = availables_by_curs.pop()
+                else:
+                    availables_by_grup = markers_per_grup(alumne.grup)
+                    if availables_by_grup:
+                        # Assignem el primer marker disponible del grup.
+                        marker = availables_by_grup.pop()
+        
+        alumne.aruco_marker = marker
+        alumne.save(update_fields=["aruco_marker"])
+        availables_by_nivell_alumne.discard(alumne.aruco_marker)
 
 
 def reverse_assign_aruco_markers(
