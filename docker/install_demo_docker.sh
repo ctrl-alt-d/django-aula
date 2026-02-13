@@ -21,19 +21,36 @@ FUNCTION_PATH="${BASE_DIR}/setup_djau"
 # URLs
 REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
 
+# --- 0.1 Funció d'ajuda ---
 
-# --- 0.1 Captura d'arguments (Flags)
+mostrar_ajuda() {
+    echo "Instal·lador de la Demo Docker de django-aula"
+    echo
+    echo "Ús: $0 [opcions]"
+    echo
+    echo "Opcions:"
+    echo "  -h, --help    Mostra aquest missatge d'ajuda."
+    echo "  -d, --dev     Instal·la l'entorn de DESENVOLUPAMENT (amb volums en viu)."
+    echo
+    echo "Si no s'especifica cap flag, s'instal·larà la DEMO estàndard."
+    exit 0
+}
+
+# --- 0.2 Captura d'arguments (Flags)
+
 IS_DEV=false
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        -d|--dev) IS_DEV=true ;;
-        *) echo "Opció desconeguda: $1"; exit 1 ;;
+        -h|--help) mostrar_ajuda ;;
+        -d|--dev)  IS_DEV=true ;;
+        *) echo "Opció desconeguda: $1. Usa -h per ajuda."; exit 1 ;;
     esac
     shift
 done
 
 # Definició de noms segons el mode
+
 if [ "$IS_DEV" = true ]; then
     MODE_LABEL="DESENVOLUPAMENT (DEV)"
     MAKE_BUILD="make dev-build"
@@ -76,7 +93,9 @@ echo -e "\n"
 echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en un directori temporal $BASE_DIR/temp_repo"
 echo
 
-# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada i amb profunditat mínima (no interessa tot l'historial)
+# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
+# i amb profunditat mínima (no interessa tot l'historial)
+
 git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$BASE_DIR/temp_repo"
 
 if [ $? -ne 0 ]; then
@@ -96,6 +115,7 @@ echo -e "\n"
 sleep 2
 
 # Carrega de la llibreria de funcions
+
 echo "Important variables de colors i funcions de la llibreria 'functions.sh'"
 if [ -f "$FUNCTION_PATH/functions.sh" ]; then
     source "$FUNCTION_PATH/functions.sh"
@@ -135,7 +155,6 @@ done
 
 echo
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
-#ls -lah Dockerfile docker-compose.yml Makefile .env .dockerignore
 ls -lah "${FILES[@]}"
 echo
 
@@ -160,7 +179,6 @@ echo -e "${C_INFO}🌍 Si la Demo ha de funcionar en una xarxa local cal definir
 echo
 read_prompt "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (Per defecte NO: sí/NO): " REPLY "no"
 RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
-#read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
 
 if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
     read -p "👉 Introdueix els dominis o IPs separats per comes (ex: demo.elteudomini.cat,192.168.1.46): " HOSTS
@@ -190,8 +208,6 @@ echo -e "${C_INFO}🕓 Posant en marxa els contenidors en mode ${MODE_LABEL}...$
 echo
 $MAKE_BUILD
 $MAKE_SERVE
-#make build
-#make serve
 echo
 
 # --- 7. Informació sobre els contenidors en marxa ---
@@ -213,10 +229,10 @@ echo -e "${C_INFO}--------------------------------------------------------------
 echo -e "\n"
 
 # Iniciem el bucle de lectura de logs
-#docker logs -f demo_web 2>&1 | while read -r line; do
 docker logs -f $CONTAINER_NAME 2>&1 | while read -r line; do
 
-    # 1. Bloc per ocultar els SyntaxWarning, per neteja visual. Si, per dev, es vol veure tota la sortida cal fer make logs
+    # 1. Bloc per ocultar els SyntaxWarning, per neteja visual. És codi temporal fins que no s'arreglin.
+    # Si, per dev, es vol veure tota la sortida cal fer make logs
     if [[ "$line" == *"SyntaxWarning"* ]]; then
         continue
     fi
@@ -238,11 +254,12 @@ done
 if [ "$IS_DEV" = true ]; then
     echo
     read -p "❓ Vols carregar les dades de la demo ara mateix? (s/n): " resposta
-    if [[ "$resposta" =~ ^[Ss]$ ]]; then
-        echo "📦 Carregant dades..."
+    read_prompt "Vol carregar les dades de la demo ara mateix (és un procés que triga una estona) (Per defecte NO: sí/NO): " resposta "no"
+    if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
+        echo -e "${C_INFO}📦 Carregant dades...${RESET}"
         make dev-load_demo_data
     else
-        echo "👍 D'acord. Si vols carregar les dades més tard, pots fer-ho amb: 'make dev-load_demo_data'"
+        echo -e "${C_INFO}👍 D'acord. Pots fer-ho més tard amb: make dev-load_demo_data${RESET}"
     fi
 fi
 
@@ -276,8 +293,6 @@ else
 fi
 echo
 echo
-#echo -e "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
-#echo -e "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)${RESET}"
 echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}"
 echo -e "🌐 Accés al navegador:${RESET}"
 
@@ -293,5 +308,4 @@ else
 fi
 
 echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}\n"
-
 echo
