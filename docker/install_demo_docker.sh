@@ -255,7 +255,6 @@ done
 
 if [ "$IS_DEV" = true ]; then
     echo
-    read -p "❓ Vols carregar les dades de la demo ara mateix? (s/n): " resposta
     read_prompt "Vol carregar les dades de la demo ara mateix (és un procés que triga una estona) (Per defecte NO: sí/NO): " resposta "no"
     if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
         echo -e "${C_INFO}📦 Carregant dades...${RESET}"
