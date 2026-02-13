@@ -25,10 +25,10 @@ EXITO := @bash -c '\
   printf $(NC)' SOME_VALUE
 
 # Funció per a logs (gris)
-LOG_GRIS := @bash -c '\
-  printf $(GRIS); \
-  echo "✅ $$1"; \
-  printf $(NC)' SOME_VALUE
+#LOG_GRIS := @bash -c '\
+#  printf $(GRIS); \
+#  echo "✅ $$1"; \
+#  printf $(NC)' SOME_VALUE
 
 # --- COMANDES DE LA DEMO (AUTOMÀTICA) ---
 
@@ -78,10 +78,10 @@ dev-logs:
 
 dev-load_demo_data:
 	$(INFO) "Carrega fixtures i dades de demo..."
-	@echo -e "$(LOG_GRIS)"
+	@printf $(GRIS)
 	@docker exec -it dev_web bash -c "python manage.py loaddata aula/apps/*/fixtures/dades.json"
 	@docker exec -it dev_web python manage.py loaddemodata
-	@echo -e "$(NC)"
+	@printf $(NC)
 	$(EXITO) "Dades de la Demo carregades amb èxit."
         
 dev-makemigrations:
