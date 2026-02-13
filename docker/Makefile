@@ -77,12 +77,12 @@ dev-logs:
 # --- GESTIÓ DE DADES I DJANGO (DEV) ---
 
 dev-load_demo_data:
-        $(INFO) "Carrega fixtures i dades de demo..."
-        @echo -e "$(LOG_GRIS)"
-        @docker exec -it dev_web bash -c "python manage.py loaddata aula/apps/*/fixtures/dades.json"
-        @docker exec -it dev_web python manage.py loaddemodata
-        @echo -e "$(NC)"
-        $(EXITO) "Dades de la Demo carregades amb èxit."
+	$(INFO) "Carrega fixtures i dades de demo..."
+	@echo -e "$(LOG_GRIS)"
+	@docker exec -it dev_web bash -c "python manage.py loaddata aula/apps/*/fixtures/dades.json"
+	@docker exec -it dev_web python manage.py loaddemodata
+	@echo -e "$(NC)"
+	$(EXITO) "Dades de la Demo carregades amb èxit."
         
 dev-makemigrations:
 	$(INFO) "Comprovant canvis als models i creant migracions..."

@@ -24,6 +24,7 @@ REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
 # --- 0.1 Funció d'ajuda ---
 
 mostrar_ajuda() {
+    echo
     echo "Instal·lador de la Demo Docker de django-aula"
     echo
     echo "Ús: $0 [opcions]"
@@ -33,6 +34,7 @@ mostrar_ajuda() {
     echo "  -d, --dev     Instal·la l'entorn de DESENVOLUPAMENT (amb volums en viu)."
     echo
     echo "Si no s'especifica cap flag, s'instal·larà la DEMO estàndard."
+    echo
     exit 0
 }
 
