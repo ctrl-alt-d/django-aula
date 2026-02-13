@@ -4,7 +4,7 @@
 # Descarrega els fitxers de configuració i comprova la base de dades.
 # -------------------------------------------------------------
 
-# --- 0. Configuració de rutes i repositori
+# --- 0. Configuració de rutes, repositori, mode normal o Dev
 
 # Ruta on s'executa el script (Directori arrel de la instal·lació)
 BASE_DIR=$(pwd)
@@ -21,8 +21,7 @@ FUNCTION_PATH="${BASE_DIR}/setup_djau"
 # URLs
 REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
 
-# --- 0.1 Funció d'ajuda ---
-
+# Funció d'ajuda
 mostrar_ajuda() {
     echo
     echo "Instal·lador de la Demo Docker de django-aula"
@@ -38,8 +37,7 @@ mostrar_ajuda() {
     exit 0
 }
 
-# --- 0.2 Captura d'arguments (Flags)
-
+# Captura d'arguments (Flags)
 IS_DEV=false
 
 while [[ "$#" -gt 0 ]]; do
@@ -54,7 +52,7 @@ done
 # Definició de noms segons el mode
 
 if [ "$IS_DEV" = true ]; then
-    MODE_LABEL="DESENVOLUPAMENT (DEV)"
+    MODE_LABEL="DEMO desenvolupament (DEV)"
     MAKE_BUILD="make dev-build"
     MAKE_SERVE="make dev-serve"
     CONTAINER_NAME="dev_web"
@@ -96,8 +94,7 @@ echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en un directori temporal $BASE
 echo
 
 # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
-# i amb profunditat mínima (no interessa tot l'historial)
-
+# i amb profunditat mínima (no interessa tot l'historial) a un directori temporal
 git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$BASE_DIR/temp_repo"
 
 if [ $? -ne 0 ]; then
@@ -107,6 +104,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Moguent repositori clonat del directori temporal a la seva ubicació definitiva
 mv "${BASE_DIR}/temp_repo/"* "${BASE_DIR}/"					# Mou arxius no ocults
 mv "${BASE_DIR}/temp_repo/".* "${BASE_DIR}/" 2>/dev/null	# Mou arxius ocults
 rmdir "${BASE_DIR}/temp_repo"
@@ -116,8 +114,7 @@ echo -e "✅ Repositori clonat de forma definitiva (Branca: $REPO_BRANCA) a '$BA
 echo -e "\n"
 sleep 2
 
-# Carrega de la llibreria de funcions
-
+# Càrrega de la llibreria de funcions
 echo "Important variables de colors i funcions de la llibreria 'functions.sh'"
 if [ -f "$FUNCTION_PATH/functions.sh" ]; then
     source "$FUNCTION_PATH/functions.sh"
@@ -129,7 +126,7 @@ else
 fi
 echo -e "\n"
 
-# --- 2. Fitxers a descarregar ---
+# --- 2. Còpia i reubicació d'arxius necessaris per fer el "Deploy" ---
 
 FILES=(
     "Dockerfile"
@@ -139,8 +136,6 @@ FILES=(
     ".env"
     ".dockerignore"
 )
-
-# --- 3. Descarregar fitxers de configuració i dades ---
 
 echo -e "${C_INFO}📦 Preparant fitxers pel desplegament des de ${DOCKER_SRC}...${RESET}"
 echo
@@ -160,7 +155,7 @@ echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a co
 ls -lah "${FILES[@]}"
 echo
 
-# --- 4. Instal·lar make si cal ---
+# --- 3. Instal·lar make, si cal ---
 
 echo -e "${C_INFO}🔧 Comprovant que 'make' estigui instal·lat...${RESET}"
 if ! command -v make &> /dev/null; then
@@ -174,7 +169,7 @@ else
     echo -e "${C_EXITO}   ✅ 'make' ja està disponible.${RESET}"
 fi
 
-# --- 5. Pregunta pel domini o IP ---
+# --- 4. Personalització del domini o IP on aixecar el servei ---
 
 echo
 echo -e "${C_INFO}🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha.${RESET}"
@@ -194,7 +189,7 @@ else
     echo -e "${C_INFO}ℹ️ No s'ha modificat DEMO_ALLOWED_HOSTS. Es manté buit.${RESET}"
 fi
 
-# --- 6. Posar en marxa els contenidors ---
+# --- 5. Posar en marxa els contenidors ---
 
 # Comprovant que l'arxiu .env existeix
 if [ -f .env ]; then
@@ -205,6 +200,7 @@ else
     finalitzar_amb_error "⚠️  No s'ha trobat el fitxer .env. No es pot comprovar l'estat de la base de dades."
 fi
 
+# Creant i aixecant els contenidors
 echo
 echo -e "${C_INFO}🕓 Posant en marxa els contenidors en mode ${MODE_LABEL}...${RESET}"
 echo
@@ -212,7 +208,7 @@ $MAKE_BUILD
 $MAKE_SERVE
 echo
 
-# --- 7. Informació sobre els contenidors en marxa ---
+# --- 6. Informació sobre els contenidors en marxa ---
 
 echo
 echo -e "${C_INFO}--------------------------------------------${RESET}"
@@ -223,7 +219,7 @@ echo -e "${C_INFO}--------------------------------------------${RESET}"
 echo
 echo
 
-# --- 8. Espera a la finalització de la preparació ---
+# --- 7. Espera a la finalització de la preparació ---
 
 echo -e "${C_INFO}Progrès de preparació de la base de dades i del servidor de la demo (logs).${RESET}"
 echo -e "${C_INFO}El procés finalitzarà automàticament quan el servidor estigui llest.${RESET}"
@@ -253,6 +249,7 @@ docker logs -f $CONTAINER_NAME 2>&1 | while read -r line; do
     fi
 done
 
+# Generació i càrrega opcional de les dades fictícies per la Demo (Només en mode DEV) 
 if [ "$IS_DEV" = true ]; then
     echo
     read_prompt "Vol carregar les dades de la demo ara mateix (és un procés que triga una estona) (Per defecte NO: sí/NO): " resposta "no"
@@ -264,13 +261,13 @@ if [ "$IS_DEV" = true ]; then
     fi
 fi
 
-# --- 9. Missatge final ---
+# --- 8. Missatge final ---
 
 echo -e "\n"
 sleep 1
 
 echo -e "${C_INFO}----------------------------------------------------------------------------------------"
-echo -e "ℹ️ Informació addicional${RESET}"
+echo -e "ℹ️ Informació addicional{RESET}"
 echo -e "\n"
 
 if [ "$IS_DEV" = true ]; then
@@ -286,11 +283,11 @@ if [ "$IS_DEV" = true ]; then
     echo -e "  ${CIANO}make dev-bash${RESET}            Entra al terminal del contenidor"
 else
     echo -e "${C_INFO}Comandes **make** disponibles per la Demo:${RESET}"
-    echo -e "  ${CIANO}make serve${RESET}             Aixeca la demo"
-    echo -e "  ${CIANO}make build${RESET}             Construeix la imatge de la demo"
-    echo -e "  ${CIANO}make stop${RESET}              Atura la demo"
-    echo -e "  ${CIANO}make down${RESET}              Elimina els contenidors de la demo. Per eliminar les imatges 'docker system prune -a'."
-    echo -e "  ${CIANO}make logs${RESET}              Mostra logs de la demo"
+    echo -e "  ${CIANO}make serve${RESET}     Aixeca la demo"
+    echo -e "  ${CIANO}make build${RESET}     Construeix la imatge de la demo"
+    echo -e "  ${CIANO}make stop${RESET}      Atura la demo"
+    echo -e "  ${CIANO}make down${RESET}      Elimina els contenidors de la demo. Per eliminar les imatges 'docker system prune -a'."
+    echo -e "  ${CIANO}make logs${RESET}      Mostra logs de la demo"
 fi
 echo
 echo

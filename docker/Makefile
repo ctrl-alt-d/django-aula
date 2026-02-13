@@ -24,12 +24,6 @@ EXITO := @bash -c '\
   echo "✅ $$1"; \
   printf $(NC)' SOME_VALUE
 
-# Funció per a logs (gris)
-#LOG_GRIS := @bash -c '\
-#  printf $(GRIS); \
-#  echo "✅ $$1"; \
-#  printf $(NC)' SOME_VALUE
-
 # --- COMANDES DE LA DEMO (AUTOMÀTICA) ---
 
 build:
@@ -61,7 +55,7 @@ dev-build:
 dev-serve:
 	$(INFO) "Aixecant serveis de Desenvolupament (amb volums en viu)..."
 	docker compose -f $(COMPOSE_DEV) up -d
-	$(EXITO) "Entorn de Dev en marxa al port 8000"
+	$(EXITO) "Entorn 'Dev' aixecant-se al port 8000."
 
 dev-stop:
 	$(INFO) "Aturant serveis de Dev..."
