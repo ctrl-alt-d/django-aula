@@ -252,7 +252,8 @@ done
 # Generació i càrrega opcional de les dades fictícies per la Demo (Només en mode DEV) 
 if [ "$IS_DEV" = true ]; then
     echo
-    read_prompt "Vol carregar les dades de la demo ara mateix (és un procés que triga una estona) (Per defecte NO: sí/NO): " resposta "no"
+    read_prompt "Vol carregar les dades de la demo ara mateix (és un procés que triga una estona) (Per defecte NO: sí/NO): " REPLY "no"
+    RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
     if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
         echo -e "${C_INFO}📦 Carregant dades...${RESET}"
         make dev-load_demo_data
