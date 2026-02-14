@@ -30,6 +30,12 @@ if DEMO_HOSTS_STR:
     # Afegeix els hosts llegits de la variable d'entorn (separats per coma)
     ALLOWED_HOSTS += DEMO_HOSTS_STR.split(',')
 
+# Configuració per permetre log-in en entorns HTTP (no segurs)
+# Demo manage.py runserver: Starting development server at http://0.0.0.0:8000/
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
 EMAIL_SUBJECT_PREFIX = "[DEMO AULA] "
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 

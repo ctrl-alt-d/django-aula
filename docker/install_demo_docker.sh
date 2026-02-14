@@ -267,7 +267,7 @@ echo -e "\n"
 sleep 1
 
 echo -e "${C_INFO}----------------------------------------------------------------------------------------"
-echo -e "ℹ️ Informació addicional{RESET}"
+echo -e "ℹ️ Informació addicional${RESET}"
 echo -e "\n"
 
 if [ "$IS_DEV" = true ]; then
@@ -291,18 +291,26 @@ else
 fi
 echo
 echo
-echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}"
-echo -e "🌐 Accés al navegador:${RESET}"
 
-if [ -n "$HOSTS" ]; then
-    # Agafem només el primer host de la llista (per si n'hi ha diversos separats per coma)
-    FIRST_HOST=$(echo $HOSTS | cut -d',' -f1)
-    echo -e "   👉 ${CIANO}http://${FIRST_HOST}:8000${RESET}"
-    echo -e "   (Configurat a DEMO_ALLOWED_HOSTS: $HOSTS)"
-else
-    # Si no han posat res, suggerim localhost o la IP genèrica
+echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}"
+
+if [ -z "$HOSTS" ]; then
+    echo -e "🌐 Accés al navegador:${RESET}"
     echo -e "   👉 ${CIANO}http://localhost:8000${RESET}"
     echo -e "   ${GRIS}Nota: Si estàs en un servidor remot, usa http://IP_DEL_SERVIDOR:8000${RESET}"
+else
+    echo -e "La variable ${GROC}DEMO_ALLOWED_HOSTS${RESET} ha estat configurada amb els següents dominis o IPs:"
+    echo -e "${GRIS}$HOSTS${RESET}"
+    echo
+    echo -e "🌐 Accés a la Demo des del navegador:${RESET}"
+    
+    # Separem els hosts per la coma i creem un enllaç per a cadascun
+    IFS=',' read -ra ADDR <<< "$HOSTS"
+    for host in "${ADDR[@]}"; do
+        # Eliminem possibles espais en blanc que hagi pogut posar l'usuari
+        host=$(echo $host | xargs)
+        echo -e "   👉 ${CIANO}http://${host}:8000${RESET}"
+    done
 fi
 
 echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}\n"
