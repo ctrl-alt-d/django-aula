@@ -10,9 +10,9 @@
 BASE_DIR=$(pwd)
 
 # Dades del repositori
-REPO_USER="rafatecno1" #"ctrl-alt-d"
+REPO_USER="ctrl-alt-d" #"ctrl-alt-d"
 REPO_NAME="django-aula"
-REPO_BRANCA="neteja-docker" #"master"
+REPO_BRANCA="master" #"master"
 
 # Rutes locals
 DOCKER_SRC="${BASE_DIR}/docker"
