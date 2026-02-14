@@ -1,0 +1,52 @@
+# docker-compose.dev.yml
+services:
+  db:
+    image: postgres:16
+    container_name: dev_db
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: django_aula:dev
+    container_name: dev_web
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DEBUG=1
+      - PYTHONUNBUFFERED=1
+      # Opcional: pots forçar els settings de dev aquí
+      - DJANGO_SETTINGS_MODULE=aula.settings
+      - PYTHONPATH=/app
+    working_dir: /app 
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app              # Sincronització de codi font en temps real
+      - media_data:/app/storage
+      - ./demo/static-web/demo:/app/static/demo
+    # Command optimitzat per a desenvolupament:
+    command: >
+      bash -c "
+      echo '⌛ Esperant que la base de dades estigui operativa...' &&
+      until pg_isready -h db -U $$DB_USER >/dev/null 2>&1; do sleep 1; done &&
+      echo '✅ Base de dades a punt.' &&
+      python /app/manage.py migrate --noinput &&
+      python /app/manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  pg_data:
+  media_data:

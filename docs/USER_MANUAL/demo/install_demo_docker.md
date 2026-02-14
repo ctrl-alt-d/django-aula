@@ -1,12 +1,12 @@
-# Instal·lació ràpida de la Demo de Django-Aula amb Docker (QUICK_DEMO)
+# Instal·lació de la Demo de Django-Aula amb Docker
 
-Aquest document explica com posar en funcionament, de la manera més ràpida i fàcil, una Demo de Django-Aula.
+Aquest document explica com posar en funcionament, d'una manera fàcil i automatitzada, una Demo de Django-Aula, tant per un usuari normal com per un desenvolupador de codi que vulgui contribuir amb el projecte.
 
-Cal recordar que el primer pas és instal·lar l'entorn de Docker i docker-compose i és una fase imprescindible si no s'ha fet abans:
+És necessar i imprescindible instal·lar l'entorn de Docker i docker-compose si no s'ha fet abans:
 
   👉 **[Guia per la instal·lació de Docker i docker-compose](install_entorn_docker.md)**  (Es pot obviar si ja s'ha fet)
 
-La Demo, desplegada amb Docker, utilitza una imatge preparada per crear un contenidor amb les **dades de demostració precàrregades**, el que permet un estalvi de temps molt important.
+El procés d'instal·lació construeix la imatge de la Demo a tal fi de tenir sempre la última versió del programari disponible.
 
 La Demo pot ser instal·lada tant a una màquina aïllada de cap xarxa, com a una màquina en xarxa local com a un servidor públic que tingui un domini o subdomini associat.
 
@@ -20,7 +20,8 @@ La Demo pot ser instal·lada tant a una màquina aïllada de cap xarxa, com a un
 - [2. Funcionament del script automatitzat per la instal·lació de la Demo](#id2)
    - [2.1 Què fa l'automatització?](#id21)
    - [2.2 Arxius descarregats amb la instal·lats i la seva funció](#id22)
-- [3. informació sobre l'arxiu `Makefile` i les ordres disponibles](#id3)
+   - [2.3 Versió per a desenvolupadors (DEV)](#id23)
+- [3. Informació sobre l'arxiu `Makefile` i les ordres disponibles](#id3)
 - [4. Accés a la Demo un cop instal·lada i en correcte funcionament](#id4)
    - [4.1 Sistemes operatius que disposin d'un entorn gràfic local](#id41)
    - [4.2 Màquina virtualitzada amb xarxa NAT configurada](#id42)
@@ -31,6 +32,8 @@ La Demo pot ser instal·lada tant a una màquina aïllada de cap xarxa, com a un
 <a name="id1"></a>
 ## 1. Descàrrega i execució del script per posar en marxa la Demo
 
+El script d'automatització està preparat per desplegar una Demo tant per un usuari normal com per un desenvolupador que vulgui fer canvis en el codi i observar-les a la Demo.
+
 Es recomana crear un directori, dins el directori de l'usuari instal·lador, on es descarregarà el script i on es guardaran els arxius necessaris per desplegar la Demo de Django-Aula. Per exemple `demo-djau.docker`:
 
 ```bash
@@ -40,8 +43,16 @@ cd demo-djau-docker
 
 Un cop creat el directori on s'instal·larà la Demo només caldrà descarregar el script automatitzat d'instal·lació. Amb la comanda següent no només es descarrega l'arxiu sinó que començarà a executar-se automàticament:
 
+**Instal·lació normal de la Demo:**
+
 ```bash
-wget -q -O install_quick_demo_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_quick_demo_docker.sh && chmod +x install_quick_demo_docker.sh && bash ./install_quick_demo_docker.sh
+wget -q -O install_demo_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_demo_docker.sh && chmod +x install_demo_docker.sh && bash ./install_demo_docker.sh
+```
+
+**Instal·lació de la Demo per a desenvolupadors:**
+
+```bash
+wget -q -O install_demo_docker.sh https://raw.githubusercontent.com/ctrl-alt-d/django-aula/refs/heads/master/docker/install_demo_docker.sh && chmod +x install_demo_docker.sh && bash ./install_demo_docker.sh -d
 ```
 
 <a name="id2"></a>
@@ -52,81 +63,161 @@ wget -q -O install_quick_demo_docker.sh https://raw.githubusercontent.com/ctrl-a
 
 El script automatitzat du a terme vàries tasques, que són:
 
-1 - Descarregar els arxius necessaris des del repositori del projecte, reanomenar-los, i situar-los o han d'estar per poder fer el desplegament dels contenidors de Docker.  
+1 - Clonar el repositori de l'aplicatiu al directori on s'ha descarregat el script instal·lador.
 
-2 - Instal·lar la comanda `make` si no es troba instatal·lada en el sistema. Si fos el cas, demanarà la contrasenya per activar el permís de `sudo`.  
+2 - Copiar i situar correctament els arxius necessaris per poder fer el desplegament dels contenidors de Docker.  
 
-3 - Facilitar l'edició de l'arxiu *.env* per configurar el tipus de màquina on es vol instal·lar la Demo mitjançant la llista *ALLOWED_HOSTS*:  
+3 - Instal·lar la comanda `make` si no es troba instatal·lada en el sistema. Si fos el cas, demanarà la contrasenya per activar el permís de `sudo`.  
+
+4 - Facilitar l'edició de l'arxiu *.env* per configurar el tipus de màquina on es vol instal·lar la Demo mitjançant la llista *ALLOWED_HOSTS*:  
   - **Màquina aïllada o virtualitzada amb xarxa NAT**: No caldrà afegir res a la llisa. Per defecte la Demo se serveix en *localhost:8000* (127.0.0.1:8000)  
   - **Màquina en xarxa local o virtualitzada amb xarxa bridge:** Caldrà afegir l'IP de la màquina a la xarxa local.
   - **Servidor públic (VPS)**: Caldrà afegir l'IP pública del servidor i, si se'n diposa, el domini i/o subdominis que estiguin apuntant a aquesta IP pública.  
 
-4 - Amb els arxius descarregats i configurats, posar en marxa els dos contenidors necessaris pel funcionament de la Demo, un per la pròpia Demo, anomenat demo_web, i un altre per la base de dades PostgreSQL, anomenat demo_db.  
+5 - Amb els arxius preparats, posar en marxa els dos contenidors necessaris pel funcionament de la Demo, un per la pròpia Demo, anomenat demo_web, i un altre per la base de dades PostgreSQL, anomenat demo_db.  
 
-5 - Comprovar que el contenidor PostgreSQL estigui llest i que ha pogut llegir l'arxiu de dades precarrergades *sql* descarregat del repositori.  
+6 - Comprovar que el contenidor PostgreSQL estigui llest i el motor de PostgresSQL preparat per rebre les dades de demostració que es generaran.
 
-6 - Mostrar l'estat dels contenidors desplegats per comprovar que estan funcionant correctament.
+7 - Generar les dades de demostració per visualitzar la mostra d'un horari escolar fictici.
+
+8 - Engegar el servidor de proves de python per accedir a l'aplicatiu en format Demo (Aquest servidor no s'ha de fer servir per desplegar l'aplicació real).
+
+9 - Mostrar l'estat dels contenidors desplegats per comprovar que estan funcionant correctament.
   
 <a name="id22"></a>
-### 2.2 Arxius descarregats amb la instal·lats i la seva funció
+### 2.2 Arxius necessaris pel desplegament de la Demo i la seva funció
 
-Per tal de tenir els arxius correctament situats i ordenats, el script descarrega, reanomena i reubica quatre fitxers, tres dels quals se situaran a l'arrel del directori que s'hagi creat, menter que l'arxiu *sql* es situarà a un altre directori específic.
+Els arxius que el desplegament de la Demo necessita són:
 
-Els arxius són:
-
-1 - `docker-compose.yml`  
-2 - `.env`  
-3 - `Makefile`  
-4 - `dades_demo.sql`  
-
+1 - `Dockerfile`
+2 - `docker-compose.yml` o `docker-compose.dev.yml`
+3 - `.env`
+4 - `.dockerignore`
+5 - `Makefile`
 
 Aquesta instal·lació us proporciona els següents fitxers, ubicats al vostre directori de treball:
 
 | Fitxer | Funció | Annotacions |
 | :--- | :--- | :--- |
-| **`docker-compose.yml`** | Defineix els serveis **web** (Django-Aula) i **db** (PostgreSQL). | Utilitza la imatge oficial de PostgreSQL i la imatge de la Demo. |
+| **`Dockerfile`** | Defineix com es construirà la imatge del servei **web** (Django-Aula) |  |
+| **`docker-compose.yml`** | Defineix els serveis **web** (Django-Aula) i **db** (PostgreSQL). | Utilitza la imatge oficial de PostgreSQL i defineix com es desplegarà la imatge de la Demo. |
+| **`docker-compose.dev.yml`** | Versió per a desenvolupadors que defineix els serveis **web** (Django-Aula) i **db** (PostgreSQL). | Similar a l'anterior però munta el repositori clonat dins el contenidor web per poder modificar el codi i veure els resultats sobre la Demo. |
 | **`.env`** | Conté les credencials de la base de dades i la llista *ALLOWED_HOSTS*. | **No cal modificar la secció de la base de dades**. En canvi pot ser necessari afegir IP i/o dominis a la llista *ALLOWED_HOSTS*. |
-| **`Makefile`** | Simplifica la gestió dels contenidors amb ordres curtes. | Inclou les comandes essencials de serve, stop, down i logs. |
-| **`dades_demo.sql`** | Conté les dades que emplenaran la base de dades de PostgreSQL. | És l'únic arxiu que es situarà dins un directori específic, que és el llegirà el contenidor *demo_db*. |
+| **`.dckerignore`** | Defineix els arxius del repositori que no cal inserir dins el contenidor de la Demo. |  |
+| **`Makefile`** | Simplifica la gestió dels contenidors amb ordres curtes. | Inclou comandes essencials, tant per la versió normal de la Demo com per la versió per desenvolupadors. |
+
+
+<a name="id23"></a>
+### 2.3 Versió per a desenvolupadors (DEV)
+
+El script automatitzat facilita també la instal·lació de la Demo pensant en els desenvolupadors de codi. S'instal·la amb el tag -d o --dev al darrera del nom del script i té dues diferències fonamentals respecte a la versió normal:
+
+- 1 - Munta tot el repositori dins el contenidor web per poder treballar amb el codi i que els canvis es poden reflectir a la Demo.
+- 2 - Dona a escollir entre generar o no les dades fictícies per omplir la base de dades.
 
 <a name="id3"></a>
 ## 3. informació sobre l'arxiu `Makefile` i les ordres disponibles
 
-El fitxer `Makefile` simplifica la interacció amb els contenidors de Docker. Les comandes disponibles per a aquesta instal·lació són:
+El fitxer `Makefile` simplifica la interacció amb els contenidors de Docker.
+
+Les comandes disponibles per la Demo són:
 
 | Comanda | Funció | Ordre Subjacent |
 | :--- | :--- | :--- |
-| **`make serve`** | Posa en marxa els serveis (Web i DB) en segon pla (detached). | `docker compose up -d` |
-| **`make stop`** | Atura els serveis sense eliminar els contenidors ni les dades. | `docker compose stop` |
-| **`make down`** | Atura els serveis, elimina els contenidors i **elimina permanentment la base de dades** | `docker compose down -v` |
-| **`make logs`** | Mostra els logs de tots dos serveis en temps real. | `docker compose logs -f` |
+| **`make build`** | Construeix la imatge del servei Web (Demo DjAu). | `docker compose -f docker-compose.yml build --no-cache web` |
+| **`make serve`** | Posa en marxa els serveis (Web i DB) en segon pla (detached). | `docker compose -f docker-compose.yml up -d` |
+| **`make stop`** | Atura els serveis sense eliminar els contenidors ni les dades. | `docker compose -f docker-compose.yml stop` |
+| **`make down`** | Atura els serveis, elimina els contenidors i **elimina permanentment la base de dades** | `docker compose -f docker-compose.yml down -v` |
+| **`make logs`** | Mostra els logs de tots dos serveis en temps real. | `docker compose -f docker-compose.yml logs -f` |
+
+Les comandes disponibles per la versió per a desenvolupadors (DEV) són:
+
+| Comanda | Funció | Ordre Subjacent |
+| :--- | :--- | :--- |
+| **`make dev-build`** | Construeix la imatge del servei Web (Demo DjAu). | `docker compose -f docker-compose.dev.yml build --no-cache web` |
+| **`make dev-serve`** | Posa en marxa els serveis (Web i DB) en segon pla (detached). | `docker compose -f docker-compose.dev.yml up -d` |
+| **`make dev-stop`** | Atura els serveis sense eliminar els contenidors ni les dades. | `docker compose -f docker-compose.dev.yml stop` |
+| **`make dev-down`** | Atura els serveis, elimina els contenidors i **elimina permanentment la base de dades** | `docker compose -f docker-compose.dev.yml down -v` |
+| **`make dev-logs`** | Mostra els logs de tots dos serveis en temps real. | `docker compose -f docker-compose.dev.yml logs -f` |
+| **`make dev-load_demo_data`** | Carrega fixtures i genera les dades fictícies per la Demo. | `python manage.py loaddata aula/apps/*/fixtures/dades.json i python manage.py loaddemodata` |
+| **`make dev-makemigrations`** | Comprova canvis als models i creant migracions. | `docker exec -it dev_web python manage.py makemigrations` |
+| **`make dev-shell`** | Entrant a la consola de Django. | `docker exec -it dev_web python manage.py shell` |
+| **`make dev-bash`** | Entra al terminal del contenidor web. | `docker exec -it dev_web bash` |
 
 **Detall de les ordres del `Makefile`**
 
 Per a referència, les ordres exactes del Makefile són:
 
 ```makefile
+build:
+        $(INFO) "Construint imatge de la Demo..."
+        docker compose -f docker-compose.yml build
+
 serve:
-	@echo "=> Running demo services (detached)"
-	@docker compose -f docker-compose.yml up -d
+        $(INFO) "Aixecant serveis de la Demo..."
+        docker compose -f docker-compose.yml up -d
+        $(EXITO) "Demo en marxa al port 8000"
 
 stop:
-	@echo "=> Stopping demo services"
-	@docker compose -f docker-compose.yml stop
+        $(INFO) "Aturant serveis de la Demo..."
+        docker compose -f docker-compose.yml stop
 
 down:
-	@echo "=> Stopping demo services and deleting DB"
-	@docker compose -f docker-compose.yml down -v
+        $(INFO) "Eliminant contenidors i xarxes de la Demo..."
+        docker compose -f docker-compose.yml down
 
 logs:
-	@echo "=> Showing logs (Press Ctrl+C to exit)"
-	@docker compose -f docker-compose.yml logs -f
+        docker compose -f docker-compose.yml logs -f web
+
+# --- COMANDES DE DESENVOLUPAMENT (DEV) ---
+
+dev-build:
+        $(INFO) "Construint imatge de Desenvolupament..."
+        docker compose -f docker-compose.dev.yml build
+
+dev-serve:
+        $(INFO) "Aixecant serveis de Desenvolupament (amb volums en viu)..."
+        docker compose -f docker-compose.dev.yml up -d
+        $(EXITO) "Entorn de Dev en marxa al port 8000"
+
+dev-stop:
+        $(INFO) "Aturant serveis de Dev..."
+        docker compose -f docker-compose.dev.yml stop
+
+dev-down:
+        $(INFO) "Eliminant contenidors i xarxes de Dev..."
+        docker compose -f docker-compose.dev.yml down
+
+dev-logs:
+        docker compose -f docker-compose.dev.yml logs -f web
+
+# --- GESTIÓ DE DADES I DJANGO (DEV) ---
+
+dev-load_demo_data:
+        $(INFO) "Carrega fixtures i dades de demo..."
+        @printf $(GRIS)
+        @docker exec -it dev_web bash -c "python manage.py loaddata aula/apps/*/fixtures/dades.json"
+        @docker exec -it dev_web python manage.py loaddemodata
+        @printf $(NC)
+        $(EXITO) "Dades de la Demo carregades amb èxit."
+
+dev-makemigrations:
+        $(INFO) "Comprovant canvis als models i creant migracions..."
+        docker exec -it dev_web python manage.py makemigrations
+
+dev-shell:
+        $(INFO) "Entrant a la consola de Django..."
+        docker exec -it dev_web python manage.py shell
+
+dev-bash:
+        $(INFO) "Entrant al terminal del contenidor web..."
+        docker exec -it dev_web bash
 ```
 
 <a name="id4"></a>
 ## 4. Accés a la Demo un cop instal·lada i en correcte funcionament
 
-Un cop execut l'arxiu d'instal·lació automatitzada i amb els quatre arxius necessaris descarregats, ja s'ha executat la comanda `make serve` i l'aplicació estarà accessible en el port **8000** fent servir el servidor per a proves de Django.
+Un cop executat l'arxiu d'instal·lació automatitzada i amb els tres arxius necessaris descarregats, construida la imatge amb `make build ` i executada la comanda `make serve`, l'aplicació estarà accessible en el port **8000** fent servir el servidor per a proves de Django.
 
 Per accedir-hi dependrà del tipus de màquina on hagim desplegat la Demo.
 
