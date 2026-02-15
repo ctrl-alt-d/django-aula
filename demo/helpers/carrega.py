@@ -144,7 +144,7 @@ def fesCarrega():
                     nivell=nivell, grup=grup, curs=curs
                 )
                 grupAula = Grup.objects.get(descripcio_grup=lgrup)
-                SGrup2Aula.objects.create(grup_saga=lgrup, Grup2Aula=grupAula)
+                SGrup2Aula.objects.update_or_create(grup_saga=lgrup, Grup2Aula=grupAula)
                 # KGrup2Aula.objects.create( grup_kronowin = lgrup, Grup2Aula = grupAula  )   #ho fa als crear els grups
 
     print("#Importem Kronowin 1 ( Per crear professors )")
@@ -176,7 +176,9 @@ def fesCarrega():
     for g in Grup.objects.all():
         professors_del_grup = Professor.objects.filter(horari__grup=g).distinct()
         if professors_del_grup:
-            Tutor.objects.create(professor=random.choice(professors_del_grup), grup=g)
+            Tutor.objects.filter(grup=g).delete()  # Nova línia. Netegem tutors previs d'aquest grup
+            Tutor.objects.get_or_create(grup=g, defaults={'professor': random.choice(professors_del_grup)})
+            #Tutor.objects.create(professor=random.choice(professors_del_grup), grup=g)
 
     msg += "\nProfessors: " + " ,".join(
         sorted(set([unicode(t.username) for t in Professor.objects.all()]))
@@ -260,51 +262,53 @@ def fesCarrega():
             ca.impartir.save()
 
     print("preparant configuració de matrícula")
-    tpv = TPV(
-        None,
-        "centre",
-        settings.CUSTOM_CODI_COMERÇ,
-        settings.CUSTOM_KEY_COMERÇ,
-        "Pagaments al centre",
-        False,
+    tpv, _ = TPV.objects.get_or_create(
+        nom="centre",
+        defaults={
+            'codi_comerc': settings.CUSTOM_CODI_COMERÇ,
+            'clau_comerc': settings.CUSTOM_KEY_COMERÇ,
+            'descripcio': "Pagaments al centre",
+            'fused': False,
+        }
     )
-    tpv.save()
     for tipus in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
-        tq = TipusQuota(None, tipus)
-        tq.save()
-    q = Quota(
-        None,
-        10,
-        date.today() + relativedelta(days=30),
-        inici_curs.year,
-        "Material escolar",
-        None,
-        tpv.id,
-        TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA).id,
+        tq, _ = TipusQuota.objects.get_or_create(nom=tipus)
+
+    # Quota 1: Material escolar
+    Quota.objects.get_or_create(
+        descripcio="Material escolar",
+        defaults={
+            'importQuota': 10,
+            'dataLimit': date.today() + relativedelta(days=30),
+            'any': inici_curs.year,
+            'tpv_id': tpv.id,
+            'tipus_id': TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA).id,
+        }
     )
-    q.save()
-    q = Quota(
-        None,
-        360,
-        None,
-        inici_curs.year,
-        "Taxes cicles FP",
-        None,
-        tpv.id,
-        TipusQuota.objects.get(nom="taxcurs").id,
+
+    # Quota 2: Taxes cicles FP
+    Quota.objects.get_or_create(
+        descripcio="Taxes cicles FP",
+        defaults={
+            'importQuota': 360,
+            'dataLimit': None,
+            'any': inici_curs.year,
+            'tpv_id': tpv.id,
+            'tipus_id': TipusQuota.objects.get(nom="taxcurs").id,
+        }
     )
-    q.save()
-    q = Quota(
-        None,
-        25,
-        None,
-        inici_curs.year,
-        "Taxa UF",
-        None,
-        tpv.id,
-        TipusQuota.objects.get(nom="uf").id,
+
+    # Quota 3: Taxa UF
+    Quota.objects.get_or_create(
+        descripcio="Taxa UF",
+        defaults={
+            'importQuota': 25,
+            'dataLimit': None,
+            'any': inici_curs.year,
+            'tpv_id': tpv.id,
+            'tipus_id': TipusQuota.objects.get(nom="uf").id,
+        }
     )
-    q.save()
 
     print("canviant dades dels professors")
     for p in Professor.objects.all():
