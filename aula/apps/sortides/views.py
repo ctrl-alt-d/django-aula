@@ -2015,11 +2015,11 @@ def passarella(request, pk):
         + reverse("sortides__sortides__retorn_transaccio", kwargs={"pk": pk}),
         "Ds_Merchant_ProductDescription": titol,
         "Ds_Merchant_ConsumerLanguage": "003",
-        "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", "\/")
+        "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", r"\/")
         + reverse("sortides__sortides__pago_on_line", kwargs={"pk": pk})
         + "?next="
         + request.GET.get("next"),
-        "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", "\/")
+        "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", r"\/")
         + reverse("sortides__sortides__pago_on_lineKO", kwargs={"pk": pk})
         + "?next="
         + request.GET.get("next"),
