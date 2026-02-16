@@ -262,51 +262,61 @@ def fesCarrega():
             ca.impartir.save()
 
     print("preparant configuració de matrícula")
+    # 1. TPV
     tpv, _ = TPV.objects.get_or_create(
         nom="centre",
         defaults={
-            'codi_comerc': settings.CUSTOM_CODI_COMERÇ,
-            'clau_comerc': settings.CUSTOM_KEY_COMERÇ,
+            'codi': settings.CUSTOM_CODI_COMERÇ,
+            'key': settings.CUSTOM_KEY_COMERÇ,
             'descripcio': "Pagaments al centre",
-            'fused': False,
+            'entornReal': False,
         }
     )
-    for tipus in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
-        tq, _ = TipusQuota.objects.get_or_create(nom=tipus)
 
-    # Quota 1: Material escolar
+    # 2. Tipus de Quota
+    for tipus_nom in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
+        TipusQuota.objects.get_or_create(nom=tipus_nom)
+
+    # 3. Quotes
+    # Quota: Material escolar
+    tipo_mat = TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
     Quota.objects.get_or_create(
         descripcio="Material escolar",
+        tipus=tipo_mat,
+        any=inici_curs.year,
         defaults={
             'importQuota': 10,
             'dataLimit': date.today() + relativedelta(days=30),
-            'any': inici_curs.year,
-            'tpv_id': tpv.id,
-            'tipus_id': TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA).id,
+            'tpv': tpv,
+            'curs': None,
         }
     )
 
-    # Quota 2: Taxes cicles FP
+    # Quota: Taxes cicles FP
+    tipo_tax = TipusQuota.objects.get(nom="taxcurs")
     Quota.objects.get_or_create(
         descripcio="Taxes cicles FP",
+        tipus=tipo_tax,
+        any=inici_curs.year,
         defaults={
             'importQuota': 360,
             'dataLimit': None,
-            'any': inici_curs.year,
-            'tpv_id': tpv.id,
-            'tipus_id': TipusQuota.objects.get(nom="taxcurs").id,
+            'tpv': tpv,
+            'curs': None,
         }
     )
 
-    # Quota 3: Taxa UF
+    # Quota: Taxa UF
+    tipo_uf = TipusQuota.objects.get(nom="uf")
     Quota.objects.get_or_create(
         descripcio="Taxa UF",
+        tipus=tipo_uf,
+        any=inici_curs.year,
         defaults={
             'importQuota': 25,
             'dataLimit': None,
-            'any': inici_curs.year,
-            'tpv_id': tpv.id,
-            'tipus_id': TipusQuota.objects.get(nom="uf").id,
+            'tpv': tpv,
+            'curs': None,
         }
     )
 
