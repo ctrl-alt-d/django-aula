@@ -13,8 +13,11 @@ clear
 
 # 1. Definició de variables
 # Repositori i branca per la clonació
-REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
-GIT_BRANCH="master"						# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+REPO_USER="ctrl-alt-d"		# "ctr-alt-d"
+REPO_NAME="django-aula"
+REPO_BRANCA="master"		# "master"
+
+REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"	# repositori del projecte
 
 # Definició de sistema d'inicialització de processos del Sistema Operatiu (SysVinit vs Systemd)
 IS_SYSTEMD=0 # Per defecte, assumim que no és systemd (Devuan, etc.)
@@ -32,7 +35,7 @@ echo "--------------------------------------------------------------------------
 # 1. Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
 RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
-FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
+FUNCTIONS_URL="${RAW_BASE}/${REPO_BRANCA}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 
@@ -527,18 +530,18 @@ if [ -d "$FULL_PATH" ] && [ "$(ls -A "$FULL_PATH")" ]; then
     echo -e "\n"
     exit 1
 else
-    echo -e "${C_INFO}Clonant $REPO_URL, branca '$GIT_BRANCH' en $FULL_PATH.${RESET}"
+    echo -e "${C_INFO}Clonant $REPO_URL, branca '$REPO_BRANCA' en $FULL_PATH.${RESET}"
 
     # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
-    sudo -u "$APP_USER" git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
+    sudo -u "$APP_USER" git clone -b "$REPO_BRANCA" "$REPO_URL" "$FULL_PATH"
 
     if [ $? -ne 0 ]; then
-        echo -e "${C_ERROR}❌ ERROR: Fallda en clonar la branca '$GIT_BRANCH' del repositori '$REPO_URL'.${RESET}"
+        echo -e "${C_ERROR}❌ ERROR: Fallda en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'.${RESET}"
         echo "Comprovi la URL, conexió a internet o permisos de l'usuari '$APP_USER'."
         echo -e "\n"
         exit 1
     fi
-    echo -e "${C_EXITO}✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'.${RESET}"
+    echo -e "${C_EXITO}✅ Repositori clonat (Branca: $REPO_BRANCA) a '$FULL_PATH'.${RESET}"
 fi
 
 echo -e "\n"
