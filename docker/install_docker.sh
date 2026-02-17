@@ -223,14 +223,15 @@ fi
 sleep 2
 echo -e "\n"
 
-APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin make"
 echo -e "${C_INFO}ℹ️ $APT_DESC${RESET}"
 apt-get install -y \
    docker-ce \
    docker-ce-cli \
    containerd.io \
    docker-buildx-plugin \
-   docker-compose-plugin
+   docker-compose-plugin \
+   make
 
 check_install "$APT_DESC"
 
