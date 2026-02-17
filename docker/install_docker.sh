@@ -13,14 +13,17 @@ echo "---------------------------------------------------------"
 
 # Definició de variables
 # Repositori i branca per la clonació
+REPO_USER="ctrl-alt.d"
+REPO_NAME="django-aula"
+REPO_BRANCA="master"
 
-REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
-GIT_BRANCH="master"											# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+# URLs
+REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git" # Repositori del projecte
 
 # Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
 RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
-FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
+FUNCTIONS_URL="${RAW_BASE}/${REPO_BRANCA}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 echo -e "\n"
