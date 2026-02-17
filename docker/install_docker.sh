@@ -87,7 +87,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-USUARI_SUDO=$(logname)
+USUARI_SUDO="${SUDO_USER:-$(whoami)}"
 
 # Comprovar si el fitxer d'identificació del sistema (os-release) existeix
 if [ ! -f /etc/os-release ]; then
@@ -260,14 +260,21 @@ sleep 2
 echo -e "\n"
 echo -e "${C_SUBTITULO}-> Afegint l'usuari ${USUARI_SUDO} al grup 'docker'...${RESET}"
 
+groupadd -f docker
+
 # Comprovem si l'usuari ja pertany al grup per no repetir l'acció
 if id -nG "$USUARI_SUDO" | grep -qw "docker"; then
     echo -e "${C_INFO}ℹ️ L'usuari ${USUARI_SUDO} ja forma part del grup 'docker'.${RESET}"
 else
-    if ! usermod -aG docker "${USUARI_SUDO}"; then
-        finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+    # Si l'usuari és root, no cal afegir-lo
+    if [ "$USUARI_SUDO" != "root" ]; then
+        if ! usermod -aG docker "${USUARI_SUDO}"; then
+            finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+        fi
+        echo -e "${C_EXITO}✅ Usuari ${USUARI_SUDO} afegit al grup 'docker' correctament.${RESET}"
+    else
+        echo -e "${C_INFO}ℹ️ Usuari root detectat. No cal afegir-lo al grup docker.${RESET}"
     fi
-    echo -e "${C_EXITO}✅ Usuari afegit al grup 'docker' correctament.${RESET}"
 fi
 
 sleep 1
