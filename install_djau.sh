@@ -235,6 +235,9 @@ echo -e "\n"
 echo -e "${C_SUBTITULO}--- 3.1 Instal·lant dependèncias del sistema (Python, Git, PostgreSQL, etc). Ara no s'instal·lará el servidor web ---${RESET}"
 echo -e "${C_SUBTITULO}---------------------------------------------------------------------------------------------------------------------${RESET}"
 
+# 0. Esperar per si hi ha un bloqueig de l'APT
+esperar_apt
+
 # 1. Actualitzar la llista de paquets
 echo -e "${C_INFO}ℹ️ Actualiztzant la llista de paquets (apt-get update)...${RESET}"
 apt-get update

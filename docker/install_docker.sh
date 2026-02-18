@@ -125,11 +125,20 @@ case "$OS_ID" in
         ;;
 esac
 
-# Update i instal·lció de Curl
-echo -e "${C_SUBTITULO}-> Preparant el sistema i instal·lant eines de xarxa...${RESET}"
+echo -e "${C_SUBTITULO}-> Eliminant rastres de versions antigues de Docker...${RESET}"
+# Llista oficial de paquets a eliminar
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
+    apt-get remove -y $pkg > /dev/null 2>&1
+done
 
+# Netegem fitxers de llistes antics que podrien causar conflictes amb el nou repositori
 rm -f /etc/apt/sources.list.d/docker.sources /etc/apt/sources.list.d/docker.list
 
+# Esperar el bloqueig de l'APT
+esperar_apt
+
+# Update i instal·lció de Curl
+echo -e "${C_SUBTITULO}-> Preparant el sistema i instal·lant eines de xarxa...${RESET}"
 if ! apt-get update -qq; then
     finalitzar_amb_error "L'actualització de la llista de paquets (apt update) ha informat d'un error. Verifiqui si hi ha altres repositoris trencats al sistema."
 fi
@@ -223,7 +232,7 @@ fi
 sleep 2
 echo -e "\n"
 
-APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin make"
+APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin make git"
 echo -e "${C_INFO}ℹ️ $APT_DESC${RESET}"
 apt-get install -y \
    docker-ce \
@@ -231,7 +240,8 @@ apt-get install -y \
    containerd.io \
    docker-buildx-plugin \
    docker-compose-plugin \
-   make
+   make \
+   git
 
 check_install "$APT_DESC"
 

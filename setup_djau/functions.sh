@@ -27,6 +27,32 @@ C_SUBTITULO="${NEGRITA}${MAGENTA}" # Títuls de Subcapítul (1.1, 1.2)
 C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓ)
 
 
+
+# =========================================================================
+# Funció: esperar_apt
+# Espera que el gestor de paquets (APT) estigui lliure
+# que la deixa en blanc, si hi ha una resposta per defecte.
+#
+# Exemple: read_prompt "De quin color tens el cabell?" COLOR_CABELL "Blau"
+# =========================================================================
+esperar_apt() {
+    local LOCK_FILE="/var/lib/dpkg/lock-frontend"
+    
+    if [ -f "$LOCK_FILE" ]; then
+        # Comprovem si realment hi ha un procés bloquejant el fitxer
+        if fuser "$LOCK_FILE" >/dev/null 2>&1; then
+            echo -e "${C_INFO}⏳ El sistema està realitzant tasques de manteniment (APT).${RESET}"
+            echo -e "${C_INFO}   Esperant que finalitzin per poder continuar...${RESET}"
+            
+            # flock espera fins que el lock s'allibera
+            sudo flock "$LOCK_FILE" true
+            
+            echo -e "${C_EXITO}✅ Gestor de paquets lliure. Continuem amb la instal·lació.${RESET}"
+        fi
+    fi
+}
+
+
 # ===========================================================================
 # Funció: finalitzar_amb_error
 # Serveix per mostrar un text d'error concret greu i sortir de l'instal·lador
