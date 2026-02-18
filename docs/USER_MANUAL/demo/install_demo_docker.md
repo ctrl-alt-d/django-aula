@@ -217,7 +217,7 @@ dev-bash:
 <a name="id4"></a>
 ## 4. Accés a la Demo un cop instal·lada i en correcte funcionament
 
-Un cop executat l'arxiu d'instal·lació automatitzada i amb els tres arxius necessaris descarregats, construida la imatge amb `make build ` i executada la comanda `make serve`, l'aplicació estarà accessible en el port **8000** fent servir el servidor per a proves de Django.
+Un cop executat l'arxiu d'instal·lació automatitzada i amb els arxius necessaris descarregats, construida la imatge amb `make build ` i executada la comanda `make serve`, l'aplicació estarà accessible en el port **8000** fent servir el servidor web per a proves de Django.
 
 Per accedir-hi dependrà del tipus de màquina on hagim desplegat la Demo.
 
@@ -261,4 +261,4 @@ http://demo.djau.elteudomini.cat:8000
 ```   
 
 
-> **IMPORTANT:** Aquesta Demo Docker corre amb un servidor de proves de Django, pensat pel desenvolupament de l'aplicatiu, i és molt limitat. No està preparat ni per acceptar connexions segures de tipus https ni per fer front a atacs de hackers. La seva perdurabilitat en el temps no es pot assegurar.
+> **IMPORTANT:** Aquesta Demo Docker corre amb un servidor web de proves de Django, pensat pel desenvolupament de l'aplicatiu, i és molt limitat. No està preparat ni per acceptar connexions segures de tipus https ni per fer front a atacs de hackers. La seva perdurabilitat en el temps no es pot assegurar.
