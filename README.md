@@ -59,7 +59,7 @@ Per qualsevol tipus d'instal·lació, ja sigui per un ús real o per l'entorn de
 
 L'entorn de demostració, conegut com Demo, és una versió funcional del sistema i que es pot posar en funcionament en pocs minuts. Disposa de dades fictícies (usuaris, professors, alumnat i un horari mínim) que faciliten observar l'aspecte visual i interaccionar, des de diferents rols, amb les funcionalitats de l'aplicatiu real Django-Aula.
 
-El desplegament de la Demo es pot fer de dorma automatitzada, tot i que també es pot fer de forma manual, i s'aconsegueix amb l'execució de dues comandes i consta de dues passes consecutives:
+El desplegament de la Demo es pot fer de forma automatitzada, tot i que també es pot fer de forma manual, i s'aconsegueix amb l'execució de dues comandes i consta de dues passes consecutives:
 
 
 ### 1a - Instal·lació automàtica de Docker i Docker Compose

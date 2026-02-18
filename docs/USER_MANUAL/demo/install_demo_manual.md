@@ -333,7 +333,7 @@ De fet, el servidor de proves de Django es pot aixecar perfectament posant l'IP 
 python manage.py runserver IP_PUBLICA_VPS:8000
 ```
 
-D'aquesta senzilla manera, sense haver d'instal·lar un servidor web per producció, com podria ser el servidor web Apache que és el que es fa servir oficialment per la versió de l'aplicatiu per producció, es pot servir la versió Demo de l'aplicatiu a tot aquell que vulgui veure com funciona des de qualsevol ordinador a internet, simplement:
+D'aquesta senzilla manera, sense haver d'instal·lar un servidor web per producció, com podria ser el servidor web Apache, que és el que s'instal·la amb l'aplicatiu per producció, es pot servir la versió Demo de l'aplicatiu a tot aquell que vulgui veure com funciona des de qualsevol ordinador a internet, simplement:
 
 >http://IP_DEL_TEU_SERVIDOR:8000  
 http://SUBDOMINI:8000
