@@ -1,13 +1,13 @@
 # Instal·ació manual de la Demo de Django-Aula
 
-Aquesta guia ofereix les **instruccions per instal·lar manualment una instància d'un entornt de prova (Demo) de Django-Aula** amb un conjunt de dades fictícies (usuaris, professors i horaris) per tal de provar-ne les funcionalitats.
+Aquesta guia ofereix les **instruccions per instal·lar manualment un entorn de prova (Demo) de Django-Aula** amb un conjunt de dades fictícies (usuaris, professors i horaris) per tal de provar-ne les funcionalitats.
 
-Aquest mètode està dissenyat per a mostrar el funcionament de l'aplicatiu als centres educatius que el vulguin implantar.
+El mètode manual el faran servir aquells usuaris que no vulguin utilitzar un instal·lador automatitzat per tal de tenir el control de cada pas que cal fer.
 
-En resum, en aquesta guia es cobreix la instal·lació de la Demo en:
+En aquesta guia es cobreix la instal·lació de la Demo en diferents tipologies de servidor, com ara:
 - Una **màquina aïllada de cap xarxa local** o exterior.
-- Una **màquina virtualitzada** (guest) **configurada amb l'amfitriona** (host) amb ***xarxa-NAT*** aïllada de cap xarxa, només **accessible des de là màquina anfitriona**.
-- Una **màquina virtualitzada** (guest) **configurada amb l'amfitriona** (host) amb ***xarxa-BRIDGE-pont*, integrada a la xarxa local com un equip més**.
+- Una **màquina virtualitzada** (guest) **configurada amb l'amfitriona** (host) amb **xarxa-NAT** aïllada de cap xarxa, només **accessible des de la màquina anfitriona**.
+- Una **màquina virtualitzada** (guest) **configurada amb l'amfitriona** (host) amb **xarxa-BRIDGE-pont integrada a la xarxa local com un equip més**.
 - Un **servidor privat virtual (VPS)** en internet, **accessible des de qualsevol dispositiu connectat a internet**. 
 
 ---
@@ -18,7 +18,7 @@ En resum, en aquesta guia es cobreix la instal·lació de la Demo en:
 - [2. Usuaris que es crean en la Demo i les seves credencials](#id2)
 - [3. Instruccions generals d'instal·lació](#id3)
   * [3.1 Preparació de l'Entorn](#id31)
-  * [3.2 Clonació del repositorio i Instal·lació de l'Aplicació](#id32)
+  * [3.2 Clonació del repositori i Instal·lació de l'Aplicació](#id32)
   * [3.3 Creació de Dades per la Demo](#id33)
   * [3.4 Execució del servidor local de Django](#id34)
   * [3.5. Accés a la Demo amb Entorn Gràfic (Màquina Local)](#id35)
@@ -63,7 +63,7 @@ Els usuaris de prova creats en el procés d'instal·lació tenen les següents c
 <a name="id3"></a>
 ## 3. Instruccions d'Instal·lació
 
-Aquestes comandes es poden executar en un entorn Linux, preferiblement Debian 13 o Ubuntu Server 24.04 LTS o superior.
+Aquestes comandes es poden executar en un entorn Linux basat en Debian, com ara Debian 13 o Ubuntu Server 22.04 LTS o superior.
 
 <a name="id31"></a>
 ### 3.1 Preparació de l'Entorn
@@ -87,7 +87,7 @@ sudo apt install libgl1 libglib2.0-0t64
 
 Es recomana que la Demo de Django-Aula es posi a un directori que tingui un nom que no deixi dubtes, per exemple `demo-djau`.
 
-Per fer-ho cal clonar el repositori en aquest directori i ho es pot fer des del mateix directori principal de l'usuari instal·lador:
+Per fer-ho cal clonar el repositori en aquest directori i es pot llançar la comanda des del mateix directori principal de l'usuari instal·lador:
 
 ```bash
 git clone --single-branch --branch master https://github.com/ctrl-alt-d/django-aula.git demo-djau
@@ -110,7 +110,7 @@ pip3 install -r requirements.txt
 <a name="id33"></a>
 ### 3.3 Creació de Dades per la Demo
 
-Un cop ha finalitat la instal·lació de la Demo, cal executar un script que crea les dades de demostració (professors, alumnes, horaris) i inicia el servidor de desenvolupament incorporat:
+Un cop ha finalitat la instal·lació de la Demo, cal executar un script que crea les dades de demostració (professors, alumnes, horaris) i inicia el servidor web de desenvolupament incorporat:
 
 ```bash
 ./scripts/create_demo_data.sh
@@ -118,9 +118,9 @@ Un cop ha finalitat la instal·lació de la Demo, cal executar un script que cre
 <a name="id34"></a>
 ### 3.4 Execució del servidor local de Django
 
-El servidor local de Django no està pensat per servir l'aplicació real de Django-Aula sinó per fer proves o pel desenvolupament de l'aplicatiu. No obstant és perfecte per servir la Demo, no cal més.
+El servidor web local de Django no està pensat per servir l'aplicació real de Django-Aula. Només s'utilitza per fer-hi proves o pel desenvolupament de l'aplicatiu. No obstant, no cal un servidor web millor i és perfecte per servir la Demo.
 
-Ara bé, la manera d'iniciar el servidor canvia en funció del tipus de màquina on l'hàgim instal·lat. **Si estem en una màquina aïllada de cap xarxa però que diposa d'entorn gràfic amb un navegador diponible**, cal escriure:
+Ara bé, la manera d'iniciar el servidor web canvia en funció del tipus de màquina on l'hàgim instal·lat. **Si estem en una màquina aïllada de cap xarxa però que diposa d'entorn gràfic amb un navegador diponible**, cal escriure:
 
 ```bash
 python manage.py runserver
@@ -140,14 +140,12 @@ Starting development server at http://127.0.0.1:8000/
 Quit the server with CONTROL-C.
 ```
 
-Aquest missate indica que tenim un servidor local en proves en correcte funcionament accessible només des de la màquina on s'ha instal·lat la Demo.
+Aquest missatge indica que tenim un servidor web local en proves en correcte funcionament, però és accessible només des de la màquina on s'ha instal·lat la Demo.
 
 <a name="id35"></a>
 ### 3.5. Accés a la Demo amb Entorn Gràfic (Màquina Local)
 
-Com s'explica a la secció anterior, quan s'executa la comanda *python manage.py runserver* l'aplicació es posa en marxa a l'adreça local del servidor: *http://127.0.0.1:8000*.
-
-Si la Demo s'ha instal·lat en un ordinador, o a una màquina virtual, que disposa d'un **escriptori gràfic i un navegador web** podreu accedir-hi directament obrint el navegador i anant a:
+Segons les instruccions de la secció anterior, si es disposa d'un **escriptori gràfic i un navegador web**, es podrà accedir a l'aplicatiu directament obrint el navegador i anant a:
 
 **http://127.0.0.1:8000**
 
@@ -158,13 +156,13 @@ Si la Demo s'ha instal·lat en un ordinador, o a una màquina virtual, que dispo
 
 Si intenteu accedir a la Demo des d'una màquina on no s'hagi instal·lat la Demo no podreu accedir amb la IP "127.0.0.1"
 
-La primera acció és detenir el servidor local, si l'havíem engegat i **canviar la forma d'executar el servior local** de desenvolupament **específicant una IP diferent**.
+La primera acció és detenir el servidor web local, si l'havíem engegat, i **canviar la forma d'executar el servidor web local** de desenvolupament **específicant una IP diferent**.
 
 Execució del servidor amb accés extern:
 ```bash
 python manage.py runserver 0.0.0.0:8000
 ```
-La sortida que veurem serà similar a la vista anteriorment:
+La sortida que es mostrarà per pantalla serà similar a l'anterior, però amb un canvi important:
 
 ```text
 (venv) djau@djau:~/demo-djau$ python manage.py runserver 0.0.0.0:8000
@@ -177,9 +175,9 @@ Django version 5.1.13, using settings 'aula.settings'
 Starting development server at http://0.0.0.0:8000/
 ```
 
-Engegant el servidor local d'aquesta manera posibilita servir la Demo en qualsevol Ip que estigui configurada en la llista "ALLOWED_HOSTS".
+Engegant el servidor web local d'aquesta manera posibilita servir la Demo en qualsevol Ip que estigui configurada en la llista "ALLOWED_HOSTS", que es troba dins l'arxiu `demo.py`.
 
-**Caldrà accedir l'arxiu `demo.py`**, que es troba al directori */aula/settings_dir* i afegir la llista segons el cas que es tingui i ques detalla a continuació. 
+**Per accedir a l'arxiu `demo.py`**, cal anar al directori */aula/settings_dir* i afegir la llista d'IPs segons el cas que es tingui i que es detalla a continuació. 
 
 ```bash
 nano aula/settings_dir/demo.py
@@ -212,15 +210,15 @@ Per que la Demo respongui després de fer la redirecció de ports als paràmetre
 
 Busqueu la línia "ALLOWED_HOSTS = []" i afegiu l'adreça del host "ALLOWED_HOSTS = ['127.0.0.1']"
 
-Obriu un navegador en la màquina on s'ha instal·lat VirtualBox i podreu escriure:
+Obriu un navegador en la màquina anfitriona (host) on s'ha instal·lat VirtualBox i podreu escriure:
 **http://127.0.0.1:8000**
 
 <a name="id42"></a>
 ### 4.2 Màquina virtual creada amb VirtualBox i configurada amb xarxa BRIDGE (pont)
 
-Si es vol que la màquina virtual tingui la seva pròpia adreça IP, donada pel gestor DHCP de la xarxa interna local, es pot seleccionar el paràmetre `bridge` en comptes de `NAT`.
+Si es vol que la màquina virtual tingui la seva pròpia adreça IP dins la xarxa interna local, donada pel gestor DHCP de la pròpia xarxa, es pot seleccionar el paràmetre `bridge` en comptes de `NAT` dins la redirecció de ports de la màquina virtualitzada a VirtualBox.
 
-Si s'escriu la comanda `IP a` s'obté l'adreça IP de la màquina virtual creada (guest).
+Un cop dins la màquina virtual (guest) podem saber quina IP li ha donat el gestor DHCP de la xarxa escrvint la comanda `ip a`.
 
 
 >**1:** lo: mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000  
@@ -250,7 +248,7 @@ Ara ja es pot obrir un navegador en la màquina anfitriona (host) on s'ha instal
 <a name="id-ip-estatica"></a>
 #### Opcional - Aconseguir una IP Estàtica
 
-**Atenció: La IP de la màquina virtual pot canviar quan s'apaga i es torna a engegar** perquè l'IP de la maquina Demo l'atorga el sistema DHCP de la xarxa interna, que entrega adreces IP a les màquines de forma variable, és a dir, no sempre té per què tenir la mateixa IP.
+**Atenció: La IP de la màquina virtual pot canviar quan s'apaga i es torna a engegar** perquè l'IP de la maquina Demo l'atorga el sistema DHCP de la xarxa interna, que entrega adreces IP a les màquines de forma variable, és a dir, no sempre ha de tenir la mateixa IP.
 
 **Per mantenir la IP de forma estàtica** l'únic sistema que ha permés fixar l'IP ha sigut l'eina `Netplan` i les instruccions les podeuu trobar documentades al blog de [voidnull.es](https://voidnull.es/netplan-configura-tu-red-de-forma-sencilla-con-yaml/)
 
@@ -291,14 +289,14 @@ sudo chmod 600 /etc/netplan/01-netcfg.yaml
 
 **5 - Habilitar i Iniciar el gestor de xarxes de Netplan, el servei `systemd-networkd`, i aplicar canvis**.
 
-Es pot reiniciar també el sistema i comprobar, amb `IP a`, que es té l'adreça configurada o que s'en té una de nova si s'ha decidit canviar-la
+Es pot reiniciar també el sistema i comprobar, amb `ip a`, que es té l'adreça configurada o que s'en té una de nova si s'ha decidit canviar-la
 
 ```bash
 sudo systemctl enable systemd-networkd
 sudo systemctl start systemd-networkd
 ```
 
-En aquest moment, si hi havia una connexió SSH oberta s'haurà perdut si s'ha canviat l'IP que es tenia per una altra d'estàtica nova, difererent de l'anterior.
+En aquest moment, si hi havia una connexió SSH oberta s'haurà perdut si s'ha canviat l'IP que es tenia per una altra IP estàtica nova difererent de l'anterior.
 
 Cal aplicar la configuració de Netplan:
 
@@ -311,11 +309,11 @@ Ara ja es disposa de l'IP estàtica. Es pot comprovar amb `ip a` i reiniciant la
 <a name="id43"></a>
 ### 4.3 Instal·lació de la Demo en un servidor públic amb accés extern (VPS)
 
-Tot servidor a internet té una IP pública i és convenient definir un domini o subdomini per accedir-hi. Consulteu el document [Registres DNS](../ajuda-install/registres_dns.md) si no recordeu com fer-ho. En aquest cas, s'han creat dos subdominis que apunten a l'IP pública del servidor VPS:
+Tot servidor a internet té una IP pública i és convenient definir un domini o subdomini per accedir-hi. Consulteu el document [Registres DNS](../ajuda-install/registres_dns.md). En aquest cas, s'han creat dos subdominis que apunten a l'IP pública del servidor VPS:
 > demo.djau.domini.cat  
 > www.demo.djau.domini.cat
 
-A més a més ha calgut buscar entre les opcions del panel de control del proveïdor del VPS allò que en diuen *Polítiques de Firewall* per tal d'obrir el port 8000, que és el port que normlment s'obre amb el servidor web per a proves de Django.
+A més a més ha calgut buscar entre les opcions del panel de control del proveïdor del VPS allò que en diuen *Polítiques de Firewall* per tal d'obrir el port 8000, que és el port que normalment s'obre amb el servidor web per a proves de Django.
 
 El procés per instal·lar la Demo és el definit a l'apartat 1.1 i 1.2 i a l'hora d'aixecar el servidor de proves, si es vol anar sobre segur, cal fer servir (dins l'entorn venv):
 ```bash
@@ -326,16 +324,16 @@ Ara bé, cal editar l'arxiu demo.py:
 ```bash
 nano aula/settings_dir/demo.py
 ```
-I afegir la llista ALLOWED_HOSTS, de tal manera que cal afegir els dos subdominis creats i, a més a més, l'IP pública del servidor VPS.
+I afegir la llista ALLOWED_HOSTS, per afegir els dos subdominis creats i, a més a més, l'IP pública del servidor VPS.
 
-`ALLOWED_HOSTS = ['demo.djau.domini.cat', 'www.demo.djau.domini.cat', '127.0.0.1', 'IP_PúBLICA_VPS',]`
+`ALLOWED_HOSTS = ['demo.djau.domini.cat', 'www.demo.djau.domini.cat', '127.0.0.1', 'IP_PUBLICA_VPS',]`
 
 De fet, el servidor de proves de Django es pot aixecar perfectament posant l'IP pública del VPS, en comptes de 0.0.0.0
 ```bash
-python manage.py runserver IP_PúBLICA_VPS:8000
+python manage.py runserver IP_PUBLICA_VPS:8000
 ```
 
-D'aquesta senzilla manera, sense haver d'instal·lar un servidor web per producció, com el servidor Apache, que és el que es fa servir oficialment per la versió de l'aplicatiu per producció, es pot servir la versió Demo de l'aplicatiu a tot aquell que vulgui veure com funciona des de qualsevol ordinador a internet, simplement:
+D'aquesta senzilla manera, sense haver d'instal·lar un servidor web per producció, com podria ser el servidor web Apache, que és el que s'instal·la amb l'aplicatiu per producció, es pot servir la versió Demo de l'aplicatiu a tot aquell que vulgui veure com funciona des de qualsevol ordinador a internet, simplement:
 
 >http://IP_DEL_TEU_SERVIDOR:8000  
 http://SUBDOMINI:8000
@@ -356,7 +354,7 @@ http://SUBDOMINI:8000
 
 Normalmente s'accedeix a la màquina on s'ha instal·lat la Demo des d'un terminal de la nostra màquina personal, amb Linux o Windows, mitjançant el protocol SSH.
 
-Ara bé, el servidor de proves no està indefinidament funcionant. De fet, **quan es tanca la connexió SSH el procés del servidor també es tanca** (*python manage.py runserver*), i deixa de funcionar fent que **la Demo de Django-Aula ja no sigui accessible**.
+Ara bé, el servidor de proves no està indefinidament funcionant. De fet, **quan es tanca la connexió SSH, el procés del servidor també es tanca** (*python manage.py runserver*), i deixa de funcionar fent que **la Demo de Django-Aula ja no sigui accessible**.
 
 ---
 

@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
-COPY djau/. .
+COPY . .
 RUN apt-get update && apt-get install -y \
     git \
 #    wait-for-it \

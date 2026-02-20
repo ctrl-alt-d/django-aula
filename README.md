@@ -48,7 +48,7 @@ Es pot consultar un índex complet amb tota la informació sobre Django-Aula:
 <a name="requisits"></a>
 ## Requisits del sistema operatiu per instal·lar Django-Aula
 
-Django-Aula s'instal·la en un servidor amb sistema operatiu Linux i està adaptat per Debian 13, Ubuntu Server 24.04 LTS o superior, o derivats de la mateixa base.
+Django-Aula s'instal·la en un servidor amb sistema operatiu Linux i està adaptat per Debian 13, Ubuntu Server 24.04 LTS o superior, o derivats de la mateixa base. El hardware mínim és d'1 cpu (core), 1Gb de RAM i 10 o 15GB de disc dur per Debian Server o Ubuntu Server, respectívament.
 
 Per qualsevol tipus d'instal·lació, ja sigui per un ús real o per l'entorn de demostració, és altament recomanable haver creat un usuari amb permisos de *SUDO*. [El procés està documentat.](docs/USER_MANUAL/ajuda-install/usuari_sudo.md)
 
@@ -59,7 +59,7 @@ Per qualsevol tipus d'instal·lació, ja sigui per un ús real o per l'entorn de
 
 L'entorn de demostració, conegut com Demo, és una versió funcional del sistema i que es pot posar en funcionament en pocs minuts. Disposa de dades fictícies (usuaris, professors, alumnat i un horari mínim) que faciliten observar l'aspecte visual i interaccionar, des de diferents rols, amb les funcionalitats de l'aplicatiu real Django-Aula.
 
-El desplegament de la Demo s'ha automatitzat amb l'execució de dues comandes i consta de dues passes consecutives:
+El desplegament de la Demo es pot fer de forma automatitzada, tot i que també es pot fer de forma manual, i s'aconsegueix amb l'execució de dues comandes i consta de dues passes consecutives:
 
 
 ### 1a - Instal·lació automàtica de Docker i Docker Compose
@@ -119,7 +119,7 @@ Després de la instal·lació el sistema estarà preparat per rebre les dades re
 
 * **Vols col·laborar-hi com a #DEV?**  
 Aquestes són les [Issues prioritàries](https://github.com/ctrl-alt-d/django-aula/issues?q=is%3Aissue%20state%3Aopen%20label%3APrioritari)
-* **Pregüntes d'ús freqüent**.  
+* **Preguntes d'ús freqüent**.  
 [FAQs](https://github.com/ctrl-alt-d/django-aula/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3AFAQ+)
 * **Has trobat errors? Necessites ajuda?** Utilitza el Formulari per demanar ajuda o comunicar errors (*Issues*)  
 [Issues/Formularis d'ajuda](https://github.com/ctrl-alt-d/django-aula/issues/new/choose)

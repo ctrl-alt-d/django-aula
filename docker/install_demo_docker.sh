@@ -4,28 +4,70 @@
 # Descarrega els fitxers de configuració i comprova la base de dades.
 # -------------------------------------------------------------
 
-# --- 0. Configuració de rutes i repositori
+# --- 0. Configuració de rutes, repositori, mode normal o Dev
 
 # Ruta on s'executa el script (Directori arrel de la instal·lació)
 BASE_DIR=$(pwd)
 
 # Dades del repositori
-REPO_USER="ctrl-alt-d"
+REPO_USER="ctrl-alt-d" #"ctrl-alt-d"
 REPO_NAME="django-aula"
-REPO_BRANCA="master"
+REPO_BRANCA="master" #"master"
 
 # Rutes locals
-DJAU_PATH="${BASE_DIR}/djau"
-DOCKER_SRC="${DJAU_PATH}/docker"
-FUNCTION_PATH="${DJAU_PATH}/setup_djau"
+DOCKER_SRC="${BASE_DIR}/docker"
+FUNCTION_PATH="${BASE_DIR}/setup_djau"
 
 # URLs
 REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"
+
+# Funció d'ajuda
+mostrar_ajuda() {
+    echo
+    echo "Instal·lador de la Demo Docker de django-aula"
+    echo
+    echo "Ús: $0 [opcions]"
+    echo
+    echo "Opcions:"
+    echo "  -h, --help    Mostra aquest missatge d'ajuda."
+    echo "  -d, --dev     Instal·la l'entorn de DESENVOLUPAMENT (amb volums en viu)."
+    echo
+    echo "Si no s'especifica cap flag, s'instal·larà la DEMO estàndard."
+    echo
+    exit 0
+}
+
+# Captura d'arguments (Flags)
+IS_DEV=false
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help) mostrar_ajuda ;;
+        -d|--dev)  IS_DEV=true ;;
+        *) echo "Opció desconeguda: $1. Usa -h per ajuda."; exit 1 ;;
+    esac
+    shift
+done
+
+# Definició de noms segons el mode
+
+if [ "$IS_DEV" = true ]; then
+    MODE_LABEL="DEMO desenvolupament (DEV)"
+    MAKE_BUILD="make dev-build"
+    MAKE_SERVE="make dev-serve"
+    CONTAINER_NAME="dev_web"
+else
+    MODE_LABEL="DEMO standard"
+    MAKE_BUILD="make build"
+    MAKE_SERVE="make serve"
+    CONTAINER_NAME="demo_web"
+fi
 
 clear
 echo "---------------------------------------------------------------"
 echo "--- Instal·lador automàtic de la Demo Docker de django-aula ---"
 echo "--- Branca: $REPO_BRANCA | Arrel: $BASE_DIR ---"
+echo "--- Mode: $MODE_LABEL ---"
 echo "---------------------------------------------------------------"
 echo
 sleep 1
@@ -46,18 +88,14 @@ if ! command -v git &> /dev/null; then
 else
     echo "   ✅ 'git' ja està disponible."
 fi
+
 echo -e "\n"
-
-# COMPROVACIÓ: El directori existeix i no està buit?
-if [ -d "$DJAU_PATH" ] && [ "$(ls -A "$DJAU_PATH")" ]; then
-    rm -Rf $DJAU_PATH
-fi
-
-echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en $DJAU_PATH."
+echo -e "Clonant $REPO_URL, branca '$REPO_BRANCA' en un directori temporal $BASE_DIR/temp_repo"
 echo
 
-# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada i amb profunditat mínima (no interessa tot l'historial)
-git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$DJAU_PATH"
+# Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
+# i amb profunditat mínima (no interessa tot l'historial) a un directori temporal
+git clone --depth 1 -b "$REPO_BRANCA" "$REPO_URL" "$BASE_DIR/temp_repo"
 
 if [ $? -ne 0 ]; then
     echo -e "❌ ERROR: Fallida en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'."
@@ -65,13 +103,18 @@ if [ $? -ne 0 ]; then
     echo -e "\n"
     exit 1
 fi
+
+# Moguent repositori clonat del directori temporal a la seva ubicació definitiva
+mv "${BASE_DIR}/temp_repo/"* "${BASE_DIR}/"					# Mou arxius no ocults
+mv "${BASE_DIR}/temp_repo/".* "${BASE_DIR}/" 2>/dev/null	# Mou arxius ocults
+rmdir "${BASE_DIR}/temp_repo"
 echo
-echo -e "✅ Repositori clonat (Branca: $REPO_BRANCA) a '$DJAU_PATH'."
+echo -e "✅ Repositori clonat de forma definitiva (Branca: $REPO_BRANCA) a '$BASE_DIR'."
 
 echo -e "\n"
 sleep 2
 
-# Carrega de la llibreria de funcions
+# Càrrega de la llibreria de funcions
 echo "Important variables de colors i funcions de la llibreria 'functions.sh'"
 if [ -f "$FUNCTION_PATH/functions.sh" ]; then
     source "$FUNCTION_PATH/functions.sh"
@@ -83,46 +126,36 @@ else
 fi
 echo -e "\n"
 
-# --- 2. Fitxers a descarregar ---
+# --- 2. Còpia i reubicació d'arxius necessaris per fer el "Deploy" ---
 
-FILES_ORIGIN=(
-    "Dockerfile"
-    "docker-compose.demo.automatica.yml"
-    "Makefile.demo.automatica"
-    "env.demo.automatica"
-)
-FILES_DEST=(
+FILES=(
     "Dockerfile"
     "docker-compose.yml"
+    "docker-compose.dev.yml"
     "Makefile"
     ".env"
- )
-
-# --- 3. Descarregar fitxers de configuració i dades ---
+    ".dockerignore"
+)
 
 echo -e "${C_INFO}📦 Preparant fitxers pel desplegament des de ${DOCKER_SRC}...${RESET}"
 echo
 
-for i in "${!FILES_ORIGIN[@]}"; do
-    SRC="${DOCKER_SRC}/${FILES_ORIGIN[$i]}"
-    DST="${BASE_DIR}/${FILES_DEST[$i]}"
-
-    if [ -f "$SRC" ]; then
-        cp "$SRC" "$DST"
-        echo -e "${C_EXITO}   ✅ ${FILES_DEST[$i]} preparat.${RESET}"
+for FILE in "${FILES[@]}"; do
+    if [ -f "${DOCKER_SRC}/${FILE}" ]; then
+        cp "${DOCKER_SRC}/${FILE}" "${BASE_DIR}/"
+        echo -e "${C_EXITO}   ✅ $FILE ${RESET}${C_INFO}preparat.${RESET}"
     else
-        echo -e "${C_ERROR}   ❌ No s'ha trobat l'origen: ${FILES_ORIGIN[$i]}${RESET}"
+        echo -e "${C_ERROR}   ❌ No s'ha trobat: $FILE${RESET}"
         exit 1
     fi
 done
 
 echo
 echo -e "${C_EXITO}✅ Tots els fitxers s'han descarregat correctament. Com a comprovació es llista el contingut del directori:${RESET}"
-ls -lah Dockerfile docker-compose.yml Makefile .env
-
+ls -lah "${FILES[@]}"
 echo
 
-# --- 4. Instal·lar make si cal ---
+# --- 3. Instal·lar make, si cal ---
 
 echo -e "${C_INFO}🔧 Comprovant que 'make' estigui instal·lat...${RESET}"
 if ! command -v make &> /dev/null; then
@@ -136,14 +169,13 @@ else
     echo -e "${C_EXITO}   ✅ 'make' ja està disponible.${RESET}"
 fi
 
-# --- 5. Pregunta pel domini o IP ---
+# --- 4. Personalització del domini o IP on aixecar el servei ---
 
 echo
 echo -e "${C_INFO}🌍 Si la Demo ha de funcionar en una xarxa local cal definir quina IP té. Si es vol instal·lar en un servidor en internet (VPS) caldrà informar de la seva IP pública i del domini o subdomini, si n'hi ha.${RESET}"
 echo
 read_prompt "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (Per defecte NO: sí/NO): " REPLY "no"
 RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
-#read -p "Vol afegir un domini o IP a **DEMO_ALLOWED_HOSTS** per poder accedir-hi externament a la Demo? (S/n): " REPLY
 
 if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
     read -p "👉 Introdueix els dominis o IPs separats per comes (ex: demo.elteudomini.cat,192.168.1.46): " HOSTS
@@ -157,7 +189,7 @@ else
     echo -e "${C_INFO}ℹ️ No s'ha modificat DEMO_ALLOWED_HOSTS. Es manté buit.${RESET}"
 fi
 
-# --- 6. Posar en marxa els contenidors ---
+# --- 5. Posar en marxa els contenidors ---
 
 # Comprovant que l'arxiu .env existeix
 if [ -f .env ]; then
@@ -168,14 +200,15 @@ else
     finalitzar_amb_error "⚠️  No s'ha trobat el fitxer .env. No es pot comprovar l'estat de la base de dades."
 fi
 
+# Creant i aixecant els contenidors
 echo
-echo -e "${C_INFO}🕓 Posant en marxa els contenidors de la Demo i de la Base de Dades PostgreSQL...${RESET}"
+echo -e "${C_INFO}🕓 Posant en marxa els contenidors en mode ${MODE_LABEL}...${RESET}"
 echo
-make build
-make serve
+$MAKE_BUILD
+$MAKE_SERVE
 echo
 
-# --- 7. Informació sobre els contenidors en marxa ---
+# --- 6. Informació sobre els contenidors en marxa ---
 
 echo
 echo -e "${C_INFO}--------------------------------------------${RESET}"
@@ -186,7 +219,7 @@ echo -e "${C_INFO}--------------------------------------------${RESET}"
 echo
 echo
 
-# --- 8. Espera a la finalització de la preparació ---
+# --- 7. Espera a la finalització de la preparació ---
 
 echo -e "${C_INFO}Progrès de preparació de la base de dades i del servidor de la demo (logs).${RESET}"
 echo -e "${C_INFO}El procés finalitzarà automàticament quan el servidor estigui llest.${RESET}"
@@ -194,9 +227,10 @@ echo -e "${C_INFO}--------------------------------------------------------------
 echo -e "\n"
 
 # Iniciem el bucle de lectura de logs
-docker logs -f demo_web 2>&1 | while read -r line; do
+docker logs -f $CONTAINER_NAME 2>&1 | while read -r line; do
 
-    # 1. Bloc per ocultar els SyntaxWarning, per neteja visual. Si, per dev, es vol veure tota la sortida cal fer make logs
+    # 1. Bloc per ocultar els SyntaxWarning, per neteja visual. És codi temporal fins que no s'arreglin.
+    # Si, per dev, es vol veure tota la sortida cal fer make logs
     if [[ "$line" == *"SyntaxWarning"* ]]; then
         continue
     fi
@@ -215,7 +249,20 @@ docker logs -f demo_web 2>&1 | while read -r line; do
     fi
 done
 
-# --- 9. Missatge final ---
+# Generació i càrrega opcional de les dades fictícies per la Demo (Només en mode DEV) 
+if [ "$IS_DEV" = true ]; then
+    echo
+    read_prompt "Vol carregar les dades de la demo ara mateix (és un procés que triga una estona) (Per defecte NO: sí/NO): " REPLY "no"
+    RESPONSE_LOWER=$(echo "$REPLY" | tr '[:upper:]' '[:lower:]')
+    if [[ "$RESPONSE_LOWER" = "sí" ]] || [[ "$RESPONSE_LOWER" = "si" ]] || [[ "$RESPONSE_LOWER" = "s" ]]; then
+        echo -e "${C_INFO}📦 Carregant dades...${RESET}"
+        make dev-load_demo_data
+    else
+        echo -e "${C_INFO}👍 D'acord. Pots fer-ho més tard amb: make dev-load_demo_data${RESET}"
+    fi
+fi
+
+# --- 8. Missatge final ---
 
 echo -e "\n"
 sleep 1
@@ -223,13 +270,49 @@ sleep 1
 echo -e "${C_INFO}----------------------------------------------------------------------------------------"
 echo -e "ℹ️ Informació addicional${RESET}"
 echo -e "\n"
-echo -e "${C_INFO}Instruccions disponibles amb la comanda **make** per la Demo:${RESET}"
-echo -e "${C_INFO}   1. Si no està en marxa, executi: ${RESET}${CIANO}make serve${RESET}"
-echo -e "${C_INFO}   2. Per veure els logs:           ${RESET}${CIANO}make logs${RESET}"
-echo -e "${C_INFO}   3. Per detenir la Demo:          ${RESET}${CIANO}make stop${RESET}"
-echo -e "${C_INFO}   4. Per eliminar els contenidors: ${RESET}${CIANO}make down${RESET}${C_INFO} i després -> docker system prune -a"
 
+if [ "$IS_DEV" = true ]; then
+    echo -e "${C_INFO}Comandes **make** disponibles pel desplegament de la demo en mode DESENVOLUPAMENT:${RESET}"
+    echo -e "  ${CIANO}make dev-serve${RESET}           Aixeca l'entorn amb volums en viu"
+    echo -e "  ${CIANO}make dev-build${RESET}           Construeix la imatge de dev"
+    echo -e "  ${CIANO}make dev-stop${RESET}            Atura els contenidors de dev"
+    echo -e "  ${CIANO}make dev-down${RESET}            Elimina contenidors i xarxes de dev"
+    echo -e "  ${CIANO}make dev-logs${RESET}            Mostra logs del contenidor web"
+    echo -e "  ${CIANO}make dev-load_demo_data${RESET}  Carrega fixtures i dades de la Demo"
+    echo -e "  ${CIANO}make dev-makemigrations${RESET}  Comprova models i crea migracions"
+    echo -e "  ${CIANO}make dev-shell${RESET}           Entra a la consola de Django"
+    echo -e "  ${CIANO}make dev-bash${RESET}            Entra al terminal del contenidor"
+else
+    echo -e "${C_INFO}Comandes **make** disponibles per la Demo:${RESET}"
+    echo -e "  ${CIANO}make serve${RESET}     Aixeca la demo"
+    echo -e "  ${CIANO}make build${RESET}     Construeix la imatge de la demo"
+    echo -e "  ${CIANO}make stop${RESET}      Atura la demo"
+    echo -e "  ${CIANO}make down${RESET}      Elimina els contenidors de la demo. Per eliminar les imatges 'docker system prune -a'."
+    echo -e "  ${CIANO}make logs${RESET}      Mostra logs de la demo"
+fi
 echo
-echo -e "🌐 Si ha definit IP o dominis a DEMO_ALLOWED_HOSTS, provi ara d'accedir-hi al navegador!"
-echo -e "   (p. ex. http://demo.elteudomini.cat:8000 o http://IP:8000)${RESET}"
+echo
+
+echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}"
+
+if [ -z "$HOSTS" ]; then
+    echo -e "🌐 Accés al navegador:${RESET}"
+    echo -e "   👉 ${CIANO}http://localhost:8000${RESET}"
+    echo -e "   ${GRIS}Nota: Si estàs en un servidor remot, usa http://IP_DEL_SERVIDOR:8000${RESET}"
+else
+    echo -e "La variable ${GROC}DEMO_ALLOWED_HOSTS${RESET} ha estat configurada amb els següents dominis o IPs:"
+    echo -e "${GRIS}$HOSTS${RESET}"
+    echo
+    echo -e "🌐 Accés a la Demo des del navegador:${RESET}"
+    
+    # Separem els hosts per la coma i creem un enllaç per a cadascun
+    IFS=',' read -ra ADDR <<< "$HOSTS"
+    for host in "${ADDR[@]}"; do
+        # Eliminem possibles espais en blanc que hagi pogut posar l'usuari
+        host=$(echo $host | xargs)
+        echo -e "   👉 ${CIANO}http://${host}:8000${RESET}"
+    done
+fi
+
+echo -e "${C_INFO}----------------------------------------------------------------------------------------${RESET}\n"
 echo
