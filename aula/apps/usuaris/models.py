@@ -13,7 +13,6 @@ from aula.apps.usuaris.abstract_usuaris import (
     AbstractLoginUsuari,
     AbstractNotifUsuari,
     AbstractOneTimePasswd,
-    AbstractQRPortal,
 )
 from aula.settings import CUSTOM_TIPUS_MIME_FOTOS
 from aula.utils.tools import unicode
@@ -304,5 +303,4 @@ class OneTimePasswd(AbstractOneTimePasswd):
     pass
 
 
-class QRPortal(AbstractQRPortal):
-    pass
+

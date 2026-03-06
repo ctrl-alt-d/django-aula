@@ -9,9 +9,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="qrportal",
-            name="numero_de_mobil",
-            field=models.CharField(blank=True, max_length=40),
-        ),
     ]

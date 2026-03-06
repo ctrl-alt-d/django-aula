@@ -18,9 +18,8 @@ from aula.apps.sortides.models import (
     Sortida,
     SortidaPagament,
 )
-from aula.apps.usuaris.models import QRPortal
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
-from aula.mblapp.serializers import DarreraSincronitzacioSerializer, QRTokenSerializer
+from aula.mblapp.serializers import DarreraSincronitzacioSerializer
 from aula.utils.tools import unicode
 
 # ----------- vistes per a testos --------------------------------
@@ -47,111 +46,12 @@ def hello_api_login_app(request, format=None):
     return Response(content)
 
 
-# ---------------------  user x token ----------------------------
-# La vista que genera el QR és a l'App portal famílies.
-
-# ----------------------------------------------------------------
-
-
-# @csrf_exempt
-@transaction.atomic
-@api_view(["POST"])
-@permission_classes((AllowAny,))
-def capture_token_api(request, format=None):
-    """
-    Rep un token i retorna un usuari de la API (is_active=False)
-    """
-    import secrets
-
-    # deserialitzem
-    data = JSONParser().parse(request)
-    serializer = QRTokenSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError({"error": ["ups! Aquest token no serveix"]})
-    # busquem el token
-    key = serializer.validated_data["key"]
-    born_date = serializer.validated_data["born_date"]
-    token = QRPortal.objects.filter(moment_captura__isnull=True, clau=key).first()
-
-    if "validacions del token":
-        # si no hi ha token -> error
-        if not token:
-            raise serializers.ValidationError(
-                {
-                    "error": [
-                        "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"
-                    ]
-                }
-            )
-
-        # si el token ja ha estat previament capturat
-        if token.moment_captura:
-            raise serializers.ValidationError(
-                {
-                    "error": [
-                        "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"
-                    ]
-                }
-            )
-
-        # caducat?
-        caduca_dia = token.moment_expedicio + timedelta(
-            days=settings.CUSTOM_DIES_API_TOKEN_VALID
-        )
-        if datetime.now() > caduca_dia:
-            raise serializers.ValidationError(
-                {"error": ["ups! Aquest token ja ha caducat"]}
-            )
-        # born date is ok?
-        fuky_random_jesucryst_date = datetime(1000, 1, 1).date
-        db_born_date = (
-            token.alumne_referenciat.data_neixement or fuky_random_jesucryst_date
-        )
-        if db_born_date != born_date:
-            raise serializers.ValidationError(
-                {"error": ["Data de naixement no vàlida"]}
-            )
-
-    # creo un nou usuari per aquest token
-    allowed_chars = (
-        "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789" + "0Oo^?#!"
-    )
-    password_xunga = "".join(secrets.choice(allowed_chars) for i in range(12))
-    nou_usuari = User.objects.create_user(
-        username="API" + token.localitzador, email="", password=password_xunga
-    )
-    grup_api, _ = Group.objects.get_or_create(name="API")
-    nou_usuari.groups.add(grup_api)
-    nou_usuari.is_active = False  # serà actiu quan el tutor l'activi
-    nou_usuari.save()
-
-    # assigno usuari al token
-    token.moment_captura = datetime.now()
-    token.usuari_referenciat = nou_usuari
-    ara = datetime.now()
-    token.novetats_detectades_moment = ara
-    token.save()
-
-    # preparem resposta
-    content = {
-        "username": nou_usuari.username,
-        "password": password_xunga,
-    }
-
-    return Response(content)
-
-
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
 def notificacions_mes(request, mes, format=None):
     """
     Rep el mes i retorna tots valors actuals.
     """
-    # ara = datetime.now()
-    # data = JSONParser().parse(request)
-    # serializer = DarreraSincronitzacioSerializer(data=data)
-    # if not serializer.is_valid():
-    #    raise serializers.ValidationError("ups! petició amb errors")
 
     qrtoken = request.user.qrportal
 

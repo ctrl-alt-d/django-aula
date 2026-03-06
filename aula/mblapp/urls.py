@@ -16,11 +16,6 @@ urlpatterns = [
         name="mblapp__hello__apiloginapp",
     ),
     re_path(
-        r"^capture_token_api/$",
-        mblapp_views.capture_token_api,
-        name="mblapp__api__capture_token_api",
-    ),
-    re_path(
         r"^notificacions/mes/(?P<mes>\d+)/$",
         mblapp_views.notificacions_mes,
         name="appmobil__api__notificacions_mes",

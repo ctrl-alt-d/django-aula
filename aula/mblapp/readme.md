@@ -5,15 +5,8 @@ L'App part backend funciona amb rest i jwt. Hi ha un nous requeriments:
 
 * djangorestframework
 * djangorestframework-simplejwt
-* qrcode
 
-### Workflow Alta Família
 
-* Tutor genera i imprimeix codi QR ( des del menú "Tutoria/Mòbil App")
-* Família escaneja codi QR. En aquest moment se li crea un usuari vinculat a l'alumne. L'usuari encara no està actiu. Família signa paper i el retorna al tutor.
-* Amb el paper signat tutor activa l'usuari.
-
-Nota: El tutor pot imprimir tants i tants QR's com vulgui.
 
 ### Workflow Notificacions
 
@@ -24,35 +17,20 @@ Nota: Sempre s'envien totes les dades, no és incremental.
 
 
 ### Provatures part servidora des de la línia de comandes
-```bash
-#Fase 0: Li passem el token inicial. TODO: usuari -> username, demanar data naixement
-export INITIALTOKEN="b55f31b8-57e2-4f4f-ac66-e133ec20ff3e"   #copiar-lo del .odt on hi ha el QR
-export BORNDATE="2004-05-13"
-curl -X POST -H "Content-Type: application/json" -d "{\"key\":\"${INITIALTOKEN}\", \"born_date\":\"${BORNDATE}\"  }" http://localhost:8000/api/token/capture_token_api/
-#Ex resposta: {"username":"APIm3wi","password":"0BGhwmUWtU9P"}
 
-#Fase 1: Posar l'usuari a estat actiu ( a mà ho fa el professor per UI ):
-$ python manage.py shell
-from django.contrib.auth.models import User
-u=User.objects.get(username ="APIqAxX")
-u.is_active = True
-u.save()
-exit()
-
-#Fase 2: Prova de demanar un token per accedir-hi
-$
-curl -X POST -H "Content-Type: application/json" -d '{"username":"APIm3wi","password":"0BGhwmUWtU9P"}' http://localhost:8000/api-token-auth/
+#Fase 0: Prova de demanar un token per accedir-hi
+$curl -X POST -H "Content-Type: application/json" -d '{"username":"APIm3wi","password":"0BGhwmUWtU9P"}' http://localhost:8000/api-token-auth/
 #Ex. resposta: {
   "access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNDU2LCJqdGkiOiJmZDJmOWQ1ZTFhN2M0MmU4OTQ5MzVlMzYyYmNhOGJjYSJ9.NHlztMGER7UADHZJlxNG0WSi22a2KaYSfd1S-AuT7lU",
   "refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImNvbGRfc3R1ZmYiOiLimIMiLCJleHAiOjIzNDU2NywianRpIjoiZGUxMmY0ZTY3MDY4NDI3ODg5ZjE1YWMyNzcwZGEwNTEifQ.aEoAYkSJjoWH1boshQAaTkf8G3yn0kapko6HFRt7Rh4"
 }
 
-#Fase 3: Prova accedir a recurs amb el token
+#Fase 1: Prova accedir a recurs amb el token
 export JWTOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNDU2LCJqdGkiOiJmZDJmOWQ1ZTFhN2M0MmU4OTQ5MzVlMzYyYmNhOGJjYSJ9.NHlztMGER7UADHZJlxNG0WSi22a2KaYSfd1S-AuT7lU
 curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/hello_api_login/
 #Resposta: {"status":"here we are just login"}
 
-##Fase 4: Demanar les dades de l'alumne d'un mes concret
+##Fase 2: Demanar les dades de l'alumne d'un mes concret
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjcyNjksImVtYWlsIjoiIn0.FwF9NHS6De9FYllUTnDWHDXfApit3po1fnVB1pjUq2Q
 export LASTSYNCDATE="2018-06-01 12:00:13"
 curl -H "Authorization: Bearer ${JWTOKEN}"  http://127.0.0.1:8000/api/token/notificacions/mes/10/
@@ -63,14 +41,14 @@ curl -H "Authorization: Bearer ${JWTOKEN}"  http://127.0.0.1:8000/api/token/noti
 #{"dia":"11/10/2022","hora":"19:00 a 19:55","professor":"Juaky Rubio","text":"Parla, molesta i no deixa treballar als companys.","tipus":"Falta"}
 #]
 
-#Fase 5: Demanar si hi ha novetats
+#Fase 3: Demanar si hi ha novetats
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjc2NTksImVtYWlsIjoiIn0.T3sPlZMhXSzhiGeId4nlqAQMmfxO1tqSLFctqcWDkGo
 export LASTSYNCDATE="2022-11-18 12:00:13"
 curl -H "Authorization: Bearer ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/news/
 #Resposta: {"resultat":"Sí"}
 
 
-#Fase 6: Demanar dades de l'alumne
+#Fase 4: Demanar dades de l'alumne
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
 curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/
 #Resposta: 

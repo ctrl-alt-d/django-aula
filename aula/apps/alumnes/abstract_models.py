@@ -288,12 +288,6 @@ class AbstractAlumne(models.Model):
         on_delete=models.SET_NULL,
     )
 
-    usuaris_app_associats = models.ManyToManyField(
-        User,
-        through="usuaris.QRPortal",
-        related_name="alumne_app_set",
-        related_query_name="alumne_app",
-    )
     # DEPRECATED vvv
     relacio_familia_darrera_notificacio = models.DateTimeField(null=True, blank=True)
     # DEPRECATED ^^^

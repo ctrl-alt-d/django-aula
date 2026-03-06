@@ -58,7 +58,7 @@ from aula.apps.sortides.models import (
 from aula.apps.sortides.table2_models import Table2_Sortides
 from aula.apps.sortides.utils import get_QuotaPagament
 from aula.apps.sortides.utils_sortides import TPVsettings
-from aula.apps.usuaris.models import Professor, QRPortal, User2Professor
+from aula.apps.usuaris.models import Professor, User2Professor
 from aula.apps.usuaris.tools import getRol
 from aula.settings import URL_DJANGO_AULA
 
@@ -1798,12 +1798,7 @@ def pagoOnlineBase(request, pk):
         name__in=["direcció", "sortides"]
     ).exists()
 
-    try:
-        qr_de_lusuari = QRPortal.objects.get(usuari_referenciat=user)
-        alumne_referenciat_al_qr = qr_de_lusuari.alumne_referenciat
-        usuari_associat_al_qr = alumne_referenciat_al_qr.user_associat.getUser()
-    except:  # noqa: E722
-        usuari_associat_al_qr = None
+    usuari_associat_al_qr = None
     usuari_associat_a_lalumne = alumne.user_associat.getUser() if alumne else None
     potEntrar = (
         alumne==pagament.alumne
