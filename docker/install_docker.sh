@@ -13,14 +13,17 @@ echo "---------------------------------------------------------"
 
 # Definició de variables
 # Repositori i branca per la clonació
+REPO_USER="ctrl-alt.d"
+REPO_NAME="django-aula"
+REPO_BRANCA="master"
 
-REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
-GIT_BRANCH="master"											# Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+# URLs
+REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git" # Repositori del projecte
 
 # Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
 RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
-FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
+FUNCTIONS_URL="${RAW_BASE}/${REPO_BRANCA}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 echo -e "\n"
@@ -84,7 +87,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-USUARI_SUDO=$(logname)
+USUARI_SUDO="${SUDO_USER:-$(whoami)}"
 
 # Comprovar si el fitxer d'identificació del sistema (os-release) existeix
 if [ ! -f /etc/os-release ]; then
@@ -122,11 +125,20 @@ case "$OS_ID" in
         ;;
 esac
 
-# Update i instal·lció de Curl
-echo -e "${C_SUBTITULO}-> Preparant el sistema i instal·lant eines de xarxa...${RESET}"
+echo -e "${C_SUBTITULO}-> Eliminant rastres de versions antigues de Docker...${RESET}"
+# Llista oficial de paquets a eliminar
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do
+    apt-get remove -y $pkg > /dev/null 2>&1
+done
 
+# Netegem fitxers de llistes antics que podrien causar conflictes amb el nou repositori
 rm -f /etc/apt/sources.list.d/docker.sources /etc/apt/sources.list.d/docker.list
 
+# Esperar el bloqueig de l'APT
+esperar_apt
+
+# Update i instal·lció de Curl
+echo -e "${C_SUBTITULO}-> Preparant el sistema i instal·lant eines de xarxa...${RESET}"
 if ! apt-get update -qq; then
     finalitzar_amb_error "L'actualització de la llista de paquets (apt update) ha informat d'un error. Verifiqui si hi ha altres repositoris trencats al sistema."
 fi
@@ -220,14 +232,16 @@ fi
 sleep 2
 echo -e "\n"
 
-APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+APT_DESC="Paquets de Docker: docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin make git"
 echo -e "${C_INFO}ℹ️ $APT_DESC${RESET}"
 apt-get install -y \
    docker-ce \
    docker-ce-cli \
    containerd.io \
    docker-buildx-plugin \
-   docker-compose-plugin
+   docker-compose-plugin \
+   make \
+   git
 
 check_install "$APT_DESC"
 
@@ -256,14 +270,21 @@ sleep 2
 echo -e "\n"
 echo -e "${C_SUBTITULO}-> Afegint l'usuari ${USUARI_SUDO} al grup 'docker'...${RESET}"
 
+groupadd -f docker
+
 # Comprovem si l'usuari ja pertany al grup per no repetir l'acció
 if id -nG "$USUARI_SUDO" | grep -qw "docker"; then
     echo -e "${C_INFO}ℹ️ L'usuari ${USUARI_SUDO} ja forma part del grup 'docker'.${RESET}"
 else
-    if ! usermod -aG docker "${USUARI_SUDO}"; then
-        finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+    # Si l'usuari és root, no cal afegir-lo
+    if [ "$USUARI_SUDO" != "root" ]; then
+        if ! usermod -aG docker "${USUARI_SUDO}"; then
+            finalitzar_amb_error "No s'ha pogut afegir l'usuari al grup 'docker'."
+        fi
+        echo -e "${C_EXITO}✅ Usuari ${USUARI_SUDO} afegit al grup 'docker' correctament.${RESET}"
+    else
+        echo -e "${C_INFO}ℹ️ Usuari root detectat. No cal afegir-lo al grup docker.${RESET}"
     fi
-    echo -e "${C_EXITO}✅ Usuari afegit al grup 'docker' correctament.${RESET}"
 fi
 
 sleep 1

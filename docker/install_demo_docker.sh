@@ -74,6 +74,14 @@ sleep 1
 
 # --- 1. Clonació del repositori
 
+# Comprovar si l'usuari pot parlar amb Docker
+
+if ! docker ps >/dev/null 2>&1; then
+    echo "❌ ERROR: L'usuari actual sembla no tenir permisos per usar Docker."
+    echo "Pot provar, o bé tancar la sessió SSH i tornar a entrar, o bé reiniciar la màquina."
+    exit 1
+fi
+
 # Instal·lar git, si cal.
 
 echo "🔧 Comprovant que 'git' estigui instal·lat..."

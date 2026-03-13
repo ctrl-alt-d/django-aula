@@ -62,6 +62,9 @@ echo -e "\n"
 echo -e "${C_SUBTITULO}--- 1.1 Instal·lació de Servidor Apache, WSGI, UFW y Certbot ---${RESET}"
 echo -e "${C_SUBTITULO}----------------------------------------------------------------${RESET}"
 
+# Esperar per si hi ha un bloqueig de l'APT
+esperar_apt
+
 echo -e "${C_INFO}ℹ️ Actualitzant la llista de paquets (apt-get update)...${RESET}"
 apt-get update > /dev/null
 
