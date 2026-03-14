@@ -99,7 +99,9 @@ def _global_markers_disponibles_except_eso(
     """
     Intersect of all markers disponibles per nivell exceptuant ESO.
     """
-    eso_pk = Nivell.objects.filter(nom_nivell__icontains="ESO").values_list("pk", flat=True)
+    eso_pk = Nivell.objects.filter(nom_nivell__icontains="ESO").values_list(
+        "pk", flat=True
+    )
     dit_makers_no_eso = {
         pk: markers for pk, markers in dit_makers.items() if pk not in eso_pk
     }

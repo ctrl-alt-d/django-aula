@@ -119,7 +119,7 @@ def avaluacionsQualitatives(request):
 @login_required
 @group_required(["professors"])
 def lesMevesAvaluacionsQualitatives(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     professor = User2Professor(user)
 
     report = []
@@ -272,7 +272,7 @@ def entraQualitativa(request, qualitativa_pk, assignatura_pk, grup_pk):
     # com ho estic fent ara és més fàcil per l'usuari
     # https://docs.djangoproject.com/en/dev/topics/forms/formsets
 
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     professor = User2Professor(user)
 
     missatge = ""
@@ -525,7 +525,7 @@ def entraQualitativa(request, qualitativa_pk, assignatura_pk, grup_pk):
 @login_required
 @group_required(["direcció"])
 def resultats(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     report = []

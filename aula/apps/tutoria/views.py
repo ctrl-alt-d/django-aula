@@ -84,7 +84,7 @@ from .views_data import justificadorMKTable
 @group_required(["professors"])
 def incidenciesGestionadesPelTutor(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = get_object_or_404(Professor, pk=user.pk)
 
@@ -187,7 +187,7 @@ def incidenciesGestionadesPelTutor(request):
 @group_required(["professors"])
 def tutorPosaExpulsioPerAcumulacio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     incidencia = get_object_or_404(Incidencia, pk=pk)
 
@@ -281,7 +281,7 @@ def tutorPosaExpulsioPerAcumulacio(request, pk):
 @group_required(["professors", "professional"])
 def lesMevesActuacions(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professional = User2Professional(user)
 
@@ -402,7 +402,7 @@ def lesMevesActuacions(request):
 @group_required(["professors", "professional"])
 def novaActuacio(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     formset = []
     if request.method == "POST":
@@ -471,7 +471,7 @@ def novaActuacio(request):
 @group_required(["professors", "professional"])
 def editaActuacio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     actuacio = Actuacio.objects.get(pk=pk)
 
@@ -542,7 +542,7 @@ def editaActuacio(request, pk):
 @group_required(["professors", "professional"])
 def esborraActuacio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     actuacio = Actuacio.objects.get(pk=pk)
 
@@ -588,7 +588,7 @@ def esborraActuacio(request, pk):
 @group_required(["professors"])
 def justificaFaltes(request, pk, year, month, day):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     head = "Justificar faltes"
@@ -678,7 +678,7 @@ def informeSetmanalMKTable(
     request, pk, year, month, day, inclouControls=True, inclouIncidencies=True
 ):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     data = date(year=int(year), month=int(month), day=int(day))
@@ -899,7 +899,7 @@ def informeSetmanalMKTable(
 def informeSetmanalPrint(request, pk, year, month, day, suport):
     # pk és el grup. Per tots els alumnes tutorats marcar pk = All.
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     # --seg----
@@ -947,7 +947,7 @@ def informeSetmanalPrint(request, pk, year, month, day, suport):
 @group_required(["professors"])
 def informeSetmanal(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     head = "Informe setmanal"
@@ -1007,7 +1007,7 @@ def informeSetmanal(request):
 @group_required(["professors"])
 def justificaNext(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     # --seg----
@@ -1087,7 +1087,7 @@ def justificaNext(request, pk):
 @group_required(["professors"])
 def faltaNext(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     # --seg----
@@ -1168,7 +1168,7 @@ def faltaNext(request, pk):
 @group_required(["professors"])
 def justificador(request, year, month, day):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     dades = justificadorMKTable(request, year, month, day)
@@ -1200,7 +1200,7 @@ def justificador(request, year, month, day):
 @group_required(["professors"])
 def justificaFaltesPre(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     # prefixes:
@@ -1251,7 +1251,7 @@ def justificaFaltesPre(request):
 @group_required(["professors"])
 def elsMeusAlumnesTutorats(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -1273,7 +1273,7 @@ def gestioCartes(request):
     # TODO: Vaig per aquí cartes absència
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     professor = User2Professor(user)
 
@@ -1293,7 +1293,7 @@ def gestioCartes(request):
 @group_required(["professors"])
 def novaCarta(request, pk_alumne):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
     alumne = get_object_or_404(Alumne, pk=pk_alumne)
 
@@ -1325,7 +1325,7 @@ def novaCarta(request, pk_alumne):
 @group_required(["professors"])
 def imprimirCarta(request, pk_carta, flag):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
     carta = get_object_or_404(CartaAbsentisme, pk=pk_carta)
     carta.impresa = flag
@@ -1351,7 +1351,7 @@ def imprimirCarta(request, pk_carta, flag):
 @group_required(["direcció"])
 def esborraCarta(request, pk_carta):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
     carta = get_object_or_404(CartaAbsentisme, pk=pk_carta)
     carta.delete()
@@ -1375,7 +1375,7 @@ def totesLesCartes(request):
     # TODO: Vaig per aquí cartes absència
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     User2Professor(user)
 
@@ -1395,7 +1395,7 @@ def totesLesCartes(request):
 @group_required(["professors"])
 def elsMeusAlumnesTutoratsEntreDates(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -1466,7 +1466,7 @@ def elsMeusAlumnesTutoratsEntreDates(request):
 )
 def detallTutoriaAlumne(request, pk, detall="all"):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     professor = User2Professor(user)
 
@@ -2460,7 +2460,7 @@ def informeCompletFaltesIncidencies(request):
 @group_required(["professors"])
 def calendariCursEscolarTutor(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -2525,7 +2525,7 @@ def seguimentTutorialPreguntes(request):
 @group_required(["professors"])
 def seguimentTutorialFormulari(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -2648,7 +2648,7 @@ def blanc(request):
 @group_required(["professors"])
 def justificarSortida(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -2673,7 +2673,7 @@ def justificarSortida(request):
 @group_required(["professors"])
 def justificarSortidaAlumne(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 

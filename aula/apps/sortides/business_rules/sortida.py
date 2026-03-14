@@ -18,7 +18,7 @@ def clean_sortida(instance):
     if hasattr(instance, "flag_clean_nomes_toco_alumnes"):
         return
 
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
@@ -253,7 +253,7 @@ def sortida_m2m_changed(
     sender, instance, action, reverse, model, pk_set, *args, **kwargs
 ):
     # Un cop gestionada pel cap d'estudis ja no es pot tocar pels mortals.
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (

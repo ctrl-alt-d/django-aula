@@ -47,7 +47,7 @@ from aula.utils.tools import unicode
 @login_required
 def elMeuMur(request, pg, tipus="all"):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     # amorilla@xtec.cat
     # Per veure tots els missatges junts
@@ -126,7 +126,7 @@ def enviaMsg(user, credentials, alumne, datai, horai, dataf, horaf, motiu, obser
 @group_required(["professors", "professional", "consergeria"])
 def enviaMissatgeTutors(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     formset = []
     msgFormF = modelform_factory(Missatge, fields=("text_missatge",))
@@ -221,7 +221,7 @@ def enviaMissatgeTutors(request):
 # Permet a qualsevol usuari
 def enviaMissatgeAdministradors(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     formset = []
     msgFormF = modelform_factory(Missatge, fields=("text_missatge",))
@@ -294,7 +294,7 @@ def enviaMissatgeAdministradors(request):
 )
 def enviaMissatgeProfessorsPas(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     formset = []
     msgFormF = modelform_factory(Missatge, fields=("text_missatge",))
@@ -364,7 +364,7 @@ def enviaMissatgeProfessorsPas(request):
 @login_required
 def llegeix(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     destinatari = get_object_or_404(Destinatari, pk=pk)
 
@@ -385,7 +385,7 @@ def EmailFamilies(request):
     """
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     formset = []
 

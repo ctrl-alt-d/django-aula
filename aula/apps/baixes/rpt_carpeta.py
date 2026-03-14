@@ -14,7 +14,7 @@ from aula.utils.tools import unicode
 # http://xhtml2pdf.appspot.com/static/pisa-en.html
 def reportBaixaCarpeta(request, dia, professors):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
