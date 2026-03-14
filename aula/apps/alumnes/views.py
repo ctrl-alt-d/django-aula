@@ -1238,7 +1238,8 @@ def llistaAlumnescsv(request):
 
     return response
 
-
+@login_required
+@group_required(["direcció"])
 def reassigna_alumnes_baixa(request):
 
     preview_total = None
