@@ -16,7 +16,7 @@ from aula.utils.decorators import group_required
 @login_required
 @group_required(["professors", "professional", "consergeria"])
 def list(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
 
     report = []
 
@@ -193,7 +193,7 @@ def list(request):
 @login_required
 @group_required(["professors", "professional", "consergeria"])
 def edita(request, pk=None):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
 
     todo = (
         ToDo.objects.get(pk=pk) if pk and user.todo_set.filter(pk=pk).exists() else None
@@ -253,7 +253,7 @@ def edita(request, pk=None):
 @login_required
 @group_required(["professors", "professional", "consergeria"])
 def esborra(request, pk=None):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
 
     if user.todo_set.filter(pk=pk).exists():
         ToDo.objects.get(pk=pk).delete()

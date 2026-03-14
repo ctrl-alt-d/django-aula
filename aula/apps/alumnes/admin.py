@@ -56,7 +56,7 @@ class AlumneAdmin(admin.ModelAdmin):
     list_filter = ["grup"]
     list_display = ["cognoms", "nom", "grup"]
     search_fields = ["cognoms", "nom"]
-    readonly_fields = ('responsable_preferent',)
+    readonly_fields = ("responsable_preferent",)
     # DEPRECATED vvv
     exclude = [
         "correu_tutors",

@@ -748,7 +748,7 @@ def ActivaMatricula(request):
     from aula.utils import tools
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     infos = []
     if request.method == "POST":

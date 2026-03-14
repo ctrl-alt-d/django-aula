@@ -234,16 +234,14 @@ class MySeleniumTests(SeleniumLiveServerTestCase):
         self.assertTrue(len(cas) == 0)
 
         # Seleccionar uns quants usuaris.
-        self.selenium.execute_script(
-            """
+        self.selenium.execute_script("""
            cbox = document.getElementsByTagName("input");
                for (i=0;i<cbox.length;i++){
                    if (cbox[i].type == "checkbox") {
                    console.log("hola:" + cbox[i].type); 
                    cbox[i].click()
                }
-           }"""
-        )
+           }""")
         botons = self.selenium.find_elements_by_xpath("//button[@type='submit']")
         botons[0].click()
 

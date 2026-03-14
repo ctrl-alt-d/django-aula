@@ -24,7 +24,7 @@ class TestUtils:
     diesSetmana2Lletres = ["DL", "DM", "DI", "DJ", "DV", "DS", "DU"]
 
     def crearProfessor(self, nomUsuari, passwordUsuari, mail="mail@mailserver.com"):
-        # type:(str, str) -> Professor
+        # type: (str, str) -> Professor
         grupProfessors, _ = Group.objects.get_or_create(name="professors")
         grupProfessionals, _ = Group.objects.get_or_create(name="professional")
         profe1 = Professor.objects.create(
@@ -41,7 +41,7 @@ class TestUtils:
         return profe1
 
     def generaAlumnesDinsUnGrup(self, grupAlumnes, nAlumnesAGenerar):
-        # type:(Grup,int) -> List[Alumne]
+        # type: (Grup,int) -> List[Alumne]
         noms = ["Xevi", "Joan", "Pere", "Lluís", "Brandom", "Maria", "Lola", "Azucena"]
         cognoms = ["Serra", "Vazquez", "García", "Moreno", "Vila", "Vilamitjana"]
         alumnesGenerats = []  # type: List[Alumne]

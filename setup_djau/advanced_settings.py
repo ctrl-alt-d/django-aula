@@ -7,6 +7,7 @@
 # Els valors aquí reflectits són els valors per defecte de l'aplicació o els més habituals per als centres.
 
 import os
+
 # La funció location s'utilitza per definir rutes de fitxers relatius.
 location = lambda x: os.path.join(PROJECT_DIR, x)
 

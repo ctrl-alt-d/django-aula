@@ -13,7 +13,7 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
     First 100 numbers are reserved for manual assignement.
     """
     alumnemodel = apps.get_model("alumnes", "Alumne")
-    
+
     # Per evitar error al migrate, còpia del codi des de tools_aruco.py
     Nivell = apps.get_model("alumnes", "Nivell")
 
@@ -22,22 +22,23 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
 
     def markers_per_nivell(nivell):
         markers_pillats = set(
-            alumnemodel.objects.filter(grup__curs__nivell=nivell)
-            .values_list("aruco_marker", flat=True)
+            alumnemodel.objects.filter(grup__curs__nivell=nivell).values_list(
+                "aruco_marker", flat=True
+            )
         )
         return get_all_markers() - markers_pillats
-    
+
     def markers_per_curs(curs):
         markers_pillats = set(
-            alumnemodel.objects.filter(grup__curs=curs)
-            .values_list("aruco_marker", flat=True)
+            alumnemodel.objects.filter(grup__curs=curs).values_list(
+                "aruco_marker", flat=True
+            )
         )
         return get_all_markers() - markers_pillats
-    
+
     def markers_per_grup(grup):
         markers_pillats = set(
-            alumnemodel.objects.filter(grup=grup)
-            .values_list("aruco_marker", flat=True)
+            alumnemodel.objects.filter(grup=grup).values_list("aruco_marker", flat=True)
         )
         return get_all_markers() - markers_pillats
 
@@ -79,9 +80,13 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
             # compartides amb FP i BTX col·lisionin.
             availables_global_except_eso = availables_global
             if "ESO" not in alumne.grup.curs.nivell.nom_nivell.upper():
-                eso_pk = Nivell.objects.filter(nom_nivell__icontains="ESO").values_list("pk", flat=True)
+                eso_pk = Nivell.objects.filter(nom_nivell__icontains="ESO").values_list(
+                    "pk", flat=True
+                )
                 dit_makers_no_eso = {
-                    pk: markers for pk, markers in markers_cache.items() if pk not in eso_pk
+                    pk: markers
+                    for pk, markers in markers_cache.items()
+                    if pk not in eso_pk
                 }
                 availables_global_except_eso = global_markers(dit_makers_no_eso)
             if availables_global_except_eso:
@@ -96,7 +101,7 @@ def assign_aruco_markers(apps, schema_editor):  # pylint: disable=unused-argumen
                     if availables_by_grup:
                         # Assignem el primer marker disponible del grup.
                         marker = availables_by_grup.pop()
-        
+
         alumne.aruco_marker = marker
         alumne.save(update_fields=["aruco_marker"])
         availables_by_nivell_alumne.discard(alumne.aruco_marker)

@@ -33,7 +33,7 @@ def expulsio_clean(instance):
     #
     # Regles:
     #
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
@@ -125,7 +125,7 @@ def expulsio_post_save(sender, instance, created, **kwargs):
 
 
 def expulsio_pre_delete(sender, instance, **kwargs):
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (
