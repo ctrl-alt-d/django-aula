@@ -4,6 +4,7 @@
 from .dev import *  # noqa: E402, F403, F401
 import os
 
+
 def location(x):
     return os.path.join(PROJECT_DIR, x)  # noqa: F405
 
@@ -23,12 +24,12 @@ URL_DJANGO_AULA = r"http://127.0.0.1:8000"
 
 # Possibilita la instal·lació de la Demo en qualsevol entorn
 # Llista base (sempre localhost)
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ["127.0.0.1"]
 # Si existeix la variable d'entorn amb altres hosts, la processa
-DEMO_HOSTS_STR = os.environ.get('DEMO_ALLOWED_HOSTS', '')
+DEMO_HOSTS_STR = os.environ.get("DEMO_ALLOWED_HOSTS", "")
 if DEMO_HOSTS_STR:
     # Afegeix els hosts llegits de la variable d'entorn (separats per coma)
-    ALLOWED_HOSTS += DEMO_HOSTS_STR.split(',')
+    ALLOWED_HOSTS += DEMO_HOSTS_STR.split(",")
 
 # Configuració per permetre log-in en entorns HTTP (no segurs)
 # Demo manage.py runserver: Starting development server at http://0.0.0.0:8000/

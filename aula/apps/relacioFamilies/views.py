@@ -120,7 +120,7 @@ from aula.utils.tools import classebuida, unicode
 @group_required(["professors"])
 def enviaBenvinguda(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     professor = User2Professor(user)
 
@@ -159,7 +159,7 @@ def bloquejaDesbloqueja(request, pk):
     # TODO fa falta aquesta view ?
     # Si fa falta, s'hauria de replantejar afegint els responsables.
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     professor = User2Professor(user)
 
@@ -198,7 +198,7 @@ def qrTokens(request, pk=None):
     import time
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     professor = User2Professor(user)
     seg_tutor_de_lalumne = seg_es_tutor = False
@@ -337,7 +337,7 @@ def qrTokens(request, pk=None):
 @group_required(["professors"])
 def qrs(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -420,7 +420,7 @@ def qrs(request):
 @group_required(["professors"])
 def gestionaQRs(request, pk=None):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     alumne = Alumne.objects.get(pk=pk)
 
@@ -450,7 +450,7 @@ def gestionaQRs(request, pk=None):
 @group_required(["professors"])
 def configuraConnexio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     professor = User2Professor(user)
 
@@ -594,7 +594,7 @@ def configuraConnexio(request, pk):
 @group_required(["professors"])
 def dadesRelacioFamilies(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -852,7 +852,7 @@ def dadesRelacioFamilies(request):
 @login_required
 def canviParametres(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if not CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES:
         raise Http404()
@@ -975,7 +975,7 @@ def choices_hores(alumne, dia, actual=True):
 @login_required
 def horesAlumneAjax(request, idalumne, dia):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     alumne = Alumne.objects.filter(user_associat=user)
     if alumne and alumne[0].id != int(idalumne):
@@ -1002,7 +1002,7 @@ def comunicatAbsencia(request):
     from aula.apps.missatgeria.views import enviaMsg
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     diesantelacio = 6
 
@@ -1120,7 +1120,7 @@ def comunicatsAnteriors(request):
     from aula.utils.my_paginator import DiggPaginator
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     tipus = tipusMissatge(AVIS_ABSENCIA)
 
     _, responsable, alumne = getRol(user, request)
@@ -1174,7 +1174,7 @@ def elMeuInforme(request, pk=None):
     detall = "all"
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     nTaula = 0
 
@@ -2451,7 +2451,7 @@ def canviaAlumne(request, idalumne):
     a un dels seus alumnes associats, passa a gestionar aquest alumne.
     """
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     responsable = User2Responsable(user)
     alum = None

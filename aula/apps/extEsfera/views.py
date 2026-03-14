@@ -15,7 +15,7 @@ from aula.utils.decorators import group_required
 @login_required
 @group_required(["direcció"])
 def sincronitzaEsfera(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     from aula.apps.extEsfera.sincronitzaEsfera import sincronitza
@@ -82,7 +82,7 @@ def assignaGrups(request):
 @login_required
 @group_required(["direcció"])
 def dadesAddicionals(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     from aula.apps.extEsfera.sincronitzaEsfera import dades_adiccionals

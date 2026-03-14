@@ -21,7 +21,7 @@ from . import sincronitza as s
 @group_required(["direcció"])
 def importaFitxer(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         form = PreinscripcioForm(request.POST, request.FILES)

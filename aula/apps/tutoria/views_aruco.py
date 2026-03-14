@@ -39,7 +39,7 @@ def imprimir(request):
     """
 
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
     professor = User2Professor(user)
 
     alumnes = [

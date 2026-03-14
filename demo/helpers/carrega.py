@@ -176,9 +176,13 @@ def fesCarrega():
     for g in Grup.objects.all():
         professors_del_grup = Professor.objects.filter(horari__grup=g).distinct()
         if professors_del_grup:
-            Tutor.objects.filter(grup=g).delete()  # Nova línia. Netegem tutors previs d'aquest grup
-            Tutor.objects.get_or_create(grup=g, defaults={'professor': random.choice(professors_del_grup)})
-            #Tutor.objects.create(professor=random.choice(professors_del_grup), grup=g)
+            Tutor.objects.filter(
+                grup=g
+            ).delete()  # Nova línia. Netegem tutors previs d'aquest grup
+            Tutor.objects.get_or_create(
+                grup=g, defaults={"professor": random.choice(professors_del_grup)}
+            )
+            # Tutor.objects.create(professor=random.choice(professors_del_grup), grup=g)
 
     msg += "\nProfessors: " + " ,".join(
         sorted(set([unicode(t.username) for t in Professor.objects.all()]))
@@ -266,11 +270,11 @@ def fesCarrega():
     tpv, _ = TPV.objects.get_or_create(
         nom="centre",
         defaults={
-            'codi': settings.CUSTOM_CODI_COMERÇ,
-            'key': settings.CUSTOM_KEY_COMERÇ,
-            'descripcio': "Pagaments al centre",
-            'entornReal': False,
-        }
+            "codi": settings.CUSTOM_CODI_COMERÇ,
+            "key": settings.CUSTOM_KEY_COMERÇ,
+            "descripcio": "Pagaments al centre",
+            "entornReal": False,
+        },
     )
 
     # 2. Tipus de Quota
@@ -285,11 +289,11 @@ def fesCarrega():
         tipus=tipo_mat,
         any=inici_curs.year,
         defaults={
-            'importQuota': 10,
-            'dataLimit': date.today() + relativedelta(days=30),
-            'tpv': tpv,
-            'curs': None,
-        }
+            "importQuota": 10,
+            "dataLimit": date.today() + relativedelta(days=30),
+            "tpv": tpv,
+            "curs": None,
+        },
     )
 
     # Quota: Taxes cicles FP
@@ -299,11 +303,11 @@ def fesCarrega():
         tipus=tipo_tax,
         any=inici_curs.year,
         defaults={
-            'importQuota': 360,
-            'dataLimit': None,
-            'tpv': tpv,
-            'curs': None,
-        }
+            "importQuota": 360,
+            "dataLimit": None,
+            "tpv": tpv,
+            "curs": None,
+        },
     )
 
     # Quota: Taxa UF
@@ -313,11 +317,11 @@ def fesCarrega():
         tipus=tipo_uf,
         any=inici_curs.year,
         defaults={
-            'importQuota': 25,
-            'dataLimit': None,
-            'tpv': tpv,
-            'curs': None,
-        }
+            "importQuota": 25,
+            "dataLimit": None,
+            "tpv": tpv,
+            "curs": None,
+        },
     )
 
     print("canviant dades dels professors")

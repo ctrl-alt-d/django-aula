@@ -60,10 +60,10 @@ from aula.utils.tools import getClientAdress, unicode
 
 
 @login_required
-@group_required(["professors", "consergeria", "tpvs", 'administratius', 'secretaria'])
+@group_required(["professors", "consergeria", "tpvs", "administratius", "secretaria"])
 def canviDadesUsuari(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     if User2Professor(user):
         professor = User2Professor(user)
@@ -215,7 +215,7 @@ def impersonacio(request):
             request.session["l4"] = l4
             # No deixa fer impersonació com a un usuari del grup administradors
             if request.session.has_key("impersonacio"):
-                (user, _) = tools.getImpersonateUser(request)
+                user, _ = tools.getImpersonateUser(request)
                 if user and (
                     user.is_staff
                     or user.is_superuser
@@ -264,7 +264,7 @@ def resetImpersonacio(request):
 @login_required
 @group_required(["direcció"])
 def elsProfessors(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
 
     report = []
 
@@ -469,7 +469,7 @@ def loginUser(request):
 
 @login_required
 def canviDePasswd(request):
-    (user, _) = tools.getImpersonateUser(request)
+    user, _ = tools.getImpersonateUser(request)
 
     infoForm = [
         (
@@ -719,7 +719,7 @@ def sendPasswdByEmail(request):
 @group_required(["consergeria", "professors", "professional"])
 def cercaProfessor(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formUsuari = triaProfessorSelect2Form(
@@ -742,7 +742,7 @@ def cercaProfessor(request):
 @group_required(["professors", "professional"])
 def integraCalendari(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
     dades_addicionals = GetDadesAddicionalsProfessor(professor)
     url = r"{0}{1}".format(
@@ -895,7 +895,7 @@ def comparteixCalendari(request, clau):
 @group_required(["consergeria", "professors"])
 def detallProfessorHorari(request, pk, detall="all"):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     # grups_poden_veure_detalls = [u"sortides",u"consergeria",u"direcció",]
 
@@ -963,7 +963,7 @@ def blanc(request):
 @group_required(["professors"])
 def activaUsuariQR(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     qr = QRPortal.objects.get(pk=pk)
     from django.contrib.auth.models import User
@@ -985,7 +985,7 @@ def activaUsuariQR(request, pk):
 @group_required(["professors"])
 def desactivaUsuariQR(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     qr = QRPortal.objects.get(pk=pk)
     from django.contrib.auth.models import User
@@ -1005,7 +1005,7 @@ def desactivaUsuariQR(request, pk):
 @group_required(["professors"])
 def eliminaUsuariQR(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     qr = QRPortal.objects.get(pk=pk)
     from django.contrib.auth.models import User

@@ -102,7 +102,7 @@ def menu(request):
             pass
 
         # prenc impersonate user:
-        (user, _) = tools.getImpersonateUser(request)
+        user, _ = tools.getImpersonateUser(request)
 
         # si és professor ves a mostra impartir:
         professor = User2Professor(user)
@@ -129,7 +129,7 @@ def carregaInicial(request):
 @login_required
 def about(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -289,7 +289,7 @@ def about(request):
 @group_required(["professors"])
 def estadistiques(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
     report = []
@@ -416,7 +416,7 @@ def pagamentOnLine(request):
         raise Http404()
 
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     report = []
     taula = tools.classebuida()
@@ -545,7 +545,7 @@ def pagamentOnLine(request):
 @login_required
 def calendariDevelop(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     return render(
         request,
@@ -570,7 +570,7 @@ def allow_private_files(private_file):
 
     request = private_file.request
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if not request.user.is_authenticated:
         return False
