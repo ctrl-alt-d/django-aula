@@ -4,6 +4,7 @@ from django import forms as forms
 from django.forms import ModelForm
 from django.forms.models import ModelChoiceField
 from django_select2.forms import ModelSelect2Widget
+from django.db.models import Q
 
 from aula.apps.alumnes.models import (
     Alumne,
@@ -234,3 +235,34 @@ class triaAlumneNomSentitSelect2Form(forms.Form):
         queryset=AlumneNomSentitGrup.objects.all(),
         required=True,
     )
+
+
+# ---------------- CANVI DE GRUP PER BAIXES ------------------------
+
+
+class ReassignarBaixesForm(forms.Form):
+
+    grup_exist = forms.ModelChoiceField(
+        # Selecciona els grups potencials per a moure les baixes: Sense tutor, sense horari i amb alumnes de baixa o sense alumnes.
+        queryset=Grup.objects.exclude(tutor__isnull=False)
+        .exclude(horari__isnull=False)
+        .filter(Q(alumne__data_baixa__isnull=False) | Q(alumne__isnull=True))
+        .distinct()
+        .order_by("descripcio_grup"),
+        required=False,
+        label="Escollir grup existent",
+    )
+
+    crear_auto = forms.BooleanField(required=False, label="Crea grup automàtic BAIXES")
+
+    nom_grup = forms.CharField(required=False, label="Grup nou per baixes")
+
+    def clean(self):
+        cleaned = super().clean()
+        grup_exist = cleaned.get("grup_exist")
+        crear_auto = cleaned.get("crear_auto")
+        nom_grup = cleaned.get("nom_grup")
+        # ---------- DESTÍ obligatori ----------
+        if not (grup_exist or crear_auto or nom_grup):
+            raise forms.ValidationError("Has d'indicar un destí")
+        return cleaned

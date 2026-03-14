@@ -79,4 +79,9 @@ urlpatterns = [
         alumnes_views.llistaAlumnescsv,
         name="coordinacio_alumnes__llistaAlumnescsv__llistat",
     ),
+    re_path(
+        "baixes/",
+        alumnes_views.reassigna_alumnes_baixa,
+        name="administracio__reassigna__baixes",
+    ),
 ]
