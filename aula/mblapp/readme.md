@@ -33,7 +33,7 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/hello
 ##Fase 2: Demanar les dades de l'alumne d'un mes concret
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjcyNjksImVtYWlsIjoiIn0.FwF9NHS6De9FYllUTnDWHDXfApit3po1fnVB1pjUq2Q
 export LASTSYNCDATE="2018-06-01 12:00:13"
-curl -H "Authorization: Bearer ${JWTOKEN}"  http://127.0.0.1:8000/api/token/notificacions/mes/10/
+curl -H "Authorization: Bearer ${JWTOKEN}"  http://127.0.0.1:8000/api/token/notificacions/mes/10/763/
 #Resposta: [{"id":155,"darrera_sincronitzacio":null},
 #{"dia":"13/10/2022","materia":"SMX12(2)","hora":"14:50 a 15:50","professor":"Àngel Bosch Hernàndez","text":"Falta d'assistència","tipus":"Falta"},
 #{"dia":"10/10/2022","materia":"SMX12(2)","hora":"19:00 a 19:55","professor":"Daniel Prados","text":"Falta d'assistència","tipus":"Falta"},
@@ -44,13 +44,13 @@ curl -H "Authorization: Bearer ${JWTOKEN}"  http://127.0.0.1:8000/api/token/noti
 #Fase 3: Demanar si hi ha novetats
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIyNjc2NTksImVtYWlsIjoiIn0.T3sPlZMhXSzhiGeId4nlqAQMmfxO1tqSLFctqcWDkGo
 export LASTSYNCDATE="2022-11-18 12:00:13"
-curl -H "Authorization: Bearer ${JWTOKEN}" -d "{\"last_sync_date\":\"${LASTSYNCDATE}\"  }" http://127.0.0.1:8000/api/token/notificacions/news/
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/notificacions/news/763/
 #Resposta: {"resultat":"Sí"}
 
 
 #Fase 4: Demanar dades de l'alumne
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
-curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/763/
 #Resposta: 
 {"grup":"SMX2A","datanaixement":"13/5/2004","telefon":"","responsables":
 [{"nom":"Ganchozo Risco, Miriam Graciela","mail":"keylu5810@hotmail.com","tfn":""},
@@ -58,7 +58,7 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumn
 
 
 #Demanar sortides d'un alumne
-curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/763/
 #Resposta: 
 [{"id":62,"titol":"BATALLA DE L'EBRE","data":"2024-11-12 06:00:00","pagament":true,"realitzat":true},
 {"id":111,"titol":"Ciència Sorprenent","data":"2024-11-11 11:00:00","pagament":false,"realitzat":false},
@@ -69,7 +69,7 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sorti
 {"id":20,"titol":"ESO4 Convivència La Vajol","data":"2024-09-18 08:30:00","pagament":false,"realitzat":false}]
 
 #Demanar detall d'una sortida concreta d'un alumne
-curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/455/
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/sortides/455/763/
 # On 455 és l'identificador de la sortida
 #Resposta: 
 [{"titol":"BATALLA DE L'EBRE","desde":"12/11/2024 06:00","finsa":"13/11/2024 21:00",
@@ -82,6 +82,13 @@ curl -H "Authorization: Bearer ${JWTOKEN}" https://127.0.0.1:8000/sortides/pagoO
 #Retorna la pàgina html amb les dades del pagament per anar al TPV
 
 
+#Demanar alumnes asociats a un responsable
+curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes_associats/
+#Resposta: 
+[{"nom":"Anthony Josue","cognoms":"BlaBla BlaBla","id":686},
+{"nom":"Massiel","cognoms":"Cognoms Cognoms","id":763},
+{"nom":"Rihanna Kahori","cognoms":"Lalalal Lalalla","id":764}
+]
 
 $# ------------------- Altres proves ------------------------------
 #Prova accedir sense el token

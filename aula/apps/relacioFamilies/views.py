@@ -2202,8 +2202,11 @@ def canviaAlumne(request, idalumne):
     alum = None
     if responsable:
         a = Alumne.objects.filter(pk=int(idalumne))
-        if a.exists() and a.first() in responsable.get_alumnes_associats():
-            alum = a.first()
+        if a.exists():
+            candidat = a.first()
+            # No permetre seleccionar alumnes majors d'edat
+            if candidat in responsable.get_alumnes_associats() and candidat.edat() < 18:
+                alum = candidat
     else:
         alum = User2Alumne(user)
     if alum:
@@ -2215,7 +2218,12 @@ def canviaAlumne(request, idalumne):
 def escollirAlumne(request):
     _, responsable, alumne = getRol(request.user, request)
     if responsable:
-        if responsable.get_alumnes_associats().count() > 1:
+        # Excloure alumnes majors d'edat
+        alumnes_menors = [
+            a for a in responsable.get_alumnes_associats() if a and a.data_neixement and a.edat() < 18
+        ]
+
+        if len(alumnes_menors) > 1:
             if request.method == "POST":
                 form = escollirAlumneForm(request.user, responsable, request.POST)
                 if form.is_valid():
@@ -2237,17 +2245,17 @@ def escollirAlumne(request):
                 },
             )
         else:
-            if responsable.get_alumnes_associats().count() == 1:
+            if len(alumnes_menors) == 1:
                 return HttpResponseRedirect(
                     reverse_lazy(
                         "relacio_families__canviaAlumne",
                         kwargs={
-                            "idalumne": responsable.get_alumnes_associats().first().id
+                            "idalumne": alumnes_menors[0].id
                         },
                     )
                 )
             else:
-                # No té alumnes
+                # No té alumnes menors d'edat
                 return HttpResponseRedirect("/logout/")
     if alumne:
         alumneid = alumne.id

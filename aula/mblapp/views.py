@@ -6,22 +6,31 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import request, serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from aula.apps.alumnes.models import Alumne
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
+from aula.apps.relacioFamilies.business_rules import responsable
 from aula.apps.sortides.models import (
+    NotificaSortida,
     Pagament,
     Sortida,
     SortidaPagament,
 )
+from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
 from aula.mblapp.serializers import DarreraSincronitzacioSerializer
 from aula.utils.tools import unicode
+from aula.apps.usuaris.tools import getRol
 
+from aula.apps.relacioFamilies.notifica import getNotifElements, setNotifElements, creaNotifUsuari
+
+from aula.apps.usuaris.models import NotifUsuari
+from datetime import date
 # ----------- vistes per a testos --------------------------------
 
 
@@ -41,29 +50,31 @@ def hello_api_login(request, format=None):
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def hello_api_login_app(request, format=None):
+def hello_api_login_app(request, format=None, alumne_id=None):
     content = {"status": "here we are login group app"}
     return Response(content)
 
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def notificacions_mes(request, mes, format=None):
+def notificacions_mes(request, mes, format=None, alumne_id=None):
     """
     Rep el mes i retorna tots valors actuals.
     """
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = Alumne.objects.get(id=alumne_id)
 
-    qrtoken = request.user.qrportal
+    # Si l'alumne és major d'edat, no notificar als responsables
+    if responsable and alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
 
     if int(mes) < 1 or int(mes) > 12:
         raise serializers.ValidationError({"error": ["Mes inexistent"]})
     # Tant si hi ha novetats com si no s'envia tota la info del mes:
 
-    alumne = qrtoken.alumne_referenciat
     content = [
         {
             "id": alumne.id,
-            "darrera_sincronitzacio": qrtoken.darrera_sincronitzacio,
         }
     ]
 
@@ -190,46 +201,82 @@ def notificacions_mes(request, mes, format=None):
     # )
     # content["Qualitatives"] = [ ]
 
-    # Anoto canvis
-    # qrtoken.darrera_sincronitzacio = ara
-
-    # qrtoken.save()
-
-    return Response(content)
-
-
-@api_view(["POST"])
-@permission_classes((EsUsuariDeLaAPI,))
-def notificacions_news(request, format=None):
-    """
-    Rep la darrera data de sincronització (i un jwt), i retorna si hi ha novetats o no
-    """
-    data = JSONParser().parse(request)
-    serializer = DarreraSincronitzacioSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError({"error": ["ups! petició amb errors"]})
-
-    darrera_sincronitzacio = serializer.validated_data["last_sync_date"]
-
-    qrtoken = request.user.qrportal
-
-    # No hi ha novetats:
-    content = (
-        {"resultat": "No"}
-        if qrtoken.novetats_detectades_moment
-        and qrtoken.novetats_detectades_moment < darrera_sincronitzacio
-        else {"resultat": "Sí"}
-    )
+    # Marcar com a notificades les novetats enviades
+    notifAlumne = creaNotifUsuari(request.user, alumne, "N")
+    setNotifElements(faltes_assistencia, notifAlumne)
+    setNotifElements(incidencies, notifAlumne)
+    setNotifElements(expulsions, notifAlumne)
+    setNotifElements(sancions, notifAlumne)
+    # TODO: afegir sortides i qualitatives 
 
     return Response(content)
 
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def alumnes_dades(request, format=None):
-    qrtoken = request.user.qrportal
-    alumne = qrtoken.alumne_referenciat
-    resp1, resp2 = alumne.get_responsables(compatible=True)
+def notificacions_news(request, format=None, alumne_id=None):
+    
+    professor, responsable, alumne = getRol(request.user, request)
+
+    alumne = Alumne.objects.get(id=alumne_id)
+
+    if responsable and alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: alumne major d'edat"]})
+
+    notificar_presencies = EstatControlAssistencia.objects.filter(
+        codi_estat__in=["F", "R", "J"]
+    )
+    noves_faltes_assistencia = getNotifElements(
+        ControlAssistencia.objects.filter(
+            alumne=alumne, estat__in=notificar_presencies
+        ),
+        request.user,
+        alumne,
+    )
+    noves_incidencies = getNotifElements(
+        alumne.incidencia_set.all(), request.user, alumne
+    )
+    noves_expulsions = getNotifElements(
+        alumne.expulsio_set.exclude(estat="ES"), request.user, alumne
+    )
+    noves_sancions = getNotifElements(
+        alumne.sancio_set.filter(impres=True), request.user, alumne
+    )
+
+    noves_sortides = getNotifElements(
+        NotificaSortida.objects.filter(alumne=alumne), request.user, alumne
+    )
+
+    hiHaNovetats = (
+        noves_faltes_assistencia.exists()
+        or noves_incidencies.exists()
+        or noves_expulsions.exists()
+        or noves_sancions.exists()
+        or noves_sortides.exists()
+    )
+
+    content = {"resultat": "Sí" if hiHaNovetats else "No"}
+
+    # Marcar com a notificades les novetats enviades
+    notifAlumne = creaNotifUsuari(request.user, alumne, "N")
+    setNotifElements(noves_faltes_assistencia, notifAlumne)
+    setNotifElements(noves_incidencies, notifAlumne)
+    setNotifElements(noves_expulsions, notifAlumne)
+    setNotifElements(noves_sancions, notifAlumne)
+    setNotifElements(noves_sortides, notifAlumne)
+
+    return Response(content)
+
+
+@api_view(["GET"])
+@permission_classes((EsUsuariDeLaAPI,))
+def alumnes_dades(request, format=None, alumne_id=None):
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = Alumne.objects.get(id=alumne_id)
+
+    if responsable and alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: alumne major d'edat"]})
+    
     content = {
         "grup": unicode(alumne.grup),
         "datanaixement": "/".join(
@@ -242,14 +289,9 @@ def alumnes_dades(request, format=None):
         "telefon": alumne.get_telefons(),
         "responsables": [
             {
-                "nom": unicode(resp1.get_nom() if resp1 else ""),
-                "mail": unicode(resp1.get_correu_importat() if resp1 else ""),
-                "telefon": unicode(resp1.get_telefon() if resp1 else ""),
-            },
-            {
-                "nom": unicode(resp2.get_nom() if resp2 else ""),
-                "mail": unicode(resp2.get_correu_importat() if resp2 else ""),
-                "telefon": unicode(resp2.get_telefon() if resp2 else ""),
+                "nom": unicode(responsable.get_nom() if responsable else ""),
+                "mail": unicode(responsable.get_correu_importat() if responsable else ""),
+                "telefon": unicode(responsable.get_telefon() if responsable else ""),
             },
         ],
         "adreca": " , ".join(
@@ -268,12 +310,16 @@ def alumnes_dades(request, format=None):
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def sortides(request):
+def sortides(request, alumne_id=None):
     """
     Retorna les activitats/pagaments de l'alumne
     """
-    qrtoken = request.user.qrportal
-    alumne = qrtoken.alumne_referenciat
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = Alumne.objects.get(id=alumne_id)
+
+    # Si l'alumne és major d'edat, no mostrar als responsables
+    if responsable and alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
 
     content = []
 
@@ -333,12 +379,17 @@ def sortides(request):
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def detallSortida(request, pk):
+def detallSortida(request, pk, alumne_id=None):
     """
     Rep el pk d'una activitat/pagament i retorna informació de l'activitat/pagament
     """
-    qrtoken = request.user.qrportal
-    alumne = qrtoken.alumne_referenciat
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = Alumne.objects.get(id=alumne_id)
+
+    # Si l'alumne és major d'edat, no mostrar als responsables
+    if responsable and alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
+
     try:
         int(pk)
         sortida = Sortida.objects.get(pk=pk)
@@ -370,4 +421,25 @@ def detallSortida(request, pk):
         "realitzat": realitzat,
         "idPagament": pagament.id if pagament else None,
     }
+    return Response(content)
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def alumnes_associats(request):
+    professor, responsable, alumne = getRol(request.user, request)
+    associats = responsable.get_alumnes_associats()
+    content = []
+
+    for associat in associats:
+        # Excloure alumnat major d'edat
+        if associat.data_neixement and associat.edat() >= 18:
+            continue
+        content = content + [
+            {
+                "nom": associat.nom,
+                "cognoms": associat.cognoms,
+                "id": associat.id,
+            }
+        ]
     return Response(content)

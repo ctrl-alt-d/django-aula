@@ -12,7 +12,7 @@ from aula.apps.relacioFamilies.models import DocAttach, EmailPendent
 from aula.apps.sortides.models import NotificaSortida, QuotaPagament
 from aula.apps.sortides.utils_sortides import notifica_sortides
 from aula.apps.usuaris.tools import creaNotifUsuari, ultimaNotificacio
-
+from datetime import date
 
 def llista_pendents():
     if EmailPendent.objects.count() > 0:
@@ -146,11 +146,15 @@ def notifica():
     for alumne_id in llista_alumnes:
         try:
             alumne = Alumne.objects.get(pk=alumne_id)
-            # Bucle dels responsables i alumne
-            # La configuració de notificació és diferent per cada responsable o alumne.
-            destinataris = [(r, "resp") for r in alumne.get_responsables() if r] + [
-                (alumne, "almn")
-            ]
+            
+            # Si l'alumne és major d'edat, no notificar als responsables 
+            major_dedat = alumne.data_neixement and alumne.edat() >= 18
+            if major_dedat:
+                destinataris = [(alumne, "almn")]
+            else:
+                destinataris = [(r, "resp") for r in alumne.get_responsables() if r] + [
+                    (alumne, "almn")
+                ]
 
             for usuari, tipus in destinataris:
                 if not usuari:
@@ -162,7 +166,6 @@ def notifica():
                 periodicitat_faltes = usuari.periodicitat_faltes
                 periodicitat_incidencies = usuari.periodicitat_incidencies
                 adreca_mail_informada = bool(correu)
-                alumne.qr_portal_set.exists()
 
                 usuari = usuari.get_user_associat()
 
@@ -305,17 +308,6 @@ def notifica():
                         enviatOK = False
                         # Enviar msg a admins, ull! podem inundar de missatges si fallen tots els alumnes.
                         num_correus_no_enviats += 1
-                # actualitzo QR's
-                if hiHaNovetats:
-                    n_tokens = alumne.qr_portal_set.update(
-                        novetats_detectades_moment=ara
-                    )
-                else:
-                    n_tokens = None
-
-                enviatOK = enviatOK or bool(
-                    n_tokens
-                )  # s'ha enviat per algun dels mitjants
                 if enviatOK:
                     notifAlumne = creaNotifUsuari(usuari, alumne, "N")
                     setNotifElements(noves_sortides, notifAlumne)

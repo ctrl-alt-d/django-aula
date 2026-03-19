@@ -263,6 +263,10 @@ class escollirAlumneForm(forms.Form):
 
     def __init__(self, user, responsable, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Excloure alumnes majors d'edat
+        alumnes_menors = [
+            a for a in responsable.get_alumnes_associats() if a and a.data_neixement and a.edat() < 18
+        ]
         self.fields["alumne"].choices = [
-            (a.id, a.nom + " " + a.cognoms) for a in responsable.get_alumnes_associats()
+            (a.id, a.nom + " " + a.cognoms) for a in alumnes_menors
         ]

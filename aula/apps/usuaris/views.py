@@ -366,10 +366,6 @@ def loginUser(request):
             paraulaDePas = form.cleaned_data["paraulaDePas"]
             user = authenticate(username=username, password=paraulaDePas)
 
-            # si és del grup API el faig fora.
-            if user and user.groups.filter(name="API").exists():
-                logout(request)
-                user = None
 
             if user is not None:
                 # Usuari i passwd estan bé
