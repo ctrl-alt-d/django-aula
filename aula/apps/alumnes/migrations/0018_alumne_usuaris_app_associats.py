@@ -12,4 +12,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name="alumne",
+            name="usuaris_app_associats",
+            field=models.ManyToManyField(
+                related_name="alumne_app_set",
+                related_query_name="alumne_app",
+                through="usuaris.QRPortal",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
     ]

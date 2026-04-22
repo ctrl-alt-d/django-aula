@@ -125,6 +125,11 @@ PROFESSOR_RESERVA_MASSIVA = 'Se t\'ha assignat el recurs "{0}" tots els {1} des 
 
 PAGAMENT_INCORRECTE = "El pagament fet no correspon"
 
+ALUMNE_MAJOR_DEDAT = (
+    "L'alumne/a {0},  ha fet 18 anys i és major d'edat. "
+    "Cal saber si vol que els seus responsables deixin de rebre notificacions. Si vol que deixin de rebre-les, caldrà eliminar els responsables d'Esfer@"
+)
+
 MISSATGES = {
     "ADMINISTRACIO": {
         "warning": {
@@ -157,6 +162,7 @@ MISSATGES = {
             ERROR_INITDB,
             IMPORTACIO_PREINSCRIPCIO_FINALITZADA,
             ACTIVACIO_MATRICULA_FINALITZADA,
+            ALUMNE_MAJOR_DEDAT,
         }
     },
     "DISCIPLINA": {

@@ -14,6 +14,69 @@ from aula.apps.sortides.utils_sortides import notifica_sortides
 from aula.apps.usuaris.tools import creaNotifUsuari, ultimaNotificacio
 from datetime import date
 
+
+def notifica_majors_dedat():
+    """
+    Notifica als tutors, els alumnes que fan 18 anys avui i tenen responsables associats.
+    """
+    from django.contrib.auth.models import User
+    from django.db.models import Q
+
+    from aula.apps.alumnes.models import Alumne
+    from aula.apps.missatgeria.missatges_a_usuaris import (
+        ALUMNE_MAJOR_DEDAT,
+        tipusMissatge,
+    )
+    from aula.apps.missatgeria.models import Missatge
+    from aula.apps.usuaris.models import Accio
+
+    avui = date.today()
+    q_no_es_baixa = Q(data_baixa__gte=avui) | Q(data_baixa__isnull=True)
+    alumnes = Alumne.objects.filter(
+        q_no_es_baixa,
+        data_neixement__isnull=False,
+        data_neixement__month=avui.month,
+        data_neixement__day=avui.day,
+    ).distinct()
+
+    usuari_notificacions, new = User.objects.get_or_create(username="TP")
+    if new:
+        usuari_notificacions.is_active = False
+        usuari_notificacions.first_name = "Usuari Tasques Programades"
+        usuari_notificacions.save()
+
+    tipus_de_missatge = tipusMissatge(ALUMNE_MAJOR_DEDAT)
+
+    for alumne in alumnes:
+        if alumne.edat(avui) != 18:
+            continue
+        if not any(alumne.get_responsables()):
+            continue
+
+        codi_control = "MAJOR_EDAT;{0};{1}".format(alumne.pk, avui.isoformat())
+        if Accio.objects.filter(
+            tipus="NF", usuari=usuari_notificacions, text=codi_control
+        ).exists():
+            continue
+
+        tutors = alumne.tutorsDelGrupDeLAlumne()
+        if tutors.exists():
+            msg = Missatge(
+                remitent=usuari_notificacions,
+                text_missatge=ALUMNE_MAJOR_DEDAT.format(alumne),
+                tipus_de_missatge=tipus_de_missatge,
+            )
+            for tutor in tutors:
+                msg.envia_a_usuari(tutor, "IN")
+
+        Accio.objects.create(
+            tipus="NF",
+            usuari=usuari_notificacions,
+            l4=False,
+            impersonated_from=None,
+            text=codi_control,
+        )
+
 def llista_pendents():
     if EmailPendent.objects.count() > 0:
         print("Emails pendents:")
@@ -115,6 +178,9 @@ def notifica():
     # Missatges pendents
     notifica_pendents()
 
+    # Avisa als tutors dels alumnes que avui fan 18 anys
+    notifica_majors_dedat()
+
     # Notificacions
     ara = datetime.now()
 
@@ -147,12 +213,7 @@ def notifica():
         try:
             alumne = Alumne.objects.get(pk=alumne_id)
             
-            # Si l'alumne és major d'edat, no notificar als responsables 
-            major_dedat = alumne.data_neixement and alumne.edat() >= 18
-            if major_dedat:
-                destinataris = [(alumne, "almn")]
-            else:
-                destinataris = [(r, "resp") for r in alumne.get_responsables() if r] + [
+            destinataris = [(r, "resp") for r in alumne.get_responsables() if r] + [
                     (alumne, "almn")
                 ]
 

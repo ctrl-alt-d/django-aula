@@ -388,9 +388,6 @@ def sincronitza(f, user=None):
                     AlumnesCanviatsDeGrup.append(a)
 
             a.user_associat = alumneDadesAnteriors.user_associat
-            a.usuaris_app_associats.set(
-                alumneDadesAnteriors.usuaris_app_associats.all()
-            )
             a.periodicitat_faltes = alumneDadesAnteriors.periodicitat_faltes
             a.periodicitat_incidencies = alumneDadesAnteriors.periodicitat_incidencies
             a.foto = alumneDadesAnteriors.foto

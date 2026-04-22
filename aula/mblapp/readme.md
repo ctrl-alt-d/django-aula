@@ -52,9 +52,7 @@ curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/notif
 export JWTOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxMjEzLCJ1c2VybmFtZSI6IkFQSW0zd2kiLCJleHAiOjE2NzIzNTQ0OTUsImVtYWlsIjoiIn0.2pgU5g0FkPdaqIXY46U6FVh_6r4JMgYrYNwGgFrGZHc
 curl -H "Authorization: Bearer ${JWTOKEN}" http://127.0.0.1:8000/api/token/alumnes/dades/763/
 #Resposta: 
-{"grup":"SMX2A","datanaixement":"13/5/2004","telefon":"","responsables":
-[{"nom":"Ganchozo Risco, Miriam Graciela","mail":"keylu5810@hotmail.com","tfn":""},
-{"nom":"","mail":"","tfn":""}],"adreça":"CR Pere III 62  ESC. C 1er 1era , Figueres"}
+{"grup":"ESO3E","datanaixement":"29/5/2011","telefon":"","responsables":[{"nom":"Bla Bla, Selin Azael","mail":"blabla@gmail.com","telefon":"6666603, 60666663"}],"adreca":"CR De la Bla 11 2 2 , Pont de Molins , Pont de Molins"}
 
 
 #Demanar sortides d'un alumne
