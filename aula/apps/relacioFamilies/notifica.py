@@ -516,7 +516,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     sense_correu = notificaSenseCorreus()
     correus_alumnes = (
         Alumne.objects.filter(q_no_es_baixa)
-        .difference(sense_correu)
+        .exclude(pk__in=sense_correu)
         .values_list("responsables__correu_relacio_familia", "correu")
     )
 
