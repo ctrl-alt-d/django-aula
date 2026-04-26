@@ -34,7 +34,6 @@ from aula.apps.matricula.viewshelper import (
     inforgpd,
     mat_selecciona,
     next_mat,
-    quotaSegüentCurs,
     següentCurs,
     situacioMat,
     updateAlumne,

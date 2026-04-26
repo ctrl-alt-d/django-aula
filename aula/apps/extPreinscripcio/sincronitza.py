@@ -189,9 +189,7 @@ def sincronitza(f, resetPrevious, user=None):
         errors.append("Fitxer incorrecte")
         return {"errors": errors, "warnings": [], "infos": []}
 
-    try:
-        c = settings.CODI_CENTRE
-    except:
+    if not hasattr(settings, 'CODI_CENTRE'):
         errors.append("No s'ha definit CODI_CENTRE a settings")
         return {"errors": errors, "warnings": [], "infos": []}
 
@@ -428,9 +426,7 @@ def testMatActiva(f):
         errors.append("Fitxer incorrecte.")
         return False, str(errors)
 
-    try:
-        c = settings.CODI_CENTRE
-    except:
+    if not hasattr(settings, 'CODI_CENTRE'):
         errors.append("No s'ha definit CODI_CENTRE a settings.")
         return False, str(errors)
 
