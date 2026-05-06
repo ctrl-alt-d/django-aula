@@ -31,7 +31,31 @@ from aula.apps.relacioFamilies.notifica import getNotifElements, setNotifElement
 
 from aula.apps.usuaris.models import NotifUsuari
 from datetime import date
-# ----------- vistes per a testos --------------------------------
+
+
+def obte_alumne_o_error(alumne_id):
+    try:
+        return Alumne.objects.get(id=alumne_id)
+    except (TypeError, ValueError, Alumne.DoesNotExist):
+        raise serializers.ValidationError({"error": ["Alumne inexistent"]})
+
+
+def valida_acces_responsable_alumne(responsable, alumne):
+    if not responsable:
+        return
+
+    associats = responsable.get_alumnes_associats()
+    if hasattr(associats, "filter"):
+        alumne_associat = associats.filter(id=alumne.id).exists()
+    else:
+        alumne_associat = any(associat.id == alumne.id for associat in associats)
+
+    if not alumne_associat:
+        raise serializers.ValidationError({"error": ["Accés denegat: alumne no associat"]})
+
+    # Si l'alumne és major d'edat, no mostrar/notificar als responsables
+    if alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
 
 
 @api_view(["GET"])
@@ -62,13 +86,15 @@ def notificacions_mes(request, mes, format=None, alumne_id=None):
     Rep el mes i retorna tots valors actuals.
     """
     professor, responsable, alumne = getRol(request.user, request)
-    alumne = Alumne.objects.get(id=alumne_id)
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
-    # Si l'alumne és major d'edat, no notificar als responsables
-    if responsable and alumne.data_neixement and alumne.edat() >= 18:
-        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
+    try:
+        mes_int = int(mes)
+    except (TypeError, ValueError):
+        raise serializers.ValidationError({"error": ["Mes invàlid"]})
 
-    if int(mes) < 1 or int(mes) > 12:
+    if mes_int < 1 or mes_int > 12:
         raise serializers.ValidationError({"error": ["Mes inexistent"]})
     # Tant si hi ha novetats com si no s'envia tota la info del mes:
 
@@ -85,7 +111,7 @@ def notificacions_mes(request, mes, format=None, alumne_id=None):
         ControlAssistencia.objects.filter(
             alumne=alumne,
             estat__in=presencies_notificar,
-            impartir__dia_impartir__month=mes,
+            impartir__dia_impartir__month=mes_int,
         )
         .select_related(
             "impartir",  # dia
@@ -115,7 +141,7 @@ def notificacions_mes(request, mes, format=None, alumne_id=None):
     ]
 
     incidencies = (
-        alumne.incidencia_set.filter(dia_incidencia__month=mes)
+        alumne.incidencia_set.filter(dia_incidencia__month=mes_int)
         .select_related(
             "tipus",  # tipus
             "franja_incidencia",  # franja
@@ -141,7 +167,7 @@ def notificacions_mes(request, mes, format=None, alumne_id=None):
     ]
 
     # "Expulsions": [],
-    expulsions = alumne.expulsio_set.filter(dia_expulsio__month=mes).exclude(estat="ES")
+    expulsions = alumne.expulsio_set.filter(dia_expulsio__month=mes_int).exclude(estat="ES")
     content = content + [
         {
             "dia": "/".join(
@@ -160,7 +186,7 @@ def notificacions_mes(request, mes, format=None, alumne_id=None):
     ]
 
     # "Sancions": [],
-    sancions = alumne.sancio_set.filter(impres=True, data_carta__month=mes)
+    sancions = alumne.sancio_set.filter(impres=True, data_carta__month=mes_int)
     content = content + [
         {
             "dia": "/".join(
@@ -218,10 +244,8 @@ def notificacions_news(request, format=None, alumne_id=None):
     
     professor, responsable, alumne = getRol(request.user, request)
 
-    alumne = Alumne.objects.get(id=alumne_id)
-
-    if responsable and alumne.data_neixement and alumne.edat() >= 18:
-        raise serializers.ValidationError({"error": ["Accés denegat: alumne major d'edat"]})
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
     notificar_presencies = EstatControlAssistencia.objects.filter(
         codi_estat__in=["F", "R", "J"]
@@ -272,10 +296,11 @@ def notificacions_news(request, format=None, alumne_id=None):
 @permission_classes((EsUsuariDeLaAPI,))
 def alumnes_dades(request, format=None, alumne_id=None):
     professor, responsable, alumne = getRol(request.user, request)
-    alumne = Alumne.objects.get(id=alumne_id)
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
-    if responsable and alumne.data_neixement and alumne.edat() >= 18:
-        raise serializers.ValidationError({"error": ["Accés denegat: alumne major d'edat"]})
+    if not alumne.data_neixement:
+        raise serializers.ValidationError({"error": ["L'alumne no té data de naixement informada"]})
     
     content = {
         "grup": unicode(alumne.grup),
@@ -315,11 +340,8 @@ def sortides(request, alumne_id=None):
     Retorna les activitats/pagaments de l'alumne
     """
     professor, responsable, alumne = getRol(request.user, request)
-    alumne = Alumne.objects.get(id=alumne_id)
-
-    # Si l'alumne és major d'edat, no mostrar als responsables
-    if responsable and alumne.data_neixement and alumne.edat() >= 18:
-        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
     content = []
 
@@ -384,17 +406,21 @@ def detallSortida(request, pk, alumne_id=None):
     Rep el pk d'una activitat/pagament i retorna informació de l'activitat/pagament
     """
     professor, responsable, alumne = getRol(request.user, request)
-    alumne = Alumne.objects.get(id=alumne_id)
-
-    # Si l'alumne és major d'edat, no mostrar als responsables
-    if responsable and alumne.data_neixement and alumne.edat() >= 18:
-        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
     try:
         int(pk)
         sortida = Sortida.objects.get(pk=pk)
-    except:  # noqa: E722
+    except (TypeError, ValueError, Sortida.DoesNotExist):
         raise serializers.ValidationError({"error": ["Sortida inexistent"]})
+
+    sortida_associada = (
+        Sortida.objects.filter(pk=sortida.pk, notificasortida__alumne=alumne).exists()
+        or SortidaPagament.objects.filter(sortida=sortida, alumne=alumne).exists()
+    )
+    if not sortida_associada:
+        raise serializers.ValidationError({"error": ["Accés denegat: sortida no associada a l'alumne"]})
 
     try:
         pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
@@ -409,9 +435,9 @@ def detallSortida(request, pk, alumne_id=None):
         "finsa": sortida.calendari_finsa.strftime("%d/%m/%Y %H:%M"),
         "programa": "\n".join(
             [
-                sortida.programa_de_la_sortida,
-                sortida.condicions_generals,
-                sortida.informacio_pagament,
+                sortida.programa_de_la_sortida or "",
+                sortida.condicions_generals or "",
+                sortida.informacio_pagament or "",
             ]
         ),
         "preu": str(sortida.preu_per_alumne) if sortida.preu_per_alumne else "0",
@@ -428,6 +454,9 @@ def detallSortida(request, pk, alumne_id=None):
 @permission_classes((IsAuthenticated,))
 def alumnes_associats(request):
     professor, responsable, alumne = getRol(request.user, request)
+    if not responsable:
+        raise serializers.ValidationError({"error": ["Accés denegat: usuari sense rol de responsable"]})
+
     associats = responsable.get_alumnes_associats()
     content = []
 
