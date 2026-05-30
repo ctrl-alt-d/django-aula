@@ -23,7 +23,7 @@ def reportBaixaCarpeta(request, dia, professors):
     for professor in professors:
         report = tools.classebuida()
         report.professor = professor
-        report.data = date(dia, "l, d M \d\e Y")
+        report.data = date(dia, r"l, d M \d\e Y")
 
         imparticions = Impartir.objects.filter(
             dia_impartir=dia, horari__professor=professor

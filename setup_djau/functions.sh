@@ -16,6 +16,7 @@ ROJO='\e[31m'
 CIANO='\e[36m'
 AMARILLO='\e[33m'
 MAGENTA='\e[35m'
+GRIS='\033[0;90m'  # Gris clar (ideal per a logs)
 
 # Estils compostos
 C_EXITO="${NEGRITA}${VERDE}"       # Éxit i confirmacions (✅)
@@ -23,8 +24,48 @@ C_ERROR="${NEGRITA}${ROJO}"        # Errors o fallades (❌)
 C_PRINCIPAL="${NEGRITA}${AZUL}"    # Fases principals (FASE 1, FASE 2)
 C_CAPITULO="${NEGRITA}${CIANO}"    # Títuls de Capítul (1. DEFINICIÓ...)
 C_SUBTITULO="${NEGRITA}${MAGENTA}" # Títuls de Subcapítul (1.1, 1.2)
-C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓN)
+C_INFO="${NEGRITA}${AMARILLO}"     # Informació important (INFO, ATENCIÓ)
 
+
+
+# =========================================================================
+# Funció: esperar_apt
+# Espera que el gestor de paquets (APT) estigui lliure
+# que la deixa en blanc, si hi ha una resposta per defecte.
+#
+# Exemple: read_prompt "De quin color tens el cabell?" COLOR_CABELL "Blau"
+# =========================================================================
+esperar_apt() {
+    local LOCK_FILE="/var/lib/dpkg/lock-frontend"
+    
+    if [ -f "$LOCK_FILE" ]; then
+        # Comprovem si realment hi ha un procés bloquejant el fitxer
+        if fuser "$LOCK_FILE" >/dev/null 2>&1; then
+            echo -e "${C_INFO}⏳ El sistema està realitzant tasques de manteniment (APT).${RESET}"
+            echo -e "${C_INFO}   Esperant que finalitzin per poder continuar...${RESET}"
+            
+            # flock espera fins que el lock s'allibera
+            sudo flock "$LOCK_FILE" true
+            
+            echo -e "${C_EXITO}✅ Gestor de paquets lliure. Continuem amb la instal·lació.${RESET}"
+        fi
+    fi
+}
+
+
+# ===========================================================================
+# Funció: finalitzar_amb_error
+# Serveix per mostrar un text d'error concret greu i sortir de l'instal·lador
+#
+# Exemple: finalitzar_amb_error "No s'ha pogut obtenir la clau per a $OS_ID des de download.docker.com"
+# ===========================================================================
+
+finalitzar_amb_error() {
+    echo -e "\n"
+    echo -e "${C_ERROR}❌ ERROR: $1${RESET}"
+    echo "La instal·lació s'ha aturat perquè un pas crític ha fallat."
+    exit 1
+}
 
 
 # =========================================================================
@@ -85,6 +126,7 @@ read_prompt () {
 # Exemple: read_email_confirm "Missatge de la sol·licitud: " VAR_NAME "valor_per_defecte"
 # El correu validat es desa a la variable de Bash amb nom $VAR_NAME.
 # ======================================================================
+
 read_email_confirm() {
     local PROMPT_MSG="$1"
     local OUTPUT_VAR_NAME="$2"
@@ -182,8 +224,8 @@ read_password_confirm() {
 check_install() {
     # $1: Descripció dels paquest a instal·lar
 
+    local EXIT_CODE=$?    # Desa el codi de sortida de de la comanda anterior
     local DESC_MSG="$1"   # Desa el primer argument (la descripció)
-    local EXIT_CODE=$?    # Desa el codi de sortida de la comanda anterior
 
     if [ "$EXIT_CODE" -ne 0 ]; then
         echo -e "\n"

@@ -391,7 +391,7 @@ if [[ "$ADVANCED_PARAMS_CHOICE_LOWER" == "s" || "$ADVANCED_PARAMS_CHOICE_LOWER" 
     #    - Eliminem el preamble, els imports i la funció 'location' amb 'sed'.
     cat "$ADVANCED_FILE" | sed '1,/location = lambda x: os.path.join(PROJECT_DIR, x)/d' | sudo -u "$APP_USER" tee -a "$LOCAL_SETTINGS_PATH" > /dev/null
 
-    echo -e "${C_EXITO}✅ Parametritzacions afegides. Es trobaran al final de settings_local.py. Descomeni, treient el símbol #, aquelles que siguin necessàries pel seu centre educatiu i modifiqui els seus valors segons les seves necessitats.${RESET}"
+    echo -e "${C_EXITO}✅ Parametritzacions afegides. Es trobaran al final de settings_local.py. Descomenti, treient el símbol #, aquelles que siguin necessàries pel seu centre educatiu i modifiqui els seus valors segons les seves necessitats.${RESET}"
 
 else
     echo "⏭️ No s'afegiran les parametritzacions avançades per decissió de l'usuari instal·lador. Sempre es poden afegir manualment després de la instal·lació les que calgui, però ho harurà de fer manualment. Recordi, totes es troben dins de l'arxiu *advanced_settings.py*${RESET}"
@@ -523,7 +523,7 @@ EOF
 
 python manage.py shell < "$PYTHON_SCRIPT" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo -e "${C_ERROR}❌ Fallda en executar l'scriipt de configuració de grups.${RESET}"
+    echo -e "${C_ERROR}❌ Fallada en executar l'script de configuració de grups.${RESET}"
 fi
 
 rm "$PYTHON_SCRIPT"

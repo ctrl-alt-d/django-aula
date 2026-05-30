@@ -1001,14 +1001,14 @@ def alumnesFallen(request, pk, origen, tipus=None):
                             pag = SortidaPagament.objects.filter(
                                 alumne=alumne, sortida=instance, pagament_realitzat=True
                             )
+                            instance.alumnes_que_no_vindran.add(alumne)
                             if not pag:
                                 instance.pagaments.remove(alumne)
-                                instance.alumnes_que_no_vindran.add(alumne)
                             else:
                                 alumno = Alumne.objects.get(pk=alumne)
                                 messages.warning(
                                     request,
-                                    "L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
+                                    "Avís: Has tret de l'activitat a l'alumne/a {0} {1}, tot i que ja ha realitzat el pagament.".format(
                                         alumno.nom, alumno.cognoms
                                     ),
                                 )
@@ -1129,14 +1129,14 @@ def alumnesJustificats(request, pk, origen, tipus=None):
                             pag = SortidaPagament.objects.filter(
                                 alumne=alumne, sortida=instance, pagament_realitzat=True
                             )
+                            instance.alumnes_justificacio.add(alumne)
                             if not pag:
                                 instance.pagaments.remove(alumne)
-                                instance.alumnes_justificacio.add(alumne)
                             else:
                                 alumno = Alumne.objects.get(pk=alumne)
                                 messages.warning(
                                     request,
-                                    "L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
+                                    "Avís: Has tret de l'activitat a l'alumne/a {0} {1}, tot i que ja ha realitzat el pagament.".format(
                                         alumno.nom, alumno.cognoms
                                     ),
                                 )
@@ -2016,11 +2016,11 @@ def passarella(request, pk):
         + reverse("sortides__sortides__retorn_transaccio", kwargs={"pk": pk}),
         "Ds_Merchant_ProductDescription": titol,
         "Ds_Merchant_ConsumerLanguage": "003",
-        "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", "\/")
+        "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", r"\/")
         + reverse("sortides__sortides__pago_on_line", kwargs={"pk": pk})
         + "?next="
         + request.GET.get("next"),
-        "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", "\/")
+        "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", r"\/")
         + reverse("sortides__sortides__pago_on_lineKO", kwargs={"pk": pk})
         + "?next="
         + request.GET.get("next"),
