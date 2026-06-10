@@ -1755,8 +1755,11 @@ def pagoOnlineWeb(request, pk):
     request.session["origen"] = "Login"
     return pagoOnlineBase(request, pk)
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def pagoOnlineApi(request, pk):
     request.session.save()
     session_key = request.session.session_key
@@ -1774,7 +1777,7 @@ def pagoOnlineBase(request, pk):
 
     credentials = tools.getImpersonateUser(request)
     (user, _) = credentials
-    _, _, alumne = getRol(user, request)
+    _, responsable, alumne = getRol(user, request)
 
     pagament = get_object_or_404(Pagament, pk=pk)
     nexturl = request.GET.get("next")
@@ -1798,14 +1801,11 @@ def pagoOnlineBase(request, pk):
         name__in=["direcció", "sortides"]
     ).exists()
 
-    usuari_associat_al_qr = None
-    usuari_associat_a_lalumne = alumne.user_associat.getUser() if alumne else None
     potEntrar = (
         alumne==pagament.alumne
         or fEsDireccioOrGrupSortides
-        or usuari_associat_al_qr and usuari_associat_al_qr == usuari_associat_a_lalumne
+        or pagament.alumne.responsables.filter(id=responsable.id).exists()
     )
-
     if not potEntrar:
         return render(
             request,
