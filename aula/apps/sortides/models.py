@@ -1,17 +1,17 @@
 # This Python file uses the following encoding: utf-8
-from django.db import models
-from aula.apps.horaris.models import FranjaHoraria
-from aula.apps.usuaris.models import Departament, Professor
-from aula.apps.usuaris.tools import set_notificacio, set_revisio, get_notif_revisio
-from aula.apps.sortides.business_rules.sortida import clean_sortida
-from aula.apps.alumnes.models import Alumne
+import django.utils.timezone
 from django.apps import apps
+from django.conf import settings
+from django.db import models
 from django.db.models import Q
 from six import python_2_unicode_compatible
-from django.conf import settings
 
+from aula.apps.alumnes.models import Alumne
+from aula.apps.horaris.models import FranjaHoraria
+from aula.apps.sortides.business_rules.sortida import clean_sortida
+from aula.apps.usuaris.models import Departament, Professor
+from aula.apps.usuaris.tools import get_notif_revisio, set_notificacio, set_revisio
 from aula.utils.tools import unicode
-import django.utils.timezone
 
 
 class TPV(models.Model):
@@ -723,11 +723,6 @@ class SortidaPagament(Pagament):
 class NotificaSortida(models.Model):
     alumne = models.ForeignKey(Alumne, on_delete=models.CASCADE)
     sortida = models.ForeignKey(Sortida, on_delete=models.CASCADE)
-
-    # DEPRECATED vvv
-    relacio_familia_revisada = models.DateTimeField(null=True)
-    relacio_familia_notificada = models.DateTimeField(null=True)
-    # DEPRECATED ^^^
 
     notificacions_familia = models.ManyToManyField("usuaris.NotifUsuari", db_index=True)
 

@@ -1098,14 +1098,6 @@ def ultimaNotificacio(usuari, alumne):
         )
     if ultima:
         return ultima.moment
-    # DEPRECATED vvv
-    # Per compatibilitat amb dades existents
-    try:
-        if alumne.relacio_familia_darrera_notificacio:
-            return alumne.relacio_familia_darrera_notificacio
-    except:  # noqa: E722
-        pass
-    # DEPRECATED ^^^
     return None
 
 
@@ -1132,26 +1124,6 @@ def get_notif_revisio(element, usuari, fmt_data=None):
     if not fmt_data:
         fmt_data = "%d/%m/%Y %H:%M"
     revisc = notifc = ""
-    # DEPRECATED vvv
-    # Per compatibilitat amb dades existents
-    try:
-        if hasattr(element, "data_hora_pagament"):
-            if element.data_hora_pagament:
-                # data_hora_pagament serveix per a saber moment del pagament o moment de notificació
-                if element.pagament_realitzat:
-                    revisc = element.data_hora_pagament.strftime(fmt_data)
-                else:
-                    notifc = element.data_hora_pagament.strftime(fmt_data)
-        else:
-            if element.relacio_familia_revisada:
-                revisc = element.relacio_familia_revisada.strftime(fmt_data)
-            if element.relacio_familia_notificada:
-                notifc = element.relacio_familia_notificada.strftime(fmt_data)
-            else:
-                notifc = revisc
-    except:  # noqa: E722
-        pass
-    # DEPRECATED ^^^
     if User2Professor(usuari):
         notif = (
             element.notificacions_familia.filter(tipus="N").order_by("moment").first()

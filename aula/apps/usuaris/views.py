@@ -47,9 +47,9 @@ from aula.apps.usuaris.models import (
     Professor,
     QRPortal,
     ResponsableUser,
+    User2Alumne,
     User2Professor,
     User2Responsable,
-    User2Alumne,
 )
 from aula.apps.usuaris.tables2_models import HorariProfessorTable
 from aula.apps.usuaris.tools import enviaOneTimePasswd, testEmail
