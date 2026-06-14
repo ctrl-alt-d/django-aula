@@ -373,7 +373,7 @@ def calcula_menu(user, path, sessioImpersonada, request):
                         (
                             "Activa",
                             "matricula:gestio__matricula__activa",
-                            ad if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None,
+                            di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None,
                             None,
                         ),
                     ),

@@ -20,6 +20,17 @@
 	    {{ wizard.form }}
 	{% endif %}
 	</table>
+	{% if wizard.form.fitxers.errors %}
+	<script>
+	  document.addEventListener('DOMContentLoaded', function() {
+	    var errorDiv = document.querySelector('.ddupload-error');
+	    if (errorDiv) {
+		    errorDiv.innerHTML = '{{ wizard.form.fitxers.errors|join:" "|safe }}';
+            errorDiv.style.display = 'block';
+	    }
+	  });
+	</script>
+	{% endif %}
 	{% if wizard.steps.step1 == wizard.steps.count %}
 		<b>He llegit i accepto les</b> <a target = _blank href="{% url  'matricula:varis__condicions__matricula' %}">condicions de matrícula</a>
 		<br><br>

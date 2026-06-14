@@ -84,23 +84,6 @@ CUSTOM_FALTES_ABSENCIA_PER_NIVELL_NUM_CARTA = {
 CUSTOM_LC_TIME = "ca_ES.utf8"
 CUSTOM_DATE_FORMAT = "%-d %B de %Y"  #  5 d'abril de 1999, si fem servir 'ca_ES.utf8'
 
-# Per al càlcul d'indicadors
-# Aquest indicadors apareixen a Coord.Alumnes / Indicadors
-#  (Alumnes amb absències de més del <percentatge> de les hores lectives del trimestre / Total alumnes del nivell)*100
-# els noms dels nivells corresponen a CUSTOM_NIVELLS
-CUSTOM_INDICADORS = [
-    # [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],
-    ["09/09/2024", "29/11/2024", "07/03/2025", "20/06/2025", "ESO", 25],
-    ["09/09/2024", "29/11/2024", "07/03/2025", "20/06/2025", "ESO", 10],
-    ["09/09/2024", "29/11/2024", "07/03/2025", "20/06/2025", "ESO", 5, ("F")],
-    ["12/09/2024", "29/11/2024", "07/03/2025", "30/05/2025", "BTX", 25],
-    ["12/09/2024", "29/11/2024", "07/03/2025", "30/05/2025", "BTX", 10],
-    ["12/09/2024", "29/11/2024", "07/03/2025", "30/05/2025", "BTX", 5, ("F")],
-    ["12/09/2024", "22/11/2024", "07/03/2025", "23/05/2025", "CICLES", 25],
-    ["12/09/2024", "22/11/2024", "07/03/2025", "23/05/2025", "CICLES", 10],
-    ["12/09/2024", "22/11/2024", "07/03/2025", "23/05/2025", "CICLES", 5, ("F")],
-]
-
 # Permet veure una graella amb les diferents faltes setmanals d'un curs.
 CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU = True
 
@@ -164,3 +147,19 @@ CUSTOM_MESSAGE_BENVINGUDA_FAMILIES = [
 
 
 ARUCO_ACTIU = ["*"]
+
+# Per al càlcul d'indicadors
+# Aquest indicadors apareixen a Coord.Alumnes / Indicadors
+#  (Alumnes amb absències de més del <percentatge> de les hores lectives del trimestre / Total alumnes del nivell)*100
+# els noms dels nivells corresponen a CUSTOM_NIVELLS
+# CUSTOM_INDICADORS es crea dinàmicament durant la creació de les dades demo
+# al fitxer aula/settings_dir/demo_custom.py
+
+CUSTOM_INDICADORS = [
+    # [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],
+]
+
+try:
+    from .demo_custom import *  # noqa: F401, F403
+except ImportError:
+    pass

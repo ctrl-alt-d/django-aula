@@ -1,0 +1,459 @@
+{% comment %}
+  Template per al widget DragDropFileInput.
+  Substitueix uploadfiles.html amb interfície Gmail-like:
+    - Drag & drop zone
+    - Selecció múltiple, afegir fitxers de manera incremental
+    - Llista de fitxers nous amb opció d'eliminar (en temps real)
+    - Llista de fitxers existents amb checkbox d'esborrat
+{% endcomment %}
+
+<div class="ddupload-wrapper" id="ddupload-{{ widget.attrs.id }}">
+
+  {# ── Fitxers ja pujats ───────────────────────────────────────────── #}
+  {% if widget.attrs.files %}
+  <div class="ddupload-existing">
+    <p class="ddupload-existing-title">
+      <span class="ddupload-icon">&#x1F4CE;</span> <!-- 📎 -->
+      <strong>Documents ja adjuntats:</strong>
+    </p>
+    <ul class="ddupload-existing-list" id="existing-list-{{ widget.attrs.id }}">
+      {% for f in widget.attrs.files %}
+      <li class="ddupload-existing-item" id="existing-item-{{ widget.attrs.id }}-{{ forloop.counter }}">
+        <span class="ddupload-file-icon">&#x1F4C4;</span> <!-- 📄 -->
+        <a href="/private-media/{{ f }}" target="_blank" class="ddupload-existing-link">{{ f }}</a>
+        <label class="ddupload-delete-label">
+          <input
+            type="checkbox"
+            name="{{ widget.checkbox_name }}{{ forloop.counter }}"
+            id="{{ widget.checkbox_id }}{{ forloop.counter }}"
+            class="ddupload-delete-cb"
+            data-item-id="existing-item-{{ widget.attrs.id }}-{{ forloop.counter }}"
+            {% if widget.attrs.disabled %}disabled{% endif %}
+          >
+          <span class="ddupload-delete-btn">&#x1F5D1; Elimina</span> <!-- 🗑 -->
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {# ── Zona drag & drop ────────────────────────────────────────────── #}
+  <div
+    class="ddupload-dropzone"
+    id="dropzone-{{ widget.attrs.id }}"
+    role="button"
+    tabindex="0"
+    aria-label="Zona per arrossegar fitxers"
+  >
+    <div class="ddupload-dropzone-inner">
+      <span class="ddupload-cloud-icon">&#x2601;&#xFE0F;</span> <!-- ☁️ -->
+      <p class="ddupload-dropzone-text">
+        <strong>Arrossega els fitxers aquí</strong><br>
+        o
+      </p>
+      <span class="ddupload-browse-btn" role="button" tabindex="-1">
+        Selecciona fitxers
+      </span>
+      <input
+        type="{{ widget.type }}"
+        name="{{ widget.name }}"
+        id="{{ widget.attrs.id }}"
+        class="ddupload-hidden-input"
+        multiple
+        {% if widget.attrs.accept %}accept="{{ widget.attrs.accept }}"{% endif %}
+        {% if widget.attrs.disabled %}disabled{% endif %}
+      >
+    </div>
+  </div>
+
+  {# ── Llista de fitxers nous (s'omple amb JS) ─────────────────────── #}
+  <ul class="ddupload-new-list" id="new-list-{{ widget.attrs.id }}"></ul>
+
+  {# ── Missatge d'error de validació ──────────────────────────────── #}
+  <div
+    class="ddupload-error"
+    id="ddupload-error-{{ widget.attrs.id }}"
+    style="display:none"
+    role="alert"
+  ></div>
+
+</div>{# /ddupload-wrapper #}
+
+
+{# ═══════════════════════════  STYLES  ══════════════════════════════ #}
+<style>
+/* ── Wrapper ───────────────────────────────────────────────────────── */
+.ddupload-wrapper {
+  font-family: inherit;
+  margin: 8px 0 16px;
+}
+
+/* ── Fitxers existents ─────────────────────────────────────────────── */
+.ddupload-existing {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.ddupload-existing-title {
+  margin: 0 0 10px;
+  font-size: 0.95em;
+  color: #495057;
+}
+.ddupload-existing-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ddupload-existing-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.ddupload-existing-item:hover {
+  background: #e9ecef;
+}
+.ddupload-existing-item.is-marked {
+  background: #fff3cd;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.ddupload-file-icon { font-size: 1.1em; flex-shrink: 0; }
+.ddupload-existing-link {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9em;
+  color: #0d6efd;
+}
+.ddupload-delete-label { display: flex; align-items: center; cursor: pointer; }
+.ddupload-delete-cb { display: none; }
+.ddupload-delete-btn {
+  font-size: 0.82em;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.ddupload-delete-label:hover .ddupload-delete-btn {
+  background: #dc3545;
+  color: #fff;
+}
+.ddupload-delete-cb:checked + .ddupload-delete-btn {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* ── Drop zone ─────────────────────────────────────────────────────── */
+.ddupload-dropzone {
+  border: 2px dashed #adb5bd;
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+.ddupload-dropzone:hover,
+.ddupload-dropzone.dragover {
+  border-color: #0d6efd;
+  background: #e7f1ff;
+}
+.ddupload-dropzone-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  text-align: center;
+}
+.ddupload-cloud-icon { font-size: 2.2em; margin-bottom: 6px; }
+.ddupload-dropzone-text { margin: 0 0 10px; color: #6c757d; font-size: 0.95em; }
+.ddupload-browse-btn {
+  display: inline-block;
+  padding: 7px 22px;
+  background: #0d6efd;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background 0.15s;
+  user-select: none;
+}
+.ddupload-browse-btn:hover { background: #0b5ed7; }
+.ddupload-hidden-input { display: none !important; }
+
+/* ── Llista de nous fitxers ────────────────────────────────────────── */
+.ddupload-new-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.ddupload-new-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  background: #fff;
+  animation: ddupload-fadein 0.2s ease;
+}
+@keyframes ddupload-fadein {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ddupload-new-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9em;
+}
+.ddupload-new-size {
+  font-size: 0.8em;
+  color: #6c757d;
+  white-space: nowrap;
+}
+.ddupload-new-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1em;
+  color: #adb5bd;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.15s;
+}
+.ddupload-new-remove:hover { color: #dc3545; }
+/* ── Missatge d'error ──────────────────────────────────────────────── */
+.ddupload-error {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #f8d7da;
+  border: 1px solid #f5c2c7;
+  border-radius: 6px;
+  color: #842029;
+  font-size: 0.9em;
+}
+</style>
+
+
+{# ═══════════════════════════  SCRIPT  ══════════════════════════════ #}
+<script>
+(function () {
+  // ── Espera que el DOM estigui llest ───────────────────────────────
+  function initDDUpload(wrapperId) {
+    var wrapper   = document.getElementById(wrapperId);
+    if (!wrapper) return;
+
+    var inputId   = wrapperId.replace('ddupload-', '');
+    var input     = document.getElementById(inputId);
+    var dropzone  = document.getElementById('dropzone-' + inputId);
+    var newList   = document.getElementById('new-list-' + inputId);
+    // ── Paràmetres de validació ────────────────────────────────────────
+    var maxFitxers     = parseInt('{{ widget.attrs.max_fitxers }}', 10) || 0;
+    var midaTotalBytes = parseInt('{{ widget.attrs.mida_total_bytes }}', 10) || 0;
+    var midesExistents = {{ widget.attrs.mides_existents|default:"[]" }};
+    var errorDiv       = document.getElementById('ddupload-error-' + inputId);
+
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+    }
+    function clearError() {
+      errorDiv.textContent = '';
+      errorDiv.style.display = 'none';
+    }
+
+    function midaExistentsActius() {
+      // Suma les mides dels fitxers existents que NO estan marcats per esborrar
+      var total = 0;
+      var cbs = wrapper.querySelectorAll('.ddupload-delete-cb');
+      cbs.forEach(function(cb, idx) {
+        if (!cb.checked && midesExistents[idx] !== undefined) {
+          total += midesExistents[idx];
+        }
+      });
+      return total;
+    }
+
+    function midaNous() {
+      var total = 0;
+      for (var i = 0; i < dt.files.length; i++) total += dt.files[i].size;
+      return total;
+    }
+
+    function midaTotal() {
+      return midaExistentsActius() + midaNous();
+    }
+
+    function existentsActius() {
+      var marcats = wrapper.querySelectorAll('.ddupload-delete-cb:checked').length;
+      return Math.max(0, midesExistents.length - marcats);
+    }
+    
+    if (!input || !dropzone || !newList) return;
+
+    // DataTransfer per acumular fitxers ──────────────────────────────
+    var dt = new DataTransfer();
+
+    function formatSize(bytes) {
+      if (bytes < 1024)       return bytes + ' B';
+      if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function addFiles(fileList) {
+   	  clearError();
+   	  var files = Array.from(fileList);
+   	  for (var i = 0; i < files.length; i++) {
+   	    var file = files[i];
+   	    if (!file) continue;
+
+   	    // ── Duplicat ───────────────────────────────────────────────
+   	    var dup = false;
+   	    for (var j = 0; j < dt.files.length; j++) {
+   	      if (dt.files[j].name === file.name &&
+   	          dt.files[j].size === file.size &&
+   	          dt.files[j].lastModified === file.lastModified) {
+   	        dup = true; break;
+   	      }
+   	    }
+   	    if (dup) continue;
+
+   	    // ── Límit nombre de fitxers ────────────────────────────────
+   	    var totalFitxers = existentsActius() + dt.files.length;
+   	    if (maxFitxers>0 && totalFitxers >= maxFitxers) {
+   	      showError(
+   	        'No es poden adjuntar més de ' + maxFitxers + ' fitxers en total.'
+   	      );
+   	      break;
+   	    }
+
+   	    // ── Límit mida total (existents actius + nous + aquest) ────
+   	    if (midaTotalBytes>0 && midaTotal() + file.size > midaTotalBytes) {
+   	      showError(
+   	        'Amb la selecció feta es supera el màxim de mida (' +
+   	        (midaTotalBytes / 1024 / 1024).toFixed(0) + ' MB). ' +
+   	        'Actual: ' + (midaTotal() / 1024 / 1024).toFixed(1) + ' MB.'
+   	      );
+   	      break;
+   	    }
+
+   	    dt.items.add(file);
+   	    renderNewItem(file);
+   	  }
+   	}
+    
+    function renderNewItem(file) {
+      var li = document.createElement('li');
+      li.className = 'ddupload-new-item';
+      li.dataset.filename = file.name;
+
+      var icon = document.createElement('span');
+      icon.className = 'ddupload-file-icon';
+      icon.textContent = '\u{1F4C4}';  // '📄'
+
+      var name = document.createElement('span');
+      name.className = 'ddupload-new-name';
+      name.textContent = file.name;
+      name.title = file.name;
+
+      var size = document.createElement('span');
+      size.className = 'ddupload-new-size';
+      size.textContent = formatSize(file.size);
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ddupload-new-remove';
+      btn.title = 'Elimina';
+      btn.textContent = '\u2715'; // '✕'
+      btn.addEventListener('click', function () {
+        // Elimina del DataTransfer
+        var newDt = new DataTransfer();
+        for (var k = 0; k < dt.files.length; k++) {
+          if (dt.files[k].name !== file.name) newDt.items.add(dt.files[k]);
+        }
+        // Reassigna
+        for (var k = dt.items.length - 1; k >= 0; k--) dt.items.remove(k);
+        for (var k = 0; k < newDt.files.length; k++) dt.items.add(newDt.files[k]);
+        clearError();  // neteja l'error quan s'elimina un fitxer
+        li.remove();
+      });
+
+      li.appendChild(icon);
+      li.appendChild(name);
+      li.appendChild(size);
+      li.appendChild(btn);
+      newList.appendChild(li);
+    }
+
+    // ── Drag & drop events ─────────────────────────────────────────
+    dropzone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', function (e) {
+      if (!dropzone.contains(e.relatedTarget)) dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', function (e) {
+    	  e.preventDefault();
+    	  dropzone.classList.remove('dragover');
+    	  var files = Array.from(e.dataTransfer.files);
+    	  addFiles(files);
+    	});
+    dropzone.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') input.click();
+    });
+    // ── Clic a la dropzone obre el diàleg ────────────────────────
+    dropzone.addEventListener('click', function (e) {
+    	  // Només obre el diàleg si el clic és directament a la dropzone
+    	  // o al seu contingut intern, no a botons de fora
+    	  if (e.target.closest('button[type="submit"]') || 
+    	      e.target.closest('input[type="submit"]')) return;
+    	  input.click();
+    });
+    
+    // ── Input change ───────────────────────────────────────────────
+    input.addEventListener('change', function () {
+      var selected = Array.from(this.files);
+      addFiles(selected);
+    });
+
+    // ── Sincronització final just abans del submit ─────────────────
+    document.querySelector('form').addEventListener('submit', function () {
+      input.files = dt.files;
+    });
+
+    // ── Checkboxes de fitxers existents ───────────────────────────
+    var cbs = wrapper.querySelectorAll('.ddupload-delete-cb');
+    cbs.forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var itemEl = document.getElementById(cb.dataset.itemId);
+        if (itemEl) itemEl.classList.toggle('is-marked', cb.checked);
+      });
+    });
+ 
+  }
+
+  // Inicialitza quan el DOM estigui llest
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      initDDUpload('ddupload-{{ widget.attrs.id }}');
+    });
+  } else {
+    initDDUpload('ddupload-{{ widget.attrs.id }}');
+  }
+  
+})();
+</script>

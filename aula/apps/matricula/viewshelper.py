@@ -504,10 +504,11 @@ def següentCurs(alumne):
 def quotaSegüentCurs(nomtipus, nany, alumne):
     """
     Selecciona una quota del tipus i any adequada per al següent curs de l'alumne
+    Si no hi ha quota o següent curs, farà servir per defecte una quota del mateix tipus si només n'hi ha una possible.
+    Per defecte retornarà la quota del curs actual si no troba res més.
     Exemple:
-      Si l'alumne fa ESO-2 retorna la quota d'ESO-3
-      Si l'alumne fa ESO-4 no selecciona cap.
-    Si no troba cap, farà servir per defecte una quota del mateix tipus si només n'hi ha una possible.
+      Si l'alumne fa ESO-2 retorna la quota d'ESO-3.
+      Si l'alumne fa últim curs retorna una quota genèrica o la d'ESO-4.
     """
     c = alumne.grup.curs
     try:
@@ -528,6 +529,9 @@ def quotaSegüentCurs(nomtipus, nany, alumne):
         ):
             # Si troba varies o només una d'un altre curs, no la selecciona
             quotacurs = None
+    if not quotacurs:
+        # Intenta la quota per al curs actual de l'alumne
+        quotacurs = QuotaCentre.objects.filter(curs=c, any=nany, tipus__nom=nomtipus)
 
     if quotacurs:
         quotacurs = quotacurs[0]
@@ -537,6 +541,8 @@ def quotaSegüentCurs(nomtipus, nany, alumne):
 
 
 def creaAlumne(preinscripcio):
+    from aula.apps.alumnes.tools_aruco import dict_markers_disponibles, set_aruco_marker
+
     """
     Crea l'alumne si no existeix.
     Si crea l'alumne li assigna les dades segons la preinscripció i amb grup sense lletra.
@@ -555,6 +561,7 @@ def creaAlumne(preinscripcio):
         al.nom = preinscripcio.nom
         al.cognoms = preinscripcio.cognoms
         al.data_neixement = preinscripcio.naixement
+        set_aruco_marker(al, dict_markers_disponibles())
     al.correu = preinscripcio.correu
     activaAlumne(al)
     activaResponsables(al, preinscripcio)
@@ -637,7 +644,10 @@ def creaPagament(matricula, quota=None, fracciona=False):
     alumne = matricula.alumne
     p = QuotaPagament.objects.filter(alumne=alumne, quota=quota)
     if not p and quota:
-        dataLimit = matricula.curs.nivell.limit_matricula + relativedelta(weeks=+3)
+        if ConfirmacioActivada(alumne):
+            dataLimit = matricula.curs.limit_confirmacio + relativedelta(weeks=+3)
+        else:
+            dataLimit = matricula.curs.nivell.limit_matricula + relativedelta(weeks=+3)
         if not quota.dataLimit:
             quota.dataLimit = dataLimit
             quota.save()
@@ -721,16 +731,18 @@ def gestionaPag(matricula, importTaxes):
             quotatax.save()
     else:
         quotatax = None
-    fracciona = matricula.fracciona_taxes
 
+    fracciona = matricula.fracciona_taxes
     # Determina la quota de matrícula
-    if matricula.confirma_matricula == "C" and matricula.estat == "A":
+    if matricula.confirma_matricula == "C":
         if not matricula.quota:
             quotamat = quotaSegüentCurs(
                 settings.CUSTOM_TIPUS_QUOTA_MATRICULA, matricula.any, matricula.alumne
             )
         else:
             quotamat = matricula.quota
+    elif matricula.confirma_matricula == "N":
+        quotamat = None
     else:
         quotamat = QuotaCentre.objects.filter(
             curs=matricula.curs,
@@ -836,7 +848,7 @@ def alumne2Mat(alumne, nany=None):
             mat.rp1_dni = resp1.dni
             mat.rp1_nom = resp1.nom
             mat.rp1_cognoms = resp1.cognoms
-            mat.rp1_telefon = resp1.telefon
+            mat.rp1_telefon = resp1.telefon.split()[0][:15] if resp1.telefon else ""
             mat.rp1_correu = resp1.correu
             mat.rp1_parentiu = resp1.parentiu
             mat.rp1_localitat = resp1.localitat if resp1.localitat else resp1.municipi
@@ -846,7 +858,7 @@ def alumne2Mat(alumne, nany=None):
             mat.rp2_dni = resp2.dni
             mat.rp2_nom = resp2.nom
             mat.rp2_cognoms = resp2.cognoms
-            mat.rp2_telefon = resp2.telefon
+            mat.rp1_telefon = resp2.telefon.split()[0][:15] if resp2.telefon else ""
             mat.rp2_correu = resp2.correu
             mat.rp2_parentiu = resp2.parentiu
             mat.rp2_localitat = resp2.localitat if resp2.localitat else resp2.municipi
@@ -869,7 +881,7 @@ def alumne2Mat(alumne, nany=None):
             mat.rp1_dni = p.doctut1 or ""
             mat.rp1_nom = p.nomtut1 or ""
             mat.rp1_cognoms = p.cognomstut1 or ""
-            mat.rp1_telefon = p.telefon or ""
+            mat.rp1_telefon = p.telefon.split()[0][:15] if p.telefon else ""
             mat.rp1_correu = p.correu or ""
             mat.rp1_localitat = (p.localitat if p.localitat else p.municipi) or ""
             mat.rp1_cp = p.cp or ""

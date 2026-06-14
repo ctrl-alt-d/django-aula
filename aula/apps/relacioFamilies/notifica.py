@@ -422,19 +422,14 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             f.seek(0, os.SEEK_END)
             mida = f.tell()
             midatotal = midatotal + mida
-            if (
-                mida <= settings.FILE_UPLOAD_MAX_MEMORY_SIZE
-                and midatotal <= settings.FILE_UPLOAD_MAX_MEMORY_SIZE * 3
-            ):
+            if midatotal <= settings.CUSTOM_ATTACH_MAIL_MAX_SIZE:
                 f.seek(0)
                 email.attach(name, f.read(), content_type)
             else:
-                fitxerMB = settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024
-                totalMB = fitxerMB * 3
                 raise FitxerSuperaMida(
                     "Mida dels fitxers inadequada."
-                    + " Un fitxer no pot superar {0} MB i tots els fitxers {1} MB.".format(
-                        fitxerMB, totalMB
+                    + " La mida total de tots els fitxers no pot superar {0} MB.".format(
+                        settings.CUSTOM_ATTACH_MAIL_MAX_SIZE / 1024 / 1024
                     )
                 )
 
@@ -521,7 +516,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     sense_correu = notificaSenseCorreus()
     correus_alumnes = (
         Alumne.objects.filter(q_no_es_baixa)
-        .difference(sense_correu)
+        .exclude(pk__in=sense_correu)
         .values_list("responsables__correu_relacio_familia", "correu")
     )
 

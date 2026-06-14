@@ -189,8 +189,8 @@ def sincronitza(f, resetPrevious, user=None):
         errors.append("Fitxer incorrecte")
         return {"errors": errors, "warnings": [], "infos": []}
 
-    if not settings.CODI_CENTRE:
-        errors.append("No s'ha definit el codi de centre a settings")
+    if not hasattr(settings, 'CODI_CENTRE'):
+        errors.append("No s'ha definit CODI_CENTRE a settings")
         return {"errors": errors, "warnings": [], "infos": []}
 
     info_nAlumnesLlegits = 0
@@ -374,7 +374,7 @@ def sincronitza(f, resetPrevious, user=None):
         falten = Preinscripcio.objects.filter(
             any=nany, naixement__isnull=True, id__in=totesPre
         ).count()
-        if falten == 0:
+        if falten == 0 and len(totesPre) > 0:
             infos.append("Ja es pot fer l'activació de la matrícula")
         else:
             infos.append("Falta fitxer de dades personals")
@@ -383,7 +383,7 @@ def sincronitza(f, resetPrevious, user=None):
         falten = Preinscripcio.objects.filter(
             any=nany, estat="Validada", id__in=totesPre
         ).count()
-        if falten == 0:
+        if falten == 0 and len(totesPre) > 0:
             infos.append("Ja es pot fer l'activació de la matrícula")
         else:
             infos.append("Falta fitxer de peticions")
@@ -426,8 +426,8 @@ def testMatActiva(f):
         errors.append("Fitxer incorrecte.")
         return False, str(errors)
 
-    if not settings.CODI_CENTRE:
-        errors.append("No s'ha definit el codi de centre a settings.")
+    if not hasattr(settings, 'CODI_CENTRE'):
+        errors.append("No s'ha definit CODI_CENTRE a settings.")
         return False, str(errors)
 
     info_nAlumnesLlegits = 0

@@ -10,7 +10,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from aula.apps.extKronowin.models import Franja2Aula
 from aula.apps.extSaga.models import Grup2Aula as SGrup2Aula
-from aula.apps.alumnes.models import Grup, Alumne
+from aula.apps.alumnes.models import Grup, Alumne, Nivell, Curs
 
 from django.contrib.auth.models import User, Group
 from aula.apps.tutoria.models import Tutor
@@ -290,7 +290,7 @@ def fesCarrega():
         any=inici_curs.year,
         defaults={
             "importQuota": 10,
-            "dataLimit": date.today() + relativedelta(days=30),
+            "dataLimit": date.today() + relativedelta(days=60),
             "tpv": tpv,
             "curs": None,
         },
@@ -317,12 +317,73 @@ def fesCarrega():
         tipus=tipo_uf,
         any=inici_curs.year,
         defaults={
-            "importQuota": 25,
+            "importQuota": 65,
             "dataLimit": None,
             "tpv": tpv,
             "curs": None,
         },
     )
+
+    # 4. Configura tipus de taxes per cicles
+    for n in Nivell.objects.all():
+        if n.getNivellCustom() == "CICLES":
+            n.taxes = TipusQuota.objects.get(nom="taxes")
+            n.save()
+
+    # 5. Assigna quota de material per a cada curs
+    for c in Curs.objects.all():
+        Quota.objects.get_or_create(
+            descripcio="Material escolar - {curs}".format(curs=c.nom_curs_complert),
+            tipus=tipo_mat,
+            any=inici_curs.year,
+            defaults={
+                "importQuota": 10,
+                "dataLimit": date.today() + relativedelta(days=60),
+                "tpv": tpv,
+                "curs": c,
+            },
+        )
+
+    # Creació de CUSTOM_INDICADORS per al càlcul del % d'absència trimestral
+    durada_tr = (fi_curs - inici_curs) / 3
+    final_1rtr = inici_curs + durada_tr
+    final_2ntr = final_1rtr + durada_tr
+    final_3rtr = fi_curs
+    fitxer_settings = os.path.join(
+        os.path.dirname(__file__), "../../aula/settings_dir/demo_custom.py"
+    )
+    with open(fitxer_settings, "w") as f:
+        f.write("\nCUSTOM_INDICADORS = [\n")
+        f.write(
+            "\t# [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],\n"
+        )
+        for n, p, o in [
+            ("ESO", 25, None),
+            ("ESO", 10, None),
+            ("ESO", 5, ("F")),
+            ("BTX", 25, None),
+            ("BTX", 10, None),
+            ("BTX", 5, ("F")),
+            ("CICLES", 25, None),
+            ("CICLES", 10, None),
+            ("CICLES", 5, ("F")),
+        ]:
+            f.write(
+                '\t["{0}", "{1}", "{2}", "{3}", "{4}", {5}'.format(
+                    inici_curs.strftime("%d/%m/%Y"),
+                    final_1rtr.strftime("%d/%m/%Y"),
+                    final_2ntr.strftime("%d/%m/%Y"),
+                    final_3rtr.strftime("%d/%m/%Y"),
+                    n,
+                    p,
+                )
+            )
+            if o:
+                f.write(', ("{0}")],'.format(o))
+            else:
+                f.write("],")
+            f.write("\n")
+        f.write("]\n")
 
     print("canviant dades dels professors")
     for p in Professor.objects.all():

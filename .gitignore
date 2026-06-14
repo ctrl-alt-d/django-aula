@@ -11,18 +11,19 @@ env
 .vscode
 venv
 aula/db.sqlite
+aula/apps/demo/tmp/export*
+aula/settings_local.py
+aula/static
+aula/settings_dir/demo_custom.py
 .project
 .pydevproject
 .settings
 static/*
 storage/*
-aula/apps/demo/tmp/export*
-demo/tmp
-aula/settings_local.py
+demo/tmp/export*
 2tot.sh
 .idea/*
 .idea
-aula/static
 .env
 .DS_Store
 

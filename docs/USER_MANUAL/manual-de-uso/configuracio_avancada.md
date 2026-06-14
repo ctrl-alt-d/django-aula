@@ -55,8 +55,11 @@ Recordi:
 | `CUSTOM_MODUL_SORTIDES_ACTIU` | Activa el mòdul de gestió de sortides i activitats. | `True` |
 | `CUSTOM_SORTIDES_OCULTES_A_FAMILIES` | Si **True**, s'oculten les sortides a les famílies (si la gestió o pagament es fa amb una plataforma externa). | `False` |
 | `CUSTOM_QUOTES_ACTIVES` | Si **True**, activa si es permet fer servir les quotes. | `False` |
+| `CUSTOM_MODUL_MATRICULA_ACTIU` | Activa el mòdul de gestió de matrícules. | `False` |
 | `CUSTOM_TIPUS_QUOTA_MATRICULA` | Nom del tipus de quota per als pagaments de matrícula. | `Comentat` |
 | `CUSTOM_QUOTA_UNICA_MATRICULA` | Si **True**, permet utilitzar una única definició de quota per a tot l'alumnat de matrícula. | `Comentat` |
+| `CUSTOM_UPLOAD_MATRICULA_MAX_SIZE` | Mida màxima, en bytes, de tots els fitxers pujats | `30 * 1024 * 1024` |
+| `CUSTOM_UPLOAD_MATRICULA_MAX_FILES` | Quantitat màxima de fitxers pujats | `15` |
 | `CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES` | Si **True**, permet que la família pugui modificar els seus paràmetres a l'aplicació. | `False` |
 | `CUSTOM_FAMILIA_POT_COMUNICATS` | Si **True**, permet a la família enviar comunicats. | `False` |
 | `CUSTOM_MODUL_PRESENCIA_SETMANAL_ACTIU` | Si **True**, activa el mòdul de presència setmanal (graella amb faltes). | `False` |
@@ -90,6 +93,7 @@ Recordi:
 | `CUSTOM_LC_TIME` | Formats de temps i data a nivell de sistema operatiu. | `Comentat` |
 | `CUSTOM_DATE_FORMAT` | Format de data a mostrar a l'aplicació (e.g., `%-d %B de %Y`). | `Comentat` |
 | `CUSTOM_MAX_EMAIL_RECIPIENTS` | Quantitat màxima de destinataris per cada email, depèn del servidor de correu. | `100` |
+| `CUSTOM_ATTACH_MAIL_MAX_SIZE` | Mida màxima de tots els fitxers adjunts a "Email a les famílies", depèn del servidor de correu. | `25 * 1024 * 1024` |
 | `CUSTOM_DADES_ADDICIONALS_ALUMNE` | Permet afegir altres dades dels alumnes (e.g., Drets imatge, Dades mèdiques) des de Sincronitza. | `Comentat` |
 | **Fitxers de Rutes (Legal)** | Rutes a fitxers de text per a condicions legals (GPD, Cookies, Venda, Fiscals) que es mostren en diferents parts de l'aplicació. | `Comentat` |
 
