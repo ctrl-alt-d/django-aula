@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist, ValidationError
@@ -1761,11 +1762,23 @@ from rest_framework.decorators import api_view, permission_classes
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def pagoOnlineApi(request, pk):
+    backend = getattr(request.user, "backend", None)
+    if not backend:
+        backend = settings.AUTHENTICATION_BACKENDS[0]
+    auth_login(request, request.user, backend=backend)
+    request.session["origen"] = "Api"
     request.session.save()
     session_key = request.session.session_key
-    request.session["origen"] = "Api"
     response = pagoOnlineBase(request, pk)
-    response.set_cookie("sessionid", session_key, httponly=True)
+    response.set_cookie(
+        settings.SESSION_COOKIE_NAME,
+        session_key,
+        httponly=settings.SESSION_COOKIE_HTTPONLY,
+        secure=settings.SESSION_COOKIE_SECURE,
+        samesite=settings.SESSION_COOKIE_SAMESITE,
+        path=settings.SESSION_COOKIE_PATH,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+    )
     return response
 
 
@@ -1934,12 +1947,13 @@ def passarella(request, pk):
     """
 
     pagament = get_object_or_404(Pagament, pk=pk)
+    nexturl = request.GET.get("next") or "/"
     if pagament.pagament_realitzat:
         # Ja completat, pot pasar si un usuari té diversos logins i paga des de tots.
         return HttpResponseRedirect(
             reverse("sortides__sortides__pago_on_line", kwargs={"pk": pk})
             + "?next="
-            + request.GET.get("next")
+            + nexturl
         )
 
     if pagament.estat == "E":
@@ -2013,11 +2027,11 @@ def passarella(request, pk):
         "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", "\/")
         + reverse("sortides__sortides__pago_on_line", kwargs={"pk": pk})
         + "?next="
-        + request.GET.get("next"),
+        + nexturl,
         "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", "\/")
         + reverse("sortides__sortides__pago_on_lineKO", kwargs={"pk": pk})
         + "?next="
-        + request.GET.get("next"),
+        + nexturl,
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
