@@ -129,6 +129,13 @@ def getNotifElements(elements, usuari, alumne):
     alumne    Alumne al que pertanyen els elements
     Retorna   Query amb els elements no notificats trobats.
     """
+    # DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        elements = elements.exclude(relacio_familia_notificada__isnull=False)
+    except:  # noqa: E722
+        pass
+    # DEPRECATED ^^^
     Nous = elements.exclude(
         notificacions_familia__usuari=usuari, notificacions_familia__alumne=alumne
     )
@@ -244,6 +251,22 @@ def notifica():
                         quota__importQuota__gt=0,
                         pagament_realitzat=False,
                     )
+                    # DEPRECATED vvv
+                    nous_pagaments = nous_pagaments.exclude(
+                        data_hora_pagament__isnull=False
+                    ).union(
+                        QuotaPagament.objects.filter(
+                            Q(data_hora_pagament__isnull=True)
+                            | (
+                                Q(data_hora_pagament__lt=fa7dies)
+                                & Q(quota__dataLimit__lt=en7dies)
+                            ),
+                            alumne=alumne,
+                            quota__importQuota__gt=0,
+                            pagament_realitzat=False,
+                        ).exclude(notificacions_familia__moment__isnull=False)
+                    )
+                    # DEPRECATED ^^^
                 else:
                     nous_pagaments = QuotaPagament.objects.none()
                 noves_incidencies = getNotifElements(
@@ -452,14 +475,19 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             f.seek(0, os.SEEK_END)
             mida = f.tell()
             midatotal = midatotal + mida
-            if midatotal <= settings.CUSTOM_ATTACH_MAIL_MAX_SIZE:
+            if (
+                mida <= settings.FILE_UPLOAD_MAX_MEMORY_SIZE
+                and midatotal <= settings.FILE_UPLOAD_MAX_MEMORY_SIZE * 3
+            ):
                 f.seek(0)
                 email.attach(name, f.read(), content_type)
             else:
+                fitxerMB = settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024
+                totalMB = fitxerMB * 3
                 raise FitxerSuperaMida(
                     "Mida dels fitxers inadequada."
-                    + " La mida total de tots els fitxers no pot superar {0} MB.".format(
-                        settings.CUSTOM_ATTACH_MAIL_MAX_SIZE / 1024 / 1024
+                    + " Un fitxer no pot superar {0} MB i tots els fitxers {1} MB.".format(
+                        fitxerMB, totalMB
                     )
                 )
 
@@ -506,6 +534,12 @@ def notificaSenseCorreus():
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte=ara) | Q(data_baixa__isnull=True)
 
+    # DEPRECATED vvv
+    if not Alumne.objects.filter(
+        responsables__correu_relacio_familia__isnull=False
+    ).exists():
+        return Alumne.objects.none()
+    # DEPRECATED ^^^
     alumnesSenseCorreu = Alumne.objects.filter(q_no_es_baixa).exclude(
         responsables__correu_relacio_familia__isnull=False
     )
@@ -540,7 +574,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     sense_correu = notificaSenseCorreus()
     correus_alumnes = (
         Alumne.objects.filter(q_no_es_baixa)
-        .exclude(pk__in=sense_correu)
+        .difference(sense_correu)
         .values_list("responsables__correu_relacio_familia", "correu")
     )
 

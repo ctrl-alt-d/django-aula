@@ -174,9 +174,7 @@ class DadesForm2(forms.ModelForm):
 
 
 class DadesForm2b(forms.ModelForm):
-    llistaufs = forms.CharField(
-        widget=forms.Textarea, required=False, label="Mòduls de la matrícula"
-    )
+    llistaufs = forms.CharField(widget=forms.Textarea, required=False)
 
     class Meta:
         model = Matricula
@@ -215,14 +213,14 @@ class DadesForm2b(forms.ModelForm):
         llista = cleaned_data.get("llistaufs")
         if not complet and ufs <= 0:
             raise forms.ValidationError(
-                "Si no és curs complet, la quantitat de mòduls és obligatòria"
+                "Si no és curs complet, la quantitat de UFs és obligatòria"
             )
         if complet and (ufs != 0 or bool(llista)):
             raise forms.ValidationError(
-                "Si curs complet no s'ha d'introduir quantitat de mòduls"
+                "Si curs complet no s'ha d'introduir quantitat de UFs"
             )
         if ufs > 0 and not bool(llista):
-            raise forms.ValidationError("Indica els mòduls a on vols matricular-te")
+            raise forms.ValidationError("Indica les UFs a on vols matricular-te")
         return cleaned_data
 
 
@@ -237,12 +235,7 @@ class DadesForm3(forms.ModelForm):
         widget=forms.TextInput(attrs={"readonly": True}),
         required=False,
     )
-    fitxers = MultipleFileField(
-        widget=CustomClearableFileInput(
-            max_fitxers=settings.CUSTOM_UPLOAD_MATRICULA_MAX_FILES,
-            mida_total_bytes=settings.CUSTOM_UPLOAD_MATRICULA_MAX_SIZE,
-        )
-    )
+    fitxers = MultipleFileField(widget=CustomClearableFileInput())
 
     def __init__(self, *args, **kwargs):
         from django.utils.safestring import mark_safe
@@ -250,9 +243,7 @@ class DadesForm3(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if version.get_main_version() <= "4.2":
             self.fields["fitxers"].widget = CustomClearableFileInput(
-                attrs={"multiple": True},
-                max_fitxers=settings.CUSTOM_UPLOAD_MATRICULA_MAX_FILES,
-                mida_total_bytes=settings.CUSTOM_UPLOAD_MATRICULA_MAX_SIZE,
+                attrs={"multiple": True}
             )
         self.fields["acceptar_condicions"].required = True
         mat = kwargs["initial"].get("matricula")
@@ -288,13 +279,26 @@ class DadesForm3(forms.ModelForm):
             self.fields["fracciona_taxes"].disabled = True
 
     def clean(self):
+        from django.utils.datastructures import MultiValueDict
+
         cleaned_data = super(DadesForm3, self).clean()
+        files = self.files
+        if isinstance(files, MultiValueDict):
+            for key in files.keys():
+                for value in files.getlist(key):
+                    if value.size > settings.FILE_UPLOAD_MAX_MEMORY_SIZE:
+                        self.add_error(
+                            "fitxers",
+                            "Mida màxima de cada fitxer és "
+                            + str(settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024)
+                            + "MB",
+                        )
         nous = cleaned_data.get("fitxers")
         esborra = self.fields["fitxers"].widget.eliminaFitxers
         antics = self.fields["fitxers"].widget.attrs["files"]
-        if not nous and len(antics)==len(esborra) and len(antics)>0:
+        if not nous and len(antics) == len(esborra) and len(antics) > 0:
             self.add_error("fitxers", "S'han de pujar els documents demanats.")
-        cleaned_data["fitxers_esborra"] = esborra
+        cleaned_data["fitxers"] = esborra
         return cleaned_data
 
     class Meta:
@@ -609,7 +613,7 @@ class ActivaMatsForm(forms.Form):
     exclusiu = forms.BooleanField(
         label="Exclusivament preinscripcions",
         required=False,
-        help_text="Només es permet matrícula amb preinscripció. Els alumnes de matrícula de continuïtat no podran accedir.",
+        help_text="Només es permet matrícula amb preinscripció. Els alumnes que continuen al centre no podran accedir.",
     )
 
     def __init__(self, user, *args, **kwargs):

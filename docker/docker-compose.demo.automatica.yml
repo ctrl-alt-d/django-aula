@@ -1,0 +1,37 @@
+# docker/docker-compose.demo.automatica.yml
+services:
+  db:
+    image: postgres:17.7-alpine
+    container_name: demo_db
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./dades-demo-sql:/docker-entrypoint-initdb.d
+    restart: always
+
+  web:
+    image: rafatecno1/django-aula:demo
+    container_name: demo_web
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DEMO_ALLOWED_HOSTS=${DEMO_ALLOWED_HOSTS}
+    restart: always
+    ports:
+      - "8000:8000"
+    command: bash -c "wait-for-it db:5432 --timeout=30 --strict && python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  pg_data:

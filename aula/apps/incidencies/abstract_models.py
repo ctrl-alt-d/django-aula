@@ -96,6 +96,11 @@ class AbstractSancio(models.Model):
         default=False,
     )
 
+    # DEPRECATED vvv
+    relacio_familia_revisada = models.DateTimeField(null=True)
+    relacio_familia_notificada = models.DateTimeField(null=True)
+    # DEPRECATED ^^^
+
     notificacions_familia = models.ManyToManyField("usuaris.NotifUsuari", db_index=True)
 
     class Meta:
@@ -216,6 +221,11 @@ class AbstractExpulsio(models.Model):
 
     es_expulsio_per_acumulacio_incidencies = models.BooleanField(default=False)
     es_vigent = models.BooleanField(default=True, db_index=True)
+
+    # DEPRECATED vvv
+    relacio_familia_revisada = models.DateTimeField(null=True)
+    relacio_familia_notificada = models.DateTimeField(null=True)
+    # DEPRECATED ^^^
 
     notificacions_familia = models.ManyToManyField("usuaris.NotifUsuari", db_index=True)
 
@@ -408,6 +418,12 @@ class AbstractIncidencia(models.Model):
     provoca_sancio = models.ForeignKey(
         "incidencies.Sancio", blank=True, null=True, on_delete=models.PROTECT
     )
+
+    # DEPRECATED vvv
+    relacio_familia_revisada = models.DateTimeField(null=True)
+
+    relacio_familia_notificada = models.DateTimeField(null=True)
+    # DEPRECATED ^^^
 
     notificacions_familia = models.ManyToManyField("usuaris.NotifUsuari", db_index=True)
 
