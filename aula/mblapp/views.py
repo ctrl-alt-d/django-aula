@@ -1,29 +1,52 @@
 # This Python file uses the following encoding: utf-8
 from __future__ import unicode_literals
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from django.conf import settings
-from django.contrib.auth.models import Group, User
-from django.db import transaction
 from rest_framework import serializers
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.parsers import JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from aula.apps.alumnes.models import Alumne
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
 from aula.apps.sortides.models import (
+    NotificaSortida,
     Pagament,
     Sortida,
     SortidaPagament,
 )
-from aula.apps.usuaris.models import QRPortal
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
-from aula.mblapp.serializers import DarreraSincronitzacioSerializer, QRTokenSerializer
 from aula.utils.tools import unicode
+from aula.apps.usuaris.tools import getRol
 
-# ----------- vistes per a testos --------------------------------
+from aula.apps.relacioFamilies.notifica import getNotifElements, setNotifElements, creaNotifUsuari
+
+
+
+def obte_alumne_o_error(alumne_id):
+    try:
+        return Alumne.objects.get(id=alumne_id)
+    except (TypeError, ValueError, Alumne.DoesNotExist):
+        raise serializers.ValidationError({"error": ["Alumne inexistent"]})
+
+
+def valida_acces_responsable_alumne(responsable, alumne):
+    if not responsable:
+        return
+
+    associats = responsable.get_alumnes_associats()
+    if hasattr(associats, "filter"):
+        alumne_associat = associats.filter(id=alumne.id).exists()
+    else:
+        alumne_associat = any(associat.id == alumne.id for associat in associats)
+
+    if not alumne_associat:
+        raise serializers.ValidationError({"error": ["Accés denegat: alumne no associat"]})
+
+    # Si l'alumne és major d'edat, no mostrar/notificar als responsables
+    if alumne.data_neixement and alumne.edat() >= 18:
+        raise serializers.ValidationError({"error": ["Accés denegat: l'alumne és major d'edat"]})
 
 
 @api_view(["GET"])
@@ -42,128 +65,33 @@ def hello_api_login(request, format=None):
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def hello_api_login_app(request, format=None):
+def hello_api_login_app(request, format=None, alumne_id=None):
     content = {"status": "here we are login group app"}
-    return Response(content)
-
-
-# ---------------------  user x token ----------------------------
-# La vista que genera el QR és a l'App portal famílies.
-
-# ----------------------------------------------------------------
-
-
-# @csrf_exempt
-@transaction.atomic
-@api_view(["POST"])
-@permission_classes((AllowAny,))
-def capture_token_api(request, format=None):
-    """
-    Rep un token i retorna un usuari de la API (is_active=False)
-    """
-    import secrets
-
-    # deserialitzem
-    data = JSONParser().parse(request)
-    serializer = QRTokenSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError({"error": ["ups! Aquest token no serveix"]})
-    # busquem el token
-    key = serializer.validated_data["key"]
-    born_date = serializer.validated_data["born_date"]
-    token = QRPortal.objects.filter(moment_captura__isnull=True, clau=key).first()
-
-    if "validacions del token":
-        # si no hi ha token -> error
-        if not token:
-            raise serializers.ValidationError(
-                {
-                    "error": [
-                        "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"
-                    ]
-                }
-            )
-
-        # si el token ja ha estat previament capturat
-        if token.moment_captura:
-            raise serializers.ValidationError(
-                {
-                    "error": [
-                        "ups! Aquest QR no serveix. Potser ja l'has utilitzat abans?"
-                    ]
-                }
-            )
-
-        # caducat?
-        caduca_dia = token.moment_expedicio + timedelta(
-            days=settings.CUSTOM_DIES_API_TOKEN_VALID
-        )
-        if datetime.now() > caduca_dia:
-            raise serializers.ValidationError(
-                {"error": ["ups! Aquest token ja ha caducat"]}
-            )
-        # born date is ok?
-        fuky_random_jesucryst_date = datetime(1000, 1, 1).date
-        db_born_date = (
-            token.alumne_referenciat.data_neixement or fuky_random_jesucryst_date
-        )
-        if db_born_date != born_date:
-            raise serializers.ValidationError(
-                {"error": ["Data de naixement no vàlida"]}
-            )
-
-    # creo un nou usuari per aquest token
-    allowed_chars = (
-        "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789" + "0Oo^?#!"
-    )
-    password_xunga = "".join(secrets.choice(allowed_chars) for i in range(12))
-    nou_usuari = User.objects.create_user(
-        username="API" + token.localitzador, email="", password=password_xunga
-    )
-    grup_api, _ = Group.objects.get_or_create(name="API")
-    nou_usuari.groups.add(grup_api)
-    nou_usuari.is_active = False  # serà actiu quan el tutor l'activi
-    nou_usuari.save()
-
-    # assigno usuari al token
-    token.moment_captura = datetime.now()
-    token.usuari_referenciat = nou_usuari
-    ara = datetime.now()
-    token.novetats_detectades_moment = ara
-    token.save()
-
-    # preparem resposta
-    content = {
-        "username": nou_usuari.username,
-        "password": password_xunga,
-    }
-
     return Response(content)
 
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def notificacions_mes(request, mes, format=None):
+def notificacions_mes(request, mes, format=None, alumne_id=None):
     """
     Rep el mes i retorna tots valors actuals.
     """
-    # ara = datetime.now()
-    # data = JSONParser().parse(request)
-    # serializer = DarreraSincronitzacioSerializer(data=data)
-    # if not serializer.is_valid():
-    #    raise serializers.ValidationError("ups! petició amb errors")
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
-    qrtoken = request.user.qrportal
+    try:
+        mes_int = int(mes)
+    except (TypeError, ValueError):
+        raise serializers.ValidationError({"error": ["Mes invàlid"]})
 
-    if int(mes) < 1 or int(mes) > 12:
+    if mes_int < 1 or mes_int > 12:
         raise serializers.ValidationError({"error": ["Mes inexistent"]})
     # Tant si hi ha novetats com si no s'envia tota la info del mes:
 
-    alumne = qrtoken.alumne_referenciat
     content = [
         {
             "id": alumne.id,
-            "darrera_sincronitzacio": qrtoken.darrera_sincronitzacio,
         }
     ]
 
@@ -174,7 +102,7 @@ def notificacions_mes(request, mes, format=None):
         ControlAssistencia.objects.filter(
             alumne=alumne,
             estat__in=presencies_notificar,
-            impartir__dia_impartir__month=mes,
+            impartir__dia_impartir__month=mes_int,
         )
         .select_related(
             "impartir",  # dia
@@ -204,7 +132,7 @@ def notificacions_mes(request, mes, format=None):
     ]
 
     incidencies = (
-        alumne.incidencia_set.filter(dia_incidencia__month=mes)
+        alumne.incidencia_set.filter(dia_incidencia__month=mes_int)
         .select_related(
             "tipus",  # tipus
             "franja_incidencia",  # franja
@@ -230,7 +158,7 @@ def notificacions_mes(request, mes, format=None):
     ]
 
     # "Expulsions": [],
-    expulsions = alumne.expulsio_set.filter(dia_expulsio__month=mes).exclude(estat="ES")
+    expulsions = alumne.expulsio_set.filter(dia_expulsio__month=mes_int).exclude(estat="ES")
     content = content + [
         {
             "dia": "/".join(
@@ -249,7 +177,7 @@ def notificacions_mes(request, mes, format=None):
     ]
 
     # "Sancions": [],
-    sancions = alumne.sancio_set.filter(impres=True, data_carta__month=mes)
+    sancions = alumne.sancio_set.filter(impres=True, data_carta__month=mes_int)
     content = content + [
         {
             "dia": "/".join(
@@ -290,46 +218,81 @@ def notificacions_mes(request, mes, format=None):
     # )
     # content["Qualitatives"] = [ ]
 
-    # Anoto canvis
-    # qrtoken.darrera_sincronitzacio = ara
-
-    # qrtoken.save()
-
-    return Response(content)
-
-
-@api_view(["POST"])
-@permission_classes((EsUsuariDeLaAPI,))
-def notificacions_news(request, format=None):
-    """
-    Rep la darrera data de sincronització (i un jwt), i retorna si hi ha novetats o no
-    """
-    data = JSONParser().parse(request)
-    serializer = DarreraSincronitzacioSerializer(data=data)
-    if not serializer.is_valid():
-        raise serializers.ValidationError({"error": ["ups! petició amb errors"]})
-
-    darrera_sincronitzacio = serializer.validated_data["last_sync_date"]
-
-    qrtoken = request.user.qrportal
-
-    # No hi ha novetats:
-    content = (
-        {"resultat": "No"}
-        if qrtoken.novetats_detectades_moment
-        and qrtoken.novetats_detectades_moment < darrera_sincronitzacio
-        else {"resultat": "Sí"}
-    )
+    # Marcar com a notificades les novetats enviades
+    notifAlumne = creaNotifUsuari(request.user, alumne, "N")
+    setNotifElements(faltes_assistencia, notifAlumne)
+    setNotifElements(incidencies, notifAlumne)
+    setNotifElements(expulsions, notifAlumne)
+    setNotifElements(sancions, notifAlumne)
+    # TODO: afegir sortides i qualitatives 
 
     return Response(content)
 
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def alumnes_dades(request, format=None):
-    qrtoken = request.user.qrportal
-    alumne = qrtoken.alumne_referenciat
-    resp1, resp2 = alumne.get_responsables(compatible=True)
+def notificacions_news(request, format=None, alumne_id=None):
+    
+    professor, responsable, alumne = getRol(request.user, request)
+
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
+
+    notificar_presencies = EstatControlAssistencia.objects.filter(
+        codi_estat__in=["F", "R", "J"]
+    )
+    noves_faltes_assistencia = getNotifElements(
+        ControlAssistencia.objects.filter(
+            alumne=alumne, estat__in=notificar_presencies
+        ),
+        request.user,
+        alumne,
+    )
+    noves_incidencies = getNotifElements(
+        alumne.incidencia_set.all(), request.user, alumne
+    )
+    noves_expulsions = getNotifElements(
+        alumne.expulsio_set.exclude(estat="ES"), request.user, alumne
+    )
+    noves_sancions = getNotifElements(
+        alumne.sancio_set.filter(impres=True), request.user, alumne
+    )
+
+    noves_sortides = getNotifElements(
+        NotificaSortida.objects.filter(alumne=alumne), request.user, alumne
+    )
+
+    hiHaNovetats = (
+        noves_faltes_assistencia.exists()
+        or noves_incidencies.exists()
+        or noves_expulsions.exists()
+        or noves_sancions.exists()
+        or noves_sortides.exists()
+    )
+
+    content = {"resultat": "Sí" if hiHaNovetats else "No"}
+
+    # Marcar com a notificades les novetats enviades
+    notifAlumne = creaNotifUsuari(request.user, alumne, "N")
+    setNotifElements(noves_faltes_assistencia, notifAlumne)
+    setNotifElements(noves_incidencies, notifAlumne)
+    setNotifElements(noves_expulsions, notifAlumne)
+    setNotifElements(noves_sancions, notifAlumne)
+    setNotifElements(noves_sortides, notifAlumne)
+
+    return Response(content)
+
+
+@api_view(["GET"])
+@permission_classes((EsUsuariDeLaAPI,))
+def alumnes_dades(request, format=None, alumne_id=None):
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
+
+    if not alumne.data_neixement:
+        raise serializers.ValidationError({"error": ["L'alumne no té data de naixement informada"]})
+    
     content = {
         "grup": unicode(alumne.grup),
         "datanaixement": "/".join(
@@ -342,14 +305,9 @@ def alumnes_dades(request, format=None):
         "telefon": alumne.get_telefons(),
         "responsables": [
             {
-                "nom": unicode(resp1.get_nom() if resp1 else ""),
-                "mail": unicode(resp1.get_correu_importat() if resp1 else ""),
-                "telefon": unicode(resp1.get_telefon() if resp1 else ""),
-            },
-            {
-                "nom": unicode(resp2.get_nom() if resp2 else ""),
-                "mail": unicode(resp2.get_correu_importat() if resp2 else ""),
-                "telefon": unicode(resp2.get_telefon() if resp2 else ""),
+                "nom": unicode(responsable.get_nom() if responsable else ""),
+                "mail": unicode(responsable.get_correu_importat() if responsable else ""),
+                "telefon": unicode(responsable.get_telefon() if responsable else ""),
             },
         ],
         "adreca": " , ".join(
@@ -368,12 +326,13 @@ def alumnes_dades(request, format=None):
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def sortides(request):
+def sortides(request, alumne_id=None):
     """
     Retorna les activitats/pagaments de l'alumne
     """
-    qrtoken = request.user.qrportal
-    alumne = qrtoken.alumne_referenciat
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
 
     content = []
 
@@ -433,17 +392,26 @@ def sortides(request):
 
 @api_view(["GET"])
 @permission_classes((EsUsuariDeLaAPI,))
-def detallSortida(request, pk):
+def detallSortida(request, pk, alumne_id=None):
     """
     Rep el pk d'una activitat/pagament i retorna informació de l'activitat/pagament
     """
-    qrtoken = request.user.qrportal
-    alumne = qrtoken.alumne_referenciat
+    professor, responsable, alumne = getRol(request.user, request)
+    alumne = obte_alumne_o_error(alumne_id)
+    valida_acces_responsable_alumne(responsable, alumne)
+
     try:
         int(pk)
         sortida = Sortida.objects.get(pk=pk)
-    except:  # noqa: E722
+    except (TypeError, ValueError, Sortida.DoesNotExist):
         raise serializers.ValidationError({"error": ["Sortida inexistent"]})
+
+    sortida_associada = (
+        Sortida.objects.filter(pk=sortida.pk, notificasortida__alumne=alumne).exists()
+        or SortidaPagament.objects.filter(sortida=sortida, alumne=alumne).exists()
+    )
+    if not sortida_associada:
+        raise serializers.ValidationError({"error": ["Accés denegat: sortida no associada a l'alumne"]})
 
     try:
         pagament = Pagament.objects.get(sortida=sortida, alumne=alumne)
@@ -458,9 +426,9 @@ def detallSortida(request, pk):
         "finsa": sortida.calendari_finsa.strftime("%d/%m/%Y %H:%M"),
         "programa": "\n".join(
             [
-                sortida.programa_de_la_sortida,
-                sortida.condicions_generals,
-                sortida.informacio_pagament,
+                sortida.programa_de_la_sortida or "",
+                sortida.condicions_generals or "",
+                sortida.informacio_pagament or "",
             ]
         ),
         "preu": str(sortida.preu_per_alumne) if sortida.preu_per_alumne else "0",
@@ -470,4 +438,28 @@ def detallSortida(request, pk):
         "realitzat": realitzat,
         "idPagament": pagament.id if pagament else None,
     }
+    return Response(content)
+
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def alumnes_associats(request):
+    professor, responsable, alumne = getRol(request.user, request)
+    if not responsable:
+        raise serializers.ValidationError({"error": ["Accés denegat: usuari sense rol de responsable"]})
+
+    associats = responsable.get_alumnes_associats()
+    content = []
+
+    for associat in associats:
+        # Excloure alumnat major d'edat
+        if associat.data_neixement and associat.edat() >= 18:
+            continue
+        content = content + [
+            {
+                "nom": associat.nom,
+                "cognoms": associat.cognoms,
+                "id": associat.id,
+            }
+        ]
     return Response(content)

@@ -1,0 +1,52 @@
+# docker-compose.dev.yml
+services:
+  db:
+    image: postgres:postgres:17.7-alpine
+    container_name: dev_db
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: django-aula:dev
+    container_name: dev_web
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      # Muntar tot el projecte per veure els canvis immediatament
+      - ./:/app
+      # Evita que el directori de dependències del contenidor tapi el teu
+      - /app/.venv
+    command: >
+      bash -c "
+      wait-for-it db:5432 --timeout=30 --strict &&
+      echo '🔹 Verificant migracions...' &&
+      python manage.py makemigrations --check --dry-run || python manage.py makemigrations &&
+      python manage.py migrate --noinput &&
+      echo '✅ Migracions aplicades. Iniciant servidor...' &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+    ports:
+      - "8000:8000"
+    environment:
+      # Assegura que Django recarregui automàticament canvis de codi
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      PYTHONUNBUFFERED: 1
+      DEBUG: 1
+
+volumes:
+  pg_data:

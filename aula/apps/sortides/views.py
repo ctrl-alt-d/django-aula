@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist, ValidationError
@@ -33,7 +34,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django_select2.forms import ModelSelect2MultipleWidget
 from django_tables2.config import RequestConfig
 from icalendar import Calendar, Event, vText
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs
 from aula.apps.missatgeria.missatges_a_usuaris import (
@@ -58,7 +60,7 @@ from aula.apps.sortides.models import (
 from aula.apps.sortides.table2_models import Table2_Sortides
 from aula.apps.sortides.utils import get_QuotaPagament
 from aula.apps.sortides.utils_sortides import TPVsettings
-from aula.apps.usuaris.models import Professor, QRPortal, User2Professor
+from aula.apps.usuaris.models import Professor, User2Professor
 from aula.apps.usuaris.tools import getRol
 from aula.settings import URL_DJANGO_AULA
 
@@ -74,7 +76,7 @@ from aula.utils.widgets import DateTimeTextImput, bootStrapButtonSelect
 @group_required(["professors", "administratius"])
 def imprimir(request, pk, din="4"):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -226,7 +228,7 @@ def imprimir(request, pk, din="4"):
 @group_required(["professors", "administratius"])
 def sortidesMevesList(request, tipus="A"):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -280,7 +282,7 @@ def sortidesMevesList(request, tipus="A"):
 @group_required(["professors"])
 def sortidesAllList(request, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     sortides = Sortida.objects.distinct()
     if tipus:
@@ -328,7 +330,7 @@ def sortidesAllList(request, tipus=None):
 @group_required(["professors", "administratius"])
 def sortidesGestioList(request, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     filtre = []
     socEquipDirectiu = User.objects.filter(pk=user.pk, groups__name="direcció").exists()
@@ -404,7 +406,7 @@ def sortidesGestioList(request, tipus=None):
 @group_required(["consergeria"])
 def sortidesConsergeriaList(request):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
     avui = datetime.now().date()
     sortides = list(
         Sortida.objects.filter(
@@ -439,7 +441,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
     from aula.apps.sortides.forms import SortidaForm
 
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     # am = Group.objects.get_or_create(name='administratius')[0] in user.groups.all()
     # pr = Group.objects.get_or_create(name= 'professors' )[0] in user.groups.all()
@@ -835,7 +837,7 @@ def sortidaEdit(request, pk=None, clonar=False, origen=False, tipus="A"):
 @group_required(["professors", "administratius"])
 def alumnesConvocats(request, pk, origen, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
     professor = User2Professor(user)
     instance = get_object_or_404(Sortida, pk=pk)
     fEsDireccioOrGrupSortides = request.user.groups.filter(
@@ -957,7 +959,7 @@ def alumnesConvocats(request, pk, origen, tipus=None):
 @group_required(["professors", "administratius"])
 def alumnesFallen(request, pk, origen, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -1001,14 +1003,14 @@ def alumnesFallen(request, pk, origen, tipus=None):
                             pag = SortidaPagament.objects.filter(
                                 alumne=alumne, sortida=instance, pagament_realitzat=True
                             )
-                            instance.alumnes_que_no_vindran.add(alumne)
                             if not pag:
                                 instance.pagaments.remove(alumne)
+                                instance.alumnes_que_no_vindran.add(alumne)
                             else:
                                 alumno = Alumne.objects.get(pk=alumne)
                                 messages.warning(
                                     request,
-                                    "Avís: Has tret de l'activitat a l'alumne/a {0} {1}, tot i que ja ha realitzat el pagament.".format(
+                                    "L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
                                         alumno.nom, alumno.cognoms
                                     ),
                                 )
@@ -1089,7 +1091,7 @@ def alumnesFallen(request, pk, origen, tipus=None):
 @group_required(["professors", "administratius"])
 def alumnesJustificats(request, pk, origen, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -1129,14 +1131,14 @@ def alumnesJustificats(request, pk, origen, tipus=None):
                             pag = SortidaPagament.objects.filter(
                                 alumne=alumne, sortida=instance, pagament_realitzat=True
                             )
-                            instance.alumnes_justificacio.add(alumne)
                             if not pag:
                                 instance.pagaments.remove(alumne)
+                                instance.alumnes_justificacio.add(alumne)
                             else:
                                 alumno = Alumne.objects.get(pk=alumne)
                                 messages.warning(
                                     request,
-                                    "Avís: Has tret de l'activitat a l'alumne/a {0} {1}, tot i que ja ha realitzat el pagament.".format(
+                                    "L'alumne {0} {1} no es pot treure perquè ja ha realitzat el pagament.".format(
                                         alumno.nom, alumno.cognoms
                                     ),
                                 )
@@ -1204,7 +1206,7 @@ def alumnesJustificats(request, pk, origen, tipus=None):
 @group_required(["professors"])
 def professorsAcompanyants(request, pk, origen, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -1343,7 +1345,7 @@ def professorsAcompanyants(request, pk, origen, tipus=None):
 @group_required(["professors", "administratius"])  # TODO: i grup sortides
 def esborrar(request, pk, origen):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -1451,7 +1453,7 @@ def sortidaExcel(request, pk):
     sortida = get_object_or_404(Sortida, pk=pk)
 
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
     professor = User2Professor(user)
     fEsDireccioOrGrupSortides = request.user.groups.filter(
         name__in=["direcció", "sortides"]
@@ -1755,14 +1757,26 @@ def pagoOnlineWeb(request, pk):
     request.session["origen"] = "Login"
     return pagoOnlineBase(request, pk)
 
-
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def pagoOnlineApi(request, pk):
+    backend = getattr(request.user, "backend", None)
+    if not backend:
+        backend = settings.AUTHENTICATION_BACKENDS[0]
+    auth_login(request, request.user, backend=backend)
+    request.session["origen"] = "Api"
     request.session.save()
     session_key = request.session.session_key
-    request.session["origen"] = "Api"
     response = pagoOnlineBase(request, pk)
-    response.set_cookie("sessionid", session_key, httponly=True)
+    response.set_cookie(
+        settings.SESSION_COOKIE_NAME,
+        session_key,
+        httponly=settings.SESSION_COOKIE_HTTPONLY,
+        secure=settings.SESSION_COOKIE_SECURE,
+        samesite=settings.SESSION_COOKIE_SAMESITE,
+        path=settings.SESSION_COOKIE_PATH,
+        domain=settings.SESSION_COOKIE_DOMAIN,
+    )
     return response
 
 
@@ -1773,8 +1787,8 @@ def pagoOnlineBase(request, pk):
     """
 
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
-    _, _, alumne = getRol(user, request)
+    (user, _) = credentials
+    _, responsable, alumne = getRol(user, request)
 
     pagament = get_object_or_404(Pagament, pk=pk)
     nexturl = request.GET.get("next")
@@ -1798,20 +1812,11 @@ def pagoOnlineBase(request, pk):
         name__in=["direcció", "sortides"]
     ).exists()
 
-    try:
-        qr_de_lusuari = QRPortal.objects.get(usuari_referenciat=user)
-        alumne_referenciat_al_qr = qr_de_lusuari.alumne_referenciat
-        usuari_associat_al_qr = alumne_referenciat_al_qr.user_associat.getUser()
-    except:  # noqa: E722
-        usuari_associat_al_qr = None
-    usuari_associat_a_lalumne = alumne.user_associat.getUser() if alumne else None
     potEntrar = (
-        alumne == pagament.alumne
+        alumne==pagament.alumne
         or fEsDireccioOrGrupSortides
-        or usuari_associat_al_qr
-        and usuari_associat_al_qr == usuari_associat_a_lalumne
+        or pagament.alumne.responsables.filter(id=responsable.id).exists()
     )
-
     if not potEntrar:
         return render(
             request,
@@ -1897,7 +1902,7 @@ def pagoOnlineBase(request, pk):
             "preu": preu,
             "limit": data_limit_pagament,
             "pagat": pagament.pagament_realitzat,
-            "next": nexturl if alumne else "/",
+            "next": nexturl if alumne else '/',
             "origen": request.session["origen"],
         },
     )
@@ -1940,12 +1945,13 @@ def passarella(request, pk):
     """
 
     pagament = get_object_or_404(Pagament, pk=pk)
+    nexturl = request.GET.get("next") or "/"
     if pagament.pagament_realitzat:
         # Ja completat, pot pasar si un usuari té diversos logins i paga des de tots.
         return HttpResponseRedirect(
             reverse("sortides__sortides__pago_on_line", kwargs={"pk": pk})
             + "?next="
-            + request.GET.get("next")
+            + nexturl
         )
 
     if pagament.estat == "E":
@@ -2016,14 +2022,14 @@ def passarella(request, pk):
         + reverse("sortides__sortides__retorn_transaccio", kwargs={"pk": pk}),
         "Ds_Merchant_ProductDescription": titol,
         "Ds_Merchant_ConsumerLanguage": "003",
-        "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", r"\/")
+        "DS_MERCHANT_URLOK": URL_DJANGO_AULA.replace("/", "\/")
         + reverse("sortides__sortides__pago_on_line", kwargs={"pk": pk})
         + "?next="
-        + request.GET.get("next"),
-        "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", r"\/")
+        + nexturl,
+        "DS_MERCHANT_URLKO": URL_DJANGO_AULA.replace("/", "\/")
         + reverse("sortides__sortides__pago_on_lineKO", kwargs={"pk": pk})
         + "?next="
-        + request.GET.get("next"),
+        + nexturl,
         #'Ds_Merchant_Paymethods': 'T',
     }
     data = json.dumps(values)
@@ -2208,7 +2214,7 @@ def pagoEfectiu(request, pk):
     from aula.apps.sortides.forms import PagamentEfectiuForm
 
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     pagament = get_object_or_404(Pagament, pk=pk)
     sortida = pagament.sortida
@@ -2272,7 +2278,7 @@ def pagoEfectiu(request, pk):
 @group_required(["professors", "administratius"])
 def detallPagament(request, pk, tipus=None):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
     professor = User2Professor(user)
     fEsDireccioOrGrupSortides = request.user.groups.filter(
         name__in=["direcció", "sortides"]

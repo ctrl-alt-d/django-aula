@@ -313,9 +313,6 @@ def sincronitza(f, user=None):
                     AlumnesCanviatsDeGrup.append(a)
 
             a.user_associat = alumneDadesAnteriors.user_associat
-            a.usuaris_app_associats.set(
-                alumneDadesAnteriors.usuaris_app_associats.all()
-            )
             a.periodicitat_faltes = alumneDadesAnteriors.periodicitat_faltes
             a.periodicitat_incidencies = alumneDadesAnteriors.periodicitat_incidencies
             a.foto = alumneDadesAnteriors.foto
@@ -330,6 +327,27 @@ def sincronitza(f, user=None):
             else:
                 a.data_alta = alumneDadesAnteriors.data_alta
                 a.motiu_bloqueig = alumneDadesAnteriors.motiu_bloqueig
+
+        # DEPRECATED vvv
+        if alumneDadesAnteriors and alumneDadesAnteriors.correu_relacio_familia_pare:
+            r1["correu_relacio_familia"] = (
+                alumneDadesAnteriors.correu_relacio_familia_pare
+            )
+            r1["periodicitat_faltes"] = alumneDadesAnteriors.periodicitat_faltes
+            r1["periodicitat_incidencies"] = (
+                alumneDadesAnteriors.periodicitat_incidencies
+            )
+            a.correu_relacio_familia_pare = ""
+        if alumneDadesAnteriors and alumneDadesAnteriors.correu_relacio_familia_mare:
+            r2["correu_relacio_familia"] = (
+                alumneDadesAnteriors.correu_relacio_familia_mare
+            )
+            r2["periodicitat_faltes"] = alumneDadesAnteriors.periodicitat_faltes
+            r2["periodicitat_incidencies"] = (
+                alumneDadesAnteriors.periodicitat_incidencies
+            )
+            a.correu_relacio_familia_mare = ""
+        # DEPRECATED ^^^
 
         set_aruco_marker(a, markers_per_nivell)
         a.save()
@@ -347,6 +365,19 @@ def sincronitza(f, user=None):
             info_nMenorsSenseResp += 1
         info_nResponsablesCreats += creaResponsables(a, [r1, r2])
         cursos.add(a.grup.curs)
+        # DEPRECATED vvv
+        if (
+            alumneDadesAnteriors
+            and not alumneDadesAnteriors.responsable_preferent
+            and alumneDadesAnteriors.responsables.exists()
+        ):
+            r1, r2 = a.get_responsables()
+            if alumneDadesAnteriors.primer_responsable == 1 and r2:
+                a.responsable_preferent = r2
+            else:
+                a.responsable_preferent = r1
+            a.save()
+        # DEPRECATED ^^^
 
     #
     # Baixes:

@@ -10,7 +10,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from aula.apps.extKronowin.models import Franja2Aula
 from aula.apps.extSaga.models import Grup2Aula as SGrup2Aula
-from aula.apps.alumnes.models import Grup, Alumne, Nivell, Curs
+from aula.apps.alumnes.models import Grup, Alumne
 
 from django.contrib.auth.models import User, Group
 from aula.apps.tutoria.models import Tutor
@@ -144,7 +144,7 @@ def fesCarrega():
                     nivell=nivell, grup=grup, curs=curs
                 )
                 grupAula = Grup.objects.get(descripcio_grup=lgrup)
-                SGrup2Aula.objects.update_or_create(grup_saga=lgrup, Grup2Aula=grupAula)
+                SGrup2Aula.objects.create(grup_saga=lgrup, Grup2Aula=grupAula)
                 # KGrup2Aula.objects.create( grup_kronowin = lgrup, Grup2Aula = grupAula  )   #ho fa als crear els grups
 
     print("#Importem Kronowin 1 ( Per crear professors )")
@@ -176,13 +176,7 @@ def fesCarrega():
     for g in Grup.objects.all():
         professors_del_grup = Professor.objects.filter(horari__grup=g).distinct()
         if professors_del_grup:
-            Tutor.objects.filter(
-                grup=g
-            ).delete()  # Nova línia. Netegem tutors previs d'aquest grup
-            Tutor.objects.get_or_create(
-                grup=g, defaults={"professor": random.choice(professors_del_grup)}
-            )
-            # Tutor.objects.create(professor=random.choice(professors_del_grup), grup=g)
+            Tutor.objects.create(professor=random.choice(professors_del_grup), grup=g)
 
     msg += "\nProfessors: " + " ,".join(
         sorted(set([unicode(t.username) for t in Professor.objects.all()]))
@@ -266,124 +260,51 @@ def fesCarrega():
             ca.impartir.save()
 
     print("preparant configuració de matrícula")
-    # 1. TPV
-    tpv, _ = TPV.objects.get_or_create(
-        nom="centre",
-        defaults={
-            "codi": settings.CUSTOM_CODI_COMERÇ,
-            "key": settings.CUSTOM_KEY_COMERÇ,
-            "descripcio": "Pagaments al centre",
-            "entornReal": False,
-        },
+    tpv = TPV(
+        None,
+        "centre",
+        settings.CUSTOM_CODI_COMERÇ,
+        settings.CUSTOM_KEY_COMERÇ,
+        "Pagaments al centre",
+        False,
     )
-
-    # 2. Tipus de Quota
-    for tipus_nom in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
-        TipusQuota.objects.get_or_create(nom=tipus_nom)
-
-    # 3. Quotes
-    # Quota: Material escolar
-    tipo_mat = TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA)
-    Quota.objects.get_or_create(
-        descripcio="Material escolar",
-        tipus=tipo_mat,
-        any=inici_curs.year,
-        defaults={
-            "importQuota": 10,
-            "dataLimit": date.today() + relativedelta(days=60),
-            "tpv": tpv,
-            "curs": None,
-        },
+    tpv.save()
+    for tipus in [settings.CUSTOM_TIPUS_QUOTA_MATRICULA, "taxes", "taxcurs", "uf"]:
+        tq = TipusQuota(None, tipus)
+        tq.save()
+    q = Quota(
+        None,
+        10,
+        date.today() + relativedelta(days=30),
+        inici_curs.year,
+        "Material escolar",
+        None,
+        tpv.id,
+        TipusQuota.objects.get(nom=settings.CUSTOM_TIPUS_QUOTA_MATRICULA).id,
     )
-
-    # Quota: Taxes cicles FP
-    tipo_tax = TipusQuota.objects.get(nom="taxcurs")
-    Quota.objects.get_or_create(
-        descripcio="Taxes cicles FP",
-        tipus=tipo_tax,
-        any=inici_curs.year,
-        defaults={
-            "importQuota": 360,
-            "dataLimit": None,
-            "tpv": tpv,
-            "curs": None,
-        },
+    q.save()
+    q = Quota(
+        None,
+        360,
+        None,
+        inici_curs.year,
+        "Taxes cicles FP",
+        None,
+        tpv.id,
+        TipusQuota.objects.get(nom="taxcurs").id,
     )
-
-    # Quota: Taxa UF
-    tipo_uf = TipusQuota.objects.get(nom="uf")
-    Quota.objects.get_or_create(
-        descripcio="Taxa UF",
-        tipus=tipo_uf,
-        any=inici_curs.year,
-        defaults={
-            "importQuota": 65,
-            "dataLimit": None,
-            "tpv": tpv,
-            "curs": None,
-        },
+    q.save()
+    q = Quota(
+        None,
+        25,
+        None,
+        inici_curs.year,
+        "Taxa UF",
+        None,
+        tpv.id,
+        TipusQuota.objects.get(nom="uf").id,
     )
-
-    # 4. Configura tipus de taxes per cicles
-    for n in Nivell.objects.all():
-        if n.getNivellCustom() == "CICLES":
-            n.taxes = TipusQuota.objects.get(nom="taxes")
-            n.save()
-
-    # 5. Assigna quota de material per a cada curs
-    for c in Curs.objects.all():
-        Quota.objects.get_or_create(
-            descripcio="Material escolar - {curs}".format(curs=c.nom_curs_complert),
-            tipus=tipo_mat,
-            any=inici_curs.year,
-            defaults={
-                "importQuota": 10,
-                "dataLimit": date.today() + relativedelta(days=60),
-                "tpv": tpv,
-                "curs": c,
-            },
-        )
-
-    # Creació de CUSTOM_INDICADORS per al càlcul del % d'absència trimestral
-    durada_tr = (fi_curs - inici_curs) / 3
-    final_1rtr = inici_curs + durada_tr
-    final_2ntr = final_1rtr + durada_tr
-    final_3rtr = fi_curs
-    fitxer_settings = os.path.join(
-        os.path.dirname(__file__), "../../aula/settings_dir/demo_custom.py"
-    )
-    with open(fitxer_settings, "w") as f:
-        f.write("\nCUSTOM_INDICADORS = [\n")
-        f.write(
-            "\t# [inici_curs,  Final 1Trim,  Final 2Trim,  Final 3Trim, nivell,  %, controls ],\n"
-        )
-        for n, p, o in [
-            ("ESO", 25, None),
-            ("ESO", 10, None),
-            ("ESO", 5, ("F")),
-            ("BTX", 25, None),
-            ("BTX", 10, None),
-            ("BTX", 5, ("F")),
-            ("CICLES", 25, None),
-            ("CICLES", 10, None),
-            ("CICLES", 5, ("F")),
-        ]:
-            f.write(
-                '\t["{0}", "{1}", "{2}", "{3}", "{4}", {5}'.format(
-                    inici_curs.strftime("%d/%m/%Y"),
-                    final_1rtr.strftime("%d/%m/%Y"),
-                    final_2ntr.strftime("%d/%m/%Y"),
-                    final_3rtr.strftime("%d/%m/%Y"),
-                    n,
-                    p,
-                )
-            )
-            if o:
-                f.write(', ("{0}")],'.format(o))
-            else:
-                f.write("],")
-            f.write("\n")
-        f.write("]\n")
+    q.save()
 
     print("canviant dades dels professors")
     for p in Professor.objects.all():

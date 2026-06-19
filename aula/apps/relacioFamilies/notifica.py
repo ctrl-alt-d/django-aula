@@ -12,7 +12,70 @@ from aula.apps.relacioFamilies.models import DocAttach, EmailPendent
 from aula.apps.sortides.models import NotificaSortida, QuotaPagament
 from aula.apps.sortides.utils_sortides import notifica_sortides
 from aula.apps.usuaris.tools import creaNotifUsuari, ultimaNotificacio
+from datetime import date
 
+
+def notifica_majors_dedat():
+    """
+    Notifica als tutors, els alumnes que fan 18 anys avui i tenen responsables associats.
+    """
+    from django.contrib.auth.models import User
+    from django.db.models import Q
+
+    from aula.apps.alumnes.models import Alumne
+    from aula.apps.missatgeria.missatges_a_usuaris import (
+        ALUMNE_MAJOR_DEDAT,
+        tipusMissatge,
+    )
+    from aula.apps.missatgeria.models import Missatge
+    from aula.apps.usuaris.models import Accio
+
+    avui = date.today()
+    q_no_es_baixa = Q(data_baixa__gte=avui) | Q(data_baixa__isnull=True)
+    alumnes = Alumne.objects.filter(
+        q_no_es_baixa,
+        data_neixement__isnull=False,
+        data_neixement__month=avui.month,
+        data_neixement__day=avui.day,
+    ).distinct()
+
+    usuari_notificacions, new = User.objects.get_or_create(username="TP")
+    if new:
+        usuari_notificacions.is_active = False
+        usuari_notificacions.first_name = "Usuari Tasques Programades"
+        usuari_notificacions.save()
+
+    tipus_de_missatge = tipusMissatge(ALUMNE_MAJOR_DEDAT)
+
+    for alumne in alumnes:
+        if alumne.edat(avui) != 18:
+            continue
+        if not any(alumne.get_responsables()):
+            continue
+
+        codi_control = "MAJOR_EDAT;{0};{1}".format(alumne.pk, avui.isoformat())
+        if Accio.objects.filter(
+            tipus="NF", usuari=usuari_notificacions, text=codi_control
+        ).exists():
+            continue
+
+        tutors = alumne.tutorsDelGrupDeLAlumne()
+        if tutors.exists():
+            msg = Missatge(
+                remitent=usuari_notificacions,
+                text_missatge=ALUMNE_MAJOR_DEDAT.format(alumne),
+                tipus_de_missatge=tipus_de_missatge,
+            )
+            for tutor in tutors:
+                msg.envia_a_usuari(tutor, "IN")
+
+        Accio.objects.create(
+            tipus="NF",
+            usuari=usuari_notificacions,
+            l4=False,
+            impersonated_from=None,
+            text=codi_control,
+        )
 
 def llista_pendents():
     if EmailPendent.objects.count() > 0:
@@ -66,6 +129,13 @@ def getNotifElements(elements, usuari, alumne):
     alumne    Alumne al que pertanyen els elements
     Retorna   Query amb els elements no notificats trobats.
     """
+    # DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        elements = elements.exclude(relacio_familia_notificada__isnull=False)
+    except:  # noqa: E722
+        pass
+    # DEPRECATED ^^^
     Nous = elements.exclude(
         notificacions_familia__usuari=usuari, notificacions_familia__alumne=alumne
     )
@@ -108,6 +178,9 @@ def notifica():
     # Missatges pendents
     notifica_pendents()
 
+    # Avisa als tutors dels alumnes que avui fan 18 anys
+    notifica_majors_dedat()
+
     # Notificacions
     ara = datetime.now()
 
@@ -139,11 +212,10 @@ def notifica():
     for alumne_id in llista_alumnes:
         try:
             alumne = Alumne.objects.get(pk=alumne_id)
-            # Bucle dels responsables i alumne
-            # La configuració de notificació és diferent per cada responsable o alumne.
+            
             destinataris = [(r, "resp") for r in alumne.get_responsables() if r] + [
-                (alumne, "almn")
-            ]
+                    (alumne, "almn")
+                ]
 
             for usuari, tipus in destinataris:
                 if not usuari:
@@ -155,7 +227,6 @@ def notifica():
                 periodicitat_faltes = usuari.periodicitat_faltes
                 periodicitat_incidencies = usuari.periodicitat_incidencies
                 adreca_mail_informada = bool(correu)
-                alumne.qr_portal_set.exists()
 
                 usuari = usuari.get_user_associat()
 
@@ -180,6 +251,22 @@ def notifica():
                         quota__importQuota__gt=0,
                         pagament_realitzat=False,
                     )
+                    # DEPRECATED vvv
+                    nous_pagaments = nous_pagaments.exclude(
+                        data_hora_pagament__isnull=False
+                    ).union(
+                        QuotaPagament.objects.filter(
+                            Q(data_hora_pagament__isnull=True)
+                            | (
+                                Q(data_hora_pagament__lt=fa7dies)
+                                & Q(quota__dataLimit__lt=en7dies)
+                            ),
+                            alumne=alumne,
+                            quota__importQuota__gt=0,
+                            pagament_realitzat=False,
+                        ).exclude(notificacions_familia__moment__isnull=False)
+                    )
+                    # DEPRECATED ^^^
                 else:
                     nous_pagaments = QuotaPagament.objects.none()
                 noves_incidencies = getNotifElements(
@@ -282,17 +369,6 @@ def notifica():
                         enviatOK = False
                         # Enviar msg a admins, ull! podem inundar de missatges si fallen tots els alumnes.
                         num_correus_no_enviats += 1
-                # actualitzo QR's
-                if hiHaNovetats:
-                    n_tokens = alumne.qr_portal_set.update(
-                        novetats_detectades_moment=ara
-                    )
-                else:
-                    n_tokens = None
-
-                enviatOK = enviatOK or bool(
-                    n_tokens
-                )  # s'ha enviat per algun dels mitjants
                 if enviatOK:
                     notifAlumne = creaNotifUsuari(usuari, alumne, "N")
                     setNotifElements(noves_sortides, notifAlumne)
@@ -399,14 +475,19 @@ def enviaEmail(subject, body, from_email, bcc, connection=None, attachments=None
             f.seek(0, os.SEEK_END)
             mida = f.tell()
             midatotal = midatotal + mida
-            if midatotal <= settings.CUSTOM_ATTACH_MAIL_MAX_SIZE:
+            if (
+                mida <= settings.FILE_UPLOAD_MAX_MEMORY_SIZE
+                and midatotal <= settings.FILE_UPLOAD_MAX_MEMORY_SIZE * 3
+            ):
                 f.seek(0)
                 email.attach(name, f.read(), content_type)
             else:
+                fitxerMB = settings.FILE_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024
+                totalMB = fitxerMB * 3
                 raise FitxerSuperaMida(
                     "Mida dels fitxers inadequada."
-                    + " La mida total de tots els fitxers no pot superar {0} MB.".format(
-                        settings.CUSTOM_ATTACH_MAIL_MAX_SIZE / 1024 / 1024
+                    + " Un fitxer no pot superar {0} MB i tots els fitxers {1} MB.".format(
+                        fitxerMB, totalMB
                     )
                 )
 
@@ -453,6 +534,12 @@ def notificaSenseCorreus():
     ara = datetime.now()
     q_no_es_baixa = Q(data_baixa__gte=ara) | Q(data_baixa__isnull=True)
 
+    # DEPRECATED vvv
+    if not Alumne.objects.filter(
+        responsables__correu_relacio_familia__isnull=False
+    ).exists():
+        return Alumne.objects.none()
+    # DEPRECATED ^^^
     alumnesSenseCorreu = Alumne.objects.filter(q_no_es_baixa).exclude(
         responsables__correu_relacio_familia__isnull=False
     )
@@ -487,7 +574,7 @@ def enviaEmailFamilies(assumpte, missatge, fitxers=None):
     sense_correu = notificaSenseCorreus()
     correus_alumnes = (
         Alumne.objects.filter(q_no_es_baixa)
-        .exclude(pk__in=sense_correu)
+        .difference(sense_correu)
         .values_list("responsables__correu_relacio_familia", "correu")
     )
 

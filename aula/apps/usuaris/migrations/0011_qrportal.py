@@ -42,9 +42,7 @@ class Migration(migrations.Migration):
                 ("clau", models.CharField(db_index=True, max_length=40)),
                 (
                     "localitzador",
-                    models.CharField(
-                        db_index=True, default="-", max_length=4, unique=True
-                    ),
+                    models.CharField(db_index=True, default="-", max_length=4, unique=True),
                 ),
                 ("es_el_token_actiu", models.BooleanField(default=False)),
                 (

@@ -174,7 +174,6 @@ def calcula_menu(user, path, sessioImpersonada, request):
         ("Assistència", "tutoria__assistencia__list_entre_dates", tu, None, None),
         ("Informe", "tutoria__alumne__informe_setmanal", tu, None, None),
         ("Portal", "tutoria__relacio_families__dades_relacio_families", tu, None, None),
-        ("Mòbil App", "tutoria__relacio_families_app__qrs", tu, None, None),
         ("Seguiment", "tutoria__seguiment_tutorial__formulari", tu, None, None),
         ("Codis AruCo", "tutoria__aruco__imprimir", tu_aruco, None, None),
     )
@@ -373,7 +372,7 @@ def calcula_menu(user, path, sessioImpersonada, request):
                         (
                             "Activa",
                             "matricula:gestio__matricula__activa",
-                            di if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None,
+                            ad if settings.CUSTOM_MODUL_MATRICULA_ACTIU else None,
                             None,
                         ),
                     ),
@@ -636,13 +635,6 @@ def calcula_menu(user, path, sessioImpersonada, request):
                 ),
                 ("Promocions", "administracio__promocions__llista", di, None, None),
                 ("Inicialitza", "administracio__init__inicialitzaDB", ad, None, None),
-                (
-                    "Reassigna baixes",
-                    "administracio__reassigna__baixes",
-                    di,
-                    None,
-                    None,
-                ),
                 #                      ("Nou Alumne", 'administracio__alumnes__noualumne', di, None, None),
                 # Aquesta pantalla encara no té implementada la seva funcionalitat.
                 # Queda pendent acabar-la, o eliminar-la de l'aplicació.

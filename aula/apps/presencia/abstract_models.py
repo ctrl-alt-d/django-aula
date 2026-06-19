@@ -246,6 +246,11 @@ class AbstractControlAssistencia(models.Model):
         on_delete=models.CASCADE,
     )
 
+    # DEPRECATED vvv
+    relacio_familia_revisada = models.DateTimeField(null=True)
+    relacio_familia_notificada = models.DateTimeField(null=True)
+    # DEPRECATED ^^^
+
     notificacions_familia = models.ManyToManyField("usuaris.NotifUsuari", db_index=True)
     comunicat = models.ForeignKey(
         "missatgeria.Missatge",

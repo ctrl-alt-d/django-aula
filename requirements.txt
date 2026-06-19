@@ -3,7 +3,7 @@ openpyxl
 git+https://github.com/lino-framework/appypod.git#egg=appy ; python_version < '3.6'
 appy ; python_version >= '3.6'
 Django < 4 ; python_version < '3.8'
-Django < 6 ; python_version >= '3.8'
+Django < 5.2 ; python_version >= '3.8'
 django-extensions
 django-environ
 lxml
@@ -34,9 +34,9 @@ django-filter
 qrcode
 djangorestframework-simplejwt
 djau-gsuite-email
-crispy-bootstrap3
+crispy-bootstrap3==2024.1
 django-crispy-forms==2.0 ; python_version < '3.9'
-django-crispy-forms ; python_version >= '3.9'
+django-crispy-forms==2.3 ; python_version >= '3.9'
 
 
 matplotlib

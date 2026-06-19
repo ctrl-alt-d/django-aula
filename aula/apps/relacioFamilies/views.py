@@ -1,10 +1,8 @@
 # This Python file uses the following encoding: utf-8
-import itertools
 import json
 from datetime import datetime, timedelta
 
 import django_tables2 as tables
-import qrcode
 from django.conf import settings
 from django.contrib import messages
 
@@ -52,7 +50,6 @@ from aula.apps.sortides.models import (
 )
 from aula.apps.tutoria.models import Tutor
 from aula.apps.usuaris.models import (
-    QRPortal,
     User2Alumne,
     User2Professor,
     User2Responsable,
@@ -65,7 +62,6 @@ from aula.apps.usuaris.tools import (
     getRol,
     testEmail,
 )
-from aula.mblapp.table2_models import Table2_QRPortalAlumne
 from aula.settings import (
     CUSTOM_DADES_ADDICIONALS_ALUMNE,
     CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES,
@@ -73,7 +69,7 @@ from aula.settings import (
 from aula.utils import tools
 from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
-from aula.utils.tools import classebuida, unicode
+from aula.utils.tools import unicode
 
 # @login_required
 # @group_required(['professors'])
@@ -120,7 +116,7 @@ from aula.utils.tools import classebuida, unicode
 @group_required(["professors"])
 def enviaBenvinguda(request, pk):
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     professor = User2Professor(user)
 
@@ -159,7 +155,7 @@ def bloquejaDesbloqueja(request, pk):
     # TODO fa falta aquesta view ?
     # Si fa falta, s'hauria de replantejar afegint els responsables.
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     professor = User2Professor(user)
 
@@ -192,265 +188,12 @@ def bloquejaDesbloqueja(request, pk):
     )
 
 
-@login_required
-@group_required(["professors"])
-def qrTokens(request, pk=None):
-    import time
-
-    credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
-
-    professor = User2Professor(user)
-    seg_tutor_de_lalumne = seg_es_tutor = False
-    if pk:
-        alumne = get_object_or_404(Alumne, pk=pk) if pk else None
-        alumnes = [
-            alumne,
-        ]
-        seg_tutor_de_lalumne = pk and professor in alumne.tutorsDeLAlumne()
-    else:
-        els_meus_alumnes_de_grups_tutorats = [
-            a for t in professor.tutor_set.all() for a in t.grup.alumne_set.all()
-        ]
-        els_meus_tutorats_individualitzats = [
-            t.alumne for t in professor.tutorindividualitzat_set.all()
-        ]
-        alumnes = (
-            els_meus_alumnes_de_grups_tutorats + els_meus_tutorats_individualitzats
-        )
-        seg_es_tutor = (
-            professor.tutor_set.exists() or professor.tutorindividualitzat_set.exists()
-        )
-    # seg-------------------
-    te_permis = l4 or seg_tutor_de_lalumne or seg_es_tutor
-    if not te_permis:
-        raise Http404()
-
-    report = []
-
-    fitxers_a_esborrar = []
-
-    for copia, alumne in itertools.product(
-        [
-            1,
-            2,
-        ],
-        alumnes,
-    ):
-        # munto el token
-        qr_token = QRPortal()
-        qr_token.calcula_clau_i_localitzador()
-        qr_token.alumne_referenciat = alumne
-        qr_token.save()
-
-        qr_dict = {
-            "key": qr_token.clau,
-            "id": alumne.id,
-            "name": alumne.nom,
-            "surname": alumne.cognoms,
-            "api_end_point": settings.URL_DJANGO_AULA,
-            "organization": settings.NOM_CENTRE,
-        }
-        qr_text = json.dumps(qr_dict)
-
-        # munto imatge:
-        nom_fitxer = r"/tmp/barcode-{0}-{1}-{2}-{3}.png".format(
-            time.time(), request.session.session_key, alumne.pk, copia
-        )
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=3,
-            border=2,
-        )
-        qr.add_data(qr_text)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-        img.save(nom_fitxer)
-        fitxers_a_esborrar.append(nom_fitxer)
-        o = classebuida()
-        o.alumne = unicode(alumne)
-        o.grup = unicode(alumne.grup)
-        o.copia = copia
-        o.clau = qr_text if settings.DEBUG else ""
-        report.append(o)
-        o.barres = nom_fitxer
-
-    # from django.template import Context
-    import html
-    import os
-
-    from appy.pod.renderer import Renderer
-    from django import http
-
-    excepcio = None
-
-    # try:
-
-    # resultat = StringIO.StringIO( )
-    resultat = "/tmp/DjangoAula-temp-{0}-{1}.odt".format(
-        time.time(), request.session.session_key
-    )
-    # context = Context( {'reports' : reports, } )
-    path = os.path.join(settings.PROJECT_DIR, "../customising/docs/qr.odt")
-    if not os.path.isfile(path):
-        path = os.path.join(os.path.dirname(__file__), "templates/qr.odt")
-
-    renderer = Renderer(
-        path,
-        {
-            "report": report,
-        },
-        resultat,
-    )
-    renderer.run()
-    docFile = open(resultat, "rb")
-    contingut = docFile.read()
-    docFile.close()
-    os.remove(resultat)
-
-    # barcode
-    for nom_fitxer in fitxers_a_esborrar:
-        os.remove(nom_fitxer)
-
-    #     except Exception, e:
-    #         excepcio = unicode( e )
-
-    if True:  # not excepcio:
-        response = http.HttpResponse(
-            contingut, content_type="application/vnd.oasis.opendocument.text"
-        )
-        filename = "QR-{0}.odt".format(
-            "{0}-{1}".format(alumne.cognoms, alumne.nom) if pk else "Tot l'alumnat"
-        )
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    else:
-        response = http.HttpResponse(
-            """Als Gremlin no els ha agradat aquest fitxer! %s"""
-            % html.escape(excepcio)
-        )
-
-    return response
-
-
-@login_required
-@group_required(["professors"])
-def qrs(request):
-    credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
-
-    professor = User2Professor(user)
-
-    report = []
-    grups = [t.grup for t in Tutor.objects.filter(professor=professor)]
-    grups.append("Altres")
-    for grup in grups:
-        taula = tools.classebuida()
-
-        taula.titol = tools.classebuida()
-        taula.titol.contingut = ""
-        taula.titol.enllac = None
-
-        taula.capceleres = []
-
-        capcelera = tools.classebuida()
-        capcelera.amplade = 75
-        capcelera.contingut = (
-            grup
-            if grup == "Altres"
-            else "{0} ({1})".format(unicode(grup), unicode(grup.curs))
-        )
-        capcelera.enllac = ""
-        taula.capceleres.append(capcelera)
-
-        capcelera = tools.classebuida()
-        capcelera.amplade = 25
-        capcelera.contingut = "Acció"
-        taula.capceleres.append(capcelera)
-
-        taula.fileres = []
-
-        if grup == "Altres":
-            consulta_alumnes = Q(
-                pk__in=[ti.alumne.pk for ti in professor.tutorindividualitzat_set.all()]
-            )
-        else:
-            consulta_alumnes = Q(grup=grup)
-
-        alumnes = Alumne.objects.filter(consulta_alumnes)
-
-        for alumne in alumnes:
-            filera = []
-
-            # -Alumne--------------------------------------------
-            camp = tools.classebuida()
-            camp.codi = alumne.pk
-            camp.enllac = None
-            camp.contingut = unicode(alumne)
-            filera.append(camp)
-
-            # -Acció--------------------------------------------
-            camp = tools.classebuida()
-            camp.enllac = None
-            accio_list = [
-                ("Genera nous codis QR", "/open/qrTokens/{0}".format(alumne.pk)),
-                ("Gestiona QR's existents", "/open/gestionaQRs/{0}".format(alumne.pk)),
-            ]
-            camp.multipleContingut = accio_list
-            filera.append(camp)
-
-            # --
-            taula.fileres.append(filera)
-        report.append(taula)
-    menuCTX = list(
-        {"/open/qrTokens/": "Genera nous codis QR per a tot el grup"}.items()
-    )
-    return render(
-        request,
-        "report.html",
-        {
-            "report": report,
-            "head": "QR's dels meus tutorats",
-            "menuCTX": menuCTX,
-        },
-    )
-
-
-@login_required
-@group_required(["professors"])
-def gestionaQRs(request, pk=None):
-    credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
-
-    alumne = Alumne.objects.get(pk=pk)
-
-    qrs = (
-        QRPortal.objects.filter(alumne_referenciat=alumne)
-        .order_by("moment_expedicio")
-        .distinct()
-    )
-
-    table = Table2_QRPortalAlumne(data=list(qrs))
-    table.order_by = "-moment_expedicio"
-    RequestConfig(
-        request, paginate={"paginator_class": DiggPaginator, "per_page": 10}
-    ).configure(table)
-
-    return render(
-        request,
-        "gestionaQRs.html",
-        {
-            "table": table,
-            "alumne": alumne,
-        },
-    )
-
 
 @login_required
 @group_required(["professors"])
 def configuraConnexio(request, pk):
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     professor = User2Professor(user)
 
@@ -594,7 +337,7 @@ def configuraConnexio(request, pk):
 @group_required(["professors"])
 def dadesRelacioFamilies(request):
     credentials = tools.getImpersonateUser(request)
-    user, _ = credentials
+    (user, _) = credentials
 
     professor = User2Professor(user)
 
@@ -685,6 +428,63 @@ def dadesRelacioFamilies(request):
                 .exclude(notificacions_familia__tipus="R")
                 .distinct()
             )
+            # DEPRECATED vvv
+            # Per compatibilitat amb dades existents
+            try:
+                avui = datetime.now().date()
+                if codi == "pagament(s)":
+                    comp_pendent_de_mirar = (
+                        model.objects.filter(alumne__in=alumnes)
+                        .filter(data_hora_pagament__isnull=True)
+                        .exclude(pagament_realitzat=True)
+                        .exclude(notificacions_familia__tipus="R")
+                        .distinct()
+                    )
+                elif codi == "activitats o pagaments":
+                    comp_pendent_de_mirar = (
+                        model.objects.filter(alumne__in=alumnes)
+                        .exclude(sortida__data_fi__lt=avui)
+                        .filter(relacio_familia_revisada__isnull=True)
+                        .filter(relacio_familia_notificada__isnull=False)
+                        .exclude(notificacions_familia__tipus="R")
+                        .distinct()
+                    )
+                elif codi == "qualitativa":
+                    comp_pendent_de_mirar = (
+                        model.objects.filter(alumne__in=alumnes)
+                        .exclude(
+                            qualitativa__data_tancar_tancar_portal_families__lt=avui
+                        )
+                        .filter(relacio_familia_revisada__isnull=True)
+                        .filter(relacio_familia_notificada__isnull=False)
+                        .exclude(notificacions_familia__tipus="R")
+                        .distinct()
+                    )
+                elif codi == "faltes assistència":
+                    comp_pendent_de_mirar = (
+                        model.objects.filter(alumne__in=alumnes)
+                        .exclude(estat__codi_estat__in=["P", "O"])
+                        .filter(relacio_familia_revisada__isnull=True)
+                        .filter(relacio_familia_notificada__isnull=False)
+                        .exclude(notificacions_familia__tipus="R")
+                        .distinct()
+                    )
+                else:
+                    comp_pendent_de_mirar = (
+                        model.objects.filter(alumne__in=alumnes)
+                        .filter(relacio_familia_revisada__isnull=True)
+                        .filter(relacio_familia_notificada__isnull=False)
+                        .exclude(notificacions_familia__tipus="R")
+                        .distinct()
+                    )
+            except:  # noqa: E722
+                comp_pendent_de_mirar = model.objects.none()
+
+            familia_pendent_de_mirar[codi] = model.objects.filter(
+                Q(pk__in=familia_pendent_de_mirar[codi])
+                | Q(pk__in=comp_pendent_de_mirar)
+            ).distinct()
+            # DEPRECATED ^^^
 
         for alumne in alumnes:
             filera = []
@@ -795,7 +595,7 @@ def dadesRelacioFamilies(request):
 @login_required
 def canviParametres(request):
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     if not CUSTOM_FAMILIA_POT_MODIFICAR_PARAMETRES:
         raise Http404()
@@ -918,7 +718,7 @@ def choices_hores(alumne, dia, actual=True):
 @login_required
 def horesAlumneAjax(request, idalumne, dia):
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     alumne = Alumne.objects.filter(user_associat=user)
     if alumne and alumne[0].id != int(idalumne):
@@ -945,7 +745,7 @@ def comunicatAbsencia(request):
     from aula.apps.missatgeria.views import enviaMsg
 
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     diesantelacio = 6
 
@@ -1057,13 +857,11 @@ class ComunicatsTable(tables.Table):
 
 @login_required
 def comunicatsAnteriors(request):
-    from django_tables2 import RequestConfig
 
     from aula.apps.missatgeria.missatges_a_usuaris import AVIS_ABSENCIA, tipusMissatge
-    from aula.utils.my_paginator import DiggPaginator
 
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
     tipus = tipusMissatge(AVIS_ABSENCIA)
 
     _, responsable, alumne = getRol(user, request)
@@ -1092,6 +890,14 @@ def getNousElements(elements, user):
     user      Usuari, pot ser: professor, responsable o alumne.
     Retorna   Query amb els elements no revisats nous trobats i un boolean indicant si tenen pendent la notificació (True o False).
     """
+    # DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if elements.filter(relacio_familia_notificada__isnull=False):
+            elements = elements.exclude(relacio_familia_revisada__isnull=False)
+    except:  # noqa: E722
+        pass
+    # DEPRECATED ^^^
     if User2Professor(user):
         Nous = elements.exclude(notificacions_familia__tipus="R")
         return Nous, False
@@ -1109,7 +915,7 @@ def elMeuInforme(request, pk=None):
     detall = "all"
 
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     nTaula = 0
 
@@ -2386,14 +2192,16 @@ def canviaAlumne(request, idalumne):
     a un dels seus alumnes associats, passa a gestionar aquest alumne.
     """
     credentials = tools.getImpersonateUser(request)
-    user, l4 = credentials
+    (user, l4) = credentials
 
     responsable = User2Responsable(user)
     alum = None
     if responsable:
         a = Alumne.objects.filter(pk=int(idalumne))
-        if a.exists() and a.first() in responsable.get_alumnes_associats():
-            alum = a.first()
+        if a.exists():
+            candidat = a.first()
+            if candidat in responsable.get_alumnes_associats():
+                alum = candidat
     else:
         alum = User2Alumne(user)
     if alum:
@@ -2405,7 +2213,9 @@ def canviaAlumne(request, idalumne):
 def escollirAlumne(request):
     _, responsable, alumne = getRol(request.user, request)
     if responsable:
-        if responsable.get_alumnes_associats().count() > 1:
+        alumnes = [a for a in responsable.get_alumnes_associats() if a]
+
+        if len(alumnes) > 1:
             if request.method == "POST":
                 form = escollirAlumneForm(request.user, responsable, request.POST)
                 if form.is_valid():
@@ -2427,17 +2237,17 @@ def escollirAlumne(request):
                 },
             )
         else:
-            if responsable.get_alumnes_associats().count() == 1:
+            if len(alumnes) == 1:
                 return HttpResponseRedirect(
                     reverse_lazy(
                         "relacio_families__canviaAlumne",
                         kwargs={
-                            "idalumne": responsable.get_alumnes_associats().first().id
+                            "idalumne": alumnes[0].id
                         },
                     )
                 )
             else:
-                # No té alumnes
+                # No té alumnes associats
                 return HttpResponseRedirect("/logout/")
     if alumne:
         alumneid = alumne.id

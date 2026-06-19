@@ -1,7 +1,7 @@
-# docker/docker-compose.demo.automatica.yml
+# docker-compose.demo.manual.yml
 services:
   db:
-    image: postgres:16
+    image: postgres:17.7-alpine
     container_name: demo_db
     ports:
       - "5432:5432"
@@ -13,28 +13,35 @@ services:
       POSTGRES_DB: ${DB_NAME}
     volumes:
       - pg_data:/var/lib/postgresql/data
+#      - ./docker:/docker-entrypoint-initdb.d
     restart: always
 
   web:
-    image: django_aula:latest
+    image: rafatecno1/django-aula:demo
     container_name: demo_web
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     depends_on:
       - db
     env_file:
       - .env
     environment:
       - DEMO_ALLOWED_HOSTS=${DEMO_ALLOWED_HOSTS}
-    restart: always
+    command: >
+      bash -c "
+      wait-for-it db:5432 --timeout=60 --strict &&
+      echo '🔹 Aplicant migracions...';
+      python manage.py migrate &&
+      echo '🔹 Iniciant servidor Django...';
+      python manage.py runserver 0.0.0.0:8000
+      "
     ports:
       - "8000:8000"
-    volumes:
-      - media_data:/app/storage
-    command: docker/carrega_inicial.sh
+    # No volume mounting: el codi ja és dins la imatge
+    #volumes:
+    #  - ./:/app
 
 volumes:
   pg_data:
-  media_data:
-  

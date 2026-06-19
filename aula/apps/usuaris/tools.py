@@ -78,12 +78,12 @@ def extractEmail(address):
     for a in splitAddress:
         # General Email Regex (RFC 5322 Official Standard)
         regex = (
-            r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}"
-            r'~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\['
-            r'\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])'
-            r"?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]"
-            r"?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]"
-            r"*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
+            "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}"
+            '~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\['
+            '\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])'
+            "?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]"
+            "?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]"
+            "*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"
         )
         match = re.match(regex, a)
         if match:
@@ -1098,6 +1098,14 @@ def ultimaNotificacio(usuari, alumne):
         )
     if ultima:
         return ultima.moment
+    # DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if alumne.relacio_familia_darrera_notificacio:
+            return alumne.relacio_familia_darrera_notificacio
+    except:  # noqa: E722
+        pass
+    # DEPRECATED ^^^
     return None
 
 
@@ -1124,6 +1132,26 @@ def get_notif_revisio(element, usuari, fmt_data=None):
     if not fmt_data:
         fmt_data = "%d/%m/%Y %H:%M"
     revisc = notifc = ""
+    # DEPRECATED vvv
+    # Per compatibilitat amb dades existents
+    try:
+        if hasattr(element, "data_hora_pagament"):
+            if element.data_hora_pagament:
+                # data_hora_pagament serveix per a saber moment del pagament o moment de notificació
+                if element.pagament_realitzat:
+                    revisc = element.data_hora_pagament.strftime(fmt_data)
+                else:
+                    notifc = element.data_hora_pagament.strftime(fmt_data)
+        else:
+            if element.relacio_familia_revisada:
+                revisc = element.relacio_familia_revisada.strftime(fmt_data)
+            if element.relacio_familia_notificada:
+                notifc = element.relacio_familia_notificada.strftime(fmt_data)
+            else:
+                notifc = revisc
+    except:  # noqa: E722
+        pass
+    # DEPRECATED ^^^
     if User2Professor(usuari):
         notif = (
             element.notificacions_familia.filter(tipus="N").order_by("moment").first()
