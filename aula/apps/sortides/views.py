@@ -34,7 +34,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django_select2.forms import ModelSelect2MultipleWidget
 from django_tables2.config import RequestConfig
 from icalendar import Calendar, Event, vText
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from aula.apps.alumnes.models import Alumne, AlumneGrupNom, Curs
 from aula.apps.missatgeria.missatges_a_usuaris import (
@@ -1755,9 +1756,6 @@ def demo(request):
 def pagoOnlineWeb(request, pk):
     request.session["origen"] = "Login"
     return pagoOnlineBase(request, pk)
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

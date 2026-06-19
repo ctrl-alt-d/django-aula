@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.db.models import Q

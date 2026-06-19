@@ -1,7 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from __future__ import unicode_literals
 
-from django.conf import settings
 from rest_framework import permissions
 from aula.apps.alumnes.models import Alumne
 

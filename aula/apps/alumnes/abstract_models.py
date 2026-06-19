@@ -7,7 +7,6 @@ from dateutil.relativedelta import relativedelta
 
 #  amorilla@xtec.cat
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.templatetags.static import static

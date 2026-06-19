@@ -1,11 +1,9 @@
 # This Python file uses the following encoding: utf-8
 
-import uuid
 
 # from django.db.models import get_model
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.crypto import get_random_string
 
 from aula.utils.tools import unicode
 

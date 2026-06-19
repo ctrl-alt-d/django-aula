@@ -1,10 +1,8 @@
 # This Python file uses the following encoding: utf-8
-import itertools
 import json
 from datetime import datetime, timedelta
 
 import django_tables2 as tables
-import qrcode
 from django.conf import settings
 from django.contrib import messages
 
@@ -71,7 +69,7 @@ from aula.settings import (
 from aula.utils import tools
 from aula.utils.decorators import group_required
 from aula.utils.my_paginator import DiggPaginator
-from aula.utils.tools import classebuida, unicode
+from aula.utils.tools import unicode
 
 # @login_required
 # @group_required(['professors'])
@@ -802,10 +800,8 @@ class ComunicatsTable(tables.Table):
 
 @login_required
 def comunicatsAnteriors(request):
-    from django_tables2 import RequestConfig
 
     from aula.apps.missatgeria.missatges_a_usuaris import AVIS_ABSENCIA, tipusMissatge
-    from aula.utils.my_paginator import DiggPaginator
 
     credentials = tools.getImpersonateUser(request)
     user, l4 = credentials

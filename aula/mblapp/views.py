@@ -1,36 +1,27 @@
 # This Python file uses the following encoding: utf-8
 from __future__ import unicode_literals
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from django.conf import settings
-from django.contrib.auth.models import Group, User
-from django.db import transaction
-from rest_framework import request, serializers
+from rest_framework import serializers
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.parsers import JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from aula.apps.alumnes.models import Alumne
 from aula.apps.presencia.models import ControlAssistencia, EstatControlAssistencia
-from aula.apps.relacioFamilies.business_rules import responsable
 from aula.apps.sortides.models import (
     NotificaSortida,
     Pagament,
     Sortida,
     SortidaPagament,
 )
-from aula.apps.avaluacioQualitativa.models import AvaluacioQualitativa
 from aula.mblapp.security_rest import EsUsuariDeLaAPI
-from aula.mblapp.serializers import DarreraSincronitzacioSerializer
 from aula.utils.tools import unicode
 from aula.apps.usuaris.tools import getRol
 
 from aula.apps.relacioFamilies.notifica import getNotifElements, setNotifElements, creaNotifUsuari
 
-from aula.apps.usuaris.models import NotifUsuari
-from datetime import date
 
 
 def obte_alumne_o_error(alumne_id):
