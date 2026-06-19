@@ -5,7 +5,7 @@ from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 
 
 def respostaAvaluacioQualitativa_clean(instance):
-    (user, l4) = (
+    user, l4 = (
         instance.credentials
         if hasattr(instance, "credentials")
         else (

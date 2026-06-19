@@ -372,23 +372,23 @@ def indicadorsReport():
         curs = 0
         sup1 = sup2 = sup3 = quan1 = quan2 = quan3 = 0
         if data > dtrim1:
-            (trim1, sup1, quan1) = indicadorAbsentisme(
+            trim1, sup1, quan1 = indicadorAbsentisme(
                 dtrim0, dtrim1, nivell, tpc, recerca
             )
 
         if data > dtrim2:
             # Suma un dia per evitar que compti dos cops el final de trimestre
-            (trim2, sup2, quan2) = indicadorAbsentisme(
+            trim2, sup2, quan2 = indicadorAbsentisme(
                 dtrim1 + undia, dtrim2, nivell, tpc, recerca
             )
 
         if data > dtrim3:
             # Suma un dia per evitar que compti dos cops el final de trimestre
-            (trim3, sup3, quan3) = indicadorAbsentisme(
+            trim3, sup3, quan3 = indicadorAbsentisme(
                 dtrim2 + undia, dtrim3, nivell, tpc, recerca
             )
 
-        (curs, supc, quanc) = indicadorAbsentisme(dtrim0, dtrim3, nivell, tpc, recerca)
+        curs, supc, quanc = indicadorAbsentisme(dtrim0, dtrim3, nivell, tpc, recerca)
 
         filera = []
 

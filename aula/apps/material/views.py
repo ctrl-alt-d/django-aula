@@ -58,7 +58,7 @@ from aula.utils.tools import unicode
 @login_required
 @group_required(["professors", "professional", "consergeria"])
 def reservaRecursList(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     reserves = ReservaRecurs.objects.filter(es_reserva_manual=True).filter(usuari=user)
@@ -89,7 +89,7 @@ def reservaRecursList(request):
 @group_required(["professors", "professional", "consergeria"])
 def consultaRecursPerRecurs(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formDisponibilitatRecurs = disponibilitatRecursPerRecursForm(request.POST)
@@ -122,7 +122,7 @@ def consultaRecursPerRecurs(request):
 @group_required(["professors", "professional", "consergeria"])
 def detallRecursReserves(request, year, month, day, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     recurs = get_object_or_404(Recurs, pk=pk)
 
@@ -226,7 +226,7 @@ def detallRecursReserves(request, year, month, day, pk):
 @group_required(["professors", "professional", "consergeria"])
 def consultaRecursPerFranja(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formDisponibilitatRecurs = disponibilitatRecursPerFranjaForm(
@@ -267,7 +267,7 @@ def consultaRecursPerFranja(request):
 @group_required(["professors", "professional", "consergeria"])
 def detallFranjaReserves(request, year, month, day, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     franja = get_object_or_404(FranjaHoraria, pk=pk)
 
@@ -377,7 +377,7 @@ def tramitarReservaRecurs(
     request, pk_recurs=None, pk_franja=None, year=None, month=None, day=None
 ):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     recurs = Recurs.objects.filter(pk=pk_recurs).first()
     franja = FranjaHoraria.objects.filter(pk=pk_franja).first()
@@ -459,7 +459,7 @@ def tramitarReservaRecurs(
 @group_required(["professors", "professional", "consergeria"])
 def eliminarReservaRecurs(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     reserva = get_object_or_404(ReservaRecurs, pk=pk)
     reserva.credentials = credentials
 
@@ -483,7 +483,7 @@ def eliminarReservaRecurs(request, pk):
 @login_required
 @group_required(["direcció"])
 def assignaComentarisARecurs(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     errors = []
@@ -557,7 +557,7 @@ def assignaComentarisARecurs(request):
 @group_required(["professors", "professional", "consergeria"])
 def consultaMassivaRecurs(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formDisponibilitatRecurs = disponibilitatMassivaRecursPerFranjaForm(
@@ -618,7 +618,7 @@ def detallMassiuFranjaReserves(
     request, year_inici, year_fi, month_inici, month_fi, day_inici, day_fi, pk
 ):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     franja = get_object_or_404(FranjaHoraria, pk=pk)
 
@@ -740,7 +740,7 @@ def tramitarReservaMassivaRecurs(
     day_fi=None,
 ):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     recurs = Recurs.objects.filter(pk=pk_recurs).first()
     franja = FranjaHoraria.objects.filter(pk=pk_franja).first()

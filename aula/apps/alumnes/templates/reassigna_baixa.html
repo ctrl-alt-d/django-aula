@@ -1,0 +1,27 @@
+{% extends "form.html" %}
+
+{% block head %}
+<h2>Reassigna alumnes de baixa</h2>
+<h4>Hi ha {{ total }} alumnes pendents de moure de {{ total_baixes }} baixes.</h4>
+<br />
+{% endblock %}
+
+{% block buttons %}
+    <button type="submit" name="action" value="preview" class="btn btn-default">
+        Simular
+    </button>
+
+    <button type="submit" name="action" value="execute" class="btn btn-primary">
+        Executar
+    </button>
+{% endblock %}
+
+{% block postform %}
+
+{% if preview_total != None %}
+<div class="alert alert-info">
+    Es mouran <b>{{ preview_total }}</b> alumnes al grup <b>{{ preview_nom_grup }}</b>.
+</div>
+{% endif %}
+
+{% endblock %}

@@ -45,15 +45,15 @@ class Matricula(models.Model):
     )
     curs_complet = models.BooleanField(
         "Matrícula del curs complet",
-        help_text="Matrícula típica de totes les UFs",
+        help_text="Matrícula típica de tots els mòduls",
         default=False,
     )
     quantitat_ufs = models.IntegerField(
-        "UFs soltes, curs no complet", null=True, blank=True, default=0
+        "Mòduls solts, curs no complet", null=True, blank=True, default=0
     )
     llistaufs = models.CharField(
-        "Mòduls i ufs de la matrícula",
-        help_text="En cas d'UFs soltes",
+        "Mòduls de la matrícula",
+        help_text="En cas de mòduls solts",
         max_length=250,
         null=True,
         blank=True,
@@ -128,7 +128,6 @@ class Document(models.Model):
     fitxer = PrivateFileField(
         "Fitxer amb documents",
         upload_to="matricula/%Y/",
-        max_file_size=settings.FILE_UPLOAD_MAX_MEMORY_SIZE,
         null=True,
     )
     matricula = models.ForeignKey(

@@ -52,7 +52,8 @@ class CanviDadesAddicionalsUsuari(ModelForm):
         foto = self.cleaned_data["foto"]
         if (
             foto
-            and hasattr(foto, 'content_type') and foto.content_type not in CUSTOM_TIPUS_MIME_FOTOS
+            and hasattr(foto, "content_type")
+            and foto.content_type not in CUSTOM_TIPUS_MIME_FOTOS
         ):
             message = "Tipus de fitxer no vàlid. Formats permesos: {0}".format(
                 CUSTOM_TIPUS_MIME_FOTOS

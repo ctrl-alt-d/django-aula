@@ -17,6 +17,7 @@ from django.forms.widgets import (
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, escape
 from django.utils.safestring import mark_safe
+from django.conf import settings
 
 # -----------------------------------------------------------------------------------
 # És un select per ser omplert via AJAX. Cal passar-li com a paràmetre l'script que l'omplirà
@@ -431,35 +432,108 @@ class modalButton(TextInput):
 
 
 class CustomClearableFileInput(forms.ClearableFileInput):
+    """
+    Usa el template 'widgets/dragdrop_upload.html' (CSS + JS integrats).
+    - Zona drag & drop, selecció múltiple incremental, eliminar fitxers
+      nous en temps real, llista de fitxers existents amb checkbox esborrat.
+    Ús: camps d'adjunts en formularis SessionWizardView.
+    max_fitxers límit de fitxers a seleccionar. Per defecte valor 0 il·limitat.
+    mida_total_bytes límit en bytes entre tots els fitxers. Per defecte valor 0 il·limitat.
+    """
+
     allow_multiple_selected = True
-    template_name = "widgets/uploadfiles.html"
-    eliminaFitxers = []
-    input_text = mark_safe("<b>Selecciona TOTS els arxius necessaris</b>")
+    template_name = "widgets/dragdrop_upload.html"
+
+    def __init__(self, *args, max_fitxers=0, mida_total_bytes=0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.eliminaFitxers = []
+        self.max_fitxers = max_fitxers
+        self.mida_total_bytes = mida_total_bytes
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["widget"]["attrs"]["max_fitxers"] = self.max_fitxers
+        context["widget"]["attrs"]["mida_total_bytes"] = self.mida_total_bytes
+        # Passa la llista de mides dels fitxers existents en bytes
+        fitxers = self.attrs.get("files", []) if self.attrs else []
+        mides = []
+        for f in fitxers:
+            try:
+                # Accedeix directament al fitxer del sistema de fitxers
+                import os
+
+                ruta = os.path.join(settings.PRIVATE_STORAGE_ROOT, str(f))
+                mides.append(os.path.getsize(ruta))
+            except Exception:
+                mides.append(0)
+        context["widget"]["attrs"]["mides_existents"] = mides
+        return context
 
     def value_from_datadict(self, data, files, name):
-        upload = super().value_from_datadict(data, files, name)
-        checkbox = self.clear_checkbox_name(name)
-        pos = len(checkbox)
+        """
+        Retorna la llista completa de fitxers pujats (files.getlist)
+        i omple self.eliminaFitxers amb els índexs dels checkboxes marcats.
+        """
+        # ── Tots els fitxers pujats ───────────────────────────────────
+        # `files` pot ser un QueryDict (POST real, té getlist) o un dict
+        # normal (quan SessionWizardView reconstrueix el form des de sessió).
+        if hasattr(files, "getlist"):
+            uploads = files.getlist(name)
+        else:
+            val = files.get(name)
+            if val is None:
+                uploads = []
+            elif isinstance(val, (list, tuple)):
+                uploads = list(val)
+            else:
+                uploads = [val]
+
+        # Checkboxes d'esborrat numerats: 'fitxers-clear1', 'fitxers-clear2'…
+        checkbox_prefix = self.clear_checkbox_name(name)
+        prefix_len = len(checkbox_prefix)
         self.eliminaFitxers = []
         for key in data.keys():
-            if key.startswith(checkbox):
-                num = int(key[pos:])
-                self.eliminaFitxers.append(num)
-        return upload
+            # Accepta 'fitxers-clear1', 'fitxers-clear2'…
+            # Descarta 'fitxers-clear' exacte (sense número) per no
+            # confondre'l amb el checkbox estàndard de ClearableFileInput
+            if key.startswith(checkbox_prefix) and len(key) > prefix_len:
+                try:
+                    num = int(key[prefix_len:])
+                    self.eliminaFitxers.append(num)
+                except ValueError:
+                    pass
+        return uploads
 
 
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
+class MultipleFileInput(CustomClearableFileInput):
+    """
+    Widget d'upload amb drag & drop per a formularis simples
+    Ús: camps d'adjunts en formularis normals (no SessionWizardView).
+    """
+
+    def value_from_datadict(self, data, files, name):
+        # Retorna la llista de fitxers; no hi ha checkboxes d'esborrat
+        if hasattr(files, "getlist"):
+            return files.getlist(name)
+        val = files.get(name)
+        if val is None:
+            return []
+        return list(val) if isinstance(val, (list, tuple)) else [val]
 
 
 class MultipleFileField(forms.FileField):
+    """
+    Camp que accepta múltiples fitxers.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def clean(self, data, initial=None):
         single_file_clean = super().clean
         if isinstance(data, (list, tuple)):
-            result = [single_file_clean(d, initial) for d in data]
-        else:
-            result = single_file_clean(data, initial)
-        return result
+            if len(data) == 0:
+                # Llista buida: delega al FileField base (gestiona required)
+                return single_file_clean(data, initial)
+            return [single_file_clean(d, initial) for d in data]
+        return single_file_clean(data, initial)

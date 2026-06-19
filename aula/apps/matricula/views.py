@@ -34,7 +34,6 @@ from aula.apps.matricula.viewshelper import (
     inforgpd,
     mat_selecciona,
     next_mat,
-    quotaSegüentCurs,
     següentCurs,
     situacioMat,
     updateAlumne,
@@ -45,7 +44,7 @@ from aula.utils.decorators import group_required
 
 
 @login_required
-@group_required(["direcció", "administradors"])
+@group_required(["direcció"])
 def LlistaMatConf(request):
     """
     Selecciona els paràmetres per a la verificació de matrícules
@@ -184,7 +183,7 @@ class ConfirmaDetail(LoginRequiredMixin, UpdateView):
 
 
 @login_required
-@group_required(["direcció", "administradors"])
+@group_required(["direcció"])
 def VerificaConfirma(request, pk, curs, nany, tipus):
     return ConfirmaDetail.as_view()(request, pk=pk, curs=curs, nany=nany, tipus=tipus)
 
@@ -215,29 +214,11 @@ def Confirma(request, nany):
                         item = form.save()
                         item.confirma_matricula = form.cleaned_data["opcions"]
                         item.acceptacio_en = django.utils.timezone.now()
-                        item.quota = quotaSegüentCurs(
-                            settings.CUSTOM_TIPUS_QUOTA_MATRICULA, nany, alumne
-                        )
                         item.save()
-                        if item.confirma_matricula == "C" and item.quota:
-                            gestionaPag(item, 0)
-                            url = format_html(
-                                "<a href='{}'>{}</a>",
-                                reverse_lazy(
-                                    "relacio_families__informe__el_meu_informe"
-                                ),
-                                "Activitats/Pagaments",
-                            )
-                            infos.append(
-                                "Dades guardades correctament. "
-                                "Una vegada siguin revisades per secretaria rebrà un missatge. "
-                                "Gestioni els pagaments des de l'apartat " + url
-                            )
-                        else:
-                            infos.append(
-                                "Dades guardades correctament. "
-                                "Una vegada siguin revisades per secretaria rebrà un missatge."
-                            )
+                        infos.append(
+                            "Dades guardades correctament. "
+                            "Una vegada siguin revisades per secretaria rebrà un missatge."
+                        )
                         return render(
                             request,
                             "resultat.html",
@@ -279,7 +260,7 @@ def Confirma(request, nany):
 
 
 @login_required
-@group_required(["direcció", "administradors"])
+@group_required(["direcció"])
 def changeEstat(request, pk, tipus):
     """
     Modifica estat a F.
@@ -366,7 +347,7 @@ class MatriculesList(LoginRequiredMixin, ListView):
 
 
 @login_required
-@group_required(["direcció", "administradors"])
+@group_required(["direcció"])
 def LlistaMatFinals(request, curs, nany, tipus):
     return MatriculesList.as_view()(request, curs=curs, nany=nany, tipus=tipus)
 
@@ -386,6 +367,7 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
         returns the raw `form.files` dictionary.
         """
         import unicodedata
+        from django.core.files import File
 
         files = form.files
         pk = self.kwargs.get("pk", None)
@@ -398,9 +380,14 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
                     .encode("ascii", "ignore")
                     .decode("UTF-8")
                 )
-                if value.name != newname:
-                    value.name = newname
-                file_instance = Document(fitxer=value)
+                file_instance = Document()
+                if hasattr(value, "temporary_file_path"):
+                    # Fitxer ja gravat al disc.
+                    with open(value.temporary_file_path(), "rb") as f:
+                        file_instance.fitxer.save(newname, File(f))
+                else:
+                    # Fitxer a memòria. Amb django-private-storage no passarà mai.
+                    file_instance.fitxer.save(newname, value)
                 file_instance.matricula = mat
                 file_instance.save()
         return self.get_form_step_files(form)
@@ -481,7 +468,7 @@ class DadesView(LoginRequiredMixin, SessionWizardView):
 
         data = self.get_all_cleaned_data()
 
-        esborra = data.get("fitxers", [])
+        esborra = data.get("fitxers_esborra", [])
         pk = self.kwargs.get("pk", None)
         fitxers = Document.objects.filter(matricula__id=pk).order_by("pk")
         for n in esborra[::-1]:
@@ -732,7 +719,7 @@ def matDobleview(request):
 
 
 @login_required
-@group_required(["administradors"])
+@group_required(["direcció"])
 def ActivaMatricula(request):
     """
     Selecciona els paràmetres per a l'activació de matrícules
@@ -748,7 +735,7 @@ def ActivaMatricula(request):
     from aula.utils import tools
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     infos = []
     if request.method == "POST":
@@ -862,7 +849,7 @@ def ActivaMatricula(request):
 
 
 @login_required
-@group_required(["direcció", "administradors"])
+@group_required(["direcció"])
 def blanc(request):
     return render(
         request,
@@ -872,7 +859,7 @@ def blanc(request):
 
 
 @login_required
-@group_required(["professors"])
+@group_required(["direcció"])
 def ResumConfirmacions(request):
     from django.http import HttpResponse
 

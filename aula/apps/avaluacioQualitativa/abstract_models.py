@@ -97,11 +97,6 @@ class AbstractRespostaAvaluacioQualitativa(models.Model):
         "Frase oberta", max_length=120, help_text="Frase oberta", blank=True
     )
 
-    # DEPRECATED vvv
-    relacio_familia_revisada = models.DateTimeField(null=True, editable=False)
-    relacio_familia_notificada = models.DateTimeField(null=True, editable=False)
-    # DEPRECATED ^^^
-
     notificacions_familia = models.ManyToManyField("usuaris.NotifUsuari", db_index=True)
 
     class Meta:

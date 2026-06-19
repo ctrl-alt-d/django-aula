@@ -13,12 +13,13 @@ clear
 
 # 1. Definició de variables
 # Repositori i branca per la clonació
-REPO_URL="https://github.com/rafatecno1/django-aula.git"
-GIT_BRANCH="master"
-#REPO_URL="https://github.com/ctrl-alt-d/django-aula.git"	# repositori del projecte
-#GIT_BRANCH="master"						@ Si es vol instal·lar una branca concreta. Exemple: "feat/upgrade-bootstrap"
+REPO_USER="ctrl-alt-d"		# "ctr-alt-d"
+REPO_NAME="django-aula"
+REPO_BRANCA="master"		# "master"
 
-# Definició de sistema d'inicialització de processos del Sistema Operatiiu (SysVinit vs Systemd)
+REPO_URL="https://github.com/${REPO_USER}/${REPO_NAME}.git"	# repositori del projecte
+
+# Definició de sistema d'inicialització de processos del Sistema Operatiu (SysVinit vs Systemd)
 IS_SYSTEMD=0 # Per defecte, assumim que no és systemd (Devuan, etc.)
 
 if command -v systemctl >/dev/null 2>&1; then
@@ -34,7 +35,7 @@ echo "--------------------------------------------------------------------------
 # 1. Definició de l'URL remota de la llibreria de funcions
 REPO_BASE_CLEAN="${REPO_URL%.git}"
 RAW_BASE="${REPO_BASE_CLEAN/https:\/\/github.com/https:\/\/raw.githubusercontent.com}"
-FUNCTIONS_URL="${RAW_BASE}/${GIT_BRANCH}/setup_djau/functions.sh"
+FUNCTIONS_URL="${RAW_BASE}/${REPO_BRANCA}/setup_djau/functions.sh"
 FUNCTIONS_FILE="./functions.sh"
 
 
@@ -68,7 +69,7 @@ rm "$FUNCTIONS_FILE"
 if [ $? -ne 0 ]; then
     echo -e "${C_ERROR}❌ ADVERTÈNCIA:Per alguna raó desconeguda no s'ha pogut eliminar l'arxiu temporal de funcions${RESET} ${C_INFO} '$FUNCTIONS_FILE'${RESET} ${${C_ERROR}}. Caldria fer-ho manualment.${RESET}"
 else
-echo -e "${C_EXITO}❌ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha proceit a la seva automàtica eliminació.${RESET}"
+echo -e "${C_EXITO}❌ Un cop importat el contingut de la l'arxiu temporal de funcions s'ha procedit a la seva automàtica eliminació.${RESET}"
 fi
 
 echo -e "\n\n"
@@ -233,6 +234,9 @@ echo -e "\n"
 
 echo -e "${C_SUBTITULO}--- 3.1 Instal·lant dependèncias del sistema (Python, Git, PostgreSQL, etc). Ara no s'instal·lará el servidor web ---${RESET}"
 echo -e "${C_SUBTITULO}---------------------------------------------------------------------------------------------------------------------${RESET}"
+
+# 0. Esperar per si hi ha un bloqueig de l'APT
+esperar_apt
 
 # 1. Actualitzar la llista de paquets
 echo -e "${C_INFO}ℹ️ Actualiztzant la llista de paquets (apt-get update)...${RESET}"
@@ -529,18 +533,18 @@ if [ -d "$FULL_PATH" ] && [ "$(ls -A "$FULL_PATH")" ]; then
     echo -e "\n"
     exit 1
 else
-    echo -e "${C_INFO}Clonant $REPO_URL, branca '$GIT_BRANCH' en $FULL_PATH.${RESET}"
+    echo -e "${C_INFO}Clonant $REPO_URL, branca '$REPO_BRANCA' en $FULL_PATH.${RESET}"
 
     # Clonar el repositori com l'usuari de l'aplicació, forçant la branca especificada
-    sudo -u "$APP_USER" git clone -b "$GIT_BRANCH" "$REPO_URL" "$FULL_PATH"
+    sudo -u "$APP_USER" git clone -b "$REPO_BRANCA" "$REPO_URL" "$FULL_PATH"
 
     if [ $? -ne 0 ]; then
-        echo -e "${C_ERROR}❌ ERROR: Fallda en clonar la branca '$GIT_BRANCH' del repositori '$REPO_URL'.${RESET}"
+        echo -e "${C_ERROR}❌ ERROR: Fallda en clonar la branca '$REPO_BRANCA' del repositori '$REPO_URL'.${RESET}"
         echo "Comprovi la URL, conexió a internet o permisos de l'usuari '$APP_USER'."
         echo -e "\n"
         exit 1
     fi
-    echo -e "${C_EXITO}✅ Repositori clonat (Branca: $GIT_BRANCH) a '$FULL_PATH'.${RESET}"
+    echo -e "${C_EXITO}✅ Repositori clonat (Branca: $REPO_BRANCA) a '$FULL_PATH'.${RESET}"
 fi
 
 echo -e "\n"
@@ -548,7 +552,7 @@ sleep 3
 
 
 # -------------------------------------------------------------------------------------------------
-# CREACIÓ DE L'ARxiu config_vars.sh AMB LES VARIABLES COMUNS PER LA INSTAL·LACIÓ DE L'APLICACIÓ
+# CREACIÓ DE L'ARXIU config_vars.sh AMB LES VARIABLES COMUNS PER LA INSTAL·LACIÓ DE L'APLICACIÓ
 # -------------------------------------------------------------------------------------------------
 
 SETUP_DIR="$FULL_PATH/setup_djau"
@@ -579,17 +583,17 @@ echo -e "${C_CAPITULO}--- 5. INICI DE LA CONFIGURACIÓ ESPECÍFICA DE DJANGO-AUL
 echo -e "${C_CAPITULO}=============================================================${RESET}"
 echo -e "\n"
 
-echo -e "--- A partir d'ara, l'usuari ${C_INFO}'$APP_USER'${RESET} executarà autmáticamente l'script ${C_INFO}setup_djau.sh${RESET}."
+echo -e "--- A partir d'ara, l'usuari ${C_INFO}'$APP_USER'${RESET} executarà automàticament l'script ${C_INFO}setup_djau.sh${RESET}."
 echo -e "    Aquest script es troba a ${C_INFO}'$SETUP_DIR'${RESET}."
 echo -e "\n"
 
 # Transferint l'execució a l'script de configuració de Django-Aula DINS el repositori i branca clonats
 cd "$SETUP_DIR"
-chmod +x setup_djau.sh
-chmod +x setup_apache.sh
-chmod +x setup_cron.sh
-chmod +x functions.sh
-chown "$APP_USER":"$APP_USER" functions.sh
+#chmod +x setup_djau.sh
+#chmod +x setup_apache.sh
+#chmod +x setup_cron.sh
+#chmod +x functions.sh
+#chown "$APP_USER":"$APP_USER" functions.sh
 
 echo -e "${C_INFO}ℹ️  **ATENCIÓ:**${RESET} La instal·lació no serà desatesa. Haurà de respondre preguntes per configurar la base de dades i l'aplicatiu."
 echo -e "\n"

@@ -39,7 +39,7 @@ def generaHoraris(nivellsCursosGrups, franges, mati_tarda):
     if mati_tarda == "M":
         assignatures = ("MA", "OP2", "FI", "TEC", "GYM", "TUT", "OP1")
     else:
-        assignatures = ("TUT", "UF9", "UF1", "UF2", "UF3", "UF4", "UF5", "UF6")
+        assignatures = ("TUT", "DIG", "SOST", "ANG", "IPO1", "PROJ", "FIT", "MOPT")
 
     tots_els_grups = []
     for nivell, GrupsCursos in nivellsCursosGrups:

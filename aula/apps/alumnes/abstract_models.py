@@ -219,47 +219,14 @@ class AbstractAlumne(models.Model):
         choices=ESTAT_SINCRO_CHOICES, max_length=3, blank=True
     )
 
-    # DEPRECATED vvv
-    correu_tutors = models.CharField(max_length=240, blank=True)
-    correu_relacio_familia_pare = models.EmailField(
-        "1r Correu Notifi. Tutors",
-        help_text="Correu de notificacions de un tutor",
-        blank=True,
-    )
-    correu_relacio_familia_mare = models.EmailField(
-        "2n Correu Notifi. Tutors",
-        help_text="Correu de notificacions de l'altre tutor (opcional)",
-        blank=True,
-    )
-    # DEPRECATED ^^^
-
     motiu_bloqueig = models.CharField(max_length=250, blank=True)
-
-    # DEPRECATED vvv
-    tutors_volen_rebre_correu = models.BooleanField(null=True)
-    # DEPRECATED ^^^
 
     centre_de_procedencia = models.CharField(max_length=250, blank=True)
     localitat = models.CharField(max_length=240, blank=True)
     municipi = models.CharField(max_length=240, blank=True)
     cp = models.CharField(max_length=240, blank=True)
-    # DEPRECATED vvv
-    telefons = models.CharField(max_length=250, blank=True, db_index=True)
-    tutors = models.CharField(max_length=250, blank=True)
-    # DEPRECATED ^^^
     adreca = models.CharField(max_length=250, blank=True)
     correu = models.CharField(max_length=240, blank=True)
-
-    # DEPRECATED vvv
-    rp1_nom = models.CharField(max_length=250, blank=True)  # responsable 1
-    rp1_telefon = models.CharField(max_length=250, blank=True, db_index=True)
-    rp1_mobil = models.CharField(max_length=250, blank=True, db_index=True)
-    rp1_correu = models.CharField(max_length=240, blank=True)
-    rp2_nom = models.CharField(max_length=250, blank=True)  # responsable 2
-    rp2_telefon = models.CharField(max_length=250, blank=True, db_index=True)
-    rp2_mobil = models.CharField(max_length=250, blank=True, db_index=True)
-    rp2_correu = models.CharField(max_length=240, blank=True)
-    # DEPRECATED ^^^
 
     responsable_preferent = models.ForeignKey(
         "relacioFamilies.Responsable",
@@ -267,15 +234,6 @@ class AbstractAlumne(models.Model):
         on_delete=models.SET_NULL,
         help_text="Responsable preferent de l'alumne/a",
     )
-
-    # DEPRECATED vvv
-    primer_responsable = models.IntegerField(
-        choices=PRIMER_RESPONSABLE,
-        blank=False,
-        default=0,
-        help_text="Principal responsable de l'alumne/a",
-    )
-    # DEPRECATED ^^^
 
     altres_telefons = models.CharField(max_length=250, blank=True)
 
@@ -504,10 +462,6 @@ class AbstractAlumne(models.Model):
         - Si es passen DNIs, selecciona els responsables corresponents.
         - Si no es passen DNIs:
             - Retorna els responsables existents de l'alumne.
-            #DEPRECATED vvv
-            - Si no n'hi ha i 'compatible' és True, crea responsables
-            temporals, per compatibilitat, segons les dades antigues del model alumne.
-            #DEPRECATED ^^^
         """
         from django.apps import apps
 
@@ -535,32 +489,6 @@ class AbstractAlumne(models.Model):
         # Si no es passen DNIs
         if not rp1_dni and not rp2_dni:
             responsables = list(self.responsables.all())
-            # DEPRECATED vvv
-            # Compatibilitat antiga: crear responsables ficticis si no n'hi ha
-            Responsable = apps.get_model("relacioFamilies", "Responsable")
-            if not responsables and compatible and not Responsable.objects.exists():
-                # Només crea uns responsables temporals si encara no s'ha fet la nova càrrega de
-                # dades d'alumnes amb els responsables diferenciats (not Responsable.objects.exists())
-                # Si ja s'ha fet la càrrega, i encara no té responsables associats, s'assumeix que es tracta
-                # d'un alumne sense responsables.
-                resp1 = crear_responsable_antic(
-                    self.rp1_nom,
-                    self.rp1_correu,
-                    self.rp1_mobil,
-                    self.rp1_telefon,
-                    self.correu_relacio_familia_pare,
-                )
-                resp2 = crear_responsable_antic(
-                    self.rp2_nom,
-                    self.rp2_correu,
-                    self.rp2_mobil,
-                    self.rp2_telefon,
-                    self.correu_relacio_familia_mare,
-                )
-                if self.primer_responsable == 1:
-                    resp1, resp2 = resp2, resp1
-                return resp1, resp2
-            # DEPRECATED ^^^
             # Omple amb Nones si no s'arriba a 2 responsables
             while len(responsables) < 2:
                 responsables.append(None)

@@ -19,7 +19,7 @@ from aula.utils.decorators import group_required
 @login_required
 @group_required(["direcció"])
 def sincronitzaSaga(request):
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     User2Professor(user)
 
     from aula.apps.extSaga.sincronitzaSaga import sincronitza

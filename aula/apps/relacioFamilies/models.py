@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_delete, post_save
 from django.utils import timezone
@@ -29,7 +28,6 @@ class DocAttach(models.Model):
     fitxer = PrivateFileField(
         "Fitxer adjunt",
         upload_to="email/",
-        max_file_size=settings.FILE_UPLOAD_MAX_MEMORY_SIZE,
     )
     email = models.ForeignKey(EmailPendent, on_delete=models.CASCADE, blank=True)
 

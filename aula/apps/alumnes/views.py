@@ -25,11 +25,12 @@ from aula.apps.alumnes.forms import (
     triaAlumneForm,
     triaAlumneSelect2Form,
     triaMultiplesAlumnesForm,
+    ReassignarBaixesForm,
 )
 from aula.apps.alumnes.gestioGrups import grupsPromocionar
 
 # from django import forms as forms
-from aula.apps.alumnes.models import Alumne, Curs, DadesAddicionalsAlumne, Grup
+from aula.apps.alumnes.models import Alumne, Curs, DadesAddicionalsAlumne, Grup, Nivell
 from aula.apps.alumnes.reports import reportLlistaTutorsIndividualitzats
 from aula.apps.alumnes.rpt_duplicats import duplicats_rpt
 
@@ -188,7 +189,7 @@ def assignaTutors(request):
 @group_required(["direcció"])
 def llistaTutorsIndividualitzats(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     User2Professor(user)
 
@@ -210,7 +211,7 @@ def llistaTutorsIndividualitzats(request):
 @group_required(["direcció", "psicopedagog"])
 def informePsicopedagoc(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formAlumne = triaAlumneSelect2Form(
@@ -260,7 +261,7 @@ def canviarNomSentitW0(request):
 @group_required(["direcció", "psicopedagog"])
 def canviarNomSentitW1(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formAlumne = triaAlumneSelect2Form(request.POST)
@@ -284,7 +285,7 @@ def canviarNomSentitW1(request):
 @group_required(["direcció", "psicopedagog"])
 def canviarNomSentitW2(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     alumne = get_object_or_404(Alumne, pk=pk)
     formF = modelform_factory(Alumne, fields=["nom_sentit"])
@@ -355,7 +356,7 @@ def canviarNomSentitW2(request, pk):
 @group_required(["direcció"])
 def gestionaAlumnesTutor(request, pk):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = Professor.objects.get(pk=int(pk))
 
@@ -502,7 +503,7 @@ def triaAlumneAlumneAjax(request, id_grup):
 def elsMeusAlumnesAndAssignatures(request):
     from django.db.models import Count, Max
 
-    (user, l4) = tools.getImpersonateUser(request)
+    user, l4 = tools.getImpersonateUser(request)
     professor = User2Professor(user)
 
     report = []
@@ -962,7 +963,7 @@ def detallAlumneHorari(request, pk, detall="all"):
     from aula.apps.matricula.models import Document
 
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     alumne = get_object_or_404(Alumne, pk=pk)
     professor = User2Professor(user)
@@ -1148,7 +1149,7 @@ def detallAlumneHorari(request, pk, detall="all"):
 )
 def cercaUsuari(request):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
 
     if request.method == "POST":
         formUsuari = triaAlumneSelect2Form(
@@ -1236,3 +1237,71 @@ def llistaAlumnescsv(request):
     response.write(template.render(context))
 
     return response
+
+@login_required
+@group_required(["direcció"])
+def reassigna_alumnes_baixa(request):
+
+    preview_total = None
+    preview_nom_grup = None
+    total_baixes = Alumne.objects.filter(data_baixa__isnull=False).count()
+    alumnes_pendents = Alumne.objects.filter(
+        data_baixa__isnull=False, grup__tutor__isnull=False
+    )
+    total = alumnes_pendents.count()
+
+    if request.method == "POST":
+        form = ReassignarBaixesForm(request.POST)
+        if form.is_valid():
+            grup = form.cleaned_data["grup_exist"]
+            nom_grup = form.cleaned_data["nom_grup"]
+            action = request.POST.get("action")
+
+            if action == "preview":
+                preview_total = total
+                if grup:
+                    preview_nom_grup = grup.descripcio_grup
+                else:
+                    if form.cleaned_data["crear_auto"]:
+                        preview_nom_grup = "BAIXES"
+                    elif nom_grup:
+                        preview_nom_grup = nom_grup
+            elif action == "execute":
+                if not grup:
+                    nom = "BAIXES"
+                    nivell, _ = Nivell.objects.get_or_create(
+                        nom_nivell=nom, ordre_nivell=1000
+                    )
+                    curs, _ = Curs.objects.get_or_create(
+                        nivell=nivell, nom_curs=nom, nom_curs_complert=nom
+                    )
+                    if form.cleaned_data["crear_auto"]:
+                        grup, _ = Grup.objects.get_or_create(
+                            curs=curs, nom_grup=nom, descripcio_grup=nom
+                        )
+                    elif nom_grup:
+                        grup, _ = Grup.objects.get_or_create(
+                            curs=curs, nom_grup=nom_grup, descripcio_grup=nom_grup
+                        )
+                alumnes_pendents.update(grup=grup)
+                messages.success(
+                    request, f"{total} alumnes moguts a {grup.descripcio_grup}"
+                )
+                alumnes_pendents = Alumne.objects.filter(
+                    data_baixa__isnull=False, grup__tutor__isnull=False
+                )
+                total = alumnes_pendents.count()
+    else:
+        form = ReassignarBaixesForm()
+
+    return render(
+        request,
+        "reassigna_baixa.html",
+        {
+            "form": form,
+            "total": total,
+            "total_baixes": total_baixes,
+            "preview_total": preview_total,
+            "preview_nom_grup": preview_nom_grup,
+        },
+    )

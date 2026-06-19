@@ -12,7 +12,11 @@ from aula.utils.widgets import DataHoresAlumneAjax
 
 
 def tipusFotoOK(foto):
-    if foto and hasattr(foto, 'content_type') and foto.content_type not in CUSTOM_TIPUS_MIME_FOTOS:
+    if (
+        foto
+        and hasattr(foto, "content_type")
+        and foto.content_type not in CUSTOM_TIPUS_MIME_FOTOS
+    ):
         message = "Tipus de fitxer no vàlid. Formats permesos: {0}".format(
             CUSTOM_TIPUS_MIME_FOTOS
         ).replace("image/", "")
@@ -121,14 +125,6 @@ class ResponsableModelForm(forms.ModelForm):
         self.fields["correu_relacio_familia"].label = (
             "Correu responsable " + self.instance.get_nom()
         )
-        # DEPRECATED vvv
-        if not self.instance.dni:
-            self.fields["correu_relacio_familia"].widget.attrs["readonly"] = True
-            self.fields["periodicitat_faltes"].widget.attrs["readonly"] = True
-            self.fields["periodicitat_faltes"].disabled = True
-            self.fields["periodicitat_incidencies"].widget.attrs["readonly"] = True
-            self.fields["periodicitat_incidencies"].disabled = True
-        # DEPRECATED ^^^
 
     def add_prefix(self, field_name):
         field_name = self.custom_names.get(field_name, field_name)

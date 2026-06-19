@@ -24,7 +24,7 @@ from aula.utils.tools import unicode
 @group_required(["professors"])
 def feina(request, pk_imparticio):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -69,7 +69,7 @@ def feina(request, pk_imparticio):
 @group_required(["direcció"])
 def complementFormulariTria(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     head = "Selecciona professor i dia"
 
@@ -97,7 +97,7 @@ def complementFormulariTria(request):
 @group_required(["direcció"])
 def complementFormulariOmple(request, pk_professor, dia, mes, year):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     professor = User2Professor(user)
 
@@ -196,7 +196,7 @@ def complementFormulariOmple(request, pk_professor, dia, mes, year):
 @group_required(["direcció"])
 def complementFormulariImpresioTria(request):
     credentials = tools.getImpersonateUser(request)
-    (user, _) = credentials
+    user, _ = credentials
 
     head = "Selecciona dia a imprimir"
 

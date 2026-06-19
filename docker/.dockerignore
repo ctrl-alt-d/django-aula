@@ -34,6 +34,10 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Documentació
+docs/
+README.md
+
 # Altres fitxers grans o no necessaris
 node_modules/
 dist/
@@ -42,6 +46,11 @@ build/
 # Altres fitxers
 apache
 canviDeCurs.txt
-docker-compose.old
 enDesenvolupament.txt
 TODO.txt
+*.old
+install_djau.sh
+install_demo_docker.sh
+setup_djau/
+docker/*
+!docker/carrega_inicial.sh

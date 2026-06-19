@@ -20,7 +20,7 @@ from aula.utils.tools import unicode
 @group_required(["professors"])
 def justificadorMKTable(request, year, month, day):
     credentials = tools.getImpersonateUser(request)
-    (user, l4) = credentials
+    user, l4 = credentials
     professor = User2Professor(user)
 
     data = date(year=int(year), month=int(month), day=int(day))
